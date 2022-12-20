@@ -1,7 +1,13 @@
+import 'dart:convert';
+
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
+import 'package:healthcare_homelab/db/databse_model.dart';
+import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
 
 import '../../../responsives/dimensions.dart';
@@ -16,10 +22,40 @@ class TestItemDialogueBox extends StatefulWidget {
 }
 
 class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
+  late DatabaseReference _dbref_testModel;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _dbref_testModel = FirebaseDatabase.instance.ref("meditest/testModel");
+  }
+
+  Future<void> deleteFromStore(id) async {
+    await _dbref_testModel.child(id.toString()).remove();
+  }
+
+  CreateRequest_controller createRequest_controller =
+      Get.put(CreateRequest_controller());
+
   @override
   Widget build(BuildContext context) {
-    CreateRequest_controller createRequest_controller =
-        Get.put(CreateRequest_controller());
+    Future<void> addTestData() async {
+      DatabaseReference _dbref_testModel;
+      _dbref_testModel = FirebaseDatabase.instance.ref("meditest/testModel/");
+
+      _dbref_testModel.onValue.listen((event) {
+        final newTestItem = event.snapshot
+            .child(createRequest_controller.testKey.value.toString())
+            .value;
+
+        TestData testData =
+            TestData.fromJson(json.decode(jsonEncode(newTestItem)));
+
+        createRequest_controller.testData.add(testData);
+      });
+    }
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Stack(
@@ -47,17 +83,18 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                           child: Container(
                             child: Container(
                               height: MediaQuery.of(context).size.height * 0.60,
-                              child: ListView.builder(
-                                itemCount: 10,
+                              child: FirebaseAnimatedList(
+                                query: _dbref_testModel,
                                 padding:
                                     EdgeInsets.symmetric(horizontal: DM.p15),
-                                itemBuilder: (context, index) {
+                                itemBuilder:
+                                    (context, snapshot, animation, index) {
                                   return Container(
-                                    color: Colors.white,
+                                    color: Color.fromARGB(255, 255, 237, 237),
                                     padding: EdgeInsets.symmetric(
-                                        horizontal: DM.p1, vertical: DM.p10),
-                                    margin:
-                                        EdgeInsets.symmetric(vertical: DM.p5),
+                                        horizontal: DM.p10, vertical: DM.p10),
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: DM.p10),
                                     height: DM.p50,
                                     child: Row(
                                       mainAxisAlignment:
@@ -66,7 +103,10 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                                         SizedBox(
                                           width: DM.p55,
                                           child: Text(
-                                            "Test 1",
+                                            snapshot
+                                                .child("name")
+                                                .value
+                                                .toString(),
                                             style: TextStyle(
                                                 fontWeight: FontWeight.w900,
                                                 fontSize: DM.p12,
@@ -75,7 +115,10 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                                           ),
                                         ),
                                         Text(
-                                          "Price: 200",
+                                          snapshot
+                                              .child("testprice")
+                                              .value
+                                              .toString(),
                                           style: TextStyle(
                                               fontWeight: FontWeight.w900,
                                               fontSize: DM.p12,
@@ -84,14 +127,22 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                                         ),
                                         MaterialButton(
                                           onPressed: () {
-                                            Get.back();
+                                             createRequest_controller.testKey.value =
+                                          snapshot.key.toString();
+
+                                      addTestData();
+
+                         
+                                      Get.back();
+                                   
+                                            // deleteFromStore(snapshot.key);
                                           },
                                           height: DM.p45,
                                           minWidth: DM.p70,
                                           shape: const StadiumBorder(),
-                                          color: orangeColor,
+                                          color: greenColor,
                                           child: Text(
-                                            "Remove",
+                                            "Add",
                                             style: TextStyle(
                                                 color: fullWhiteColor,
                                                 fontSize: DM.p10,
@@ -107,7 +158,7 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                           ))),
                   MaterialButton(
                     onPressed: () {
-                      Get.back();
+                      Get.to(new CreateRequest());
                     },
                     height: DM.p45,
                     minWidth: DM.p130,
@@ -137,3 +188,7 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
     );
   }
 }
+
+
+//radious
+//backgrounddd

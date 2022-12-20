@@ -1,15 +1,18 @@
 import 'dart:convert';
 import 'dart:ffi';
 
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
+import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListDialogueBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
-
+import 'package:uuid/uuid.dart';
 import '../../constants/colors.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/Create_Request_Controller.dart';
@@ -28,8 +31,36 @@ class _HomeScreenState extends State<HomeScreen> {
   CreateRequest_controller createReqController =
       Get.put(CreateRequest_controller());
 
+  late DatabaseReference _dbref_testModel, _dbref_testReqModel;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _dbref_testModel = FirebaseDatabase.instance.ref("meditest/");
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/testRequest");
+  }
+
   @override
   Widget build(BuildContext context) {
+    Future<void> addData(String data) async {
+      var testData = TestData(
+          id: Uuid().v4(),
+          name: "Abdullah",
+          testprice: 412,
+          discount: 14,
+          diagnostic_center: "Qatar",
+          testkitprice: 21,
+          lastupdate: "19 August",
+          softdelete: "1",
+          organization_transport: "XYZ");
+
+      await _dbref_testModel
+          .child("testModel")
+          .child(testData.id.toString())
+          .set(testData.toJson());
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
@@ -43,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ]),
-      backgroundColor: Colors.transparent,
+      backgroundColor: creamColor,
       body: Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
@@ -65,67 +96,50 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         SizedBox(
-                          height: DM.p5,
+                          height: DM.p50,
                         )
                       ],
                     ),
                     // #text_field
                     Container(
-                      margin: EdgeInsets.symmetric(horizontal: DM.p5),
-                      height: MediaQuery.of(context).size.height * 0.6,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(DM.p10),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Color.fromARGB(218, 224, 224, 224),
-                                blurRadius: DM.p10,
-                                spreadRadius: DM.p1,
-                                offset: Offset(0, DM.p5))
-                          ]),
-                      child: ListView.builder(
-                        itemCount: 10,
-                        padding: EdgeInsets.symmetric(horizontal: DM.p15),
-                        itemBuilder: (context, index) {
-                          return Container(
-                            color: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                                horizontal: DM.p5, vertical: DM.p10),
-                            margin: EdgeInsets.symmetric(vertical: DM.p5),
-                            height: DM.p50,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                SizedBox(
-                                  width: DM.p170,
-                                  child: Text(
-                                    "Test 1",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: DM.p15,
-                                        color: Color.fromARGB(255, 26, 1, 1)),
-                                  ),
-                                ),
-                                Text(
-                                  "Price: 200",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: DM.p15,
-                                      color: Color.fromARGB(255, 26, 1, 1)),
-                                ),
-                                Icon(
-                                  CupertinoIcons.xmark_circle,
-                                  color: orangeColor,
-                                )
-                              ],
+                        margin: EdgeInsets.symmetric(horizontal: DM.p5),
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(DM.p10),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Color.fromARGB(218, 224, 224, 224),
+                                  blurRadius: DM.p10,
+                                  spreadRadius: DM.p1,
+                                  offset: Offset(0, DM.p5))
+                            ]),
+                        child: Center(
+                          child: Container(
+                            child: Text(
+                              "Empty data",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 20,
+                                  color: Color.fromARGB(255, 26, 1, 1)),
                             ),
-                          );
-                        },
-                      ),
-                    ),
+                          ),
+                        )),
+                    // child: FirebaseAnimatedList(
+                    //   query: _dbref_testModel,
+                    //   itemBuilder: ((context, snapshot, animation, index) {
+                    //     return Center(
+                    //       child: Container(
+                    //         child: Text("No data yet"),
+                    //       ),
+                    //     );
+                    //   }),
+                    // )),
 
                     // #signup_button
-
+                    SizedBox(
+                      height: 40,
+                    ),
                     Container(
                       margin: EdgeInsets.symmetric(
                           horizontal: DM.p20, vertical: DM.p12),
@@ -134,14 +148,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           MaterialButton(
                             onPressed: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return MyDialogView(
-                                        myChild: TestItemDialogueBox(
-                                      keyTitle: "Referred Address",
-                                    ));
-                                  });
+                              addData("adnan");
+                              Get.to(CreateRequest());
                             },
                             height: DM.p40,
                             minWidth: DM.p120,

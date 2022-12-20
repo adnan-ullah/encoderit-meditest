@@ -65,7 +65,7 @@ class _TextDialogueBoxState extends State<TextDialogueBox> {
                           onChanged: (value) {
                             if (widget.keyTitle == "Address") {
                               widget.addressText.text = value;
-                            } else if (widget.keyTitle == "Referred Address") {
+                            } else if (widget.keyTitle == "Referrer Info") {
                               widget.addressText.text = value;
                             }
                           },

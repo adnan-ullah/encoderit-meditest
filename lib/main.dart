@@ -28,10 +28,10 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         home: SafeArea(
           child: Scaffold(
-             resizeToAvoidBottomInset: false,
+            resizeToAvoidBottomInset: false,
             body: MyScaffold(
-              
-                container: HomeScreen(),
+
+                container: SplashScreen(),
                 color1: creamColor,
                 color2: creamColor),
           ),
