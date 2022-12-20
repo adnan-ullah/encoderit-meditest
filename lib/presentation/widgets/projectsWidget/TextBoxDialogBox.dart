@@ -45,7 +45,7 @@ class _TextDialogueBoxState extends State<TextDialogueBox> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    "Address",
+                    widget.keyTitle,
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 25,
@@ -60,7 +60,7 @@ class _TextDialogueBoxState extends State<TextDialogueBox> {
 
                           maxLines: 8, //or null
                           decoration: InputDecoration.collapsed(
-                              hintText: "Write your address here..."),
+                              hintText: "Write here..."),
 
                           onChanged: (value) {
                             if (widget.keyTitle == "Address") {

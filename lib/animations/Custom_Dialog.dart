@@ -22,7 +22,7 @@ class MyDialogViewState extends State<MyDialogView>
     super.initState();
 
     controller = AnimationController(
-        vsync: this, duration: Duration(milliseconds: 600));
+        vsync: this, duration: Duration(milliseconds: 300));
     scaleAnimation =
         CurvedAnimation(parent: controller, curve: Curves.easeOutCirc);
 

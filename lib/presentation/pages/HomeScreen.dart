@@ -1,16 +1,23 @@
 import 'dart:convert';
 import 'dart:ffi';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListDialogueBox.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
+import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
 
 import '../../constants/colors.dart';
 import '../../responsives/dimensions.dart';
+import '../../state_programming/Create_Request_Controller.dart';
 import '../../state_programming/getController.dart';
 
 class HomeScreen extends StatefulWidget {
-  static const String id = "sign_up_page";
+  // static const String id = "sign_up_page";
+
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
@@ -18,143 +25,237 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  CreateRequest_controller createReqController =
+      Get.put(CreateRequest_controller());
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Container(
-          height: MediaQuery.of(context).size.height,
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(backgroundColor: orangeColor, actions: [
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p2),
           width: MediaQuery.of(context).size.width,
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                Color.fromARGB(255, 167, 76, 15),
-                Color.fromARGB(255, 255, 157, 29),
-                Color.fromARGB(255, 151, 89, 7),
-              ])),
-          child: Column(
-            children: [
-              Expanded(
-                  flex: 2,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: DM.p20, vertical: DM.p20),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // #signup_text
-                        Text(
-                          "Homepage",
-                          textAlign: TextAlign.left,
-                          style:
-                              TextStyle(color: Colors.white, fontSize: DM.p32),
-                        ),
-                        SizedBox(
-                          height: DM.p5,
-                        ),
-
-                        // #welcome
-                      ],
-                    ),
-                  )),
-              Container(
+          child: Text(
+            "HomePage",
+            textAlign: TextAlign.left,
+            style: TextStyle(color: creamColor, fontSize: DM.p30),
+          ),
+        ),
+      ]),
+      backgroundColor: Colors.transparent,
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Container(
                 width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                    color: Color.fromARGB(255, 255, 219, 219),
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(DM.p50),
-                        topRight: Radius.circular(DM.p50))),
                 child: Column(
                   children: [
                     SizedBox(
-                      height: DM.p10,
+                      height: DM.p15,
                     ),
 
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: DM.p5,
+                        )
+                      ],
+                    ),
                     // #text_field
                     Container(
-                      margin: EdgeInsets.symmetric(horizontal: DM.p30),
-                      height: MediaQuery.of(context).size.height * 0.5,
+                      margin: EdgeInsets.symmetric(horizontal: DM.p5),
+                      height: MediaQuery.of(context).size.height * 0.6,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                          color: Color.fromARGB(255, 255, 255, 255),
                           borderRadius: BorderRadius.circular(DM.p10),
                           boxShadow: [
                             BoxShadow(
-                                color: Colors.grey.shade300,
-                                blurRadius: DM.p20,
-                                spreadRadius: DM.p10,
-                                offset: Offset(0, DM.p10))
+                                color: Color.fromARGB(218, 224, 224, 224),
+                                blurRadius: DM.p10,
+                                spreadRadius: DM.p1,
+                                offset: Offset(0, DM.p5))
                           ]),
                       child: ListView.builder(
-                        itemCount: 20,
+                        itemCount: 10,
+                        padding: EdgeInsets.symmetric(horizontal: DM.p15),
                         itemBuilder: (context, index) {
-                          return ListTile(
-                            leading: Icon(
-                              Icons.add,
-                              color: orangeColor,
+                          return Container(
+                            color: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: DM.p5, vertical: DM.p10),
+                            margin: EdgeInsets.symmetric(vertical: DM.p5),
+                            height: DM.p50,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                SizedBox(
+                                  width: DM.p170,
+                                  child: Text(
+                                    "Test 1",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: DM.p15,
+                                        color: Color.fromARGB(255, 26, 1, 1)),
+                                  ),
+                                ),
+                                Text(
+                                  "Price: 200",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: DM.p15,
+                                      color: Color.fromARGB(255, 26, 1, 1)),
+                                ),
+                                Icon(
+                                  CupertinoIcons.xmark_circle,
+                                  color: orangeColor,
+                                )
+                              ],
                             ),
-                            title: Text(
-                              style: TextStyle(color: orangeColor),
-                              'Meditest ',
-                              textScaleFactor: 1,
-                            ),
-                            trailing: Icon(
-                              Icons.done,
-                              color: orangeColor,
-                            ),
-                            subtitle: Text('This is subtitle'),
-                            selected: true,
-                            onTap: () {},
                           );
-                          ;
                         },
                       ),
-                    ),
-                    SizedBox(
-                      height: DM.p35,
                     ),
 
                     // #signup_button
 
-                    Divider(
-                      thickness: 0.5,
-                      height: DM.p10,
-                    ),
-                    MaterialButton(
-                      onPressed: () => {Get.to(CreateRequest())},
-                      height: DM.p45,
-                      minWidth: DM.p240,
-                      shape: const StadiumBorder(),
-                      color: orangeColor,
-                      child: Text(
-                        "Create Request",
-                        style: TextStyle(
-                            color: font_bgOrange,
-                            fontSize: DM.p15,
-                            fontWeight: FontWeight.bold),
+                    Container(
+                      margin: EdgeInsets.symmetric(
+                          horizontal: DM.p20, vertical: DM.p12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          MaterialButton(
+                            onPressed: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return MyDialogView(
+                                        myChild: TestItemDialogueBox(
+                                      keyTitle: "Referred Address",
+                                    ));
+                                  });
+                            },
+                            height: DM.p40,
+                            minWidth: DM.p120,
+                            shape: const StadiumBorder(),
+                            color: orangeColor,
+                            child: Text(
+                              "Create Request",
+                              style: TextStyle(
+                                  color: fullWhiteColor,
+                                  fontSize: DM.p15,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    SizedBox(
-                      height: DM.p60,
-                    ),
-
-                    // #text
-
-                    SizedBox(
-                      height: DM.p30,
-                    ),
+                    )
 
                     // #buttons(facebook & github)
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
+
+class FormUserInfo extends StatelessWidget {
+  dynamic title;
+  dynamic value;
+  dynamic activate;
+  FormUserInfo(
+      {Key? key,
+      required this.title,
+      required this.value,
+      required this.activate})
+      : super(
+          key: key,
+        );
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(DM.p1),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: DM.p100,
+            child: Text(
+              title,
+              style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: DM.p14,
+                  color: Color.fromARGB(255, 26, 1, 1)),
+            ),
+          ),
+          SizedBox(
+            width: DM.p5,
+          ),
+          Text(":"),
+          SizedBox(
+            width: DM.p10,
+          ),
+          Flexible(
+            child: Container(
+              height: DM.p35,
+              child: TextField(
+                readOnly: activate,
+                decoration: InputDecoration(
+                    focusedBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(width: DM.p1, color: orangeColor)),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          width: DM.p1, color: orangeColor), //<-- SEE HERE
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: EdgeInsets.symmetric(horizontal: DM.p10),
+                    border: InputBorder.none,
+                    hintText: value,
+                    hintStyle: TextStyle(
+                      color: Colors.grey,
+                      fontSize: DM.p14,
+                    )),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+//top : flat
+
+
+//: edit text
+//gender 
+//:add test button brdr rdius
+// cross sign in list
+//golden rose light..
+//address 
+//add test popup
+//write your name
+//test , transport, total cost
+//light green arektu ligh
+//outline_border listiitem and info
+//freshers...bdjobs
+
+
+
+//test , service charge , total cost
