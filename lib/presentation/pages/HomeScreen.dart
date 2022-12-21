@@ -5,6 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
@@ -32,6 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
       Get.put(CreateRequest_controller());
 
   late DatabaseReference _dbref_testModel, _dbref_testReqModel;
+  var latitude;
+  var longitude;
 
   @override
   void initState() {
@@ -48,17 +51,23 @@ class _HomeScreenState extends State<HomeScreen> {
           id: Uuid().v4(),
           name: "Abdullah",
           testprice: 412,
-          discount: 14,
+          discount: 0,
           diagnostic_center: "Qatar",
           testkitprice: 21,
           lastupdate: "19 August",
-          softdelete: "1",
-          organization_transport: "XYZ");
+          softdelete: "0",
+          organization_transport: "XYZ",
+          niddle_cost: null,
+          transport_cost: null);
 
-      await _dbref_testModel
-          .child("testModel")
-          .child(testData.id.toString())
-          .set(testData.toJson());
+               await _dbref_testModel
+                .child("testModel")
+                .child(testData.id.toString())
+                .set(testData.toJson());
+
+                
+
+     
     }
 
     return Scaffold(
@@ -267,3 +276,14 @@ class FormUserInfo extends StatelessWidget {
 
 
 //test , service charge , total cost
+//softdelete
+// //teststatus (1,2,3,4)
+//id__change uuid
+//phone 11 Digit
+//lastupdate //dateofcreated : time
+
+//invoice number 8 digit with random 
+//title phone numberit
+
+//id 8 digit
+

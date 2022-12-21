@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 @JsonSerializable(explicitToJson: true)
 class TestData {
   TestData({
-     this.id,
+    this.id,
     required this.name,
     required this.testprice,
     required this.discount,
@@ -12,6 +12,8 @@ class TestData {
     required this.lastupdate,
     required this.softdelete,
     required this.organization_transport,
+    required this.transport_cost,
+    required this.niddle_cost
   });
 
   final dynamic id;
@@ -23,9 +25,11 @@ class TestData {
   final dynamic lastupdate;
   final dynamic softdelete;
   final dynamic organization_transport;
+  final dynamic transport_cost;
+  final dynamic niddle_cost;
 
   Map toJson() => {
-        
+        'id': id,
         'name': name,
         'testprice': testprice,
         'discount': discount,
@@ -33,20 +37,24 @@ class TestData {
         'testkitprice': testkitprice,
         'lastupdate': lastupdate,
         'softdelete': softdelete,
-         'organization_transport': organization_transport,
+        'organization_transport': organization_transport,
+         'transport_cost': transport_cost,
+          'niddle_cost': niddle_cost,
       };
 
-      factory TestData.fromJson(Map<String, dynamic> parsedJson){
-      return TestData(
-      name: parsedJson['name'],
-      testprice : parsedJson['testprice'],
-      discount : parsedJson ['discount'], 
-      diagnostic_center : parsedJson['diagnostic_center'],
-      testkitprice : parsedJson ['testkitprice'],
-       lastupdate: parsedJson['lastupdate'],
-      softdelete : parsedJson['softdelete'],
-      organization_transport : parsedJson ['organization_transport']
-    );
+  factory TestData.fromJson(Map<String, dynamic> parsedJson) {
+    return TestData(
+        id: parsedJson['id'],
+        name: parsedJson['name'],
+        testprice: parsedJson['testprice'],
+        discount: parsedJson['discount'],
+        diagnostic_center: parsedJson['diagnostic_center'],
+        testkitprice: parsedJson['testkitprice'],
+        lastupdate: parsedJson['lastupdate'],
+        softdelete: parsedJson['softdelete'],
+        organization_transport: parsedJson['organization_transport'],
+        transport_cost: parsedJson['transport_cost'],
+        niddle_cost: parsedJson['niddle_cost']);
   }
 }
 
@@ -68,6 +76,7 @@ class TestDataRequest {
     required this.latitude,
     required this.longitude,
     required this.teststatus,
+    required this.invoice_call
   });
 
   final dynamic id;
@@ -79,21 +88,22 @@ class TestDataRequest {
   final dynamic totalprice;
   final dynamic transportfee;
   final dynamic address;
-    final dynamic referrer;
+  final dynamic referrer;
   final dynamic lastupdate;
   final dynamic dateofcreated;
   final dynamic softdelete;
   final dynamic latitude;
   final dynamic longitude;
   final dynamic teststatus;
+  final dynamic invoice_call;
 
   Map toJson() => {
-  
+        'id': id,
         'name': name,
         'gender': gender,
         'mobile': mobile,
         'age': age,
-        'testlist': testlist.toList(),
+        'testlist': testlist.map((e) => e.toJson()).toList(),
         'totalprice': totalprice,
         'transportfee': transportfee,
         'address': address,
@@ -104,5 +114,6 @@ class TestDataRequest {
         'latitude': latitude,
         'longitude': longitude,
         'teststatus': teststatus,
+        'invoice_call': invoice_call,
       };
 }

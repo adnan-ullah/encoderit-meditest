@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 // final orangeColor = Color.fromARGB(255, 255, 163, 57);
 final orangeColor = Color(0xFFFF6F00);
 final creamColor = Color(0xFFFFF8E1);
-
+final orangeColorBG = Color(0xFFFFECB3);
 final whiteColor = Color.fromARGB(255, 255, 255, 255);
-final greenColor = Color.fromARGB(255, 159, 255, 146);
+final greenColor = Color.fromARGB(255, 93, 95, 92);
 final fullWhiteColor = Colors.white;
 final lastColor = Color(0xFFFDF7EF);
 final blackFontColor = Color.fromARGB(255, 26, 1, 1);

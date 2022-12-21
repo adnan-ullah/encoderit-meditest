@@ -53,8 +53,11 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
             TestData.fromJson(json.decode(jsonEncode(newTestItem)));
 
         createRequest_controller.testData.add(testData);
+        createRequest_controller.getTotal(testData);
       });
     }
+
+  
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -93,8 +96,8 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                                     color: Color.fromARGB(255, 255, 237, 237),
                                     padding: EdgeInsets.symmetric(
                                         horizontal: DM.p10, vertical: DM.p10),
-                                    margin: EdgeInsets.symmetric(
-                                        vertical: DM.p10),
+                                    margin:
+                                        EdgeInsets.symmetric(vertical: DM.p10),
                                     height: DM.p50,
                                     child: Row(
                                       mainAxisAlignment:
@@ -127,22 +130,46 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                                         ),
                                         MaterialButton(
                                           onPressed: () {
-                                             createRequest_controller.testKey.value =
-                                          snapshot.key.toString();
+                                            createRequest_controller
+                                                    .testKey.value =
+                                                snapshot.key.toString();
 
-                                      addTestData();
+                                            addTestData();
 
-                         
-                                      Get.back();
-                                   
+                                            Get.back();
+
                                             // deleteFromStore(snapshot.key);
                                           },
                                           height: DM.p45,
                                           minWidth: DM.p70,
                                           shape: const StadiumBorder(),
-                                          color: greenColor,
+                                          color: Colors.greenAccent,
                                           child: Text(
                                             "Add",
+                                            style: TextStyle(
+                                                color: fullWhiteColor,
+                                                fontSize: DM.p10,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                        MaterialButton(
+                                          onPressed: () {
+                                            createRequest_controller
+                                                    .testKey.value =
+                                                snapshot.key.toString();
+
+                                            createRequest_controller.removeTestData();
+
+                                            Get.back();
+
+                                            // deleteFromStore(snapshot.key);
+                                          },
+                                          height: DM.p45,
+                                          minWidth: DM.p70,
+                                          shape: const StadiumBorder(),
+                                          color: orangeColor,
+                                          child: Text(
+                                            "Remove",
                                             style: TextStyle(
                                                 color: fullWhiteColor,
                                                 fontSize: DM.p10,

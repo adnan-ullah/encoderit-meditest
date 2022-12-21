@@ -14,25 +14,36 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MyScaffold(
-        color1: creamColor,
-        color2: creamColor,
+        color1: Colors.amber,
+        color2: Colors.amber,
         container: AnimatedSplashScreen(
             nextScreen: HomeScreen(),
             splashTransition: SplashTransition.scaleTransition,
-            duration: 3000,
-            splashIconSize: 100,
+            duration: 6000,
+            splashIconSize: 200,
             curve: Curves.easeInOutCirc,
             splash: Expanded(
-              child: Column(
-                children: [
-                  Text(
-                    "MediTest!",
-                    style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 40,
-                        color: Color.fromARGB(255, 26, 1, 1)),
-                  ),
-                ],
+              child: Container(
+                color: Color.fromARGB(255, 228, 94, 5),
+                padding: EdgeInsets.all(40),
+                child: Column(
+                  children: [
+                    Text(
+                      "Health Care!",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w400,
+                          fontSize: 40,
+                          color: Color.fromARGB(255, 255, 255, 255)),
+                    ),
+                    Text(
+                      "Homelab!",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w400,
+                          fontSize: 20,
+                          color: Color.fromARGB(255, 255, 255, 255)),
+                    ),
+                  ],
+                ),
               ),
             )));
   }
