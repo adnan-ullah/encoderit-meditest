@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
             resizeToAvoidBottomInset: false,
             body: MyScaffold(
 
-                container: SplashScreen(),
+                container: HomeScreen(),
                 color1: creamColor,
                 color2: creamColor),
           ),

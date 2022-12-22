@@ -11,9 +11,9 @@ class TestData {
     required this.testkitprice,
     required this.lastupdate,
     required this.softdelete,
-    required this.organization_transport,
     required this.transport_cost,
-    required this.niddle_cost
+    required this.niddle_cost,
+     required this.servicecharge
   });
 
   final dynamic id;
@@ -24,10 +24,9 @@ class TestData {
   final dynamic testkitprice;
   final dynamic lastupdate;
   final dynamic softdelete;
-  final dynamic organization_transport;
   final dynamic transport_cost;
   final dynamic niddle_cost;
-
+  final dynamic servicecharge;
   Map toJson() => {
         'id': id,
         'name': name,
@@ -37,9 +36,9 @@ class TestData {
         'testkitprice': testkitprice,
         'lastupdate': lastupdate,
         'softdelete': softdelete,
-        'organization_transport': organization_transport,
          'transport_cost': transport_cost,
           'niddle_cost': niddle_cost,
+            'servicecharge': servicecharge,
       };
 
   factory TestData.fromJson(Map<String, dynamic> parsedJson) {
@@ -52,9 +51,9 @@ class TestData {
         testkitprice: parsedJson['testkitprice'],
         lastupdate: parsedJson['lastupdate'],
         softdelete: parsedJson['softdelete'],
-        organization_transport: parsedJson['organization_transport'],
         transport_cost: parsedJson['transport_cost'],
-        niddle_cost: parsedJson['niddle_cost']);
+        niddle_cost: parsedJson['niddle_cost'],
+        servicecharge: parsedJson['servicecharge']);
   }
 }
 
@@ -67,7 +66,7 @@ class TestDataRequest {
     required this.age,
     required this.testlist,
     required this.totalprice,
-    required this.transportfee,
+    required this.servicecharge,
     required this.address,
     required this.referrer,
     required this.lastupdate,
@@ -86,7 +85,7 @@ class TestDataRequest {
   final dynamic age;
   final List<TestData> testlist;
   final dynamic totalprice;
-  final dynamic transportfee;
+  final dynamic servicecharge;
   final dynamic address;
   final dynamic referrer;
   final dynamic lastupdate;
@@ -105,7 +104,7 @@ class TestDataRequest {
         'age': age,
         'testlist': testlist.map((e) => e.toJson()).toList(),
         'totalprice': totalprice,
-        'transportfee': transportfee,
+        'servicecharge': servicecharge,
         'address': address,
         'referrer': referrer,
         'lastupdate': lastupdate,

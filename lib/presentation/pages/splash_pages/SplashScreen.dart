@@ -19,27 +19,27 @@ class SplashScreen extends StatelessWidget {
         container: AnimatedSplashScreen(
             nextScreen: HomeScreen(),
             splashTransition: SplashTransition.scaleTransition,
-            duration: 6000,
-            splashIconSize: 200,
+            duration: 4000,
+            splashIconSize: DM.p200,
             curve: Curves.easeInOutCirc,
             splash: Expanded(
               child: Container(
                 color: Color.fromARGB(255, 228, 94, 5),
-                padding: EdgeInsets.all(40),
+                padding: EdgeInsets.all(DM.p40),
                 child: Column(
                   children: [
                     Text(
                       "Health Care!",
                       style: TextStyle(
                           fontWeight: FontWeight.w400,
-                          fontSize: 40,
+                          fontSize: DM.p40,
                           color: Color.fromARGB(255, 255, 255, 255)),
                     ),
                     Text(
                       "Homelab!",
                       style: TextStyle(
                           fontWeight: FontWeight.w400,
-                          fontSize: 20,
+                          fontSize: DM.p20,
                           color: Color.fromARGB(255, 255, 255, 255)),
                     ),
                   ],

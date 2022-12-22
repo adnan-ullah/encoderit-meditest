@@ -33,7 +33,6 @@ class CreateRequest extends StatefulWidget {
 class _CreateRequestState extends State<CreateRequest> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? latitude;
-
   String? longitude;
   void getGPS() async {
     LocationPermission permission = await Geolocator.checkPermission();
@@ -78,6 +77,30 @@ class _CreateRequestState extends State<CreateRequest> {
 
   @override
   void initState() {
+    CreateRequest_controller createRequest_controller =
+        Get.put(CreateRequest_controller());
+    //populate testlist
+    late DatabaseReference _dbref_testModel;
+    _dbref_testModel = FirebaseDatabase.instance.ref("meditest/testModel/");
+
+    _dbref_testModel.onValue.listen((event) {
+      for (DataSnapshot ds in event.snapshot.children) {
+        TestData testData =
+            TestData.fromJson(json.decode(jsonEncode(ds.value)));
+        createRequest_controller.testItemList.add(testData);
+        Map<String, bool> eachSelected = {};
+
+        eachSelected[testData.id] = true;
+
+        createRequest_controller.testItemListWithSelected[testData.id] = true;
+   
+
+      //  createRequest_controller.testItemListWithSelected.add(eachSelected);
+
+        print(createRequest_controller.testItemListWithSelected[testData.id]);
+      }
+    });
+
     setState(() {
       getGPS();
     });
@@ -109,9 +132,9 @@ class _CreateRequestState extends State<CreateRequest> {
     }
 
     Future<void> addTestRequest() async {
-      int timestamp = DateTime.now().millisecondsSinceEpoch;
-      DateTime tsdate = DateTime.fromMillisecondsSinceEpoch(timestamp);
-      String currentTime = DateFormat('dd-MMM-yyy').format(tsdate);
+      int currentTime = DateTime.now().millisecondsSinceEpoch;
+      // DateTime currentTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+      // String currentTime = DateFormat('dd-MMM-yyy').format(tsdate);
 
       late DatabaseReference _dbref_testReqModel;
       _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
@@ -124,7 +147,7 @@ class _CreateRequestState extends State<CreateRequest> {
           age: double.parse(age.text),
           testlist: createReqController.testData,
           totalprice: createReqController.totalCost.value,
-          transportfee: createReqController.serviceCost.value,
+          servicecharge: createReqController.serviceCost.value,
           address: addressText.text,
           referrer: referredAddressText.text,
           lastupdate: currentTime,
@@ -133,14 +156,15 @@ class _CreateRequestState extends State<CreateRequest> {
           latitude: latitude,
           longitude: longitude,
           teststatus: 1,
-          invoice_call: phone.text +
+          invoice_call: phone.text.substring(7) +
               "-" +
               (Random().nextInt(900000) + 100000).toString());
 
       if (newRequestData != null) {
         await _dbref_testReqModel
             .child("testRequest")
-            .child(newRequestData.invoice_call.toString())
+            .child(newRequestData.mobile.toString())
+            .child(newRequestData.id)
             .set(newRequestData.toJson());
 
         Get.snackbar(
@@ -158,7 +182,7 @@ class _CreateRequestState extends State<CreateRequest> {
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
           width: MediaQuery.of(context).size.width,
           child: Text(
-            "Create a form",
+            "Requisition form",
             textAlign: TextAlign.left,
             style: TextStyle(color: creamColor, fontSize: DM.p30),
           ),
@@ -239,7 +263,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                       items: <String>[
                                         'Male',
                                         'Female',
-                                        'Others'
+                                
                                       ].map((String value) {
                                         return DropdownMenuItem<String>(
                                           value: value,
@@ -454,34 +478,37 @@ class _CreateRequestState extends State<CreateRequest> {
                             ],
                           )),
                       SizedBox(
-                        height: 7,
+                        height: DM.p7,
                       ),
 
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          MaterialButton(
-                            onPressed: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return MyDialogView(
+                          SizedBox(
+                            width: DM.p120,
+                            child: MaterialButton(
+                              onPressed: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return MyDialogView(
                                         myChild: TestItemDialogueBox(
-                                      keyTitle: "Referred Address",
-                                    ));
-                                  });
-                            },
-                            height: DM.p45,
-                            minWidth: DM.p30,
-                            shape: const StadiumBorder(),
-                            color: orangeColor,
-                            child: Text(
-                              "Add test",
-                              style: TextStyle(
-                                  color: fullWhiteColor,
-                                  fontSize: DM.p15,
-                                  fontWeight: FontWeight.bold),
+                                          keyTitle: "Referred Address",
+                                        ),
+                                      );
+                                    });
+                              },
+                              height: DM.p45,
+                              shape: const StadiumBorder(),
+                              color: orangeColor,
+                              child: Text(
+                                "Add test",
+                                style: TextStyle(
+                                    color: fullWhiteColor,
+                                    fontSize: DM.p15,
+                                    fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ),
                           SizedBox(
@@ -492,17 +519,12 @@ class _CreateRequestState extends State<CreateRequest> {
                       // #text_field
                       Container(
                         margin: EdgeInsets.symmetric(horizontal: DM.p5),
-                        height: MediaQuery.of(context).size.height * 0.36,
+                        height: DM.screenHeight * 0.36,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(DM.p10),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: orangeColorBG,
-                                  blurRadius: DM.p2,
-                                  spreadRadius: DM.p1,
-                                  offset: Offset(0, DM.p1))
-                            ]),
+                          color: whiteColor,
+                          borderRadius: BorderRadius.circular(DM.p10),
+                        ),
                         child: Obx(
                           () => ListView.builder(
                             itemCount: createReqController.testData.length,
@@ -534,7 +556,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                       ),
                                     ),
                                     Text(
-                                      "Price: ${createReqController.testData[index].testprice}",
+                                      "Price: ${(createReqController.testData[index].testprice + createReqController.testData[index].testkitprice - createReqController.testData[index].discount)}",
                                       style: TextStyle(
                                           fontWeight: FontWeight.w900,
                                           fontSize: DM.p15,
@@ -544,7 +566,9 @@ class _CreateRequestState extends State<CreateRequest> {
                                       color: orangeColor,
                                       icon: Icon(CupertinoIcons.xmark_circle),
                                       onPressed: () {
-                                        createReqController.updateData(index);
+                                        createReqController.removeTestData(
+                                            createReqController
+                                                .testData[index].id , index);
                                       },
                                     )
                                   ],
@@ -579,7 +603,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                     color: Color.fromARGB(255, 26, 1, 1)),
                               ),
                               Divider(
-                                thickness: 1,
+                                thickness: DM.p1,
                                 color: blackFontColor,
                               ),
                               Row(

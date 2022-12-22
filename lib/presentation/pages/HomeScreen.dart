@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:ffi';
+import 'dart:math';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
@@ -10,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/RequestList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListDialogueBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
@@ -47,27 +49,24 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     Future<void> addData(String data) async {
+      int currentTime = DateTime.now().millisecondsSinceEpoch;
       var testData = TestData(
           id: Uuid().v4(),
-          name: "Abdullah",
-          testprice: 412,
+          name: "Sakib al hasan",
+          testprice: 34,
           discount: 0,
-          diagnostic_center: "Qatar",
+          diagnostic_center: "Bangladesh",
           testkitprice: 21,
-          lastupdate: "19 August",
-          softdelete: "0",
-          organization_transport: "XYZ",
-          niddle_cost: null,
-          transport_cost: null);
+          lastupdate: currentTime,
+          softdelete: 0,
+          niddle_cost: 0,
+          transport_cost: 0,
+          servicecharge:10);
 
-               await _dbref_testModel
-                .child("testModel")
-                .child(testData.id.toString())
-                .set(testData.toJson());
-
-                
-
-     
+      await _dbref_testModel
+          .child("testModel")
+          .child(testData.id.toString())
+          .set(testData.toJson());
     }
 
     return Scaffold(
@@ -85,15 +84,15 @@ class _HomeScreenState extends State<HomeScreen> {
       ]),
       backgroundColor: creamColor,
       body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
+        height: DM.screenHeight,
+        width: DM.screenWidth,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: Container(
-                width: MediaQuery.of(context).size.width,
+                width: DM.screenWidth,
                 child: Column(
                   children: [
                     SizedBox(
@@ -112,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     // #text_field
                     Container(
                         margin: EdgeInsets.symmetric(horizontal: DM.p5),
-                        height: MediaQuery.of(context).size.height * 0.6,
+                        height: DM.screenHeight * 0.7,
                         width: double.infinity,
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(DM.p10),
@@ -125,13 +124,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ]),
                         child: Center(
                           child: Container(
-                            child: Text(
-                              "Empty data",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 20,
-                                  color: Color.fromARGB(255, 26, 1, 1)),
-                            ),
+            
+                            child: RequestList(),
                           ),
                         )),
                     // child: FirebaseAnimatedList(
@@ -147,17 +141,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     // #signup_button
                     SizedBox(
-                      height: 40,
+                      height: DM.p30,
                     ),
                     Container(
-                      margin: EdgeInsets.symmetric(
-                          horizontal: DM.p20, vertical: DM.p12),
+                      margin: EdgeInsets.symmetric(horizontal: DM.p20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           MaterialButton(
                             onPressed: () {
-                              addData("adnan");
+                             
                               Get.to(CreateRequest());
                             },
                             height: DM.p40,
