@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/ConfirmationList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListDialogueBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
@@ -88,14 +89,7 @@ class _CreateRequestState extends State<CreateRequest> {
         TestData testData =
             TestData.fromJson(json.decode(jsonEncode(ds.value)));
         createRequest_controller.testItemList.add(testData);
-        Map<String, bool> eachSelected = {};
-
-        eachSelected[testData.id] = true;
-
         createRequest_controller.testItemListWithSelected[testData.id] = true;
-   
-
-      //  createRequest_controller.testItemListWithSelected.add(eachSelected);
 
         print(createRequest_controller.testItemListWithSelected[testData.id]);
       }
@@ -116,6 +110,9 @@ class _CreateRequestState extends State<CreateRequest> {
   var phone = TextEditingController();
 
   //form variables:
+  var testCost = 0.0;
+  var totalCost = 0.0;
+  var serviceCost = 0.0;
 
   String? gender = "Male";
 
@@ -124,6 +121,30 @@ class _CreateRequestState extends State<CreateRequest> {
 
   @override
   Widget build(BuildContext context) {
+    void removeCalulationProcess(id) {
+      createReqController.testData.removeWhere((element) => element.id == id);
+      setState(() {
+        createReqController.testData.map((testItem) {
+          testCost = testCost +
+              testItem.testprice +
+              testItem.testkitprice -
+              testItem.discount;
+          serviceCost = max(serviceCost, testItem.servicecharge.toDouble());
+        }).toList();
+
+        totalCost = testCost + serviceCost;
+        createReqController.testItemListWithSelected[id] =
+            !createReqController.testItemListWithSelected[id]!;
+        createReqController.totalCost.value = totalCost;
+        createReqController.totalTestCost.value = testCost;
+        createReqController.serviceCost.value = serviceCost;
+
+        testCost = 0;
+        totalCost = 0;
+        serviceCost = 0;
+      });
+    }
+
     String? validateMobile(String? value) {
       if (value?.length != 11)
         return 'Mobile Number must be of 11 digits';
@@ -168,8 +189,9 @@ class _CreateRequestState extends State<CreateRequest> {
             .set(newRequestData.toJson());
 
         Get.snackbar(
-            backgroundColor: Color.fromARGB(255, 64, 131, 245),
-            colorText: whiteColor,
+            duration: Duration(milliseconds: 2000),
+            backgroundColor: whiteColor,
+            colorText: orangeColor,
             "Added",
             "Data added , successfully!");
       }
@@ -263,7 +285,6 @@ class _CreateRequestState extends State<CreateRequest> {
                                       items: <String>[
                                         'Male',
                                         'Female',
-                                
                                       ].map((String value) {
                                         return DropdownMenuItem<String>(
                                           value: value,
@@ -522,7 +543,6 @@ class _CreateRequestState extends State<CreateRequest> {
                         height: DM.screenHeight * 0.36,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: whiteColor,
                           borderRadius: BorderRadius.circular(DM.p10),
                         ),
                         child: Obx(
@@ -532,7 +552,8 @@ class _CreateRequestState extends State<CreateRequest> {
                             itemBuilder: (context, index) {
                               return Container(
                                 padding: EdgeInsets.symmetric(
-                                    horizontal: DM.p5, vertical: DM.p10),
+                                  horizontal: DM.p10,
+                                ),
                                 margin: EdgeInsets.symmetric(vertical: DM.p5),
                                 height: DM.p50,
                                 decoration: BoxDecoration(
@@ -562,15 +583,26 @@ class _CreateRequestState extends State<CreateRequest> {
                                           fontSize: DM.p15,
                                           color: Color.fromARGB(255, 26, 1, 1)),
                                     ),
-                                    IconButton(
-                                      color: orangeColor,
-                                      icon: Icon(CupertinoIcons.xmark_circle),
-                                      onPressed: () {
-                                        createReqController.removeTestData(
-                                            createReqController
-                                                .testData[index].id , index);
-                                      },
-                                    )
+                                    Container(
+                                      child: IconButton(
+                                        color: orangeColor,
+                                        icon: Icon(
+                                          CupertinoIcons.xmark_circle_fill,
+                                          size: 30,
+                                        ),
+                                        onPressed: () {
+                                          // createReqController.removeTestData(
+                                          //     createReqController
+                                          //         .testData[index].id,
+                                          //     index);
+                                          removeCalulationProcess(
+                                              createReqController
+                                                  .testData[index].id);
+                                          // createReqController
+                                          //     .calulationTestdata();
+                                        },
+                                      ),
+                                    ),
                                   ],
                                 ),
                               );
@@ -596,7 +628,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                     color: Color.fromARGB(255, 26, 1, 1)),
                               ),
                               Text(
-                                "Service Charge: ${createReqController.serviceCost.value}",
+                                "Collection Charge: ${createReqController.serviceCost.value}",
                                 style: TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontSize: DM.p10,
@@ -621,12 +653,22 @@ class _CreateRequestState extends State<CreateRequest> {
                                     onPressed: () {
                                       if (_formKey.currentState?.validate() ==
                                           true)
-                                        addTestRequest();
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return MyDialogView(
+                                                myChild: ConfirmationList(
+                                                    addTestRequest:
+                                                        addTestRequest),
+                                              );
+                                            });
                                       else {
                                         Get.snackbar(
+                                            duration:
+                                                Duration(milliseconds: 2000),
                                             icon: Icon(Icons.error),
-                                            backgroundColor: Color.fromARGB(
-                                                255, 245, 64, 64),
+                                            backgroundColor:
+                                                Color.fromARGB(255, 202, 0, 0),
                                             colorText: whiteColor,
                                             "Error!",
                                             "Please add info properly!");

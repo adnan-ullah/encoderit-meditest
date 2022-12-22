@@ -48,26 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Future<void> addData(String data) async {
-      int currentTime = DateTime.now().millisecondsSinceEpoch;
-      var testData = TestData(
-          id: Uuid().v4(),
-          name: "Sakib al hasan",
-          testprice: 34,
-          discount: 0,
-          diagnostic_center: "Bangladesh",
-          testkitprice: 21,
-          lastupdate: currentTime,
-          softdelete: 0,
-          niddle_cost: 0,
-          transport_cost: 0,
-          servicecharge:10);
-
-      await _dbref_testModel
-          .child("testModel")
-          .child(testData.id.toString())
-          .set(testData.toJson());
-    }
+    
 
     return Scaffold(
       resizeToAvoidBottomInset: false,

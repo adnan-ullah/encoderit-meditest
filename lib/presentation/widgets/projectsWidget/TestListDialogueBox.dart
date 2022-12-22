@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
@@ -24,14 +25,39 @@ class TestItemDialogueBox extends StatefulWidget {
 class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
   @override
   void initState() {
+    
     // TODO: implement initState
     super.initState();
   }
 
   CreateRequest_controller cr_controller = Get.put(CreateRequest_controller());
+    var totalCost = 0.0;
+    var testCost = 0.0;
+    var serviceCost = 0.0;
+    
+     void calculationProcess() {
+     setState(() {
+        cr_controller.testData.map((testItem) {
+        testCost = testCost +
+            testItem.testprice +
+            testItem.testkitprice -
+            testItem.discount;
+        serviceCost = max(serviceCost, testItem.servicecharge.toDouble());
+      }).toList();
+
+      totalCost = testCost + serviceCost;
+     });
+
+ cr_controller.totalCost.value = totalCost;
+  cr_controller.totalTestCost.value = testCost;
+      cr_controller.serviceCost.value = serviceCost;
+    }
 
   @override
   Widget build(BuildContext context) {
+    
+   
+
     // Future<void> addTestData() async {
     //   DatabaseReference _dbref_testModel;
     //   _dbref_testModel = FirebaseDatabase.instance.ref("meditest/testModel/");
@@ -95,7 +121,12 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                               ),
                               Text(
                                 "Price: " +
-                                    (cr_controller.testItemList[index].testprice +  cr_controller.testItemList[index].testkitprice -  cr_controller.testItemList[index].discount)
+                                    (cr_controller
+                                                .testItemList[index].testprice +
+                                            cr_controller.testItemList[index]
+                                                .testkitprice -
+                                            cr_controller
+                                                .testItemList[index].discount)
                                         .toString(),
                                 style: TextStyle(
                                     fontWeight: FontWeight.w900,
@@ -107,8 +138,10 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                                     height: DM.p45,
                                     width: DM.p80,
                                     child: cr_controller
-                                                .testItemListWithSelected[cr_controller
-                                                .testItemList[index].id ]==true
+                                                    .testItemListWithSelected[
+                                                cr_controller
+                                                    .testItemList[index].id] ==
+                                            true
                                         ? MaterialButton(
                                             onPressed: () {
                                               // cr_controller
@@ -123,14 +156,14 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                                               setState(() {
                                                 cr_controller
                                                             .testItemListWithSelected[
-                                                        
-                                                    cr_controller
-                                                        .testItemList[index]
-                                                        .id] = !cr_controller
+                                                        cr_controller
+                                                            .testItemList[index]
+                                                            .id] =
+                                                    !cr_controller
                                                             .testItemListWithSelected[
-                                                    cr_controller
-                                                        .testItemList[index]
-                                                        .id]! ;
+                                                        cr_controller
+                                                            .testItemList[index]
+                                                            .id]!;
                                               });
 
                                               // deleteFromStore(snapshot.key);
@@ -156,13 +189,14 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                                               setState(() {
                                                 cr_controller
                                                             .testItemListWithSelected[
-                                                    cr_controller
-                                                        .testItemList[index]
-                                                        .id] = !cr_controller
+                                                        cr_controller
+                                                            .testItemList[index]
+                                                            .id] =
+                                                    !cr_controller
                                                             .testItemListWithSelected[
-                                                    cr_controller
-                                                        .testItemList[index]
-                                                        .id] !;
+                                                        cr_controller
+                                                            .testItemList[index]
+                                                            .id]!;
                                               });
 
                                               // deleteFromStore(snapshot.key);
@@ -185,7 +219,7 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                   )),
                   MaterialButton(
                     onPressed: () {
-                      cr_controller.calulationTestdata();
+                      calculationProcess();
                       Get.back();
                     },
                     height: DM.p45,

@@ -37,19 +37,37 @@ class CreateRequest_controller extends GetxController {
   //   }
   // }
 
-  void removeTestData(id, index) {
-    testData.removeWhere((element) => element.id == id);
-    testItemListWithSelected[id] = !testItemListWithSelected[id]!;
-  }
+  // void removeTestData(id, index) {
+  //   totalTestCost.value = totalTestCost.value -
+  //       (testData[index].testprice +
+  //           testData[index].testkitprice -
+  //           testData[index].discount);
 
-  void calulationTestdata() {
-    testData.map((testItem) {
-      totalTestCost.value = totalTestCost.value + testItem.testprice;
 
-      serviceCost.value =
-          max(serviceCost.value, testItem.servicecharge.toDouble());
-    }).toList();
+  //   totalCost.value = totalCost.value - totalTestCost.value - serviceCost.value;
 
-    totalCost.value = totalTestCost.value + serviceCost.value;
-  }
+  
+
+  //   testData.removeWhere((element) => element.id == id);
+  //   if (testData.isEmpty) serviceCost.value = 0.0;
+  //   testItemListWithSelected[id] = !testItemListWithSelected[id]!;
+  // }
+
+  // void calulationTestdata() {
+  //   testData.map((testItem) {
+  //     if(testItemListWithSelected[testItem.id]!=true)
+  //     {
+  //         totalTestCost.value = totalTestCost.value +
+  //         testItem.testprice +
+  //         testItem.testkitprice -
+  //         testItem.discount;
+
+  //     serviceCost.value =
+  //         max(serviceCost.value, testItem.servicecharge.toDouble());
+  //     }
+      
+  //   }).toList();
+
+  //   totalCost.value = totalTestCost.value + serviceCost.value;
+  // }
 }
