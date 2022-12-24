@@ -1,9 +1,12 @@
 enum RequestStatus {
-    none, 
-   running, 
-   stopped, 
-   paused 
+  PENDING,
+  RECEIVED,
+  COLLECTED,
+  READY,
+  DELIVERED,
+  NO_ITEM;
 
+  int get index;
 }
 
 

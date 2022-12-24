@@ -7,15 +7,17 @@ import 'package:get/get.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/getController.dart';
 
-class HomeScreen extends StatefulWidget {
+class TemplateScreen extends StatefulWidget {
   static const String id = "sign_up_page";
-  const HomeScreen({Key? key}) : super(key: key);
+  var phoneNumber;
+
+  TemplateScreen({Key? key, required this.phoneNumber}) : super(key: key);
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _TemplateScreenState createState() => _TemplateScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _TemplateScreenState extends State<TemplateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,7 +100,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             TextField(
-                         
                               decoration: InputDecoration(
                                   contentPadding:
                                       EdgeInsets.symmetric(horizontal: DM.p10),
@@ -111,7 +112,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               height: DM.p10,
                             ),
                             TextField(
-                           
                               decoration: InputDecoration(
                                   contentPadding:
                                       EdgeInsets.symmetric(horizontal: DM.p10),
@@ -128,10 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       // #signup_button
                       MaterialButton(
-                        onPressed: () =>{
-                         
-                          
-                        },
+                        onPressed: () => {},
                         height: DM.p45,
                         minWidth: DM.p240,
                         shape: const StadiumBorder(),

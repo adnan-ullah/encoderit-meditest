@@ -25,19 +25,18 @@ class TestItemDialogueBox extends StatefulWidget {
 class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
   @override
   void initState() {
-    
     // TODO: implement initState
     super.initState();
   }
 
   CreateRequest_controller cr_controller = Get.put(CreateRequest_controller());
-    var totalCost = 0.0;
-    var testCost = 0.0;
-    var serviceCost = 0.0;
-    
-     void calculationProcess() {
-     setState(() {
-        cr_controller.testData.map((testItem) {
+  var totalCost = 0.0;
+  var testCost = 0.0;
+  var serviceCost = 0.0;
+
+  void calculationProcess() {
+    setState(() {
+      cr_controller.testData.map((testItem) {
         testCost = testCost +
             testItem.testprice +
             testItem.testkitprice -
@@ -46,43 +45,24 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
       }).toList();
 
       totalCost = testCost + serviceCost;
-     });
+    });
 
- cr_controller.totalCost.value = totalCost;
-  cr_controller.totalTestCost.value = testCost;
-      cr_controller.serviceCost.value = serviceCost;
-    }
+    cr_controller.totalCost.value = totalCost;
+    cr_controller.totalTestCost.value = testCost;
+    cr_controller.serviceCost.value = serviceCost;
+  }
 
   @override
   Widget build(BuildContext context) {
-    
-   
-
-    // Future<void> addTestData() async {
-    //   DatabaseReference _dbref_testModel;
-    //   _dbref_testModel = FirebaseDatabase.instance.ref("meditest/testModel/");
-
-    //   _dbref_testModel.onValue.listen((event) {
-    //     final newTestItem =
-    //         event.snapshot.child(cr_controller.testKey.value.toString()).value;
-
-    //     TestData testData =
-    //         TestData.fromJson(json.decode(jsonEncode(newTestItem)));
-
-    //     cr_controller.testData.add(testData);
-    //     cr_controller.getTotal(testData);
-    //   });
-    // }
-
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: EdgeInsets.all(DM.p8),
       child: Stack(
         children: [
           Container(
               color: creamColor,
               height: DM.screenHeight * 0.8,
               width: DM.screenWidth * 0.9,
-              padding: EdgeInsets.all(10),
+              padding: EdgeInsets.all(DM.p10),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -91,7 +71,7 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                     "Test list",
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
-                        fontSize: 25,
+                        fontSize: DM.p25,
                         color: Color.fromARGB(255, 26, 1, 1)),
                   ),
                   Card(
@@ -220,6 +200,8 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                   MaterialButton(
                     onPressed: () {
                       calculationProcess();
+
+                      // Get.to(CreateRequest());
                       Get.back();
                     },
                     height: DM.p45,
@@ -237,8 +219,8 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                 ],
               )),
           Positioned(
-              right: 10,
-              top: 10,
+              right: DM.p10,
+              top: DM.p10,
               child: IconButton(
                 icon: Icon(CupertinoIcons.xmark),
                 onPressed: () {

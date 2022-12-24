@@ -9,28 +9,94 @@ import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../responsives/dimensions.dart';
+import '../../../state_programming/Request_Enum.dart';
 
 class RequestList extends StatefulWidget {
-  RequestList({super.key});
+  RequestList({
+    super.key,
+  });
 
   @override
   State<RequestList> createState() => _RequestListState();
 }
 
 class _RequestListState extends State<RequestList> {
-  late DatabaseReference _dbref_testRequest;
+  List<TestDataRequest> testDataEach = [];
+  late DatabaseReference _dbref_testReqModel;
+  String? phoneNumber;
+
+  Map<int, String> status = {
+    1: "PENDING",
+    2: "RECIEVED",
+    3: "COLLECTED",
+    4: "READY",
+    5: "DELIVERED",
+    6: "NOITEM"
+  };
+
+  Future<void> getPhoneData() async {
+    _onLoading(true);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    phoneNumber = prefs.getString("phoneNumber")!;
+
+    _dbref_testReqModel = await FirebaseDatabase.instance
+        .ref("meditest/testRequest/${phoneNumber}/");
+
+    _dbref_testReqModel.onValue.listen((event) {
+      setState(() {
+        print("testDataEach + " + testDataEach.length.toString());
+        testDataEach.clear();
+      });
+      for (DataSnapshot ds in event.snapshot.children) {
+        TestDataRequest testData =
+            TestDataRequest.fromJson(json.decode(jsonEncode(ds.value)));
+
+        setState(() {
+          testDataEach.add(testData);
+        });
+      }
+      Get.back();
+    });
+  }
+
+  void _onLoading(isClosed) {
+    if (isClosed) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: Container(
+              height: DM.p80,
+              padding: EdgeInsets.all(DM.p16),
+              child: new Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  new CircularProgressIndicator(),
+                  SizedBox(
+                    width: DM.p10,
+                  ),
+                  new Text("Loading, please wait...", style: TextStyle( color: orangeColor),),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+  }
 
   @override
   void initState() {
+    Future.delayed(Duration.zero, () {
+      this.getPhoneData();
+    });
     // TODO: implement initState
     super.initState();
-    _dbref_testRequest = FirebaseDatabase.instance.ref("meditest/testRequest");
-  }
-
-  Future<void> deleteFromStore(id) async {
-    await _dbref_testRequest.child(id.toString()).remove();
   }
 
   CreateRequest_controller createRequest_controller =
@@ -38,162 +104,141 @@ class _RequestListState extends State<RequestList> {
 
   @override
   Widget build(BuildContext context) {
-    Future<void> addTestData() async {
-      DatabaseReference _dbref_testModel;
-      _dbref_testModel = FirebaseDatabase.instance.ref("meditest/testModel/");
-
-      _dbref_testModel.onValue.listen((event) {
-        final newTestItem = event.snapshot
-            .child(createRequest_controller.testKey.value.toString())
-            .value;
-
-        TestData testData =
-            TestData.fromJson(json.decode(jsonEncode(newTestItem)));
-
-        createRequest_controller.testData.add(testData);
-        //createRequest_controller.getTotal(testData);
-      });
-    }
-
     return Padding(
       padding: EdgeInsets.all(DM.p8),
-      child: Stack(
+      child: Column(
         children: [
+          Text(
+            "Request list",
+            style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: DM.p25,
+                color: Color.fromARGB(255, 26, 1, 1)),
+          ),
           Container(
-              color: creamColor,
-              height: DM.screenHeight * 0.8,
-              width: DM.screenWidth * 0.9,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    "Request list",
-                    style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 25,
-                        color: Color.fromARGB(255, 26, 1, 1)),
-                  ),
-                  Padding(
-                      padding: EdgeInsets.all(DM.p8),
-                      child: Container(
-                        child: Container(
-                          height: DM.screenHeight * 0.60,
-                          child: Column(
+            margin: EdgeInsets.only(top: DM.p5),
+            child: testDataEach.isEmpty == false
+                ? Container(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Invoice Call",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: DM.p14,
-                                        color: Color.fromARGB(255, 26, 1, 1)),
-                                  ),
-                                  Container(
-                                    margin: EdgeInsets.only(right: DM.p50),
-                                    child: Text(
-                                      "Status",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w900,
-                                          fontSize: DM.p14,
-                                          color: Color.fromARGB(255, 26, 1, 1)),
-                                    ),
-                                  ),
-                                  Text(
-                                    "Date",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: DM.p14,
-                                        color: Color.fromARGB(255, 26, 1, 1)),
-                                  )
-                                ],
+                              Text(
+                                "Invoice Call",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: DM.p14,
+                                    color: Color.fromARGB(255, 26, 1, 1)),
                               ),
-                              Divider(
-                                thickness: DM.p2,
-                                color: Colors.black,
-                              ),
-                              SizedBox(
-                                height: DM.screenHeight * 0.5,
-                                child: FirebaseAnimatedList(
-                                  query: _dbref_testRequest,
-                                  itemBuilder:
-                                      (context, snapshot, animation, index) {
-                                    return Container(
-                                      color: Color.fromARGB(255, 255, 237, 237),
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: DM.p5, vertical: DM.p10),
-                                      margin: EdgeInsets.symmetric(
-                                          vertical: DM.p10),
-                                      height: DM.p50,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          SizedBox(
-                                            child: Text(
-                                              snapshot
-                                                  .child("invoice_call")
-                                                  .value
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: DM.p12,
-                                                  color: Color.fromARGB(
-                                                      255, 26, 1, 1)),
-                                            ),
-                                          ),
-                                          Text(
-                                            snapshot
-                                                .child("status")
-                                                .value
-                                                .toString(),
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: DM.p12,
-                                                color: Color.fromARGB(
-                                                    255, 26, 1, 1)),
-                                          ),
-                                          Text(
-                                            snapshot
-                                                .child("dateofcreated")
-                                                .value
-                                                .toString(),
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: DM.p12,
-                                                color: Color.fromARGB(
-                                                    255, 26, 1, 1)),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
+                              Container(
+                                margin: EdgeInsets.only(right: DM.p40),
+                                child: Text(
+                                  "Status",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: DM.p14,
+                                      color: Color.fromARGB(255, 26, 1, 1)),
                                 ),
                               ),
+                              Container(
+                                margin: EdgeInsets.only(right: DM.p10),
+                                child: Text(
+                                  "Date",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: DM.p14,
+                                      color: Color.fromARGB(255, 26, 1, 1)),
+                                ),
+                              )
                             ],
                           ),
                         ),
-                      )),
-                ],
-              )),
+                        Divider(
+                          thickness: DM.p2,
+                          color: Colors.black,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            height: DM.screenHeight * 0.67,
+                            child: ListView.builder(
+                              itemCount: testDataEach.length,
+                              itemBuilder: (context, index) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: whiteColor,
+                                    borderRadius: BorderRadius.circular(DM.p10),
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: DM.p10, vertical: DM.p5),
+                                  margin: EdgeInsets.symmetric(vertical: DM.p5),
+                                  height: DM.p60,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      SizedBox(
+                                        child: Text(
+                                          "#${testDataEach[index].invoice_call.toString()}",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: DM.p12,
+                                              color: Color.fromARGB(
+                                                  255, 26, 1, 1)),
+                                        ),
+                                      ),
+                                      Text(
+                                        status[testDataEach[index].teststatus]
+                                            .toString(),
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: DM.p12,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                      Text(
+                                        (DateFormat('dd-MMM-yyy').format(
+                                                DateTime
+                                                    .fromMillisecondsSinceEpoch(
+                                                        testDataEach[index]
+                                                            .dateofcreated)))
+                                            .toString(),
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: DM.p12,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Center(
+                    child: Container(
+                      child: Text(
+                        "Request list empty",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: DM.p25,
+                            color: Color.fromARGB(255, 26, 1, 1)),
+                      ),
+                    ),
+                  ),
+          ),
         ],
       ),
     );
   }
+
+  //Return String
+
 }
-
-
-//radious
-//backgrounddd
-//testmodellist design ,lime bg
-//submit dialogue , serveice cost , tootal cost, test list
-//splash 
-//testlist duplicate 
-//price-discount  + testkitprice - discount ()
-
-//phone-> id-> populate
-//submit button fix
-// add multiple then submit (testlist)

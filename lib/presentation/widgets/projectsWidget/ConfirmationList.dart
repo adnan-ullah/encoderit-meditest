@@ -12,25 +12,19 @@ import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
 
 import '../../../responsives/dimensions.dart';
+import '../../pages/Login_info.dart';
 
 class ConfirmationList extends StatefulWidget {
   VoidCallback addTestRequest;
-  ConfirmationList({
-    super.key,
-    required this.addTestRequest
-  });
+  TestDataRequest newRequestData;
+  ConfirmationList(
+      {super.key, required this.addTestRequest, required this.newRequestData});
 
   @override
   State<ConfirmationList> createState() => _ConfirmationListState();
 }
 
 class _ConfirmationListState extends State<ConfirmationList> {
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
-
   CreateRequest_controller cr_controller = Get.put(CreateRequest_controller());
   var totalCost = 0.0;
   var testCost = 0.0;
@@ -56,22 +50,7 @@ class _ConfirmationListState extends State<ConfirmationList> {
 
   @override
   Widget build(BuildContext context) {
-    // Future<void> addTestData() async {
-    //   DatabaseReference _dbref_testModel;
-    //   _dbref_testModel = FirebaseDatabase.instance.ref("meditest/testModel/");
-
-    //   _dbref_testModel.onValue.listen((event) {
-    //     final newTestItem =
-    //         event.snapshot.child(cr_controller.testKey.value.toString()).value;
-
-    //     TestData testData =
-    //         TestData.fromJson(json.decode(jsonEncode(newTestItem)));
-
-    //     cr_controller.testData.add(testData);
-    //     cr_controller.getTotal(testData);
-    //   });
-    // }
-
+    chechkingInternet();
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Stack(
@@ -80,7 +59,7 @@ class _ConfirmationListState extends State<ConfirmationList> {
               color: creamColor,
               height: DM.screenHeight * 0.8,
               width: DM.screenWidth * 0.9,
-              padding: EdgeInsets.all(15),
+              padding: EdgeInsets.all(DM.p15),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,18 +68,18 @@ class _ConfirmationListState extends State<ConfirmationList> {
                     "Confirmation",
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
-                        fontSize: 25,
+                        fontSize: DM.p25,
                         color: Color.fromARGB(255, 26, 1, 1)),
                   ),
                   Text(
-                    "Name: Adnan Ullah",
+                    "Name: ${widget.newRequestData.name}",
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: DM.p15,
                         color: Color.fromARGB(255, 26, 1, 1)),
                   ),
                   Text(
-                    "Phone: 4585834387",
+                    "Phone: ${widget.newRequestData.mobile}",
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: DM.p15,
@@ -171,14 +150,14 @@ class _ConfirmationListState extends State<ConfirmationList> {
                     ],
                   ),
                   Text(
-                    "Test Cost: ${cr_controller.totalTestCost.value}",
+                    "Test Cost: ${widget.newRequestData.totalprice}",
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: DM.p15,
                         color: Color.fromARGB(255, 26, 1, 1)),
                   ),
                   Text(
-                    "Collection Charge: ${cr_controller.serviceCost.value}",
+                    "Collection Charge: ${widget.newRequestData.servicecharge}",
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: DM.p15,
@@ -190,7 +169,7 @@ class _ConfirmationListState extends State<ConfirmationList> {
                     endIndent: 100,
                   ),
                   Text(
-                    "Total Cost: ${cr_controller.totalCost.value}",
+                    "Total Cost: ${widget.newRequestData.totalprice}",
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: DM.p18,
@@ -217,16 +196,18 @@ class _ConfirmationListState extends State<ConfirmationList> {
                         ),
                       ),
                       MaterialButton(
-                        onPressed: () {
+                        onPressed: () async {
+                          if (await chechkingInternet()) {
                           widget.addTestRequest();
                           Get.back();
+                          }
                         },
                         height: DM.p45,
                         minWidth: DM.p120,
                         shape: const StadiumBorder(),
                         color: orangeColor,
                         child: Text(
-                          "Submit",
+                          "Confirm",
                           style: TextStyle(
                               color: fullWhiteColor,
                               fontSize: DM.p15,

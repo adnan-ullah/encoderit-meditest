@@ -19,6 +19,8 @@ class CreateRequest_controller extends GetxController {
   RxDouble totalCost = 0.0.obs;
   RxDouble serviceCost = 0.0.obs;
 
+  RxString emptyString = "No item selected, please add test".obs;
+
   //method
 
   // void getTotal(testData) {
@@ -43,10 +45,7 @@ class CreateRequest_controller extends GetxController {
   //           testData[index].testkitprice -
   //           testData[index].discount);
 
-
   //   totalCost.value = totalCost.value - totalTestCost.value - serviceCost.value;
-
-  
 
   //   testData.removeWhere((element) => element.id == id);
   //   if (testData.isEmpty) serviceCost.value = 0.0;
@@ -65,7 +64,7 @@ class CreateRequest_controller extends GetxController {
   //     serviceCost.value =
   //         max(serviceCost.value, testItem.servicecharge.toDouble());
   //     }
-      
+
   //   }).toList();
 
   //   totalCost.value = totalTestCost.value + serviceCost.value;

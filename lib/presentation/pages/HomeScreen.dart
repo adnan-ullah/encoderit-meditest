@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:ffi';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:firebase_database/firebase_database.dart';
@@ -10,21 +11,26 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
+import 'package:healthcare_homelab/presentation/pages/Create_Prescription.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/RequestList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListDialogueBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../../constants/colors.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/Create_Request_Controller.dart';
 import '../../state_programming/getController.dart';
+import '../widgets/minorWidgets/frostedContainer.dart';
+import 'Login_info.dart';
 
 class HomeScreen extends StatefulWidget {
   // static const String id = "sign_up_page";
 
-  const HomeScreen({Key? key}) : super(key: key);
+  HomeScreen({Key? key}) : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -34,27 +40,18 @@ class _HomeScreenState extends State<HomeScreen> {
   CreateRequest_controller createReqController =
       Get.put(CreateRequest_controller());
 
-  late DatabaseReference _dbref_testModel, _dbref_testReqModel;
-  var latitude;
-  var longitude;
-
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _dbref_testModel = FirebaseDatabase.instance.ref("meditest/");
-    _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/testRequest");
   }
 
   @override
   Widget build(BuildContext context) {
-    
-
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
         Container(
-          padding: EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p2),
+          padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
           width: MediaQuery.of(context).size.width,
           child: Text(
             "HomePage",
@@ -67,95 +64,79 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Container(
         height: DM.screenHeight,
         width: DM.screenWidth,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Container(
-                width: DM.screenWidth,
-                child: Column(
+        child: Container(
+          width: DM.screenWidth,
+          child: Column(
+            children: [
+              // #text_field
+              Container(
+                  margin: EdgeInsets.symmetric(horizontal: DM.p15),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(DM.p10),
+                  ),
+                  child: RequestList()),
+
+              Container(
+                margin:
+                    EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    SizedBox(
-                      height: DM.p15,
-                    ),
-
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
+                    Expanded(
+                      child: SizedBox(
+                        child: MaterialButton(
+                          onPressed: () async {
+                            if (await chechkingInternet())
+                              Get.to(Prescription());
+                          },
                           height: DM.p50,
-                        )
-                      ],
-                    ),
-                    // #text_field
-                    Container(
-                        margin: EdgeInsets.symmetric(horizontal: DM.p5),
-                        height: DM.screenHeight * 0.7,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(DM.p10),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Color.fromARGB(218, 224, 224, 224),
-                                  blurRadius: DM.p10,
-                                  spreadRadius: DM.p1,
-                                  offset: Offset(0, DM.p5))
-                            ]),
-                        child: Center(
-                          child: Container(
-            
-                            child: RequestList(),
+                          shape: const StadiumBorder(),
+                          color: orangeColor,
+                          child: Text(
+                            "Prescription \nRequest",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: fullWhiteColor,
+                                fontSize: DM.p15,
+                                fontWeight: FontWeight.bold),
                           ),
-                        )),
-                    // child: FirebaseAnimatedList(
-                    //   query: _dbref_testModel,
-                    //   itemBuilder: ((context, snapshot, animation, index) {
-                    //     return Center(
-                    //       child: Container(
-                    //         child: Text("No data yet"),
-                    //       ),
-                    //     );
-                    //   }),
-                    // )),
-
-                    // #signup_button
-                    SizedBox(
-                      height: DM.p30,
-                    ),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: DM.p20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          MaterialButton(
-                            onPressed: () {
-                             
-                              Get.to(CreateRequest());
-                            },
-                            height: DM.p40,
-                            minWidth: DM.p120,
-                            shape: const StadiumBorder(),
-                            color: orangeColor,
-                            child: Text(
-                              "Create Request",
-                              style: TextStyle(
-                                  color: fullWhiteColor,
-                                  fontSize: DM.p15,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    )
-
-                    // #buttons(facebook & github)
+                    ),
+                    SizedBox(
+                      width: DM.p10,
+                    ),
+                    Expanded(
+                      child: SizedBox(
+                        child: MaterialButton(
+                          onPressed: () async {
+                            if (await chechkingInternet()) {
+                              createReqController.testData.clear();
+                              Get.to(CreateRequest());
+                            }
+                          },
+                          height: DM.p50,
+                          shape: const StadiumBorder(),
+                          color: orangeColor,
+                          child: Text(
+                            "Request \nForm",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: fullWhiteColor,
+                                fontSize: DM.p15,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ),
-          ],
+              )
+
+              // #buttons(facebook & github)
+            ],
+          ),
         ),
       ),
     );
@@ -233,21 +214,18 @@ class FormUserInfo extends StatelessWidget {
 
 //top : flat
 
-
 //: edit text
-//gender 
+//gender
 //:add test button brdr rdius
 // cross sign in list
 //golden rose light..
-//address 
+//address
 //add test popup
 //write your name
 //test , transport, total cost
 //light green arektu ligh
 //outline_border listiitem and info
 //freshers...bdjobs
-
-
 
 //test , service charge , total cost
 //softdelete
@@ -256,8 +234,11 @@ class FormUserInfo extends StatelessWidget {
 //phone 11 Digit
 //lastupdate //dateofcreated : time
 
-//invoice number 8 digit with random 
+//invoice number 8 digit with random
 //title phone numberit
 
 //id 8 digit
 
+
+/// Get from gallery
+  

@@ -1,0 +1,690 @@
+import 'dart:convert';
+import 'dart:ffi';
+import 'dart:io';
+import 'dart:math';
+
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
+import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
+import 'package:healthcare_homelab/db/databse_model.dart';
+import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
+import 'package:healthcare_homelab/presentation/pages/Template.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
+import '../../constants/colors.dart';
+import '../../responsives/dimensions.dart';
+import '../../state_programming/Create_Request_Controller.dart';
+import '../../state_programming/getController.dart';
+import 'Login_info.dart';
+
+class Prescription extends StatefulWidget {
+  const Prescription({Key? key}) : super(key: key);
+
+  @override
+  _PrescriptionState createState() => _PrescriptionState();
+}
+
+class _PrescriptionState extends State<Prescription> {
+  CreateRequest_controller createReqController =
+      Get.put(CreateRequest_controller());
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  var phone = TextEditingController();
+  File? imageFile1, imageFile2;
+
+  var status;
+
+  Future<void> getPhoneNumber() async {
+    final SharedPreferences pref = await SharedPreferences.getInstance();
+    phone.text = pref.getString("phoneNumber").toString();
+  }
+
+
+  UploadTask? uploadTask1, uploadTask2;
+
+  Future<void> addImages(urlDownload1, urlDownload2) async {
+    int currentTime = DateTime.now().millisecondsSinceEpoch;
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    TestDataRequest newRequestData = TestDataRequest(
+        id: ((Random().nextInt(900000) + 100000).toString()),
+        name: "",
+        gender: "",
+        mobile: phone.text,
+        age: "",
+        testlist: [],
+        totalprice: "",
+        servicecharge: "",
+        address: "",
+        referrer: "",
+        lastupdate: currentTime,
+        dateofcreated: currentTime,
+        softdelete: 0,
+        latitude: position.latitude,
+        longitude: position.longitude,
+        teststatus: 1,
+        invoice_call: phone.text.substring(7) +
+            "-" +
+            (Random().nextInt(900000) + 100000).toString(),
+        type: 2,
+        image_one: urlDownload1,
+        image_two: urlDownload2)!;
+
+    late DatabaseReference _dbref_testReqModel;
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
+
+    if (newRequestData != null) {
+      await _dbref_testReqModel
+          .child("testRequest")
+          .child(newRequestData.mobile.toString())
+          .child(newRequestData.id)
+          .set(newRequestData.toJson());
+
+      //  _onLoading(true);
+      Get.snackbar(
+          margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
+          duration: Duration(milliseconds: 2000),
+          backgroundColor: limeBGColor,
+          colorText: whiteColor,
+          "Added",
+          "Data added , successfully!");
+    } else {
+      //_onLoading(true);
+      Get.snackbar(
+          margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
+          duration: Duration(milliseconds: 2000),
+          backgroundColor: redColor,
+          colorText: whiteColor,
+          "Request already exist",
+          "Failed to added!");
+    }
+  }
+
+  void _onLoading(isClosed) {
+    if (isClosed) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: Container(
+              height: DM.p80,
+              padding: EdgeInsets.all(DM.p16),
+              child: new Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  new CircularProgressIndicator(),
+                  SizedBox(
+                    width: DM.p10,
+                  ),
+                  new Text("Submitting, please wait..."),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    if (!isClosed) Navigator.pop(context);
+    //pop dialog
+  }
+
+  Future<void> uploadImage() async {
+    _onLoading(true);
+
+    final SharedPreferences pref = await SharedPreferences.getInstance();
+
+    final path1 = "files/${phone.text}/${imageFile1}";
+    final path2 = "files/${phone.text}/${imageFile2}";
+
+    final ref1 = FirebaseStorage.instance.ref().child(path1);
+    final ref2 = FirebaseStorage.instance.ref().child(path2);
+
+    var urlDownload1;
+    var urlDownload2;
+
+
+
+    if (imageFile1 != null) {
+      
+      uploadTask1 = ref1.putFile(imageFile1!);
+      final snapshot1 = await uploadTask1!.whenComplete(() {});
+      urlDownload1 = await snapshot1.ref.getDownloadURL();
+    }
+
+    if (imageFile2 != null) {
+     
+      uploadTask2 = ref2.putFile(imageFile2!);
+      final snapshot2 = await uploadTask2!.whenComplete(() {});
+      urlDownload2 = await snapshot2.ref.getDownloadURL();
+    }
+
+    _onLoading(false);
+    addImages(urlDownload1, urlDownload2);
+
+    Get.back();
+
+    // pref.setString("image1_url", urlDownload1);
+    // pref.setString("image2_url", urlDownload2);
+  }
+
+  Future<void> getLocation_Camera() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    } else {
+      if (permission == LocationPermission.deniedForever) {
+        permission = await Geolocator.requestPermission();
+      } else {
+        bool servicestatus = await Geolocator.isLocationServiceEnabled();
+
+        if (!servicestatus) {
+          servicestatus = await Geolocator.openLocationSettings();
+        } else {
+          if (!servicestatus) {
+            servicestatus = await Geolocator.openLocationSettings();
+          } else {
+            status = await Permission.camera.status;
+            print(status);
+
+            if (await Permission.camera.request().isGranted) {
+              status = await Permission.camera.status;
+            } else {
+              status = Permission.camera.request().isGranted;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    print("Adnan");
+    getLocation_Camera();
+    getPhoneNumber();
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    getLocation_Camera();
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(backgroundColor: orangeColor, actions: [
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
+          width: MediaQuery.of(context).size.width,
+          child: Text(
+            "Prescription Form",
+            textAlign: TextAlign.left,
+            style: TextStyle(color: creamColor, fontSize: DM.p30),
+          ),
+        ),
+      ]),
+      backgroundColor: creamColor,
+      body: Form(
+        key: _formKey,
+        child: Container(
+          height: DM.screenHeight,
+          width: DM.screenWidth,
+          child: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  width: DM.screenWidth,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Center(
+                        child: Container(
+                          margin: EdgeInsets.all(DM.p20),
+                          child: Column(
+                            children: [
+                              Text(
+                                "Enter your phone number & prescription photo",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: DM.p40,
+                                    color: orangeColor),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      Padding(
+                        padding: EdgeInsets.all(DM.p40),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: DM.p70,
+                              child: Text(
+                                "Phone",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: DM.p14,
+                                    color: blackFontColor),
+                              ),
+                            ),
+                            SizedBox(
+                              width: DM.p5,
+                            ),
+                            Text(":"),
+                            SizedBox(
+                              width: DM.p10,
+                            ),
+                            Flexible(
+                              child: Container(
+                                height: DM.p50,
+                                child: TextFormField(
+                                  keyboardType: TextInputType.phone,
+                                  controller: phone,
+                                  validator: validateMobile,
+                                  onChanged: ((value) {
+                                    _formKey.currentState?.validate();
+                                  }),
+                                  decoration: InputDecoration(
+                                      errorStyle: TextStyle(fontSize: DM.p9),
+
+                                      // focusedErrorBorder:
+                                      //     OutlineInputBorder(
+                                      //         borderSide: BorderSide(
+                                      //             width: DM.p1,
+                                      //             color:
+                                      //                 orangeColor)),
+                                      focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color: orangeColor)),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            width: DM.p1,
+                                            color: orangeColor), //<-- SEE HERE
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      border: InputBorder.none,
+                                      hintText: "Ex: 01888888888",
+                                      hintStyle: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: DM.p14,
+                                      )),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            imageFile1 == null
+                                ? Container(
+                                    height: DM.p180,
+                                    width: DM.p150,
+                                    margin: EdgeInsets.symmetric(
+                                        horizontal: DM.p15),
+                                    child: MaterialButton(
+                                      onPressed: () async {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return Center(
+                                                child: Container(
+                                                  color: whiteColor,
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Container(
+                                                        margin: EdgeInsets.all(
+                                                            DM.p16),
+                                                          height: DM.p130,
+                                                        width: DM.p120,
+                                                        child: ElevatedButton(
+                                                            style: ElevatedButton
+                                                                .styleFrom(
+                                                                    backgroundColor:
+                                                                        orangeColor,
+                                                                    elevation:
+                                                                        0),
+                                                            onPressed:
+                                                                () async {
+                                                              PickedFile?
+                                                                  pickedFile =
+                                                                  await ImagePicker()
+                                                                      .getImage(
+                                                                source:
+                                                                    ImageSource
+                                                                        .gallery,
+                                                                 maxWidth: 800,
+                                                                maxHeight: 1200,
+                                                              );
+                                                              setState(() {
+                                                                if(pickedFile!=null)
+                                                                imageFile1 = File(
+                                                                    pickedFile!
+                                                                        .path);
+                                                              });
+
+                                                              Navigator.pop(
+                                                                  context);
+                                                            },
+                                                            child: Text(
+                                                              "Gallery",
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      DM.p18),
+                                                            )),
+                                                      ),
+                                                      Container(
+                                                        margin: EdgeInsets.all(
+                                                            DM.p16),
+                                                           height: DM.p130,
+                                                        width: DM.p120,
+                                                        child: ElevatedButton(
+                                                            style: ElevatedButton
+                                                                .styleFrom(
+                                                                    backgroundColor:
+                                                                        orangeColor,
+                                                                    elevation:
+                                                                        0),
+                                                            onPressed:
+                                                                () async {
+                                                              PickedFile?
+                                                                  pickedFile =
+                                                                  await ImagePicker()
+                                                                      .getImage(
+                                                                source:
+                                                                    ImageSource
+                                                                        .camera,
+                                                                maxWidth: 800,
+                                                                maxHeight: 1200,
+                                                                
+                                                              );
+                                                              setState(() {
+                                                                if(pickedFile!=null)
+                                                                imageFile1 = File(
+                                                                    pickedFile!
+                                                                        .path);
+                                                              });
+                                                              Navigator.pop(
+                                                                  context);
+                                                            },
+                                                            child: Text(
+                                                                "Camera",
+                                                                style: TextStyle(
+                                                                    fontSize: DM
+                                                                        .p18))),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            });
+                                      },
+                                      height: DM.p50,
+                                      color: orangeColor,
+                                      child: Text(
+                                        "Upload \nimage 1",
+                                        textAlign: TextAlign.start,
+                                        style: TextStyle(
+                                            color: fullWhiteColor,
+                                            fontSize: DM.p25,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  )
+                                : Column(
+                                    children: [
+                                      Container(
+                                        height: 200,
+                                        width: 185,
+                                        child: Image.file(
+                                          imageFile1 as File,
+                                          fit: BoxFit.fitHeight,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        color: orangeColor,
+                                        icon: Icon(
+                                          CupertinoIcons.xmark_circle_fill,
+                                          size: DM.p30,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            imageFile1 = null;
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                            Container(
+                              height: 40.0,
+                            ),
+                            imageFile2 == null
+                                ? Container(
+                                    height: DM.p180,
+                                    width: DM.p150,
+                                    margin: EdgeInsets.symmetric(
+                                        horizontal: DM.p15),
+                                    child: MaterialButton(
+                                      onPressed: () async {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return Center(
+                                                child: Container(
+                                                  color: whiteColor,
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Container(
+                                                        margin: EdgeInsets.all(
+                                                            DM.p16),
+                                                        height: DM.p130,
+                                                        width: DM.p120,
+                                                        child: ElevatedButton(
+                                                            style: ElevatedButton
+                                                                .styleFrom(
+                                                                    backgroundColor:
+                                                                        orangeColor,
+                                                                    elevation:
+                                                                        0),
+                                                            onPressed:
+                                                                () async {
+                                                              PickedFile?
+                                                                  pickedFile =
+                                                                  await ImagePicker()
+                                                                      .getImage(
+                                                                source:
+                                                                    ImageSource
+                                                                        .gallery,
+                                                                maxWidth: 800,
+                                                                maxHeight: 1200,
+                                                              
+                                                              );
+                                                              setState(() {
+                                                                if(pickedFile!=null)
+                                                                imageFile2 = File(
+                                                                    pickedFile!
+                                                                        .path);
+                                                              });
+                                                              Navigator.pop(
+                                                                  context);
+                                                            },
+                                                            child: Text(
+                                                              "Gallery",
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      DM.p18),
+                                                            )),
+                                                      ),
+                                                      Container(
+                                                        margin: EdgeInsets.all(
+                                                            DM.p16),
+                                                        height: DM.p130,
+                                                        width: DM.p120,
+                                                        child: ElevatedButton(
+                                                            style: ElevatedButton
+                                                                .styleFrom(
+                                                                    backgroundColor:
+                                                                        orangeColor,
+                                                                    elevation:
+                                                                        0),
+                                                            onPressed:
+                                                                () async {
+                                                              PickedFile?
+                                                                  pickedFile =
+                                                                  await ImagePicker()
+                                                                      .getImage(
+                                                                source:
+                                                                    ImageSource
+                                                                        .camera,
+                                                                maxWidth: 800,
+                                                                maxHeight: 1200,
+                                                               
+                                                              );
+                                                              setState(() {
+                                                                  if(pickedFile!=null)
+                                                                imageFile2 = File(
+                                                                    pickedFile!
+                                                                        .path);
+                                                              });
+                                                              Navigator.pop(
+                                                                  context);
+                                                            },
+                                                            child: Text(
+                                                                "Camera",
+                                                                style: TextStyle(
+                                                                    fontSize: DM
+                                                                        .p18))),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            });
+                                      },
+                                      height: DM.p50,
+                                      color: orangeColor,
+                                      child: Text(
+                                        "Upload \nimage 2",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            color: fullWhiteColor,
+                                            fontSize: DM.p25,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  )
+                                : Column(
+                                    children: [
+                                      Container(
+                                        height: 200,
+                                        width: 185,
+                                        child: Image.file(
+                                          imageFile2!,
+                                          fit: BoxFit.fitHeight,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        color: orangeColor,
+                                        icon: Icon(
+                                          CupertinoIcons.xmark_circle_fill,
+                                          size: DM.p30,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            imageFile2 = null;
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        margin: EdgeInsets.symmetric(
+                            horizontal: DM.p20, vertical: DM.p15),
+                        child: Center(
+                          child: SizedBox(
+                            width: DM.p130,
+                            child: MaterialButton(
+                              onPressed: () async {
+                                if (await chechkingInternet()) {
+                                if (imageFile1 != null || imageFile2 != null) {
+                                  
+                                  uploadImage();
+                                }
+                                }
+                              },
+                              height: DM.p50,
+                              shape: const StadiumBorder(),
+                              color: orangeColor,
+                              child: Text(
+                                "Submit",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: fullWhiteColor,
+                                    fontSize: DM.p15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+
+                      // #buttons(facebook & github)
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> savePhone(phoneNumber) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('phoneNumber', phoneNumber);
+  }
+}
+
+String? validateMobile(String? value) {
+  if (value?.length != 11 && value?.length != 12)
+    return 'Mobile Number must be of 11 to 12 digits';
+  else
+    return null;
+}
+
+String? validateString(String? value) {
+  if (value?.length == 0)
+    return 'Please fill this form';
+  else
+    return null;
+}

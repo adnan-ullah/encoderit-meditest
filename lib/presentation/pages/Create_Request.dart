@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:math';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListD
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../constants/colors.dart';
@@ -21,6 +23,7 @@ import '../../db/databse_model.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/Create_Request_Controller.dart';
 import '../../state_programming/getController.dart';
+import 'Login_info.dart';
 
 class CreateRequest extends StatefulWidget {
   // static const String id = "sign_up_page";
@@ -78,16 +81,19 @@ class _CreateRequestState extends State<CreateRequest> {
 
   @override
   void initState() {
+    getSharedData();
     CreateRequest_controller createRequest_controller =
         Get.put(CreateRequest_controller());
     //populate testlist
     late DatabaseReference _dbref_testModel;
     _dbref_testModel = FirebaseDatabase.instance.ref("meditest/testModel/");
-
+    createRequest_controller.testItemList.clear();
+    createRequest_controller.testItemListWithSelected.clear();
     _dbref_testModel.onValue.listen((event) {
       for (DataSnapshot ds in event.snapshot.children) {
         TestData testData =
             TestData.fromJson(json.decode(jsonEncode(ds.value)));
+
         createRequest_controller.testItemList.add(testData);
         createRequest_controller.testItemListWithSelected[testData.id] = true;
 
@@ -113,14 +119,21 @@ class _CreateRequestState extends State<CreateRequest> {
   var testCost = 0.0;
   var totalCost = 0.0;
   var serviceCost = 0.0;
+  var newRequestData;
 
   String? gender = "Male";
 
   CreateRequest_controller createReqController =
       Get.put(CreateRequest_controller());
 
+  Future<void> getSharedData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    phone.text = prefs.getString("phoneNumber").toString();
+  }
+
   @override
   Widget build(BuildContext context) {
+    chechkingInternet();
     void removeCalulationProcess(id) {
       createReqController.testData.removeWhere((element) => element.id == id);
       setState(() {
@@ -145,14 +158,36 @@ class _CreateRequestState extends State<CreateRequest> {
       });
     }
 
-    String? validateMobile(String? value) {
-      if (value?.length != 11)
-        return 'Mobile Number must be of 11 digits';
-      else
-        return null;
+    void initialTestRequest() {
+      int currentTime = DateTime.now().millisecondsSinceEpoch;
+      setState(() {
+        newRequestData = TestDataRequest(
+            id: ((Random().nextInt(900000) + 100000).toString()),
+            name: name.text!,
+            gender: gender,
+            mobile: phone.text,
+            age: double.parse(age.text),
+            testlist: createReqController.testData,
+            totalprice: createReqController.totalCost.value,
+            servicecharge: createReqController.serviceCost.value,
+            address: addressText.text,
+            referrer: referredAddressText.text,
+            lastupdate: currentTime,
+            dateofcreated: currentTime,
+            softdelete: 0,
+            latitude: latitude,
+            longitude: longitude,
+            teststatus: 1,
+            invoice_call: phone.text.substring(7) +
+                "-" +
+                (Random().nextInt(900000) + 100000).toString(),
+            type: 1,
+            image_one: null,
+            image_two: null)!;
+      });
     }
 
-    Future<void> addTestRequest() async {
+    Future<void> UpdateTestRequest() async {
       int currentTime = DateTime.now().millisecondsSinceEpoch;
       // DateTime currentTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
       // String currentTime = DateFormat('dd-MMM-yyy').format(tsdate);
@@ -160,7 +195,7 @@ class _CreateRequestState extends State<CreateRequest> {
       late DatabaseReference _dbref_testReqModel;
       _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
 
-      var newRequestData = TestDataRequest(
+      newRequestData = TestDataRequest(
           id: ((Random().nextInt(900000) + 100000).toString()),
           name: name.text,
           gender: gender,
@@ -179,8 +214,70 @@ class _CreateRequestState extends State<CreateRequest> {
           teststatus: 1,
           invoice_call: phone.text.substring(7) +
               "-" +
-              (Random().nextInt(900000) + 100000).toString());
+              (Random().nextInt(900000) + 100000).toString(),
+          type: 1,
+          image_one: null,
+          image_two: null);
 
+      if (newRequestData != null) {
+        await _dbref_testReqModel
+            .child("testRequest")
+            .update({newRequestData.mobile.toString(): "125412"});
+
+        Get.snackbar(
+            margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
+            duration: Duration(milliseconds: 2000),
+            backgroundColor: Colors.yellow,
+            colorText: whiteColor,
+            "Update",
+            "Data Update  , successfully!");
+      } else {
+        Get.snackbar(
+            duration: Duration(milliseconds: 2000),
+              margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
+            backgroundColor: redColor,
+            colorText: whiteColor,
+            "Request already exist",
+            "Failed to added!");
+      }
+    }
+
+    Future<void> addTestRequest() async {
+      int currentTime = DateTime.now().millisecondsSinceEpoch;
+      // DateTime currentTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+      // String currentTime = DateFormat('dd-MMM-yyy').format(tsdate);
+
+      late DatabaseReference _dbref_testReqModel;
+      _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
+
+      newRequestData = TestDataRequest(
+          id: ((Random().nextInt(900000) + 100000).toString()),
+          name: name.text,
+          gender: gender,
+          mobile: phone.text,
+          age: double.parse(age.text),
+          testlist: createReqController.testData,
+          totalprice: createReqController.totalCost.value,
+          servicecharge: createReqController.serviceCost.value,
+          address: addressText.text,
+          referrer: referredAddressText.text,
+          lastupdate: currentTime,
+          dateofcreated: currentTime,
+          softdelete: 0,
+          latitude: latitude,
+          longitude: longitude,
+          teststatus: 1,
+          invoice_call: phone.text.substring(7) +
+              "-" +
+              (Random().nextInt(900000) + 100000).toString(),
+          type: 1,
+          image_one: null,
+          image_two: null);
+
+      // DatabaseEvent ds = await _dbref_testReqModel
+      //     .child("testRequest/${newRequestData.mobile.toString()}")
+      //     .once();
+      //checking duplicate child && add data
       if (newRequestData != null) {
         await _dbref_testReqModel
             .child("testRequest")
@@ -189,11 +286,20 @@ class _CreateRequestState extends State<CreateRequest> {
             .set(newRequestData.toJson());
 
         Get.snackbar(
+            margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
             duration: Duration(milliseconds: 2000),
-            backgroundColor: whiteColor,
-            colorText: orangeColor,
+            backgroundColor: limeBGColor,
+            colorText: whiteColor,
             "Added",
             "Data added , successfully!");
+      } else {
+        Get.snackbar(
+            margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
+            duration: Duration(milliseconds: 2000),
+            backgroundColor: redColor,
+            colorText: whiteColor,
+            "Request already exist",
+            "Failed to added!");
       }
     }
 
@@ -226,10 +332,10 @@ class _CreateRequestState extends State<CreateRequest> {
                   child: Column(
                     children: [
                       SizedBox(
-                        height: DM.p2,
+                        height: DM.p4,
                       ),
                       Container(
-                          padding: EdgeInsets.all(DM.p14),
+                          padding: EdgeInsets.all(DM.p5),
                           margin: EdgeInsets.symmetric(horizontal: DM.p15),
                           decoration: BoxDecoration(
                               color: whiteColor,
@@ -245,6 +351,7 @@ class _CreateRequestState extends State<CreateRequest> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               FormUserInfo(
+                                formKey: _formKey,
                                 textInputType: TextInputType.name,
                                 controller: name,
                                 title: "Name",
@@ -252,6 +359,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                 activate: false,
                               ),
                               FormUserInfo(
+                                formKey: _formKey,
                                 textInputType: TextInputType.number,
                                 controller: age,
                                 title: "Age",
@@ -325,8 +433,8 @@ class _CreateRequestState extends State<CreateRequest> {
                                     ),
                                     Flexible(
                                       child: Container(
-                                        height: DM.p35,
-                                        child: TextField(
+                                        height: DM.p42,
+                                        child: TextFormField(
                                           controller: addressText,
                                           onTap: (() {
                                             showDialog(
@@ -340,6 +448,14 @@ class _CreateRequestState extends State<CreateRequest> {
                                                 });
                                           }),
                                           decoration: InputDecoration(
+                                              errorStyle:
+                                                  TextStyle(fontSize: DM.p9),
+                                              // focusedErrorBorder:
+                                              //     OutlineInputBorder(
+                                              //         borderSide: BorderSide(
+                                              //             width: DM.p1,
+                                              //             color:
+                                              //                 orangeColor)),
                                               focusedBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                       width: DM.p1,
@@ -392,8 +508,8 @@ class _CreateRequestState extends State<CreateRequest> {
                                     ),
                                     Flexible(
                                       child: Container(
-                                        height: DM.p35,
-                                        child: TextField(
+                                        height: DM.p42,
+                                        child: TextFormField(
                                           controller: referredAddressText,
                                           onTap: (() {
                                             showDialog(
@@ -408,6 +524,8 @@ class _CreateRequestState extends State<CreateRequest> {
                                                 });
                                           }),
                                           decoration: InputDecoration(
+                                              errorStyle:
+                                                  TextStyle(fontSize: DM.p9),
                                               focusedBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                       width: DM.p1,
@@ -460,15 +578,24 @@ class _CreateRequestState extends State<CreateRequest> {
                                     ),
                                     Flexible(
                                       child: Container(
-                                        height: DM.p50,
+                                        height: DM.p42,
                                         child: TextFormField(
-                                          validator: validateMobile,
+                                          autofocus: false,
                                           keyboardType: TextInputType.phone,
                                           controller: phone,
+                                          validator: validateMobile,
                                           onChanged: ((value) {
                                             _formKey.currentState?.validate();
                                           }),
                                           decoration: InputDecoration(
+                                              errorStyle:
+                                                  TextStyle(fontSize: DM.p9),
+                                              // focusedErrorBorder:
+                                              //     OutlineInputBorder(
+                                              //         borderSide: BorderSide(
+                                              //             width: DM.p1,
+                                              //             color:
+                                              //                 orangeColor)),
                                               focusedBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                       width: DM.p1,
@@ -485,7 +612,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                                   EdgeInsets.symmetric(
                                                       horizontal: DM.p10),
                                               border: InputBorder.none,
-                                              hintText: "Ex: 888888888888",
+                                              hintText: "Ex: 01888888888",
                                               hintStyle: TextStyle(
                                                 color: Colors.grey,
                                                 fontSize: DM.p14,
@@ -498,9 +625,6 @@ class _CreateRequestState extends State<CreateRequest> {
                               ),
                             ],
                           )),
-                      SizedBox(
-                        height: DM.p7,
-                      ),
 
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -509,18 +633,20 @@ class _CreateRequestState extends State<CreateRequest> {
                           SizedBox(
                             width: DM.p120,
                             child: MaterialButton(
-                              onPressed: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return MyDialogView(
-                                        myChild: TestItemDialogueBox(
-                                          keyTitle: "Referred Address",
-                                        ),
-                                      );
-                                    });
+                              onPressed: () async {
+                                if (await chechkingInternet()) {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return MyDialogView(
+                                          myChild: TestItemDialogueBox(
+                                            keyTitle: "Referred Address",
+                                          ),
+                                        );
+                                      });
+                                }
                               },
-                              height: DM.p45,
+                              height: DM.p40,
                               shape: const StadiumBorder(),
                               color: orangeColor,
                               child: Text(
@@ -532,82 +658,106 @@ class _CreateRequestState extends State<CreateRequest> {
                               ),
                             ),
                           ),
-                          SizedBox(
-                            height: DM.p5,
-                          )
                         ],
                       ),
                       // #text_field
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: DM.p5),
-                        height: DM.screenHeight * 0.36,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(DM.p10),
-                        ),
-                        child: Obx(
-                          () => ListView.builder(
-                            itemCount: createReqController.testData.length,
-                            padding: EdgeInsets.symmetric(horizontal: DM.p15),
-                            itemBuilder: (context, index) {
-                              return Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: DM.p10,
-                                ),
-                                margin: EdgeInsets.symmetric(vertical: DM.p5),
-                                height: DM.p50,
-                                decoration: BoxDecoration(
-                                  color: whiteColor,
-                                  borderRadius: BorderRadius.circular(DM.p10),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    SizedBox(
-                                      width: DM.p170,
-                                      child: Text(
-                                        createReqController
-                                            .testData[index].name,
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: DM.p15,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
+                      Obx(
+                        () => Container(
+                          margin: EdgeInsets.symmetric(
+                              horizontal: DM.p10, vertical: DM.p3),
+                          height: DM.screenHeight * 0.35,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: whiteColor,
+                            borderRadius: BorderRadius.circular(DM.p10),
+                          ),
+                          child: createReqController.testData.length != 0
+                              ? ListView.builder(
+                                  itemCount:
+                                      createReqController.testData.length,
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: DM.p15),
+                                  itemBuilder: (context, index) {
+                                    return Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: DM.p1,
                                       ),
-                                    ),
-                                    Text(
-                                      "Price: ${(createReqController.testData[index].testprice + createReqController.testData[index].testkitprice - createReqController.testData[index].discount)}",
+                                      margin: EdgeInsets.only(top: DM.p10),
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(DM.p10),
+                                      ),
+                                      child: Container(
+                                        margin: EdgeInsets.only(left: 10),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            SizedBox(
+                                              width: DM.p170,
+                                              child: Text(
+                                                createReqController
+                                                    .testData[index].name,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w900,
+                                                    fontSize: DM.p15,
+                                                    color: Color.fromARGB(
+                                                        255, 26, 1, 1)),
+                                              ),
+                                            ),
+                                            Text(
+                                              "Price: ${(createReqController.testData[index].testprice + createReqController.testData[index].testkitprice - createReqController.testData[index].discount)}",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: DM.p15,
+                                                  color: Color.fromARGB(
+                                                      255, 26, 1, 1)),
+                                            ),
+                                            Container(
+                                              child: IconButton(
+                                                color: orangeColor,
+                                                icon: Icon(
+                                                  CupertinoIcons
+                                                      .xmark_circle_fill,
+                                                  size: DM.p30,
+                                                ),
+                                                onPressed: () {
+                                                  // createReqController.removeTestData(
+                                                  //     createReqController
+                                                  //         .testData[index].id,
+                                                  //     index);
+                                                  removeCalulationProcess(
+                                                      createReqController
+                                                          .testData[index].id);
+                                                  // createReqController
+                                                  //     .calulationTestdata();
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Container(
+                                  margin: EdgeInsets.all(DM.p10),
+                                  height: DM.screenHeight * 0.33,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: whiteColor,
+                                    borderRadius: BorderRadius.circular(DM.p10),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "${createReqController.emptyString}",
                                       style: TextStyle(
-                                          fontWeight: FontWeight.w900,
+                                          fontWeight: FontWeight.w400,
                                           fontSize: DM.p15,
                                           color: Color.fromARGB(255, 26, 1, 1)),
                                     ),
-                                    Container(
-                                      child: IconButton(
-                                        color: orangeColor,
-                                        icon: Icon(
-                                          CupertinoIcons.xmark_circle_fill,
-                                          size: 30,
-                                        ),
-                                        onPressed: () {
-                                          // createReqController.removeTestData(
-                                          //     createReqController
-                                          //         .testData[index].id,
-                                          //     index);
-                                          removeCalulationProcess(
-                                              createReqController
-                                                  .testData[index].id);
-                                          // createReqController
-                                          //     .calulationTestdata();
-                                        },
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              );
-                            },
-                          ),
                         ),
                       ),
 
@@ -616,7 +766,7 @@ class _CreateRequestState extends State<CreateRequest> {
                       Obx(
                         () => Container(
                           margin: EdgeInsets.symmetric(
-                              horizontal: DM.p20, vertical: DM.p12),
+                              horizontal: DM.p20, vertical: DM.p2),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -650,23 +800,29 @@ class _CreateRequestState extends State<CreateRequest> {
                                         color: Color.fromARGB(255, 26, 1, 1)),
                                   ),
                                   MaterialButton(
-                                    onPressed: () {
+                                    onPressed: () async {
                                       if (_formKey.currentState?.validate() ==
-                                          true)
-                                        showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              return MyDialogView(
-                                                myChild: ConfirmationList(
-                                                    addTestRequest:
-                                                        addTestRequest),
-                                              );
-                                            });
-                                      else {
+                                          true) {
+                                        if (await chechkingInternet()) {
+                                          initialTestRequest();
+                                          showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return MyDialogView(
+                                                  myChild: ConfirmationList(
+                                                      newRequestData:
+                                                          newRequestData,
+                                                      addTestRequest:
+                                                          addTestRequest),
+                                                );
+                                              });
+                                        }
+                                      } else {
                                         Get.snackbar(
                                             duration:
                                                 Duration(milliseconds: 2000),
                                             icon: Icon(Icons.error),
+                                              margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
                                             backgroundColor:
                                                 Color.fromARGB(255, 202, 0, 0),
                                             colorText: whiteColor,
@@ -710,10 +866,12 @@ class FormUserInfo extends StatelessWidget {
   dynamic title;
   dynamic value;
   dynamic activate;
+  dynamic formKey;
   var controller = new TextEditingController();
   var textInputType;
   FormUserInfo(
       {Key? key,
+      required this.formKey,
       required this.title,
       required this.value,
       required this.activate,
@@ -750,12 +908,23 @@ class FormUserInfo extends StatelessWidget {
           ),
           Flexible(
             child: Container(
-              height: DM.p35,
-              child: TextField(
+              height: DM.p42,
+              child: TextFormField(
+                validator: validateString,
+                onChanged: ((value) {
+                  formKey.currentState?.validate();
+                }),
                 keyboardType: textInputType,
                 controller: controller,
                 readOnly: activate,
                 decoration: InputDecoration(
+                    errorStyle: TextStyle(fontSize: DM.p9),
+                    disabledBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(width: DM.p1, color: orangeColor)),
+                    // focusedErrorBorder: OutlineInputBorder(
+                    //     borderSide:
+                    //         BorderSide(width: DM.p1, color: orangeColor)),
                     focusedBorder: OutlineInputBorder(
                         borderSide:
                             BorderSide(width: DM.p1, color: orangeColor)),
@@ -783,13 +952,12 @@ class FormUserInfo extends StatelessWidget {
 
 //top : flat
 
-
 //: edit text
-//gender 
+//gender
 //:add test button brdr rdius
 // cross sign in list
 //golden rose light..
-//address 
+//address
 //add test popup
 //write your name
 //test , transport, total cost
@@ -797,11 +965,23 @@ class FormUserInfo extends StatelessWidget {
 //outline_border listiitem and info
 //freshers...bdjobs
 
-
-
 //test , service charge , total cost
 //invoice //timestamp millisecond
 //only title mobile number
 //invoie last 5 digit+ randomnumber
 //teststatus enum
 //softdelete 0
+
+String? validateMobile(String? value) {
+  if (value?.length != 11)
+    return 'Mobile Number must be of 11 digits';
+  else
+    return null;
+}
+
+String? validateString(String? value) {
+  if (value?.length == 0)
+    return 'Please fill this form';
+  else
+    return null;
+}

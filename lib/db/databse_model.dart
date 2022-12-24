@@ -2,19 +2,18 @@ import 'package:json_annotation/json_annotation.dart';
 
 @JsonSerializable(explicitToJson: true)
 class TestData {
-  TestData({
-    this.id,
-    required this.name,
-    required this.testprice,
-    required this.discount,
-    required this.diagnostic_center,
-    required this.testkitprice,
-    required this.lastupdate,
-    required this.softdelete,
-    required this.transport_cost,
-    required this.niddle_cost,
-     required this.servicecharge
-  });
+  TestData(
+      {this.id,
+      required this.name,
+      required this.testprice,
+      required this.discount,
+      required this.diagnostic_center,
+      required this.testkitprice,
+      required this.lastupdate,
+      required this.softdelete,
+      required this.transport_cost,
+      required this.niddle_cost,
+      required this.servicecharge});
 
   final dynamic id;
   final dynamic name;
@@ -36,9 +35,9 @@ class TestData {
         'testkitprice': testkitprice,
         'lastupdate': lastupdate,
         'softdelete': softdelete,
-         'transport_cost': transport_cost,
-          'niddle_cost': niddle_cost,
-            'servicecharge': servicecharge,
+        'transport_cost': transport_cost,
+        'niddle_cost': niddle_cost,
+        'servicecharge': servicecharge,
       };
 
   factory TestData.fromJson(Map<String, dynamic> parsedJson) {
@@ -58,32 +57,34 @@ class TestData {
 }
 
 class TestDataRequest {
-  TestDataRequest({
-    required this.id,
-    required this.name,
-    required this.gender,
-    required this.mobile,
-    required this.age,
-    required this.testlist,
-    required this.totalprice,
-    required this.servicecharge,
-    required this.address,
-    required this.referrer,
-    required this.lastupdate,
-    required this.dateofcreated,
-    required this.softdelete,
-    required this.latitude,
-    required this.longitude,
-    required this.teststatus,
-    required this.invoice_call
-  });
+  TestDataRequest(
+      {required this.id,
+      required this.name,
+      required this.gender,
+      required this.mobile,
+      required this.age,
+      required this.testlist,
+      required this.totalprice,
+      required this.servicecharge,
+      required this.address,
+      required this.referrer,
+      required this.lastupdate,
+      required this.dateofcreated,
+      required this.softdelete,
+      required this.latitude,
+      required this.longitude,
+      required this.teststatus,
+      required this.invoice_call,
+      required this.type,
+      required this.image_one,
+      required this.image_two});
 
   final dynamic id;
   final dynamic name;
   final dynamic gender;
   final dynamic mobile;
   final dynamic age;
-  final List<TestData> testlist;
+  final List<TestData>? testlist;
   final dynamic totalprice;
   final dynamic servicecharge;
   final dynamic address;
@@ -95,6 +96,9 @@ class TestDataRequest {
   final dynamic longitude;
   final dynamic teststatus;
   final dynamic invoice_call;
+  final dynamic type;
+  final dynamic image_one;
+  final dynamic image_two;
 
   Map toJson() => {
         'id': id,
@@ -102,7 +106,7 @@ class TestDataRequest {
         'gender': gender,
         'mobile': mobile,
         'age': age,
-        'testlist': testlist.map((e) => e.toJson()).toList(),
+        'testlist': List<dynamic>.from(testlist!.map((x) => x.toJson())),
         'totalprice': totalprice,
         'servicecharge': servicecharge,
         'address': address,
@@ -114,5 +118,34 @@ class TestDataRequest {
         'longitude': longitude,
         'teststatus': teststatus,
         'invoice_call': invoice_call,
+        'type': type,
+        'image_one': image_one,
+        'image_two': image_two,
       };
+
+  factory TestDataRequest.fromJson(Map<String, dynamic> parsedJson) {
+    return TestDataRequest(
+      id: parsedJson['id'],
+      name: parsedJson['name'],
+      gender: parsedJson['gender'],
+      mobile: parsedJson['mobile'],
+      age: parsedJson['age'],
+       //testlist:List<TestData>.from(parsedJson["testlist"].map((x) => TestData.fromJson(x))),
+      testlist: parsedJson["testlist"] == null ? null : List<TestData>.from(parsedJson["testlist"].map((x) => TestData.fromJson(x))),
+      totalprice: parsedJson['totalprice'],
+      servicecharge: parsedJson['servicecharge'],
+      address: parsedJson['address'],
+      referrer: parsedJson['referrer'],
+      lastupdate: parsedJson['lastupdate'],
+      dateofcreated: parsedJson['dateofcreated'],
+      softdelete: parsedJson['softdelete'],
+      latitude: parsedJson['latitude'],
+      longitude: parsedJson['longitude'],
+      teststatus: parsedJson['teststatus'],
+      invoice_call: parsedJson['invoice_call'],
+      type: parsedJson['type'],
+      image_one: parsedJson['image_one'],
+      image_two: parsedJson['image_two'],
+    );
+  }
 }
