@@ -8,6 +8,8 @@ import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
 import 'package:healthcare_homelab/presentation/pages/Login_info.dart';
+import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
+import 'package:sizer/sizer.dart';
 
 import 'presentation/pages/splash_pages/SplashScreen.dart';
 import 'presentation/widgets/majorWidgets/MyScaffold.dart';
@@ -25,17 +27,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: SafeArea(
-          child: Scaffold(
-            resizeToAvoidBottomInset: false,
-            body: MyScaffold(
-
-                container: SplashScreen(),
-                color1: creamColor,
-                color2: creamColor),
+    return Sizer(
+      builder: (BuildContext context, Orientation orientation, DeviceType deviceType) {  
+      return GetMaterialApp(
+          debugShowCheckedModeBanner: false,
+          home: SafeArea(
+            maintainBottomViewPadding: true,
+            child: Scaffold(
+              body: MyScaffold(
+                  container: TestDataCreate(),
+                  color1: creamColor,
+                  color2: creamColor),
+            ),
           ),
-        ));
+    );});
   }
 }

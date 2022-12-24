@@ -234,7 +234,7 @@ class _CreateRequestState extends State<CreateRequest> {
       } else {
         Get.snackbar(
             duration: Duration(milliseconds: 2000),
-              margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
+            margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
             backgroundColor: redColor,
             colorText: whiteColor,
             "Request already exist",
@@ -308,7 +308,7 @@ class _CreateRequestState extends State<CreateRequest> {
       appBar: AppBar(backgroundColor: orangeColor, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
-          width: MediaQuery.of(context).size.width,
+          width: DM.screenWidth,
           child: Text(
             "Requisition form",
             textAlign: TextAlign.left,
@@ -320,15 +320,15 @@ class _CreateRequestState extends State<CreateRequest> {
       body: Form(
         key: _formKey,
         child: Container(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
+          height: DM.screenHeight,
+          width: DM.screenWidth,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Container(
-                  width: MediaQuery.of(context).size.width,
+                  width: DM.screenWidth,
                   child: Column(
                     children: [
                       SizedBox(
@@ -352,6 +352,7 @@ class _CreateRequestState extends State<CreateRequest> {
                             children: [
                               FormUserInfo(
                                 formKey: _formKey,
+                                validatorField: validateString,
                                 textInputType: TextInputType.name,
                                 controller: name,
                                 title: "Name",
@@ -360,6 +361,7 @@ class _CreateRequestState extends State<CreateRequest> {
                               ),
                               FormUserInfo(
                                 formKey: _formKey,
+                                     validatorField: validateString,
                                 textInputType: TextInputType.number,
                                 controller: age,
                                 title: "Age",
@@ -584,9 +586,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                           keyboardType: TextInputType.phone,
                                           controller: phone,
                                           validator: validateMobile,
-                                          onChanged: ((value) {
-                                            _formKey.currentState?.validate();
-                                          }),
+                                          
                                           decoration: InputDecoration(
                                               errorStyle:
                                                   TextStyle(fontSize: DM.p9),
@@ -822,7 +822,9 @@ class _CreateRequestState extends State<CreateRequest> {
                                             duration:
                                                 Duration(milliseconds: 2000),
                                             icon: Icon(Icons.error),
-                                              margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
+                                            margin: EdgeInsets.symmetric(
+                                                horizontal: DM.p70,
+                                                vertical: DM.p60),
                                             backgroundColor:
                                                 Color.fromARGB(255, 202, 0, 0),
                                             colorText: whiteColor,
@@ -867,6 +869,7 @@ class FormUserInfo extends StatelessWidget {
   dynamic value;
   dynamic activate;
   dynamic formKey;
+  dynamic validatorField;
   var controller = new TextEditingController();
   var textInputType;
   FormUserInfo(
@@ -876,7 +879,9 @@ class FormUserInfo extends StatelessWidget {
       required this.value,
       required this.activate,
       required this.controller,
-      required this.textInputType})
+      required this.textInputType,
+      required this.validatorField}
+      )
       : super(
           key: key,
         );
@@ -910,13 +915,15 @@ class FormUserInfo extends StatelessWidget {
             child: Container(
               height: DM.p42,
               child: TextFormField(
-                validator: validateString,
-                onChanged: ((value) {
-                  formKey.currentState?.validate();
+                validator: validatorField,
+                onEditingComplete: (() {
+                 
                 }),
+                
                 keyboardType: textInputType,
                 controller: controller,
                 readOnly: activate,
+                
                 decoration: InputDecoration(
                     errorStyle: TextStyle(fontSize: DM.p9),
                     disabledBorder: OutlineInputBorder(

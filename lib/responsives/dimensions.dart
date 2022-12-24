@@ -7,8 +7,18 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 //here I am using Iphone 12 width and height (viewport) //height is "844"
 //Dynamic pixel
 class DM extends GetxController {
-  static double screenHeight = Get.context!.height;
+  //static double screenHeight =  Get.context!.height ;
+  static double screenHeight = Get.context!.height - 10;
+
+// ;
+//  static double screenHeight = BoxFit.fitHeight;
+
   static double screenWidth = Get.context!.width;
+
+  
+
+  // static double resLinuxOrAndroid =
+  //     Platform.isAndroid == true ? (Get.context!.devicePixelRatio) : 1;
 
   static double resLinuxOrAndroid =
       Platform.isAndroid == true ? (844.00 / Get.context!.height) : 1;

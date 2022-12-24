@@ -47,7 +47,6 @@ class _PrescriptionState extends State<Prescription> {
     phone.text = pref.getString("phoneNumber").toString();
   }
 
-
   UploadTask? uploadTask1, uploadTask2;
 
   Future<void> addImages(urlDownload1, urlDownload2) async {
@@ -153,17 +152,13 @@ class _PrescriptionState extends State<Prescription> {
     var urlDownload1;
     var urlDownload2;
 
-
-
     if (imageFile1 != null) {
-      
       uploadTask1 = ref1.putFile(imageFile1!);
       final snapshot1 = await uploadTask1!.whenComplete(() {});
       urlDownload1 = await snapshot1.ref.getDownloadURL();
     }
 
     if (imageFile2 != null) {
-     
       uploadTask2 = ref2.putFile(imageFile2!);
       final snapshot2 = await uploadTask2!.whenComplete(() {});
       urlDownload2 = await snapshot2.ref.getDownloadURL();
@@ -171,11 +166,6 @@ class _PrescriptionState extends State<Prescription> {
 
     _onLoading(false);
     addImages(urlDownload1, urlDownload2);
-
-    Get.back();
-
-    // pref.setString("image1_url", urlDownload1);
-    // pref.setString("image2_url", urlDownload2);
   }
 
   Future<void> getLocation_Camera() async {
@@ -226,7 +216,7 @@ class _PrescriptionState extends State<Prescription> {
       appBar: AppBar(backgroundColor: orangeColor, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
-          width: MediaQuery.of(context).size.width,
+          width: DM.screenWidth,
           child: Text(
             "Prescription Form",
             textAlign: TextAlign.left,
@@ -332,7 +322,7 @@ class _PrescriptionState extends State<Prescription> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: EdgeInsets.all(DM.p8),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
@@ -358,7 +348,7 @@ class _PrescriptionState extends State<Prescription> {
                                                       Container(
                                                         margin: EdgeInsets.all(
                                                             DM.p16),
-                                                          height: DM.p130,
+                                                        height: DM.p130,
                                                         width: DM.p120,
                                                         child: ElevatedButton(
                                                             style: ElevatedButton
@@ -376,14 +366,15 @@ class _PrescriptionState extends State<Prescription> {
                                                                 source:
                                                                     ImageSource
                                                                         .gallery,
-                                                                 maxWidth: 800,
+                                                                maxWidth: 800,
                                                                 maxHeight: 1200,
                                                               );
                                                               setState(() {
-                                                                if(pickedFile!=null)
-                                                                imageFile1 = File(
-                                                                    pickedFile!
-                                                                        .path);
+                                                                if (pickedFile !=
+                                                                    null)
+                                                                  imageFile1 = File(
+                                                                      pickedFile!
+                                                                          .path);
                                                               });
 
                                                               Navigator.pop(
@@ -399,7 +390,7 @@ class _PrescriptionState extends State<Prescription> {
                                                       Container(
                                                         margin: EdgeInsets.all(
                                                             DM.p16),
-                                                           height: DM.p130,
+                                                        height: DM.p130,
                                                         width: DM.p120,
                                                         child: ElevatedButton(
                                                             style: ElevatedButton
@@ -419,13 +410,13 @@ class _PrescriptionState extends State<Prescription> {
                                                                         .camera,
                                                                 maxWidth: 800,
                                                                 maxHeight: 1200,
-                                                                
                                                               );
                                                               setState(() {
-                                                                if(pickedFile!=null)
-                                                                imageFile1 = File(
-                                                                    pickedFile!
-                                                                        .path);
+                                                                if (pickedFile !=
+                                                                    null)
+                                                                  imageFile1 = File(
+                                                                      pickedFile!
+                                                                          .path);
                                                               });
                                                               Navigator.pop(
                                                                   context);
@@ -457,11 +448,12 @@ class _PrescriptionState extends State<Prescription> {
                                 : Column(
                                     children: [
                                       Container(
-                                        height: 200,
-                                        width: 185,
+                                        margin: EdgeInsets.only(left: DM.p5),
+                                        height: DM.p220,
+                                        width: DM.p180,
                                         child: Image.file(
                                           imageFile1 as File,
-                                          fit: BoxFit.fitHeight,
+                                          fit: BoxFit.cover,
                                         ),
                                       ),
                                       IconButton(
@@ -479,7 +471,7 @@ class _PrescriptionState extends State<Prescription> {
                                     ],
                                   ),
                             Container(
-                              height: 40.0,
+                              height: DM.p40,
                             ),
                             imageFile2 == null
                                 ? Container(
@@ -523,13 +515,13 @@ class _PrescriptionState extends State<Prescription> {
                                                                         .gallery,
                                                                 maxWidth: 800,
                                                                 maxHeight: 1200,
-                                                              
                                                               );
                                                               setState(() {
-                                                                if(pickedFile!=null)
-                                                                imageFile2 = File(
-                                                                    pickedFile!
-                                                                        .path);
+                                                                if (pickedFile !=
+                                                                    null)
+                                                                  imageFile2 = File(
+                                                                      pickedFile!
+                                                                          .path);
                                                               });
                                                               Navigator.pop(
                                                                   context);
@@ -564,13 +556,13 @@ class _PrescriptionState extends State<Prescription> {
                                                                         .camera,
                                                                 maxWidth: 800,
                                                                 maxHeight: 1200,
-                                                               
                                                               );
                                                               setState(() {
-                                                                  if(pickedFile!=null)
-                                                                imageFile2 = File(
-                                                                    pickedFile!
-                                                                        .path);
+                                                                if (pickedFile !=
+                                                                    null)
+                                                                  imageFile2 = File(
+                                                                      pickedFile!
+                                                                          .path);
                                                               });
                                                               Navigator.pop(
                                                                   context);
@@ -602,11 +594,12 @@ class _PrescriptionState extends State<Prescription> {
                                 : Column(
                                     children: [
                                       Container(
-                                        height: 200,
-                                        width: 185,
+                                        margin: EdgeInsets.only(right: DM.p5),
+                                        height: DM.p220,
+                                        width: DM.p180,
                                         child: Image.file(
                                           imageFile2!,
-                                          fit: BoxFit.fitHeight,
+                                          fit: BoxFit.cover,
                                         ),
                                       ),
                                       IconButton(
@@ -635,10 +628,10 @@ class _PrescriptionState extends State<Prescription> {
                             child: MaterialButton(
                               onPressed: () async {
                                 if (await chechkingInternet()) {
-                                if (imageFile1 != null || imageFile2 != null) {
-                                  
-                                  uploadImage();
-                                }
+                                  if (imageFile1 != null ||
+                                      imageFile2 != null) {
+                                    uploadImage();
+                                  }
                                 }
                               },
                               height: DM.p50,

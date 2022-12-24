@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
-
+import 'package:sizer/sizer.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/cupertino.dart';
@@ -42,19 +42,22 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     getPhoneNumber();
+
     // TODO: implement initState
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    print(20.sp);
+    print(DM.screenHeight / DM.p200);
     chechkingInternet();
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p2),
-          width: MediaQuery.of(context).size.width,
+          width: DM.screenWidth,
           child: Text(
             "Login",
             textAlign: TextAlign.left,
@@ -172,7 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       Container(
                         margin: EdgeInsets.symmetric(
-                            horizontal: DM.p20, vertical: DM.p15),
+                            horizontal: DM.p20, vertical: DM.p30),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,

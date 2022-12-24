@@ -32,14 +32,14 @@ class _TextDialogueBoxState extends State<TextDialogueBox> {
     CreateRequest_controller createRequest_controller =
         Get.put(CreateRequest_controller());
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: EdgeInsets.all(DM.p8),
       child: Stack(
         children: [
           Container(
               color: creamColor,
               height: DM.screenHeight * 0.5,
               width: DM.screenWidth * 0.9,
-              padding: EdgeInsets.all(25),
+              padding: EdgeInsets.all(DM.p25),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -48,13 +48,13 @@ class _TextDialogueBoxState extends State<TextDialogueBox> {
                     widget.keyTitle,
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
-                        fontSize: 25,
+                        fontSize: DM.p25,
                         color: Color.fromARGB(255, 26, 1, 1)),
                   ),
                   Card(
                       color: Colors.white,
                       child: Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: EdgeInsets.all(DM.p8),
                         child: TextField(
                           controller: contentController,
 
@@ -83,7 +83,7 @@ class _TextDialogueBoxState extends State<TextDialogueBox> {
                     child: Text(
                       "Submit",
                       style: TextStyle(
-                          color: font_bgOrange,
+                          color: whiteColor,
                           fontSize: DM.p15,
                           fontWeight: FontWeight.bold),
                     ),
@@ -91,8 +91,8 @@ class _TextDialogueBoxState extends State<TextDialogueBox> {
                 ],
               )),
           Positioned(
-              right: 10,
-              top: 10,
+              right: DM.p10,
+              top: DM.p10,
               child: IconButton(
                 icon: Icon(CupertinoIcons.xmark),
                 onPressed: () {

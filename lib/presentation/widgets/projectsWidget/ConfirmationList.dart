@@ -52,7 +52,7 @@ class _ConfirmationListState extends State<ConfirmationList> {
   Widget build(BuildContext context) {
     chechkingInternet();
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding:  EdgeInsets.all(DM.p8),
       child: Stack(
         children: [
           Container(
@@ -103,7 +103,7 @@ class _ConfirmationListState extends State<ConfirmationList> {
                       ),
                       Card(
                           child: Container(
-                        height: MediaQuery.of(context).size.height * 0.40,
+                        height: DM.screenHeight* 0.40,
                         child: ListView.builder(
                           itemCount: cr_controller.testData.length,
                           itemBuilder: (context, index) {
@@ -166,7 +166,7 @@ class _ConfirmationListState extends State<ConfirmationList> {
                   Divider(
                     thickness: DM.p1,
                     color: blackFontColor,
-                    endIndent: 100,
+                    endIndent: DM.p100,
                   ),
                   Text(
                     "Total Cost: ${widget.newRequestData.totalprice}",
@@ -219,8 +219,8 @@ class _ConfirmationListState extends State<ConfirmationList> {
                 ],
               )),
           Positioned(
-              right: 10,
-              top: 10,
+              right: DM.p10,
+              top: DM.p10,
               child: IconButton(
                 icon: Icon(CupertinoIcons.xmark),
                 onPressed: () {

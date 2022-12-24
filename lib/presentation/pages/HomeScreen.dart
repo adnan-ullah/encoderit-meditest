@@ -52,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(backgroundColor: orangeColor, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
-          width: MediaQuery.of(context).size.width,
+          width: DM.screenWidth,
           child: Text(
             "HomePage",
             textAlign: TextAlign.left,
@@ -84,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: SizedBox(
+                      child: Container(
                         child: MaterialButton(
                           onPressed: () async {
                             if (await chechkingInternet())

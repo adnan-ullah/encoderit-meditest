@@ -59,7 +59,9 @@ class _RequestListState extends State<RequestList> {
           testDataEach.add(testData);
         });
       }
-      Get.back();
+
+      if (testDataEach != null) _onLoading(false);
+      //Get.back();
     });
   }
 
@@ -80,14 +82,17 @@ class _RequestListState extends State<RequestList> {
                   SizedBox(
                     width: DM.p10,
                   ),
-                  new Text("Loading, please wait...", style: TextStyle( color: orangeColor),),
+                  new Text(
+                    "Loading, please wait...",
+                    style: TextStyle(color: orangeColor),
+                  ),
                 ],
               ),
             ),
           );
         },
       );
-    }
+    } else if (!isClosed) Get.back();
   }
 
   @override
@@ -122,7 +127,7 @@ class _RequestListState extends State<RequestList> {
                     child: Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: EdgeInsets.all(DM.p8),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -161,9 +166,9 @@ class _RequestListState extends State<RequestList> {
                           color: Colors.black,
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: EdgeInsets.all(DM.p8),
                           child: Container(
-                            height: DM.screenHeight * 0.67,
+                            height: DM.screenHeight * 0.63,
                             child: ListView.builder(
                               itemCount: testDataEach.length,
                               itemBuilder: (context, index) {
@@ -222,8 +227,9 @@ class _RequestListState extends State<RequestList> {
                       ],
                     ),
                   )
-                : Center(
-                    child: Container(
+                : Container(
+                    height: DM.screenHeight * 0.75,
+                    child: Center(
                       child: Text(
                         "Request list empty",
                         style: TextStyle(

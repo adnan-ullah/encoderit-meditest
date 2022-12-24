@@ -52,9 +52,8 @@ dependencies:
   json_annotation: ^4.7.0
   permission_handler: ^6.1.1
   shared_preferences: ^2.0.15
+  sizer: ^2.0.15
   uuid: ^3.0.6
-  
- 
 
 # dependency_overrides:
 #   firebase_messaging_platform_interface: 3.1.6

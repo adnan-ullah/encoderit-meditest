@@ -76,7 +76,7 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                   ),
                   Card(
                       child: Container(
-                    height: MediaQuery.of(context).size.height * 0.60,
+                    height: DM.screenHeight * 0.60,
                     child: ListView.builder(
                       itemCount: cr_controller.testItemList.length,
                       itemBuilder: (context, index) {
