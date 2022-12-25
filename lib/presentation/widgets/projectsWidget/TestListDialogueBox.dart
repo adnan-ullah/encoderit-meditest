@@ -58,7 +58,6 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
 
   @override
   void initState() {
-    
     cr_Controller = Get.put(CreateRequest_controller());
     cr_Controller.filter_testItemList.clear();
     cr_Controller.filter_testItemList.addAll(cr_Controller.testItemList);
@@ -73,7 +72,17 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
   var serviceCost = 0;
   var tubeCost = 0;
   var totalDiscount = 0;
+
   void calculationProcess() {
+    cr_Controller.testData.clear();
+    cr_Controller.testItemList.map((item) {
+      if (cr_Controller.testItemListWithSelected[item.id] == true) {
+        cr_Controller.testData.add(item);
+        cr_Controller.testItemListWithSelected[item.id] == false;
+      }
+     
+    }).toList();
+
     setState(() {
       cr_Controller.testData.map((testItem) {
         testCost = testCost + int.parse(testItem.testprice.toString());
@@ -208,13 +217,13 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                                                 cr_Controller
                                                     .filter_testItemList[index]
                                                     .id] ==
-                                            true
+                                            false
                                         ? MaterialButton(
                                             onPressed: () {
-                                              cr_Controller.testData.add(
-                                                  cr_Controller
-                                                          .filter_testItemList[
-                                                      index]);
+                                              // cr_Controller.testData.add(
+                                              //     cr_Controller
+                                              //             .filter_testItemList[
+                                              //         index]);
 
                                               setState(() {
                                                 cr_Controller
@@ -244,13 +253,13 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                                             ))
                                         : MaterialButton(
                                             onPressed: () {
-                                              cr_Controller.testData
-                                                  .removeWhere((element) =>
-                                                      element.id ==
-                                                      cr_Controller
-                                                          .filter_testItemList[
-                                                              index]
-                                                          .id);
+                                              // cr_Controller.testData
+                                              //     .removeWhere((element) =>
+                                              //         element.id ==
+                                              //         cr_Controller
+                                              //             .filter_testItemList[
+                                              //                 index]
+                                              //             .id);
 
                                               setState(() {
                                                 cr_Controller
@@ -289,11 +298,7 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                     margin: EdgeInsets.symmetric(vertical: DM.p10),
                     child: MaterialButton(
                       onPressed: () {
-                       // cr_Controller.testItemListWithSelected.ma
-
                         calculationProcess();
-
-
 
                         // Get.to(CreateRequest());
                         Get.back();
@@ -319,6 +324,8 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
               child: IconButton(
                 icon: Icon(CupertinoIcons.xmark),
                 onPressed: () {
+                  cr_Controller.testItemListWithSelected
+                      .updateAll((key, value) => value = false);
                   Navigator.pop(context);
                 },
               ))

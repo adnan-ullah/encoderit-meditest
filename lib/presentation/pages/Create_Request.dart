@@ -88,7 +88,7 @@ class _CreateRequestState extends State<CreateRequest> {
     createReqController.serviceCost.value = 0;
     createReqController.totalDiscount.value = 0;
     createReqController.tubeCost.value = 0;
- 
+
     getSharedData();
 
     //populate testItemList
@@ -637,7 +637,12 @@ class _CreateRequestState extends State<CreateRequest> {
                             child: MaterialButton(
                               onPressed: () async {
                                 if (await chechkingInternet()) {
-                                  
+                                  createReqController.testData.map((element) {
+                                    createRequest_controller
+                                            .testItemListWithSelected[
+                                        element.id] = true;
+                                  }).toList();
+
                                   showDialog(
                                       context: context,
                                       builder: (context) {
@@ -1005,7 +1010,9 @@ Future<void> getTestItemList() async {
       TestData testData = TestData.fromJson(json.decode(jsonEncode(ds.value)));
 
       createRequest_controller.testItemList.add(testData);
-      createRequest_controller.testItemListWithSelected[testData.id] = true;
+      createRequest_controller.testItemListWithSelected[testData.id] = false;
+      //false -> add button
+      //true -> remove button
 
       print(testData.name);
     }

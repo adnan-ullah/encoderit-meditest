@@ -307,7 +307,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           value: "70.0",
                           activate: false,
                         ),
-                         FormUserInfo(
+                        FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
                           textInputType: TextInputType.name,
@@ -323,92 +323,54 @@ class _TestDataCreateState extends State<TestDataCreate> {
 
                 // #signup_button
 
-                Obx(
-                  () => Container(
-                    margin: EdgeInsets.symmetric(
-                        horizontal: DM.p20, vertical: DM.p2),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Test Cost: ${createReqController.totalTestCost.value}",
-                          style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: DM.p10,
-                              color: Color.fromARGB(255, 26, 1, 1)),
-                        ),
-                        Text(
-                          "Collection Charge: ${createReqController.serviceCost.value}",
-                          style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: DM.p10,
-                              color: Color.fromARGB(255, 26, 1, 1)),
-                        ),
-                        Divider(
-                          thickness: DM.p1,
-                          color: blackFontColor,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Total Cost: ${createReqController.totalCost.value}",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: DM.p15,
-                                  color: Color.fromARGB(255, 26, 1, 1)),
-                            ),
-                            MaterialButton(
-                              onPressed: () async {
-                                if (_formKey.currentState?.validate() == true) {
-                                  if (await chechkingInternet()) {
-                                   insertNewTestItemMethod();
-                                    // showDialog(
-                                    //     context: context,
-                                    //     builder: (context) {
-                                    //       return MyDialogView(
-                                    //         myChild: widget.testItem == null
-                                    //             ? ConfirmationTestItem(
-                                    //                 newRequestData:
-                                    //                     newTestListData,
-                                    //                 addTestRequest:
-                                    //                     insertNewTestItem)
-                                    //             : ConfirmationTestItem(
-                                    //                 addTestRequest:
-                                    //                     updateTestItem,
-                                    //                 newRequestData:
-                                    //                     newTestListData),
-                                    //       );
-                                    //     });
-                                  }
-                                } else {
-                                  Get.snackbar(
-                                      duration: Duration(milliseconds: 2000),
-                                      icon: Icon(Icons.error),
-                                      margin: EdgeInsets.symmetric(
-                                          horizontal: DM.p70, vertical: DM.p60),
-                                      backgroundColor:
-                                          Color.fromARGB(255, 202, 0, 0),
-                                      colorText: whiteColor,
-                                      "Error!",
-                                      "Please add info properly!");
-                                }
-                              },
-                              height: DM.p40,
-                              minWidth: DM.p120,
-                              shape: const StadiumBorder(),
-                              color: orangeColor,
-                              child: Text(
-                                widget.testItem == null ? "Submit" : "Update",
-                                style: TextStyle(
-                                    color: fullWhiteColor,
-                                    fontSize: DM.p15,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                Container(
+                  margin: EdgeInsets.symmetric(
+                      horizontal: DM.p20, vertical: DM.p35),
+                  child: MaterialButton(
+                    onPressed: () async {
+                      if (_formKey.currentState?.validate() == true) {
+                        if (await chechkingInternet()) {
+                          insertNewTestItemMethod();
+                          // showDialog(
+                          //     context: context,
+                          //     builder: (context) {
+                          //       return MyDialogView(
+                          //         myChild: widget.testItem == null
+                          //             ? ConfirmationTestItem(
+                          //                 newRequestData:
+                          //                     newTestListData,
+                          //                 addTestRequest:
+                          //                     insertNewTestItem)
+                          //             : ConfirmationTestItem(
+                          //                 addTestRequest:
+                          //                     updateTestItem,
+                          //                 newRequestData:
+                          //                     newTestListData),
+                          //       );
+                          //     });
+                        }
+                      } else {
+                        Get.snackbar(
+                            duration: Duration(milliseconds: 2000),
+                            icon: Icon(Icons.error),
+                            margin: EdgeInsets.symmetric(
+                                horizontal: DM.p70, vertical: DM.p60),
+                            backgroundColor: Color.fromARGB(255, 202, 0, 0),
+                            colorText: whiteColor,
+                            "Error!",
+                            "Please add info properly!");
+                      }
+                    },
+                    height: DM.p40,
+                    minWidth: DM.p120,
+                    shape: const StadiumBorder(),
+                    color: orangeColor,
+                    child: Text(
+                      widget.testItem == null ? "Submit" : "Update",
+                      style: TextStyle(
+                          color: fullWhiteColor,
+                          fontSize: DM.p15,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 )

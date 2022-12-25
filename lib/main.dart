@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
           maintainBottomViewPadding: true,
           child: Scaffold(
             body: MyScaffold(
-                container: SplashScreen(),
+                container: LoginScreen(),
                 color1: creamColor,
                 color2: creamColor),
           ),
