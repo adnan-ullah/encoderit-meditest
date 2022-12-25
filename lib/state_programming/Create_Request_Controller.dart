@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
 
+import '../constants/colors.dart';
+
 class CreateRequest_controller extends GetxController {
   RxString address = "".obs;
   RxString referredAddress = "".obs;
@@ -11,14 +13,21 @@ class CreateRequest_controller extends GetxController {
   RxString testKey = "".obs;
   var testData = <TestData>[].obs;
   var testItemList = <TestData>[].obs;
+  var filter_testItemList = <TestData>[].obs;
+
+
+  Rx<Icon> searchBox = Icon(Icons.search,color: orangeColor,).obs;
+  Rx<Icon> clearBox = Icon(Icons.clear, color: orangeColor,).obs;
+  
   //var testItemListWithSelected = <Map<String, bool>>[].obs;
 
   final Map<String, bool> testItemListWithSelected = {};
 
-  RxDouble totalTestCost = 0.0.obs;
-  RxDouble totalCost = 0.0.obs;
-  RxDouble serviceCost = 0.0.obs;
-
+  RxInt totalTestCost = 0.obs;
+  RxInt totalCost = 0.obs;
+  RxInt serviceCost = 0.obs;
+  RxInt tubeCost = 0.obs;
+  RxInt totalDiscount = 0.obs;
   RxString emptyString = "No item selected, please add test".obs;
 
   //method

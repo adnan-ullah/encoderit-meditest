@@ -65,20 +65,27 @@ class _RequestListState extends State<RequestList> {
     });
   }
 
+  var isLoading = true;
+
   void _onLoading(isClosed) {
     if (isClosed) {
+      setState(() {
+        isLoading = true;
+      });
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
           return Dialog(
             child: Container(
-              height: DM.p80,
+              height: DM.p120,
               padding: EdgeInsets.all(DM.p16),
               child: new Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  new CircularProgressIndicator(),
+                  new CircularProgressIndicator(
+                    color: orangeColor,
+                  ),
                   SizedBox(
                     width: DM.p10,
                   ),
@@ -90,9 +97,17 @@ class _RequestListState extends State<RequestList> {
               ),
             ),
           );
+
+
         },
       );
-    } else if (!isClosed) Get.back();
+    } 
+    else if (!isClosed && isLoading) {
+      setState(() {
+        isLoading = false;
+      });
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -110,139 +125,145 @@ class _RequestListState extends State<RequestList> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(DM.p8),
-      child: Column(
-        children: [
-          Text(
-            "Request list",
-            style: TextStyle(
-                fontWeight: FontWeight.w900,
-                fontSize: DM.p25,
-                color: Color.fromARGB(255, 26, 1, 1)),
-          ),
-          Container(
-            margin: EdgeInsets.only(top: DM.p5),
-            child: testDataEach.isEmpty == false
+        padding: EdgeInsets.all(DM.p8),
+        child: Column(
+          children: [
+            Text(
+              "Request list",
+              style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: DM.p25,
+                  color: Color.fromARGB(255, 26, 1, 1)),
+            ),
+            isLoading == false
                 ? Container(
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.all(DM.p8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Invoice Call",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p14,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                              Container(
-                                margin: EdgeInsets.only(right: DM.p40),
-                                child: Text(
-                                  "Status",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: DM.p14,
-                                      color: Color.fromARGB(255, 26, 1, 1)),
-                                ),
-                              ),
-                              Container(
-                                margin: EdgeInsets.only(right: DM.p10),
-                                child: Text(
-                                  "Date",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: DM.p14,
-                                      color: Color.fromARGB(255, 26, 1, 1)),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                        Divider(
-                          thickness: DM.p2,
-                          color: Colors.black,
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(DM.p8),
-                          child: Container(
-                            height: DM.screenHeight * 0.63,
-                            child: ListView.builder(
-                              itemCount: testDataEach.length,
-                              itemBuilder: (context, index) {
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    color: whiteColor,
-                                    borderRadius: BorderRadius.circular(DM.p10),
-                                  ),
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: DM.p10, vertical: DM.p5),
-                                  margin: EdgeInsets.symmetric(vertical: DM.p5),
-                                  height: DM.p60,
+                    child: testDataEach.isEmpty == false
+                        ? Container(
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.all(DM.p8),
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      SizedBox(
+                                      Text(
+                                        "Invoice Call",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: DM.p14,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(right: DM.p40),
                                         child: Text(
-                                          "#${testDataEach[index].invoice_call.toString()}",
+                                          "Status",
                                           style: TextStyle(
                                               fontWeight: FontWeight.w900,
-                                              fontSize: DM.p12,
+                                              fontSize: DM.p14,
                                               color: Color.fromARGB(
                                                   255, 26, 1, 1)),
                                         ),
                                       ),
-                                      Text(
-                                        status[testDataEach[index].teststatus]
-                                            .toString(),
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: DM.p12,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
-                                      Text(
-                                        (DateFormat('dd-MMM-yyy').format(
-                                                DateTime
-                                                    .fromMillisecondsSinceEpoch(
-                                                        testDataEach[index]
-                                                            .dateofcreated)))
-                                            .toString(),
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: DM.p12,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(right: DM.p10),
+                                        child: Text(
+                                          "Date",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: DM.p14,
+                                              color: Color.fromARGB(
+                                                  255, 26, 1, 1)),
+                                        ),
+                                      )
                                     ],
                                   ),
-                                );
-                              },
+                                ),
+                                Divider(
+                                  thickness: DM.p2,
+                                  color: Colors.black,
+                                ),
+                                Container(
+                                  height: DM.screenHeight * 0.65,
+                                  child: ListView.builder(
+                                    itemCount: testDataEach.length,
+                                    itemBuilder: (context, index) {
+                                      return Container(
+                                        decoration: BoxDecoration(
+                                          color: whiteColor,
+                                          borderRadius:
+                                              BorderRadius.circular(DM.p10),
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10,
+                                            vertical: DM.p5),
+                                        margin: EdgeInsets.symmetric(
+                                            vertical: DM.p5),
+                                        height: DM.p60,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            SizedBox(
+                                              child: Text(
+                                                "#${testDataEach[index].invoice_call.toString()}",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w900,
+                                                    fontSize: DM.p12,
+                                                    color: Color.fromARGB(
+                                                        255, 26, 1, 1)),
+                                              ),
+                                            ),
+                                            Text(
+                                              status[testDataEach[index]
+                                                      .teststatus]
+                                                  .toString(),
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: DM.p12,
+                                                  color: Color.fromARGB(
+                                                      255, 26, 1, 1)),
+                                            ),
+                                            Text(
+                                              (DateFormat('dd-MMM-yyy').format(DateTime
+                                                      .fromMillisecondsSinceEpoch(
+                                                          testDataEach[index]
+                                                              .dateofcreated)))
+                                                  .toString(),
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: DM.p12,
+                                                  color: Color.fromARGB(
+                                                      255, 26, 1, 1)),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
+                          )
+                        : Container(
+                            height: DM.screenHeight * 0.65,
+                            margin: EdgeInsets.symmetric(vertical: DM.p16),
+                            color: whiteColor,
+                            child: Center(
+                              child: Text(
+                                "Request list empty",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: DM.p25,
+                                    color: orangeColor),
+                              ),
+                            )))
                 : Container(
-                    height: DM.screenHeight * 0.75,
-                    child: Center(
-                      child: Text(
-                        "Request list empty",
-                        style: TextStyle(
-                            fontWeight: FontWeight.w400,
-                            fontSize: DM.p25,
-                            color: Color.fromARGB(255, 26, 1, 1)),
-                      ),
-                    ),
+                    height: DM.screenHeight * 0.70,
                   ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ));
   }
 
   //Return String

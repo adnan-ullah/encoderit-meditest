@@ -14,41 +14,35 @@ import 'package:healthcare_homelab/state_programming/Create_Request_Controller.d
 import '../../../responsives/dimensions.dart';
 import '../../pages/Login_info.dart';
 
-class ConfirmationList extends StatefulWidget {
+class ConfirmationTestItem extends StatefulWidget {
   VoidCallback addTestRequest;
   TestDataRequest newRequestData;
-  ConfirmationList(
+  ConfirmationTestItem(
       {super.key, required this.addTestRequest, required this.newRequestData});
 
   @override
-  State<ConfirmationList> createState() => _ConfirmationListState();
+  State<ConfirmationTestItem> createState() => _ConfirmationTestItemState();
 }
 
-class _ConfirmationListState extends State<ConfirmationList> {
+class _ConfirmationTestItemState extends State<ConfirmationTestItem> {
   CreateRequest_controller cr_controller = Get.put(CreateRequest_controller());
   var totalCost = 0;
   var testCost = 0;
   var serviceCost = 0;
-  var tubeCost = 0;
-  var totalDiscount = 0;
+
   void calculationProcess() {
     setState(() {
       cr_controller.testData.map((testItem) {
-        testCost = testCost + int.parse(testItem.testprice.toString());
-
-        serviceCost = max(serviceCost, testItem.servicecharge);
-        tubeCost = tubeCost + int.parse(testItem.testkitprice.toString());
-        totalDiscount = totalDiscount + int.parse(testItem.discount.toString());
+        testCost = testCost + int.parse(testItem.testprice);
+        serviceCost = max(serviceCost, testItem.servicecharge.toDouble());
       }).toList();
 
-      totalCost = testCost + serviceCost + tubeCost - totalDiscount;
+      totalCost = testCost + serviceCost;
     });
 
     cr_controller.totalCost.value = totalCost;
     cr_controller.totalTestCost.value = testCost;
     cr_controller.serviceCost.value = serviceCost;
-    cr_controller.tubeCost.value = tubeCost;
-    cr_controller.totalDiscount.value = totalDiscount;
   }
 
   @override
@@ -113,9 +107,9 @@ class _ConfirmationListState extends State<ConfirmationList> {
                             return Container(
                               color: whiteColor,
                               padding: EdgeInsets.symmetric(
-                                  horizontal: DM.p10, vertical: DM.p5),
-                              margin: EdgeInsets.symmetric(vertical: DM.p1),
-                              height: DM.p45,
+                                  horizontal: DM.p10, vertical: DM.p10),
+                              margin: EdgeInsets.symmetric(vertical: DM.p10),
+                              height: DM.p50,
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -133,7 +127,11 @@ class _ConfirmationListState extends State<ConfirmationList> {
                                   Text(
                                     "Price: " +
                                         (cr_controller
-                                                .testData[index].testprice)
+                                                    .testData[index].testprice +
+                                                cr_controller.testData[index]
+                                                    .testkitprice -
+                                                cr_controller
+                                                    .testData[index].discount)
                                             .toString(),
                                     style: TextStyle(
                                         fontWeight: FontWeight.w900,
@@ -149,17 +147,17 @@ class _ConfirmationListState extends State<ConfirmationList> {
                     ],
                   ),
                   Text(
-                    "(Test + Tube + Collection) = (${cr_controller.totalTestCost.value}+${cr_controller.tubeCost.value}+${cr_controller.serviceCost.value} ) =  ${cr_controller.totalTestCost.value + cr_controller.tubeCost.value + cr_controller.serviceCost.value} /-",
+                    "Test Cost: ${widget.newRequestData.totalprice}",
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
-                        fontSize: DM.p12,
+                        fontSize: DM.p15,
                         color: Color.fromARGB(255, 26, 1, 1)),
                   ),
                   Text(
-                    "Discount : ${cr_controller.totalDiscount.value} /-",
+                    "Collection Charge: ${widget.newRequestData.servicecharge}",
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
-                        fontSize: DM.p13,
+                        fontSize: DM.p15,
                         color: Color.fromARGB(255, 26, 1, 1)),
                   ),
                   Divider(
@@ -168,7 +166,7 @@ class _ConfirmationListState extends State<ConfirmationList> {
                     endIndent: DM.p100,
                   ),
                   Text(
-                    "Total Cost: ${widget.newRequestData.totalprice} /-",
+                    "Total Cost: ${widget.newRequestData.totalprice}",
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: DM.p18,
@@ -198,7 +196,6 @@ class _ConfirmationListState extends State<ConfirmationList> {
                         onPressed: () async {
                           if (await chechkingInternet()) {
                             widget.addTestRequest();
-
                             Get.back();
                           }
                         },

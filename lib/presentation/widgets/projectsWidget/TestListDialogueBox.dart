@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
+import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
 
 import '../../../responsives/dimensions.dart';
@@ -23,33 +24,73 @@ class TestItemDialogueBox extends StatefulWidget {
 }
 
 class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
+  late CreateRequest_controller cr_Controller;
+
+  bool isClear = false;
+
+  var searchinText = TextEditingController();
+  List<dynamic> newTestItemList = [];
+
+  void filterigTestItem(dynamic value) {
+    if (value.toString().isNotEmpty) {
+      setState(() {
+        isClear = true;
+      });
+
+      cr_Controller.filter_testItemList.clear();
+
+      cr_Controller.testItemList.map((element) {
+        if (element.name
+            .toString()
+            .toLowerCase()
+            .contains(value.toString().toLowerCase())) {
+          cr_Controller.filter_testItemList.add(element);
+        }
+      }).toList();
+    } else {
+      setState(() {
+        isClear = false;
+      });
+      cr_Controller.filter_testItemList.clear();
+      cr_Controller.filter_testItemList.addAll(cr_Controller.testItemList);
+    }
+  }
+
   @override
   void initState() {
+    
+    cr_Controller = Get.put(CreateRequest_controller());
+    cr_Controller.filter_testItemList.clear();
+    cr_Controller.filter_testItemList.addAll(cr_Controller.testItemList);
+
+    // print("ADNAN" + cr_Controller.testItemList.length.toString());
     // TODO: implement initState
     super.initState();
   }
 
-  CreateRequest_controller cr_controller = Get.put(CreateRequest_controller());
-  var totalCost = 0.0;
-  var testCost = 0.0;
-  var serviceCost = 0.0;
-
+  var totalCost = 0;
+  var testCost = 0;
+  var serviceCost = 0;
+  var tubeCost = 0;
+  var totalDiscount = 0;
   void calculationProcess() {
     setState(() {
-      cr_controller.testData.map((testItem) {
-        testCost = testCost +
-            testItem.testprice +
-            testItem.testkitprice -
-            testItem.discount;
-        serviceCost = max(serviceCost, testItem.servicecharge.toDouble());
+      cr_Controller.testData.map((testItem) {
+        testCost = testCost + int.parse(testItem.testprice.toString());
+        serviceCost = max(serviceCost, testItem.servicecharge);
+
+        tubeCost = tubeCost + int.parse(testItem.testkitprice.toString());
+        totalDiscount = totalDiscount + int.parse(testItem.discount.toString());
       }).toList();
 
-      totalCost = testCost + serviceCost;
+      totalCost = testCost + serviceCost + tubeCost - totalDiscount;
     });
 
-    cr_controller.totalCost.value = totalCost;
-    cr_controller.totalTestCost.value = testCost;
-    cr_controller.serviceCost.value = serviceCost;
+    cr_Controller.totalCost.value = totalCost;
+    cr_Controller.totalTestCost.value = testCost;
+    cr_Controller.serviceCost.value = serviceCost;
+    cr_Controller.tubeCost.value = tubeCost;
+    cr_Controller.totalDiscount.value = totalDiscount;
   }
 
   @override
@@ -60,7 +101,7 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
         children: [
           Container(
               color: creamColor,
-              height: DM.screenHeight * 0.8,
+              height: DM.screenHeight * 0.9,
               width: DM.screenWidth * 0.9,
               padding: EdgeInsets.all(DM.p10),
               child: Column(
@@ -74,75 +115,119 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                         fontSize: DM.p25,
                         color: Color.fromARGB(255, 26, 1, 1)),
                   ),
+                  Padding(
+                    padding: EdgeInsets.all(DM.p10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Obx(
+                          () => Flexible(
+                            child: Container(
+                              height: DM.p45,
+                              child: TextFormField(
+                                keyboardType: TextInputType.text,
+                                controller: searchinText,
+                                onChanged: ((value) {
+                                  filterigTestItem(value);
+                                }),
+                                decoration: InputDecoration(
+                                    suffixIcon: isClear
+                                        ? InkWell(
+                                            onTap: (() {
+                                              searchinText.text = "";
+                                            }),
+                                            child: cr_Controller.clearBox.value)
+                                        : cr_Controller.searchBox.value,
+                                    focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(40),
+                                        borderSide: BorderSide(
+                                            width: DM.p1, color: orangeColor)),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(40),
+                                      borderSide: BorderSide(
+                                          width: DM.p1,
+                                          color: orangeColor), //<-- SEE HERE
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    border: InputBorder.none,
+                                    hintText: "Search",
+                                    hintStyle: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: DM.p14,
+                                    )),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   Card(
                       child: Container(
                     height: DM.screenHeight * 0.60,
-                    child: ListView.builder(
-                      itemCount: cr_controller.testItemList.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          color: whiteColor,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: DM.p10, vertical: DM.p10),
-                          margin: EdgeInsets.symmetric(vertical: DM.p10),
-                          height: DM.p50,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SizedBox(
-                                width: DM.p130,
-                                child: Text(
-                                  cr_controller.testItemList[index].name,
+                    child: Obx(
+                      () => ListView.builder(
+                        itemCount: cr_Controller.filter_testItemList.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            color: whiteColor,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: DM.p10, vertical: DM.p10),
+                            margin: EdgeInsets.symmetric(vertical: DM.p10),
+                            height: DM.p50,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                SizedBox(
+                                  width: DM.p130,
+                                  child: Text(
+                                    cr_Controller
+                                        .filter_testItemList[index].name,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: DM.p12,
+                                        color: Color.fromARGB(255, 26, 1, 1)),
+                                  ),
+                                ),
+                                Text(
+                                  "Price: " +
+                                      "${cr_Controller.filter_testItemList[index].testprice}"
+                                          .toString(),
                                   style: TextStyle(
                                       fontWeight: FontWeight.w900,
                                       fontSize: DM.p12,
                                       color: Color.fromARGB(255, 26, 1, 1)),
                                 ),
-                              ),
-                              Text(
-                                "Price: " +
-                                    (cr_controller
-                                                .testItemList[index].testprice +
-                                            cr_controller.testItemList[index]
-                                                .testkitprice -
-                                            cr_controller
-                                                .testItemList[index].discount)
-                                        .toString(),
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p12,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                              Obx(
-                                () => SizedBox(
+                                SizedBox(
                                     height: DM.p45,
                                     width: DM.p80,
-                                    child: cr_controller
+                                    child: cr_Controller
                                                     .testItemListWithSelected[
-                                                cr_controller
-                                                    .testItemList[index].id] ==
+                                                cr_Controller
+                                                    .filter_testItemList[index]
+                                                    .id] ==
                                             true
                                         ? MaterialButton(
                                             onPressed: () {
-                                              // cr_controller
-                                              //         .testKey.value =
-                                              //     snapshot.key.toString();
-
-                                              // addTestData();
-                                              cr_controller.testData.add(
-                                                  cr_controller
-                                                      .testItemList[index]);
+                                              cr_Controller.testData.add(
+                                                  cr_Controller
+                                                          .filter_testItemList[
+                                                      index]);
 
                                               setState(() {
-                                                cr_controller
+                                                cr_Controller
                                                             .testItemListWithSelected[
-                                                        cr_controller
-                                                            .testItemList[index]
+                                                        cr_Controller
+                                                            .filter_testItemList[
+                                                                index]
                                                             .id] =
-                                                    !cr_controller
+                                                    !cr_Controller
                                                             .testItemListWithSelected[
-                                                        cr_controller
-                                                            .testItemList[index]
+                                                        cr_Controller
+                                                            .filter_testItemList[
+                                                                index]
                                                             .id]!;
                                               });
 
@@ -159,23 +244,26 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                                             ))
                                         : MaterialButton(
                                             onPressed: () {
-                                              cr_controller.testData
+                                              cr_Controller.testData
                                                   .removeWhere((element) =>
                                                       element.id ==
-                                                      cr_controller
-                                                          .testItemList[index]
+                                                      cr_Controller
+                                                          .filter_testItemList[
+                                                              index]
                                                           .id);
 
                                               setState(() {
-                                                cr_controller
+                                                cr_Controller
                                                             .testItemListWithSelected[
-                                                        cr_controller
-                                                            .testItemList[index]
+                                                        cr_Controller
+                                                            .filter_testItemList[
+                                                                index]
                                                             .id] =
-                                                    !cr_controller
+                                                    !cr_Controller
                                                             .testItemListWithSelected[
-                                                        cr_controller
-                                                            .testItemList[index]
+                                                        cr_Controller
+                                                            .filter_testItemList[
+                                                                index]
                                                             .id]!;
                                               });
 
@@ -190,30 +278,37 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                                                   fontSize: DM.p10,
                                                   fontWeight: FontWeight.bold),
                                             ))),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   )),
-                  MaterialButton(
-                    onPressed: () {
-                      calculationProcess();
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: DM.p10),
+                    child: MaterialButton(
+                      onPressed: () {
+                       // cr_Controller.testItemListWithSelected.ma
 
-                      // Get.to(CreateRequest());
-                      Get.back();
-                    },
-                    height: DM.p45,
-                    minWidth: DM.p130,
-                    shape: const StadiumBorder(),
-                    color: orangeColor,
-                    child: Text(
-                      "Submit",
-                      style: TextStyle(
-                          color: fullWhiteColor,
-                          fontSize: DM.p15,
-                          fontWeight: FontWeight.bold),
+                        calculationProcess();
+
+
+
+                        // Get.to(CreateRequest());
+                        Get.back();
+                      },
+                      height: DM.p45,
+                      minWidth: DM.p130,
+                      shape: const StadiumBorder(),
+                      color: orangeColor,
+                      child: Text(
+                        "Add",
+                        style: TextStyle(
+                            color: fullWhiteColor,
+                            fontSize: DM.p15,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ],
@@ -224,7 +319,7 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
               child: IconButton(
                 icon: Icon(CupertinoIcons.xmark),
                 onPressed: () {
-                  Get.back();
+                  Navigator.pop(context);
                 },
               ))
         ],

@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
 
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/ConfirmationList.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Confirmation_TestItem.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListDialogueBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
@@ -27,38 +28,96 @@ import '../Login_info.dart';
 
 class TestDataCreate extends StatefulWidget {
   // static const String id = "sign_up_page";
-
-  const TestDataCreate({Key? key}) : super(key: key);
+  TestData? testItem;
+  TestDataCreate({Key? key, this.testItem}) : super(key: key);
 
   @override
   _TestDataCreateState createState() => _TestDataCreateState();
 }
 
 class _TestDataCreateState extends State<TestDataCreate> {
+  var updatedTestItemData;
+  var inserNewTestItem;
+  Future<void> updateTestItem() async {
+    int currentTime = DateTime.now().millisecondsSinceEpoch;
+    name.text = widget.testItem!.name;
+    servicecharge.text = widget.testItem!.servicecharge.toString();
+    currentTime = widget.testItem!.lastupdate;
+    softdelete.text = widget.testItem!.softdelete.toString();
+    diagnostic_center.text = widget.testItem!.diagnostic_center.toString();
+    discount.text = widget.testItem!.discount.toString();
+    niddle_cost.text = widget.testItem!.niddle_cost.toString();
+    testkitprice.text = widget.testItem!.testkitprice.toString();
+    testprice.text = widget.testItem!.testprice.toString();
+    transport_cost.text = widget.testItem!.transport_cost.toString();
+
+    late DatabaseReference _dbref_testReqModel;
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
+
+    updatedTestItemData = TestData(
+      id: widget.testItem!.id,
+      name: name.text,
+      servicecharge: servicecharge.text,
+      lastupdate: currentTime,
+      softdelete: softdelete.text,
+      diagnostic_center: diagnostic_center.text,
+      discount: discount.text,
+      niddle_cost: niddle_cost.text,
+      testkitprice: testkitprice.text,
+      testprice: testprice.text,
+      transport_cost: transport_cost.text,
+    );
+    if (newTestListData != null) {
+      await _dbref_testReqModel
+          .child("testModel")
+          .child(newTestListData.id)
+          .update(newTestListData.toJson());
+    }
+  }
+
+  Future<void> insertNewTestItemMethod() async {
+    int currentTime = DateTime.now().millisecondsSinceEpoch;
+
+    late DatabaseReference _dbref_testReqModel;
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
+
+    inserNewTestItem = TestData(
+      id: Uuid().v4(),
+      name: name.text,
+      servicecharge: servicecharge.text,
+      lastupdate: currentTime,
+      softdelete: softdelete.text,
+      diagnostic_center: diagnostic_center.text,
+      discount: discount.text,
+      niddle_cost: niddle_cost.text,
+      testkitprice: testkitprice.text,
+      testprice: testprice.text,
+      transport_cost: transport_cost.text,
+    );
+    if (inserNewTestItem != null) {
+      await _dbref_testReqModel
+          .child("testModel")
+          .child(inserNewTestItem.id)
+          .set(inserNewTestItem.toJson());
+    }
+  }
+
   @override
   void initState() {
+    if (widget.testItem != null) {
+      print("From Update Class");
+      updateTestItem();
+    } else {
+      print("From New Item Class");
+    }
+
     // TODO: implement initState
     super.initState();
   }
 
-  /**
-   *  name: parsedJson['name'],
-        testprice: parsedJson['testprice'],
-        discount: parsedJson['discount'],
-        diagnostic_center: parsedJson['diagnostic_center'],
-        testkitprice: parsedJson['testkitprice'],
-        lastupdate: parsedJson['lastupdate'],
-        softdelete: parsedJson['softdelete'],
-        transport_cost: parsedJson['transport_cost'],
-        niddle_cost: parsedJson['niddle_cost'],
-        servicecharge: parsedJson['servicecharge']
-   */
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? latitude;
   String? longitude;
-
-  final addressText = TextEditingController();
-  final referredAddressText = TextEditingController();
 
   var name = new TextEditingController();
   var diagnostic_center = new TextEditingController();
@@ -71,7 +130,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
   var testprice = TextEditingController();
   //form variables:
 
-  var newRequestData;
+  var newTestListData;
 
   CreateRequest_controller createReqController =
       Get.put(CreateRequest_controller());
@@ -93,7 +152,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
       late DatabaseReference _dbref_testReqModel;
       _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
 
-      newRequestData = TestData(
+      newTestListData = TestData(
         id: ((Random().nextInt(900000) + 100000).toString()),
         name: name.text,
         servicecharge: servicecharge.text,
@@ -111,12 +170,12 @@ class _TestDataCreateState extends State<TestDataCreate> {
       //     .child("testRequest/${newRequestData.mobile.toString()}")
       //     .once();
       //checking duplicate child && add data
-      if (newRequestData != null) {
+      if (newTestListData != null) {
         await _dbref_testReqModel
             .child("testRequest")
-            .child(newRequestData.mobile.toString())
-            .child(newRequestData.id)
-            .set(newRequestData.toJson());
+            .child(newTestListData.mobile.toString())
+            .child(newTestListData.id)
+            .set(newTestListData.toJson());
 
         Get.snackbar(
             margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
@@ -182,14 +241,14 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           textInputType: TextInputType.name,
                           controller: name,
                           title: "Name",
-                          value: "Write Your Name",
+                          value: "Write yout name",
                           activate: false,
                         ),
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
                           textInputType: TextInputType.name,
-                          controller: name,
+                          controller: diagnostic_center,
                           title: "Diagnostic center",
                           value: "Write Diagnostic Name",
                           activate: false,
@@ -198,7 +257,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           formKey: _formKey,
                           validatorField: validateString,
                           textInputType: TextInputType.name,
-                          controller: name,
+                          controller: servicecharge,
                           title: "Service charge",
                           value: "20.0",
                           activate: false,
@@ -207,7 +266,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           formKey: _formKey,
                           validatorField: validateString,
                           textInputType: TextInputType.name,
-                          controller: name,
+                          controller: discount,
                           title: "Discount",
                           value: "15.0",
                           activate: false,
@@ -216,7 +275,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           formKey: _formKey,
                           validatorField: validateString,
                           textInputType: TextInputType.name,
-                          controller: name,
+                          controller: niddle_cost,
                           title: "Niddle Cost",
                           value: "10.0",
                           activate: false,
@@ -225,7 +284,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           formKey: _formKey,
                           validatorField: validateString,
                           textInputType: TextInputType.name,
-                          controller: name,
+                          controller: transport_cost,
                           title: "Transport cost",
                           value: "50.0",
                           activate: false,
@@ -234,9 +293,27 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           formKey: _formKey,
                           validatorField: validateString,
                           textInputType: TextInputType.name,
-                          controller: name,
-                          title: "Testkitprice",
+                          controller: testkitprice,
+                          title: "Tube Cost",
                           value: "70.0",
+                          activate: false,
+                        ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          validatorField: validateString,
+                          textInputType: TextInputType.name,
+                          controller: testprice,
+                          title: "Testprice",
+                          value: "70.0",
+                          activate: false,
+                        ),
+                         FormUserInfo(
+                          formKey: _formKey,
+                          validatorField: validateString,
+                          textInputType: TextInputType.name,
+                          controller: softdelete,
+                          title: "Softdelete",
+                          value: "0",
                           activate: false,
                         ),
                       ],
@@ -285,15 +362,24 @@ class _TestDataCreateState extends State<TestDataCreate> {
                               onPressed: () async {
                                 if (_formKey.currentState?.validate() == true) {
                                   if (await chechkingInternet()) {
-                                    showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return MyDialogView(
-                                            myChild: ConfirmationList(
-                                                newRequestData: newRequestData,
-                                                addTestRequest: addTestRequest),
-                                          );
-                                        });
+                                   insertNewTestItemMethod();
+                                    // showDialog(
+                                    //     context: context,
+                                    //     builder: (context) {
+                                    //       return MyDialogView(
+                                    //         myChild: widget.testItem == null
+                                    //             ? ConfirmationTestItem(
+                                    //                 newRequestData:
+                                    //                     newTestListData,
+                                    //                 addTestRequest:
+                                    //                     insertNewTestItem)
+                                    //             : ConfirmationTestItem(
+                                    //                 addTestRequest:
+                                    //                     updateTestItem,
+                                    //                 newRequestData:
+                                    //                     newTestListData),
+                                    //       );
+                                    //     });
                                   }
                                 } else {
                                   Get.snackbar(
@@ -313,7 +399,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                               shape: const StadiumBorder(),
                               color: orangeColor,
                               child: Text(
-                                "Submit",
+                                widget.testItem == null ? "Submit" : "Update",
                                 style: TextStyle(
                                     color: fullWhiteColor,
                                     fontSize: DM.p15,
@@ -424,28 +510,6 @@ class FormUserInfo extends StatelessWidget {
     );
   }
 }
-
-//top : flat
-
-//: edit text
-//gender
-//:add test button brdr rdius
-// cross sign in list
-//golden rose light..
-//address
-//add test popup
-//write your name
-//test , transport, total cost
-//light green arektu ligh
-//outline_border listiitem and info
-//freshers...bdjobs
-
-//test , service charge , total cost
-//invoice //timestamp millisecond
-//only title mobile number
-//invoie last 5 digit+ randomnumber
-//teststatus enum
-//softdelete 0
 
 String? validateMobile(String? value) {
   if (value?.length != 11)

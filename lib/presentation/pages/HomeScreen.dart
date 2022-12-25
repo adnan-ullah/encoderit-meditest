@@ -7,6 +7,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
@@ -20,12 +21,14 @@ import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialog
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
+import '../../constants/app_info.dart';
 import '../../constants/colors.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/Create_Request_Controller.dart';
 import '../../state_programming/getController.dart';
 import '../widgets/minorWidgets/frostedContainer.dart';
 import 'Login_info.dart';
+
 
 class HomeScreen extends StatefulWidget {
   // static const String id = "sign_up_page";
@@ -54,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
           width: DM.screenWidth,
           child: Text(
-            "HomePage",
+            "$app_name",
             textAlign: TextAlign.left,
             style: TextStyle(color: creamColor, fontSize: DM.p30),
           ),
@@ -62,81 +65,87 @@ class _HomeScreenState extends State<HomeScreen> {
       ]),
       backgroundColor: creamColor,
       body: Container(
-        height: DM.screenHeight,
         width: DM.screenWidth,
-        child: Container(
-          width: DM.screenWidth,
-          child: Column(
-            children: [
-              // #text_field
-              Container(
-                  margin: EdgeInsets.symmetric(horizontal: DM.p15),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(DM.p10),
-                  ),
-                  child: RequestList()),
-
-              Container(
-                margin:
-                    EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p5),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Container(
-                        child: MaterialButton(
-                          onPressed: () async {
-                            if (await chechkingInternet())
-                              Get.to(Prescription());
-                          },
-                          height: DM.p50,
-                          shape: const StadiumBorder(),
-                          color: orangeColor,
-                          child: Text(
-                            "Prescription \nRequest",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: fullWhiteColor,
-                                fontSize: DM.p15,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: DM.p10,
-                    ),
-                    Expanded(
-                      child: SizedBox(
-                        child: MaterialButton(
-                          onPressed: () async {
-                            if (await chechkingInternet()) {
-                              createReqController.testData.clear();
-                              Get.to(CreateRequest());
-                            }
-                          },
-                          height: DM.p50,
-                          shape: const StadiumBorder(),
-                          color: orangeColor,
-                          child: Text(
-                            "Request \nForm",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: fullWhiteColor,
-                                fontSize: DM.p15,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+        child: Column(
+          children: [
+            // #text_field
+            Container(
+                margin: EdgeInsets.symmetric(horizontal: DM.p15),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(DM.p10),
                 ),
-              )
+                child: RequestList()),
 
-              // #buttons(facebook & github)
-            ],
-          ),
+            InkWell(
+              onTap: _callNumber,
+              child: Container(
+                padding: EdgeInsets.all(DM.p8),
+                child: Text(
+                  "Hotline: 01785890750",
+                  style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: DM.p15,
+                      color: redColor),
+                ),
+              ),
+            ),
+
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: DM.p20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Container(
+                      child: MaterialButton(
+                        onPressed: () async {
+                          if (await chechkingInternet()) Get.to(Prescription());
+                        },
+                        height: DM.p50,
+                        shape: const StadiumBorder(),
+                        color: orangeColor,
+                        child: Text(
+                          "Prescription \nRequest",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: fullWhiteColor,
+                              fontSize: DM.p15,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: DM.p10,
+                  ),
+                  Expanded(
+                    child: SizedBox(
+                      child: MaterialButton(
+                        onPressed: () async {
+                          if (await chechkingInternet()) {
+                            createReqController.testData.clear();
+                            Get.to(CreateRequest());
+                          }
+                        },
+                        height: DM.p50,
+                        shape: const StadiumBorder(),
+                        color: orangeColor,
+                        child: Text(
+                          "Request \nForm",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: fullWhiteColor,
+                              fontSize: DM.p15,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -212,33 +221,8 @@ class FormUserInfo extends StatelessWidget {
   }
 }
 
-//top : flat
 
-//: edit text
-//gender
-//:add test button brdr rdius
-// cross sign in list
-//golden rose light..
-//address
-//add test popup
-//write your name
-//test , transport, total cost
-//light green arektu ligh
-//outline_border listiitem and info
-//freshers...bdjobs
-
-//test , service charge , total cost
-//softdelete
-// //teststatus (1,2,3,4)
-//id__change uuid
-//phone 11 Digit
-//lastupdate //dateofcreated : time
-
-//invoice number 8 digit with random
-//title phone numberit
-
-//id 8 digit
-
-
-/// Get from gallery
-  
+_callNumber() async{
+  const number = '01785890750'; //set the number here
+  bool? res = await FlutterPhoneDirectCaller.callNumber(number);
+}

@@ -46,7 +46,7 @@ class TestData {
         name: parsedJson['name'],
         testprice: parsedJson['testprice'],
         discount: parsedJson['discount'],
-        diagnostic_center: parsedJson['diagnostic_center'],
+        diagnostic_center: parsedJson['diagnosticCenter'],
         testkitprice: parsedJson['testkitprice'],
         lastupdate: parsedJson['lastupdate'],
         softdelete: parsedJson['softdelete'],
@@ -130,8 +130,11 @@ class TestDataRequest {
       gender: parsedJson['gender'],
       mobile: parsedJson['mobile'],
       age: parsedJson['age'],
-       //testlist:List<TestData>.from(parsedJson["testlist"].map((x) => TestData.fromJson(x))),
-      testlist: parsedJson["testlist"] == null ? null : List<TestData>.from(parsedJson["testlist"].map((x) => TestData.fromJson(x))),
+      //testlist:List<TestData>.from(parsedJson["testlist"].map((x) => TestData.fromJson(x))),
+      testlist: parsedJson["testlist"] == null
+          ? null
+          : List<TestData>.from(
+              parsedJson["testlist"].map((x) => TestData.fromJson(x))),
       totalprice: parsedJson['totalprice'],
       servicecharge: parsedJson['servicecharge'],
       address: parsedJson['address'],

@@ -265,7 +265,7 @@ class _PrescriptionState extends State<Prescription> {
                             SizedBox(
                               width: DM.p70,
                               child: Text(
-                                "Phone",
+                                "Contact Number",
                                 style: TextStyle(
                                     fontWeight: FontWeight.w500,
                                     fontSize: DM.p14,
@@ -322,7 +322,7 @@ class _PrescriptionState extends State<Prescription> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.all(DM.p8),
+                        padding: EdgeInsets.all(DM.p10),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
@@ -390,6 +390,11 @@ class _PrescriptionState extends State<Prescription> {
                                                       Container(
                                                         margin: EdgeInsets.all(
                                                             DM.p16),
+                                                        decoration: BoxDecoration(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        25)),
                                                         height: DM.p130,
                                                         width: DM.p120,
                                                         child: ElevatedButton(
@@ -448,7 +453,6 @@ class _PrescriptionState extends State<Prescription> {
                                 : Column(
                                     children: [
                                       Container(
-                                        margin: EdgeInsets.only(left: DM.p5),
                                         height: DM.p220,
                                         width: DM.p180,
                                         child: Image.file(
@@ -594,7 +598,6 @@ class _PrescriptionState extends State<Prescription> {
                                 : Column(
                                     children: [
                                       Container(
-                                        margin: EdgeInsets.only(right: DM.p5),
                                         height: DM.p220,
                                         width: DM.p180,
                                         child: Image.file(

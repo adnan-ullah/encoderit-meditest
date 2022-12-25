@@ -38,6 +38,8 @@ class _CreateRequestState extends State<CreateRequest> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? latitude;
   String? longitude;
+  CreateRequest_controller createRequest_controller =
+      Get.put(CreateRequest_controller());
   void getGPS() async {
     LocationPermission permission = await Geolocator.checkPermission();
 
@@ -67,10 +69,10 @@ class _CreateRequestState extends State<CreateRequest> {
       if (servicestatus) {
         Position position = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.high);
-        setState(() {
-          longitude = position.longitude.toString();
-          latitude = position.latitude.toString();
-        });
+
+        longitude = position.longitude.toString();
+        latitude = position.latitude.toString();
+
         print("YEAHHHHH!!!");
       } else {
         print("GPS Location reallllly granted.");
@@ -81,25 +83,16 @@ class _CreateRequestState extends State<CreateRequest> {
 
   @override
   void initState() {
+    createReqController.totalTestCost.value = 0;
+    createReqController.totalCost.value = 0;
+    createReqController.serviceCost.value = 0;
+    createReqController.totalDiscount.value = 0;
+    createReqController.tubeCost.value = 0;
+ 
     getSharedData();
-    CreateRequest_controller createRequest_controller =
-        Get.put(CreateRequest_controller());
-    //populate testlist
-    late DatabaseReference _dbref_testModel;
-    _dbref_testModel = FirebaseDatabase.instance.ref("meditest/testModel/");
-    createRequest_controller.testItemList.clear();
-    createRequest_controller.testItemListWithSelected.clear();
-    _dbref_testModel.onValue.listen((event) {
-      for (DataSnapshot ds in event.snapshot.children) {
-        TestData testData =
-            TestData.fromJson(json.decode(jsonEncode(ds.value)));
 
-        createRequest_controller.testItemList.add(testData);
-        createRequest_controller.testItemListWithSelected[testData.id] = true;
-
-        print(createRequest_controller.testItemListWithSelected[testData.id]);
-      }
-    });
+    //populate testItemList
+    getTestItemList();
 
     setState(() {
       getGPS();
@@ -116,9 +109,11 @@ class _CreateRequestState extends State<CreateRequest> {
   var phone = TextEditingController();
 
   //form variables:
-  var testCost = 0.0;
-  var totalCost = 0.0;
-  var serviceCost = 0.0;
+  var testCost = 0;
+  var totalCost = 0;
+  var serviceCost = 0;
+  var tubeCost = 0;
+  var totalDiscount = 0;
   var newRequestData;
 
   String? gender = "Male";
@@ -138,23 +133,31 @@ class _CreateRequestState extends State<CreateRequest> {
       createReqController.testData.removeWhere((element) => element.id == id);
       setState(() {
         createReqController.testData.map((testItem) {
-          testCost = testCost +
-              testItem.testprice +
-              testItem.testkitprice -
-              testItem.discount;
-          serviceCost = max(serviceCost, testItem.servicecharge.toDouble());
+          testCost = testCost + int.parse(testItem.testprice.toString());
+          serviceCost = max(serviceCost, testItem.servicecharge);
+
+          tubeCost = tubeCost + int.parse(testItem.testkitprice.toString());
+          totalDiscount =
+              totalDiscount + int.parse(testItem.discount.toString());
         }).toList();
 
-        totalCost = testCost + serviceCost;
+        totalCost = testCost + serviceCost + tubeCost - totalDiscount;
+
         createReqController.testItemListWithSelected[id] =
             !createReqController.testItemListWithSelected[id]!;
+
         createReqController.totalCost.value = totalCost;
         createReqController.totalTestCost.value = testCost;
         createReqController.serviceCost.value = serviceCost;
+        createReqController.totalDiscount.value = totalDiscount;
+        createReqController.tubeCost.value = tubeCost;
 
         testCost = 0;
         totalCost = 0;
         serviceCost = 0;
+        tubeCost = 0;
+
+        totalDiscount = 0;
       });
     }
 
@@ -355,13 +358,13 @@ class _CreateRequestState extends State<CreateRequest> {
                                 validatorField: validateString,
                                 textInputType: TextInputType.name,
                                 controller: name,
-                                title: "Name",
+                                title: "Patient Name",
                                 value: "Write Your Name",
                                 activate: false,
                               ),
                               FormUserInfo(
                                 formKey: _formKey,
-                                     validatorField: validateString,
+                                validatorField: validateString,
                                 textInputType: TextInputType.number,
                                 controller: age,
                                 title: "Age",
@@ -564,7 +567,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                     SizedBox(
                                       width: DM.p100,
                                       child: Text(
-                                        "Phone",
+                                        "Contact Number",
                                         style: TextStyle(
                                             fontWeight: FontWeight.w500,
                                             fontSize: DM.p14,
@@ -586,7 +589,6 @@ class _CreateRequestState extends State<CreateRequest> {
                                           keyboardType: TextInputType.phone,
                                           controller: phone,
                                           validator: validateMobile,
-                                          
                                           decoration: InputDecoration(
                                               errorStyle:
                                                   TextStyle(fontSize: DM.p9),
@@ -635,6 +637,7 @@ class _CreateRequestState extends State<CreateRequest> {
                             child: MaterialButton(
                               onPressed: () async {
                                 if (await chechkingInternet()) {
+                                  
                                   showDialog(
                                       context: context,
                                       builder: (context) {
@@ -706,7 +709,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                               ),
                                             ),
                                             Text(
-                                              "Price: ${(createReqController.testData[index].testprice + createReqController.testData[index].testkitprice - createReqController.testData[index].discount)}",
+                                              "Price: ${createReqController.testData[index].testprice}",
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w900,
                                                   fontSize: DM.p15,
@@ -771,17 +774,17 @@ class _CreateRequestState extends State<CreateRequest> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Test Cost: ${createReqController.totalTestCost.value}",
+                                "(Test + Tube + Collection) = (${createReqController.totalTestCost.value}+${createReqController.tubeCost.value}+${createReqController.serviceCost.value} ) =  ${createReqController.totalTestCost.value + createReqController.tubeCost.value + createReqController.serviceCost.value} /-",
                                 style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: DM.p10,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: DM.p12,
                                     color: Color.fromARGB(255, 26, 1, 1)),
                               ),
                               Text(
-                                "Collection Charge: ${createReqController.serviceCost.value}",
+                                "Discount : ${createReqController.totalDiscount.value} /-",
                                 style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: DM.p10,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: DM.p12,
                                     color: Color.fromARGB(255, 26, 1, 1)),
                               ),
                               Divider(
@@ -793,7 +796,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    "Total Cost: ${createReqController.totalCost.value}",
+                                    "Total Cost: ${createReqController.totalCost.value} /-",
                                     style: TextStyle(
                                         fontWeight: FontWeight.w700,
                                         fontSize: DM.p15,
@@ -880,8 +883,7 @@ class FormUserInfo extends StatelessWidget {
       required this.activate,
       required this.controller,
       required this.textInputType,
-      required this.validatorField}
-      )
+      required this.validatorField})
       : super(
           key: key,
         );
@@ -916,14 +918,10 @@ class FormUserInfo extends StatelessWidget {
               height: DM.p42,
               child: TextFormField(
                 validator: validatorField,
-                onEditingComplete: (() {
-                 
-                }),
-                
+                onEditingComplete: (() {}),
                 keyboardType: textInputType,
                 controller: controller,
                 readOnly: activate,
-                
                 decoration: InputDecoration(
                     errorStyle: TextStyle(fontSize: DM.p9),
                     disabledBorder: OutlineInputBorder(
@@ -991,4 +989,25 @@ String? validateString(String? value) {
     return 'Please fill this form';
   else
     return null;
+}
+
+Future<void> getTestItemList() async {
+  CreateRequest_controller createRequest_controller =
+      Get.put(CreateRequest_controller());
+  late DatabaseReference _dbref_testModel;
+  _dbref_testModel = FirebaseDatabase.instance.ref("meditest/testModel/");
+
+  createRequest_controller.testItemList.clear();
+
+  createRequest_controller.testItemListWithSelected.clear();
+  _dbref_testModel.onValue.listen((event) {
+    for (DataSnapshot ds in event.snapshot.children) {
+      TestData testData = TestData.fromJson(json.decode(jsonEncode(ds.value)));
+
+      createRequest_controller.testItemList.add(testData);
+      createRequest_controller.testItemListWithSelected[testData.id] = true;
+
+      print(testData.name);
+    }
+  });
 }
