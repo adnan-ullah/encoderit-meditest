@@ -57,7 +57,7 @@ class _MyAppState extends State<MyApp> {
             child: Scaffold(
                 resizeToAvoidBottomInset: false,
                 body: MyScaffold(
-                    container: AdminHome(),
+                    container: SplashScreen(),
                     color1: creamColor,
                     color2: creamColor))),
       );

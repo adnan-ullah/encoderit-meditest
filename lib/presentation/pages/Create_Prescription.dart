@@ -96,8 +96,6 @@ class _PrescriptionState extends State<Prescription> {
           colorText: whiteColor,
           "Added",
           "Data added , successfully!");
-
-      Get.to(HomeScreen());
     } else {
       //_onLoading(true);
       Get.snackbar(
@@ -171,8 +169,9 @@ class _PrescriptionState extends State<Prescription> {
       urlDownload2 = await snapshot2.ref.getDownloadURL();
     }
 
-    _onLoading(false);
     addImages(urlDownload1, urlDownload2);
+    Get.back();
+    _onLoading(false);
   }
 
   Future<void> getLocation_Camera() async {
@@ -641,7 +640,6 @@ class _PrescriptionState extends State<Prescription> {
                                   if (imageFile1 != null ||
                                       imageFile2 != null) {
                                     uploadImage();
-                                   
                                   } else {
                                     Get.snackbar(
                                         margin: EdgeInsets.symmetric(
@@ -695,4 +693,3 @@ String? validateMobile(String? value) {
   else
     return null;
 }
-

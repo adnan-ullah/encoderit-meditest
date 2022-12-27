@@ -18,6 +18,7 @@ import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListD
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
 import 'package:intl/intl.dart';
+import 'package:photo_view/photo_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -28,6 +29,7 @@ import '../../../db/databse_model.dart';
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/Create_Request_Controller.dart';
 import '../../../state_programming/getController.dart';
+import '../../widgets/minorWidgets/PhotoViewImage.dart';
 import '../Login_info.dart';
 
 class TestRequestCreate extends StatefulWidget {
@@ -52,7 +54,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   String gender = "Male";
   var phone = new TextEditingController();
   var age = new TextEditingController();
-  List<TestData>? testlist = [];
+  List<TestData> testlist = [];
   var totalprice = new TextEditingController();
   var servicecharge = new TextEditingController();
   var address = new TextEditingController();
@@ -90,6 +92,15 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     referrer.text = widget.testEachRequest!.referrer.toString();
     servicecharge.text = widget.testEachRequest!.servicecharge.toString();
     totalprice.text = widget.testEachRequest!.totalprice.toString();
+
+    setState(
+      () {
+        if (widget.testEachRequest!.testlist != null)
+          testlist.addAll(widget.testEachRequest!.testlist as List<TestData>);
+
+        print(testlist.toList());
+      },
+    );
 
     if (widget.testEachRequest!.image_one == null)
       image_one.text = "empty";
@@ -339,7 +350,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           activate: false,
                         ),
                         Padding(
-                          padding: EdgeInsets.all(DM.p1),
+                          padding: EdgeInsets.all(DM.p5),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -411,7 +422,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.all(DM.p1),
+                          padding: EdgeInsets.all(DM.p5),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -543,55 +554,41 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 ],
                               ),
                             ),
-                            Obx(
-                              () => Container(
-                                margin: EdgeInsets.symmetric(
-                                    horizontal: DM.p10, vertical: DM.p3),
-                                height: DM.screenHeight * 0.35,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: whiteColor,
-                                  borderRadius: BorderRadius.circular(DM.p10),
-                                ),
-                                child: createReqController.testData.length != 0
-                                    ? ListView.builder(
-                                        itemCount:
-                                            createReqController.testData.length,
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: DM.p15),
-                                        itemBuilder: (context, index) {
-                                          return Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: DM.p1,
-                                            ),
-                                            margin:
-                                                EdgeInsets.only(top: DM.p10),
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(DM.p10),
-                                            ),
-                                            child: Container(
-                                              margin: EdgeInsets.only(left: 10),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  SizedBox(
-                                                    width: DM.p170,
-                                                    child: Text(
-                                                      createReqController
-                                                          .testData[index].name,
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: DM.p15,
-                                                          color: Color.fromARGB(
-                                                              255, 26, 1, 1)),
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    "Price: ${createReqController.testData[index].testprice}",
+                            Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: DM.p10, vertical: DM.p3),
+                              height: DM.screenHeight * 0.35,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: whiteColor,
+                                borderRadius: BorderRadius.circular(DM.p10),
+                              ),
+                              child: testlist.length != 0
+                                  ? ListView.builder(
+                                      itemCount: testlist.length,
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: DM.p15),
+                                      itemBuilder: (context, index) {
+                                        return Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: DM.p1,
+                                          ),
+                                          margin: EdgeInsets.only(top: DM.p10),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(DM.p10),
+                                          ),
+                                          child: Container(
+                                            margin: EdgeInsets.only(left: 10),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                SizedBox(
+                                                  width: DM.p170,
+                                                  child: Text(
+                                                    testlist[index].name,
                                                     style: TextStyle(
                                                         fontWeight:
                                                             FontWeight.w900,
@@ -599,55 +596,62 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                         color: Color.fromARGB(
                                                             255, 26, 1, 1)),
                                                   ),
-                                                  Container(
-                                                    child: IconButton(
-                                                      color: orangeColor,
-                                                      icon: Icon(
-                                                        CupertinoIcons
-                                                            .xmark_circle_fill,
-                                                        size: DM.p30,
-                                                      ),
-                                                      onPressed: () {
-                                                        // createReqController.removeTestData(
-                                                        //     createReqController
-                                                        //         .testData[index].id,
-                                                        //     index);
-                                                        removeCalulationProcess(
-                                                            createReqController
-                                                                .testData[index]
-                                                                .id);
-                                                        // createReqController
-                                                        //     .calulationTestdata();
-                                                      },
+                                                ),
+                                                Text(
+                                                  "Price: ${testlist[index].testprice}",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      fontSize: DM.p15,
+                                                      color: Color.fromARGB(
+                                                          255, 26, 1, 1)),
+                                                ),
+                                                Container(
+                                                  child: IconButton(
+                                                    color: orangeColor,
+                                                    icon: Icon(
+                                                      CupertinoIcons
+                                                          .xmark_circle_fill,
+                                                      size: DM.p30,
                                                     ),
+                                                    onPressed: () {
+                                                      // createReqController.removeTestData(
+                                                      //     createReqController
+                                                      //         .testData[index].id,
+                                                      //     index);
+                                                      removeCalulationProcess(
+                                                          testlist[index].id);
+                                                      // createReqController
+                                                      //     .calulationTestdata();
+                                                    },
                                                   ),
-                                                ],
-                                              ),
+                                                ),
+                                              ],
                                             ),
-                                          );
-                                        },
-                                      )
-                                    : Container(
-                                        margin: EdgeInsets.all(DM.p10),
-                                        height: DM.screenHeight * 0.33,
-                                        width: double.infinity,
-                                        decoration: BoxDecoration(
-                                          color: whiteColor,
-                                          borderRadius:
-                                              BorderRadius.circular(DM.p10),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            "${createReqController.emptyString}",
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: DM.p15,
-                                                color: Color.fromARGB(
-                                                    255, 26, 1, 1)),
                                           ),
+                                        );
+                                      },
+                                    )
+                                  : Container(
+                                      margin: EdgeInsets.all(DM.p10),
+                                      height: DM.screenHeight * 0.33,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: whiteColor,
+                                        borderRadius:
+                                            BorderRadius.circular(DM.p10),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          "${createReqController.emptyString}",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: DM.p15,
+                                              color: Color.fromARGB(
+                                                  255, 26, 1, 1)),
                                         ),
                                       ),
-                              ),
+                                    ),
                             ),
                             Obx(
                               () => Container(
@@ -789,43 +793,203 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                               SizedBox(
                                 height: DM.p5,
                               ),
-                              image_one.text == "empty"
-                                  ? Row(
-                                      children: [
-                                        Container(
-                                          margin: EdgeInsets.symmetric(
-                                              horizontal: 5),
-                                          color: Colors.red,
-                                          height: DM.p220,
-                                          width: DM.p170,
-                                        ),
-                                        Container(
-                                          margin: EdgeInsets.symmetric(
-                                              horizontal: 5),
-                                          color: Colors.red,
-                                          height: DM.p220,
-                                          width: DM.p170,
-                                        ),
-                                      ],
+                              widget.testEachRequest!.type == 1
+                                  ? Container(
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            height: DM.p60,
+                                            width: DM.p160,
+                                            margin: EdgeInsets.symmetric(
+                                              vertical: DM.p25,
+                                            ),
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: DM.p20),
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              DM.p10)),
+                                                  primary: orangeColor),
+                                              onPressed: () {},
+                                              child: Text(
+                                                "Image 1",
+                                                style: TextStyle(
+                                                    color: fullWhiteColor,
+                                                    fontSize: DM.p15,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: DM.p10,
+                                          ),
+                                          Container(
+                                            height: DM.p60,
+                                            width: DM.p160,
+                                            margin: EdgeInsets.symmetric(
+                                              vertical: DM.p25,
+                                            ),
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: DM.p20),
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              DM.p10)),
+                                                  primary: orangeColor),
+                                              onPressed: () {},
+                                              child: Text(
+                                                "Image 2",
+                                                style: TextStyle(
+                                                    color: fullWhiteColor,
+                                                    fontSize: DM.p15,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     )
                                   : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        Container(
-                                          margin: EdgeInsets.symmetric(
-                                              horizontal: 5),
-                                          color: Color.fromARGB(
-                                              255, 111, 245, 155),
-                                          height: DM.p220,
-                                          width: DM.p170,
+                                        image_one.text != "empty"
+                                            ?   Column(
+                                              children: [
+                                                InkWell(
+                                                    onTap: () => showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return MyDialogView(
+                                                              myChild: MyPhotoView(
+                                                                  image:
+                                                                      image_one.text));
+                                                        }),
+                                                    child: Container(
+                                                      height: DM.p200,
+                                                      width: DM.p160,
+                                                      child: Image.network(
+                                                        image_one.text,
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  IconButton(
+                                        color: orangeColor,
+                                        icon: Icon(
+                                          CupertinoIcons.xmark_circle_fill,
+                                          size: DM.p30,
                                         ),
-                                        Container(
-                                          margin: EdgeInsets.symmetric(
-                                              horizontal: 5),
-                                          color:
-                                              Color.fromARGB(255, 64, 241, 94),
-                                          height: DM.p220,
-                                          width: DM.p170,
+                                        onPressed: () {
+                                          setState(() {
+                                            image_one.text = "empty";
+                                          });
+                                        },
+                                      ),
+                                              ],
+                                            )
+                                            : Container(
+                                                height: DM.p60,
+                                                width: DM.p160,
+                                                margin: EdgeInsets.symmetric(
+                                                  vertical: DM.p25,
+                                                ),
+                                                child: ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: DM.p20),
+                                                      shape: RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      DM.p10)),
+                                                      primary: orangeColor),
+                                                  onPressed: () {},
+                                                  child: Text(
+                                                    "Image 1",
+                                                    style: TextStyle(
+                                                        color: fullWhiteColor,
+                                                        fontSize: DM.p15,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ),
+                                              ),
+                                        SizedBox(
+                                          width: DM.p10,
                                         ),
+                                        image_two.text != "empty"
+                                            ? Column(
+                                              children: [
+                                                InkWell(
+                                                    onTap: () => showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return MyDialogView(
+                                                              myChild: MyPhotoView(
+                                                                  image:
+                                                                      image_two.text));
+                                                        }),
+                                                    child: Container(
+                                                      height: DM.p200,
+                                                      width: DM.p160,
+                                                      child: Image.network(
+                                                        image_two.text,
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  IconButton(
+                                        color: orangeColor,
+                                        icon: Icon(
+                                          CupertinoIcons.xmark_circle_fill,
+                                          size: DM.p30,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            image_two.text = "empty";
+                                          });
+                                        },
+                                      ),
+                                              ],
+                                            )
+                                            : Container(
+                                                height: DM.p60,
+                                                width: DM.p160,
+                                                margin: EdgeInsets.symmetric(
+                                                  vertical: DM.p25,
+                                                ),
+                                                child: ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: DM.p20),
+                                                      shape: RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      DM.p10)),
+                                                      primary: orangeColor),
+                                                  onPressed: () {},
+                                                  child: Text(
+                                                    "Image 2",
+                                                    style: TextStyle(
+                                                        color: fullWhiteColor,
+                                                        fontSize: DM.p15,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ),
+                                              ),
                                       ],
                                     ),
                             ],
@@ -931,7 +1095,7 @@ class FormUserInfo extends StatelessWidget {
           ),
           Flexible(
             child: Container(
-              height: DM.p30,
+              height: DM.p42,
               child: TextFormField(
                 validator: validatorField,
                 onEditingComplete: (() {}),
