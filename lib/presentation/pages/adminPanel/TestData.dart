@@ -38,11 +38,12 @@ class TestDataCreate extends StatefulWidget {
 class _TestDataCreateState extends State<TestDataCreate> {
   var updatedTestItemData;
   var inserNewTestItem;
+
   Future<void> updateTestItem() async {
-    int currentTime = DateTime.now().millisecondsSinceEpoch;
+    
+
     name.text = widget.testItem!.name;
     servicecharge.text = widget.testItem!.servicecharge.toString();
-    currentTime = widget.testItem!.lastupdate;
     softdelete.text = widget.testItem!.softdelete.toString();
     diagnostic_center.text = widget.testItem!.diagnostic_center.toString();
     discount.text = widget.testItem!.discount.toString();
@@ -50,35 +51,38 @@ class _TestDataCreateState extends State<TestDataCreate> {
     testkitprice.text = widget.testItem!.testkitprice.toString();
     testprice.text = widget.testItem!.testprice.toString();
     transport_cost.text = widget.testItem!.transport_cost.toString();
+  }
 
-    late DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
+  Future<void> updateToFirebase() async {
+    int currentTime = DateTime.now().millisecondsSinceEpoch;
+    late DatabaseReference dbrefTestReqModel;
+    dbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
 
     updatedTestItemData = TestData(
-      id: widget.testItem!.id,
-      name: name.text,
-      servicecharge: servicecharge.text,
-      lastupdate: currentTime,
-      softdelete: softdelete.text,
-      diagnostic_center: diagnostic_center.text,
-      discount: discount.text,
-      niddle_cost: niddle_cost.text,
-      testkitprice: testkitprice.text,
-      testprice: testprice.text,
-      transport_cost: transport_cost.text,
+      id: widget.testItem!.id.toString(),
+      name: name.text.toString(),
+      servicecharge: servicecharge.text.toString(),
+      lastupdate: currentTime.toString(),
+      softdelete: softdelete.text.toString(),
+      diagnostic_center: diagnostic_center.text.toString(),
+      discount: discount.text.toString(),
+      niddle_cost: niddle_cost.text.toString(),
+      testkitprice: testkitprice.text.toString(),
+      testprice: testprice.text.toString(),
+      transport_cost: transport_cost.text.toString(),
     );
-    if (newTestListData != null) {
-      await _dbref_testReqModel
+
+    if (updatedTestItemData != null) {
+      await dbrefTestReqModel
           .child("testModel")
-          .child(newTestListData.id)
-          .update(newTestListData.toJson());
+          .child(updatedTestItemData.id)
+          .update(jsonDecode(jsonEncode(updatedTestItemData)));
     }
   }
 
   Future<void> insertNewTestItemMethod() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
-
-    late DatabaseReference _dbref_testReqModel;
+    DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
 
     inserNewTestItem = TestData(
@@ -143,59 +147,8 @@ class _TestDataCreateState extends State<TestDataCreate> {
   @override
   Widget build(BuildContext context) {
     chechkingInternet();
-
-    Future<void> addTestRequest() async {
-      int currentTime = DateTime.now().millisecondsSinceEpoch;
-      // DateTime currentTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-      // String currentTime = DateFormat('dd-MMM-yyy').format(tsdate);
-
-      late DatabaseReference _dbref_testReqModel;
-      _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
-
-      newTestListData = TestData(
-        id: ((Random().nextInt(900000) + 100000).toString()),
-        name: name.text,
-        servicecharge: servicecharge.text,
-        lastupdate: currentTime,
-        softdelete: softdelete.text,
-        diagnostic_center: diagnostic_center.text,
-        discount: discount.text,
-        niddle_cost: niddle_cost.text,
-        testkitprice: testkitprice.text,
-        testprice: testprice.text,
-        transport_cost: transport_cost.text,
-      );
-
-      // DatabaseEvent ds = await _dbref_testReqModel
-      //     .child("testRequest/${newRequestData.mobile.toString()}")
-      //     .once();
-      //checking duplicate child && add data
-      if (newTestListData != null) {
-        await _dbref_testReqModel
-            .child("testRequest")
-            .child(newTestListData.mobile.toString())
-            .child(newTestListData.id)
-            .set(newTestListData.toJson());
-
-        Get.snackbar(
-            margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
-            duration: Duration(milliseconds: 2000),
-            backgroundColor: limeBGColor,
-            colorText: whiteColor,
-            "Added",
-            "Data added , successfully!");
-      } else {
-        Get.snackbar(
-            margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
-            duration: Duration(milliseconds: 2000),
-            backgroundColor: redColor,
-            colorText: whiteColor,
-            "Request already exist",
-            "Failed to added!");
-      }
-    }
-
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
@@ -208,18 +161,16 @@ class _TestDataCreateState extends State<TestDataCreate> {
         ),
       ]),
       backgroundColor: creamColor,
-      body: Form(
-        key: _formKey,
-        child: Container(
-          height: DM.screenHeight,
-          width: DM.screenWidth,
+      body: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
           child: Container(
             width: DM.screenWidth,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                    padding: EdgeInsets.all(DM.p5),
+                    padding: EdgeInsets.all(DM.p15),
                     margin: EdgeInsets.symmetric(
                         horizontal: DM.p15, vertical: DM.p30),
                     decoration: BoxDecoration(
@@ -258,7 +209,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           validatorField: validateString,
                           textInputType: TextInputType.name,
                           controller: servicecharge,
-                          title: "Service charge",
+                          title: "Collection charge",
                           value: "20.0",
                           activate: false,
                         ),
@@ -330,24 +281,12 @@ class _TestDataCreateState extends State<TestDataCreate> {
                     onPressed: () async {
                       if (_formKey.currentState?.validate() == true) {
                         if (await chechkingInternet()) {
-                          insertNewTestItemMethod();
-                          // showDialog(
-                          //     context: context,
-                          //     builder: (context) {
-                          //       return MyDialogView(
-                          //         myChild: widget.testItem == null
-                          //             ? ConfirmationTestItem(
-                          //                 newRequestData:
-                          //                     newTestListData,
-                          //                 addTestRequest:
-                          //                     insertNewTestItem)
-                          //             : ConfirmationTestItem(
-                          //                 addTestRequest:
-                          //                     updateTestItem,
-                          //                 newRequestData:
-                          //                     newTestListData),
-                          //       );
-                          //     });
+                          if (widget.testItem == null) {
+                            insertNewTestItemMethod();
+                      
+                          } else {
+                            updateToFirebase();
+                          }
                         }
                       } else {
                         Get.snackbar(
@@ -409,7 +348,7 @@ class FormUserInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(DM.p1),
+      padding: EdgeInsets.all(DM.p5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -433,11 +372,12 @@ class FormUserInfo extends StatelessWidget {
           ),
           Flexible(
             child: Container(
-              height: DM.p42,
               child: TextFormField(
+                autofocus: true,
+                keyboardType: TextInputType.multiline,
+                maxLines: null,
                 validator: validatorField,
                 onEditingComplete: (() {}),
-                keyboardType: textInputType,
                 controller: controller,
                 readOnly: activate,
                 decoration: InputDecoration(

@@ -16,6 +16,10 @@ class CreateRequest_controller extends GetxController {
   var filter_testItemList = <TestData>[].obs;
 
 
+    var testRequestList = <TestData>[].obs;
+  var filter_testRequestList = <TestData>[].obs;
+
+
   Rx<Icon> searchBox = Icon(Icons.search,color: orangeColor,).obs;
   Rx<Icon> clearBox = Icon(Icons.clear, color: orangeColor,).obs;
   

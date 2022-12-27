@@ -39,6 +39,11 @@ dependencies:
   firebase_core_desktop: null
   firebase_database: null
   firebase_storage: ^11.0.9
+
+
+ 
+
+  
   flutter:
     sdk: flutter
   fluttertoast: ^8.1.2
@@ -56,6 +61,8 @@ dependencies:
   url_launcher: ^6.1.7
   uuid: ^3.0.6
   flutter_phone_direct_caller: ^2.1.1
+  firebase_messaging: ^14.2.0
+  map_launcher: ^2.4.0
 
 # dependency_overrides:
 #   firebase_messaging_platform_interface: 3.1.6

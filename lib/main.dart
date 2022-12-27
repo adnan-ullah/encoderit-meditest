@@ -8,12 +8,15 @@ import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
 import 'package:healthcare_homelab/presentation/pages/Login_info.dart';
+import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminHom.dart';
+import 'package:healthcare_homelab/presentation/pages/adminPanel/StatusRequestList.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
 import 'package:sizer/sizer.dart';
 
 import 'presentation/pages/splash_pages/SplashScreen.dart';
 import 'presentation/widgets/majorWidgets/MyScaffold.dart';
+import 'responsives/dimensions.dart';
 
 // void main() => runApp(const MyApp());
 
@@ -23,8 +26,19 @@ Future<void> main() async {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,15 +47,13 @@ class MyApp extends StatelessWidget {
       return GetMaterialApp(
         debugShowCheckedModeBanner: false,
         home: SafeArea(
-         
-          maintainBottomViewPadding: true,
-          child: Scaffold(
-            body: MyScaffold(
-                container: LoginScreen(),
-                color1: creamColor,
-                color2: creamColor),
-          ),
-        ),
+            maintainBottomViewPadding: true,
+            child: Scaffold(
+                resizeToAvoidBottomInset: false,
+                body: MyScaffold(
+                    container: StatusRequestList(),
+                    color1: creamColor,
+                    color2: creamColor))),
       );
     });
   }

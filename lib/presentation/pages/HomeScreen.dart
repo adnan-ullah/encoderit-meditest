@@ -29,7 +29,6 @@ import '../../state_programming/getController.dart';
 import '../widgets/minorWidgets/frostedContainer.dart';
 import 'Login_info.dart';
 
-
 class HomeScreen extends StatefulWidget {
   // static const String id = "sign_up_page";
 
@@ -54,12 +53,15 @@ class _HomeScreenState extends State<HomeScreen> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
         Container(
-          padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
+          alignment: Alignment.centerLeft,
+          padding: EdgeInsets.only(left: DM.p50),
           width: DM.screenWidth,
           child: Text(
             "$app_name",
-            textAlign: TextAlign.left,
-            style: TextStyle(color: creamColor, fontSize: DM.p30),
+            style: TextStyle(
+                color: creamColor,
+                fontWeight: FontWeight.bold,
+                fontSize: DM.p25),
           ),
         ),
       ]),
@@ -221,8 +223,7 @@ class FormUserInfo extends StatelessWidget {
   }
 }
 
-
-_callNumber() async{
+_callNumber() async {
   const number = '01785890750'; //set the number here
   bool? res = await FlutterPhoneDirectCaller.callNumber(number);
 }

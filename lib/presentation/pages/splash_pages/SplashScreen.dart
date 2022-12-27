@@ -21,7 +21,8 @@ class SplashScreen extends StatelessWidget {
         container: EasySplashScreen(
           loaderColor: orangeColor,
           //backgroundImage: Image.asset('lib/assets/images/plus.png',,).image,
-          logo: Image.asset('lib/assets/images/new_plus.png',height: 290,width: 120,),
+          logo: Image(image: AssetImage("lib/assets/images/new_plus.png")),
+          logoWidth: 100,
           title: Text(
             "Health Care Homelab",
             style: TextStyle(
@@ -31,6 +32,7 @@ class SplashScreen extends StatelessWidget {
           ),
           backgroundColor: creamColor,
           showLoader: true,
+    
           loadingText: Text(
             "Loading...",
             style: TextStyle(

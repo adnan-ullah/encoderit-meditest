@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 
-@JsonSerializable(explicitToJson: true)
+
 class TestData {
   TestData(
       {this.id,
@@ -15,7 +15,7 @@ class TestData {
       required this.niddle_cost,
       required this.servicecharge});
 
-  final dynamic id;
+   final dynamic id;
   final dynamic name;
   final dynamic testprice;
   final dynamic discount;

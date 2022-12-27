@@ -36,7 +36,8 @@ class _ConfirmationListState extends State<ConfirmationList> {
       cr_controller.testData.map((testItem) {
         testCost = testCost + int.parse(testItem.testprice.toString());
 
-        serviceCost = max(serviceCost, testItem.servicecharge);
+        serviceCost =
+            max(serviceCost, int.parse(testItem.testprice.toString()));
         tubeCost = tubeCost + int.parse(testItem.testkitprice.toString());
         totalDiscount = totalDiscount + int.parse(testItem.discount.toString());
       }).toList();
@@ -114,20 +115,23 @@ class _ConfirmationListState extends State<ConfirmationList> {
                               color: whiteColor,
                               padding: EdgeInsets.symmetric(
                                   horizontal: DM.p10, vertical: DM.p5),
-                              margin: EdgeInsets.symmetric(vertical: DM.p1),
-                              height: DM.p45,
+                              margin: EdgeInsets.symmetric(vertical: DM.p10),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  SizedBox(
-                                    width: DM.p130,
-                                    child: Text(
-                                      cr_controller.testData[index].name,
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w900,
-                                          fontSize: DM.p12,
-                                          color: Color.fromARGB(255, 26, 1, 1)),
+                                  Expanded(
+                                    child: SizedBox(
+                                      width: DM.p130,
+                                      child: Text(
+                                        cr_controller.testData[index].name +
+                                            " (${cr_controller.testData[index].diagnostic_center})",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: DM.p12,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
                                     ),
                                   ),
                                   Text(

@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
+import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminHom.dart';
+import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
 import 'package:sizer/sizer.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
@@ -56,12 +58,16 @@ class _LoginScreenState extends State<LoginScreen> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
         Container(
-          padding: EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p2),
+          alignment: Alignment.centerLeft,
+          padding: EdgeInsets.symmetric(horizontal: DM.p20),
           width: DM.screenWidth,
           child: Text(
             "Login",
             textAlign: TextAlign.left,
-            style: TextStyle(color: creamColor, fontSize: DM.p30),
+            style: TextStyle(
+                color: creamColor,
+                fontWeight: FontWeight.bold,
+                fontSize: DM.p25),
           ),
         ),
       ]),
@@ -188,7 +194,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                           true &&
                                       await chechkingInternet()) {
                                     savePhone(phone.text);
-                                    Get.to(HomeScreen());
+                                    if (phone.text == "111111111111") {
+                                      Get.to(AdminHome());
+                                    } else {
+                                      Get.to(HomeScreen());
+                                    }
                                   }
                                 },
                                 height: DM.p50,

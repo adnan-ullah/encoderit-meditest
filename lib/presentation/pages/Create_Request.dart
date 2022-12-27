@@ -134,7 +134,8 @@ class _CreateRequestState extends State<CreateRequest> {
       setState(() {
         createReqController.testData.map((testItem) {
           testCost = testCost + int.parse(testItem.testprice.toString());
-          serviceCost = max(serviceCost, testItem.servicecharge);
+          serviceCost =
+              max(serviceCost, int.parse(testItem.servicecharge.toString()));
 
           tubeCost = tubeCost + int.parse(testItem.testkitprice.toString());
           totalDiscount =
@@ -330,537 +331,557 @@ class _CreateRequestState extends State<CreateRequest> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Container(
-                  width: DM.screenWidth,
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: DM.p4,
-                      ),
-                      Container(
-                          padding: EdgeInsets.all(DM.p5),
-                          margin: EdgeInsets.symmetric(horizontal: DM.p15),
-                          decoration: BoxDecoration(
-                              color: whiteColor,
-                              borderRadius: BorderRadius.circular(DM.p10),
-                              boxShadow: [
-                                BoxShadow(
-                                    color: Colors.grey.shade300,
-                                    blurRadius: DM.p20,
-                                    spreadRadius: DM.p1,
-                                    offset: Offset(0, DM.p1))
-                              ]),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              FormUserInfo(
-                                formKey: _formKey,
-                                validatorField: validateString,
-                                textInputType: TextInputType.name,
-                                controller: name,
-                                title: "Patient Name",
-                                value: "Write Your Name",
-                                activate: false,
-                              ),
-                              FormUserInfo(
-                                formKey: _formKey,
-                                validatorField: validateString,
-                                textInputType: TextInputType.number,
-                                controller: age,
-                                title: "Age",
-                                value: "Write Your Age",
-                                activate: false,
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(DM.p1),
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      width: DM.p100,
-                                      child: Text(
-                                        "Gender",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: DM.p14,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: DM.p5,
-                                    ),
-                                    Text(":"),
-                                    SizedBox(
-                                      width: DM.p10,
-                                    ),
-                                    DropdownButton<String>(
-                                      hint: Text("$gender"),
-                                      items: <String>[
-                                        'Male',
-                                        'Female',
-                                      ].map((String value) {
-                                        return DropdownMenuItem<String>(
-                                          value: value,
-                                          child: Text("$value"),
-                                        );
-                                      }).toList(),
-                                      onChanged: (newValue) {
-                                        setState(() {
-                                          gender = newValue;
-                                        });
-                                      },
-                                    ),
-                                  ],
+                child: SingleChildScrollView(
+                  child: Container(
+                    width: DM.screenWidth,
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: DM.p4,
+                        ),
+                        Container(
+                            padding: EdgeInsets.all(DM.p5),
+                            margin: EdgeInsets.symmetric(horizontal: DM.p15),
+                            decoration: BoxDecoration(
+                                color: whiteColor,
+                                borderRadius: BorderRadius.circular(DM.p10),
+                                boxShadow: [
+                                  BoxShadow(
+                                      color: Colors.grey.shade300,
+                                      blurRadius: DM.p20,
+                                      spreadRadius: DM.p1,
+                                      offset: Offset(0, DM.p1))
+                                ]),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                FormUserInfo(
+                                  formKey: _formKey,
+                                  validatorField: validateString,
+                                  textInputType: TextInputType.name,
+                                  controller: name,
+                                  title: "Patient Name",
+                                  value: "Write Your Name",
+                                  activate: false,
                                 ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(DM.p1),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: DM.p100,
-                                      child: Text(
-                                        "Address",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: DM.p14,
-                                            color: blackFontColor),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: DM.p5,
-                                    ),
-                                    Text(":"),
-                                    SizedBox(
-                                      width: DM.p10,
-                                    ),
-                                    Flexible(
-                                      child: Container(
-                                        height: DM.p42,
-                                        child: TextFormField(
-                                          controller: addressText,
-                                          onTap: (() {
-                                            showDialog(
-                                                context: context,
-                                                builder: (context) {
-                                                  return MyDialogView(
-                                                      myChild: TextDialogueBox(
-                                                          keyTitle: "Address",
-                                                          addressText:
-                                                              addressText));
-                                                });
-                                          }),
-                                          decoration: InputDecoration(
-                                              errorStyle:
-                                                  TextStyle(fontSize: DM.p9),
-                                              // focusedErrorBorder:
-                                              //     OutlineInputBorder(
-                                              //         borderSide: BorderSide(
-                                              //             width: DM.p1,
-                                              //             color:
-                                              //                 orangeColor)),
-                                              focusedBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                      width: DM.p1,
-                                                      color: orangeColor)),
-                                              enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    width: DM.p1,
-                                                    color:
-                                                        orangeColor), //<-- SEE HERE
-                                              ),
-                                              filled: true,
-                                              fillColor: fullWhiteColor,
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                      horizontal: DM.p10),
-                                              border: InputBorder.none,
-                                              hintText: "Ex:Chittagong",
-                                              hintStyle: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: DM.p14,
-                                              )),
+                                FormUserInfo(
+                                  formKey: _formKey,
+                                  validatorField: validateString,
+                                  textInputType: TextInputType.number,
+                                  controller: age,
+                                  title: "Age",
+                                  value: "Write Your Age",
+                                  activate: false,
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(DM.p1),
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: DM.p100,
+                                        child: Text(
+                                          "Gender",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: DM.p14,
+                                              color: Color.fromARGB(
+                                                  255, 26, 1, 1)),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(DM.p1),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: DM.p100,
-                                      child: Text(
-                                        "Referrer",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: DM.p14,
-                                            color: blackFontColor),
+                                      SizedBox(
+                                        width: DM.p5,
                                       ),
-                                    ),
-                                    SizedBox(
-                                      width: DM.p5,
-                                    ),
-                                    Text(":"),
-                                    SizedBox(
-                                      width: DM.p10,
-                                    ),
-                                    Flexible(
-                                      child: Container(
-                                        height: DM.p42,
-                                        child: TextFormField(
-                                          controller: referredAddressText,
-                                          onTap: (() {
-                                            showDialog(
-                                                context: context,
-                                                builder: (context) {
-                                                  return MyDialogView(
-                                                      myChild: TextDialogueBox(
-                                                          keyTitle:
-                                                              "Referrer Info",
-                                                          addressText:
-                                                              referredAddressText));
-                                                });
-                                          }),
-                                          decoration: InputDecoration(
-                                              errorStyle:
-                                                  TextStyle(fontSize: DM.p9),
-                                              focusedBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                      width: DM.p1,
-                                                      color: orangeColor)),
-                                              enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    width: DM.p1,
-                                                    color:
-                                                        orangeColor), //<-- SEE HERE
-                                              ),
-                                              filled: true,
-                                              fillColor: Colors.white,
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                      horizontal: DM.p10),
-                                              border: InputBorder.none,
-                                              hintText: "Name of Doctor",
-                                              hintStyle: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: DM.p14,
-                                              )),
+                                      Text(":"),
+                                      SizedBox(
+                                        width: DM.p10,
+                                      ),
+                                      DropdownButton<String>(
+                                        hint: Text("$gender"),
+                                        items: <String>[
+                                          'Male',
+                                          'Female',
+                                        ].map((String value) {
+                                          return DropdownMenuItem<String>(
+                                            value: value,
+                                            child: Text("$value"),
+                                          );
+                                        }).toList(),
+                                        onChanged: (newValue) {
+                                          setState(() {
+                                            gender = newValue;
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(DM.p1),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: DM.p100,
+                                        child: Text(
+                                          "Address",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: DM.p14,
+                                              color: blackFontColor),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(DM.p1),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: DM.p100,
-                                      child: Text(
-                                        "Contact Number",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: DM.p14,
-                                            color: blackFontColor),
+                                      SizedBox(
+                                        width: DM.p5,
                                       ),
-                                    ),
-                                    SizedBox(
-                                      width: DM.p5,
-                                    ),
-                                    Text(":"),
-                                    SizedBox(
-                                      width: DM.p10,
-                                    ),
-                                    Flexible(
-                                      child: Container(
-                                        height: DM.p42,
-                                        child: TextFormField(
-                                          autofocus: false,
-                                          keyboardType: TextInputType.phone,
-                                          controller: phone,
-                                          validator: validateMobile,
-                                          decoration: InputDecoration(
-                                              errorStyle:
-                                                  TextStyle(fontSize: DM.p9),
-                                              // focusedErrorBorder:
-                                              //     OutlineInputBorder(
-                                              //         borderSide: BorderSide(
-                                              //             width: DM.p1,
-                                              //             color:
-                                              //                 orangeColor)),
-                                              focusedBorder: OutlineInputBorder(
+                                      Text(":"),
+                                      SizedBox(
+                                        width: DM.p10,
+                                      ),
+                                      Flexible(
+                                        child: Container(
+                                          height: DM.p42,
+                                          child: TextFormField(
+                                            controller: addressText,
+                                            onTap: (() {
+                                              showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return MyDialogView(
+                                                        myChild: TextDialogueBox(
+                                                            keyTitle: "Address",
+                                                            addressText:
+                                                                addressText));
+                                                  });
+                                            }),
+                                            decoration: InputDecoration(
+                                                errorStyle:
+                                                    TextStyle(fontSize: DM.p9),
+                                                // focusedErrorBorder:
+                                                //     OutlineInputBorder(
+                                                //         borderSide: BorderSide(
+                                                //             width: DM.p1,
+                                                //             color:
+                                                //                 orangeColor)),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                            width: DM.p1,
+                                                            color:
+                                                                orangeColor)),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                       width: DM.p1,
-                                                      color: orangeColor)),
-                                              enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    width: DM.p1,
-                                                    color:
-                                                        orangeColor), //<-- SEE HERE
-                                              ),
-                                              filled: true,
-                                              fillColor: Colors.white,
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                      horizontal: DM.p10),
-                                              border: InputBorder.none,
-                                              hintText: "Ex: 01888888888",
-                                              hintStyle: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: DM.p14,
-                                              )),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          )),
-
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: DM.p120,
-                            child: MaterialButton(
-                              onPressed: () async {
-                                if (await chechkingInternet()) {
-                                  createReqController.testData.map((element) {
-                                    createRequest_controller
-                                            .testItemListWithSelected[
-                                        element.id] = true;
-                                  }).toList();
-
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return MyDialogView(
-                                          myChild: TestItemDialogueBox(
-                                            keyTitle: "Referred Address",
+                                                      color:
+                                                          orangeColor), //<-- SEE HERE
+                                                ),
+                                                filled: true,
+                                                fillColor: fullWhiteColor,
+                                                contentPadding:
+                                                    EdgeInsets.symmetric(
+                                                        horizontal: DM.p10),
+                                                border: InputBorder.none,
+                                                hintText: "Ex:Chittagong",
+                                                hintStyle: TextStyle(
+                                                  color: Colors.grey,
+                                                  fontSize: DM.p14,
+                                                )),
                                           ),
-                                        );
-                                      });
-                                }
-                              },
-                              height: DM.p40,
-                              shape: const StadiumBorder(),
-                              color: orangeColor,
-                              child: Text(
-                                "Add test",
-                                style: TextStyle(
-                                    color: fullWhiteColor,
-                                    fontSize: DM.p15,
-                                    fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(DM.p1),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: DM.p100,
+                                        child: Text(
+                                          "Referrer",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: DM.p14,
+                                              color: blackFontColor),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: DM.p5,
+                                      ),
+                                      Text(":"),
+                                      SizedBox(
+                                        width: DM.p10,
+                                      ),
+                                      Flexible(
+                                        child: Container(
+                                          height: DM.p42,
+                                          child: TextFormField(
+                                            controller: referredAddressText,
+                                            onTap: (() {
+                                              showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return MyDialogView(
+                                                        myChild: TextDialogueBox(
+                                                            keyTitle:
+                                                                "Referrer Info",
+                                                            addressText:
+                                                                referredAddressText));
+                                                  });
+                                            }),
+                                            decoration: InputDecoration(
+                                                errorStyle:
+                                                    TextStyle(fontSize: DM.p9),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                            width: DM.p1,
+                                                            color:
+                                                                orangeColor)),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      width: DM.p1,
+                                                      color:
+                                                          orangeColor), //<-- SEE HERE
+                                                ),
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                contentPadding:
+                                                    EdgeInsets.symmetric(
+                                                        horizontal: DM.p10),
+                                                border: InputBorder.none,
+                                                hintText: "Name of Doctor",
+                                                hintStyle: TextStyle(
+                                                  color: Colors.grey,
+                                                  fontSize: DM.p14,
+                                                )),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(DM.p1),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: DM.p100,
+                                        child: Text(
+                                          "Contact Number",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: DM.p14,
+                                              color: blackFontColor),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: DM.p5,
+                                      ),
+                                      Text(":"),
+                                      SizedBox(
+                                        width: DM.p10,
+                                      ),
+                                      Flexible(
+                                        child: Container(
+                                          height: DM.p42,
+                                          child: TextFormField(
+                                            autofocus: false,
+                                            keyboardType: TextInputType.phone,
+                                            controller: phone,
+                                            validator: validateMobile,
+                                            decoration: InputDecoration(
+                                                errorStyle:
+                                                    TextStyle(fontSize: DM.p9),
+                                                // focusedErrorBorder:
+                                                //     OutlineInputBorder(
+                                                //         borderSide: BorderSide(
+                                                //             width: DM.p1,
+                                                //             color:
+                                                //                 orangeColor)),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                            width: DM.p1,
+                                                            color:
+                                                                orangeColor)),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      width: DM.p1,
+                                                      color:
+                                                          orangeColor), //<-- SEE HERE
+                                                ),
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                contentPadding:
+                                                    EdgeInsets.symmetric(
+                                                        horizontal: DM.p10),
+                                                border: InputBorder.none,
+                                                hintText: "Ex: 01888888888",
+                                                hintStyle: TextStyle(
+                                                  color: Colors.grey,
+                                                  fontSize: DM.p14,
+                                                )),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            )),
+
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: DM.p120,
+                              child: MaterialButton(
+                                onPressed: () async {
+                                  if (await chechkingInternet()) {
+                                    createReqController.testData.map((element) {
+                                      createRequest_controller
+                                              .testItemListWithSelected[
+                                          element.id] = true;
+                                    }).toList();
+
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return MyDialogView(
+                                            myChild: TestItemDialogueBox(
+                                              keyTitle: "Referred Address",
+                                            ),
+                                          );
+                                        });
+                                  }
+                                },
+                                height: DM.p40,
+                                shape: const StadiumBorder(),
+                                color: orangeColor,
+                                child: Text(
+                                  "Add test",
+                                  style: TextStyle(
+                                      color: fullWhiteColor,
+                                      fontSize: DM.p15,
+                                      fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      // #text_field
-                      Obx(
-                        () => Container(
-                          margin: EdgeInsets.symmetric(
-                              horizontal: DM.p10, vertical: DM.p3),
-                          height: DM.screenHeight * 0.35,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: whiteColor,
-                            borderRadius: BorderRadius.circular(DM.p10),
-                          ),
-                          child: createReqController.testData.length != 0
-                              ? ListView.builder(
-                                  itemCount:
-                                      createReqController.testData.length,
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: DM.p15),
-                                  itemBuilder: (context, index) {
-                                    return Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: DM.p1,
-                                      ),
-                                      margin: EdgeInsets.only(top: DM.p10),
-                                      decoration: BoxDecoration(
-                                        borderRadius:
-                                            BorderRadius.circular(DM.p10),
-                                      ),
-                                      child: Container(
-                                        margin: EdgeInsets.only(left: 10),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            SizedBox(
-                                              width: DM.p170,
-                                              child: Text(
-                                                createReqController
-                                                    .testData[index].name,
+                          ],
+                        ),
+                        // #text_field
+                        Obx(
+                          () => Container(
+                            margin: EdgeInsets.symmetric(
+                                horizontal: DM.p10, vertical: DM.p3),
+                            height: DM.screenHeight * 0.35,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: whiteColor,
+                              borderRadius: BorderRadius.circular(DM.p10),
+                            ),
+                            child: createReqController.testData.length != 0
+                                ? ListView.builder(
+                                    itemCount:
+                                        createReqController.testData.length,
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: DM.p15),
+                                    itemBuilder: (context, index) {
+                                      return Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: DM.p1,
+                                        ),
+                                        margin: EdgeInsets.only(top: DM.p10),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(DM.p10),
+                                        ),
+                                        child: Container(
+                                          margin: EdgeInsets.only(left: 10),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              SizedBox(
+                                                width: DM.p170,
+                                                child: Text(
+                                                  createReqController
+                                                          .testData[index]
+                                                          .name +
+                                                      " (${createReqController.testData[index].diagnostic_center})",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      fontSize: DM.p15,
+                                                      color: Color.fromARGB(
+                                                          255, 26, 1, 1)),
+                                                ),
+                                              ),
+                                              Text(
+                                                "Price: ${createReqController.testData[index].testprice}",
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.w900,
                                                     fontSize: DM.p15,
                                                     color: Color.fromARGB(
                                                         255, 26, 1, 1)),
                                               ),
-                                            ),
-                                            Text(
-                                              "Price: ${createReqController.testData[index].testprice}",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: DM.p15,
-                                                  color: Color.fromARGB(
-                                                      255, 26, 1, 1)),
-                                            ),
-                                            Container(
-                                              child: IconButton(
-                                                color: orangeColor,
-                                                icon: Icon(
-                                                  CupertinoIcons
-                                                      .xmark_circle_fill,
-                                                  size: DM.p30,
+                                              Container(
+                                                child: IconButton(
+                                                  color: orangeColor,
+                                                  icon: Icon(
+                                                    CupertinoIcons
+                                                        .xmark_circle_fill,
+                                                    size: DM.p30,
+                                                  ),
+                                                  onPressed: () {
+                                                    // createReqController.removeTestData(
+                                                    //     createReqController
+                                                    //         .testData[index].id,
+                                                    //     index);
+                                                    removeCalulationProcess(
+                                                        createReqController
+                                                            .testData[index]
+                                                            .id);
+                                                    // createReqController
+                                                    //     .calulationTestdata();
+                                                  },
                                                 ),
-                                                onPressed: () {
-                                                  // createReqController.removeTestData(
-                                                  //     createReqController
-                                                  //         .testData[index].id,
-                                                  //     index);
-                                                  removeCalulationProcess(
-                                                      createReqController
-                                                          .testData[index].id);
-                                                  // createReqController
-                                                  //     .calulationTestdata();
-                                                },
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
+                                      );
+                                    },
+                                  )
+                                : Container(
+                                    margin: EdgeInsets.all(DM.p10),
+                                    height: DM.screenHeight * 0.33,
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: whiteColor,
+                                      borderRadius:
+                                          BorderRadius.circular(DM.p10),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "${createReqController.emptyString}",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: DM.p15,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
                                       ),
-                                    );
-                                  },
-                                )
-                              : Container(
-                                  margin: EdgeInsets.all(DM.p10),
-                                  height: DM.screenHeight * 0.33,
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: whiteColor,
-                                    borderRadius: BorderRadius.circular(DM.p10),
+                                    ),
                                   ),
-                                  child: Center(
-                                    child: Text(
-                                      "${createReqController.emptyString}",
+                          ),
+                        ),
+
+                        // #signup_button
+
+                        Obx(
+                          () => Container(
+                            margin: EdgeInsets.symmetric(
+                                horizontal: DM.p20, vertical: DM.p2),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "(Test + Tube + Collection) = (${createReqController.totalTestCost.value}+${createReqController.tubeCost.value}+${createReqController.serviceCost.value}) =  ${createReqController.totalTestCost.value + createReqController.tubeCost.value + createReqController.serviceCost.value} /-",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: DM.p12,
+                                      color: Color.fromARGB(255, 26, 1, 1)),
+                                ),
+                                Text(
+                                  "Discount : ${createReqController.totalDiscount.value} /-",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: DM.p12,
+                                      color: Color.fromARGB(255, 26, 1, 1)),
+                                ),
+                                Divider(
+                                  thickness: DM.p1,
+                                  color: blackFontColor,
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "Total Cost: ${createReqController.totalCost.value} /-",
                                       style: TextStyle(
-                                          fontWeight: FontWeight.w400,
+                                          fontWeight: FontWeight.w700,
                                           fontSize: DM.p15,
                                           color: Color.fromARGB(255, 26, 1, 1)),
                                     ),
-                                  ),
-                                ),
-                        ),
-                      ),
-
-                      // #signup_button
-
-                      Obx(
-                        () => Container(
-                          margin: EdgeInsets.symmetric(
-                              horizontal: DM.p20, vertical: DM.p2),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "(Test + Tube + Collection) = (${createReqController.totalTestCost.value}+${createReqController.tubeCost.value}+${createReqController.serviceCost.value} ) =  ${createReqController.totalTestCost.value + createReqController.tubeCost.value + createReqController.serviceCost.value} /-",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: DM.p12,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                              Text(
-                                "Discount : ${createReqController.totalDiscount.value} /-",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p12,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                              Divider(
-                                thickness: DM.p1,
-                                color: blackFontColor,
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Total Cost: ${createReqController.totalCost.value} /-",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: DM.p15,
-                                        color: Color.fromARGB(255, 26, 1, 1)),
-                                  ),
-                                  MaterialButton(
-                                    onPressed: () async {
-                                      if (_formKey.currentState?.validate() ==
-                                          true) {
-                                        if (await chechkingInternet()) {
-                                          initialTestRequest();
-                                          showDialog(
-                                              context: context,
-                                              builder: (context) {
-                                                return MyDialogView(
-                                                  myChild: ConfirmationList(
-                                                      newRequestData:
-                                                          newRequestData,
-                                                      addTestRequest:
-                                                          addTestRequest),
-                                                );
-                                              });
+                                    MaterialButton(
+                                      onPressed: () async {
+                                        if (_formKey.currentState?.validate() ==
+                                            true) {
+                                          if (await chechkingInternet()) {
+                                            initialTestRequest();
+                                            showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return MyDialogView(
+                                                    myChild: ConfirmationList(
+                                                        newRequestData:
+                                                            newRequestData,
+                                                        addTestRequest:
+                                                            addTestRequest),
+                                                  );
+                                                });
+                                          }
+                                        } else {
+                                          Get.snackbar(
+                                              duration:
+                                                  Duration(milliseconds: 2000),
+                                              icon: Icon(Icons.error),
+                                              margin: EdgeInsets.symmetric(
+                                                  horizontal: DM.p70,
+                                                  vertical: DM.p60),
+                                              backgroundColor: Color.fromARGB(
+                                                  255, 202, 0, 0),
+                                              colorText: whiteColor,
+                                              "Error!",
+                                              "Please add info properly!");
                                         }
-                                      } else {
-                                        Get.snackbar(
-                                            duration:
-                                                Duration(milliseconds: 2000),
-                                            icon: Icon(Icons.error),
-                                            margin: EdgeInsets.symmetric(
-                                                horizontal: DM.p70,
-                                                vertical: DM.p60),
-                                            backgroundColor:
-                                                Color.fromARGB(255, 202, 0, 0),
-                                            colorText: whiteColor,
-                                            "Error!",
-                                            "Please add info properly!");
-                                      }
-                                    },
-                                    height: DM.p40,
-                                    minWidth: DM.p120,
-                                    shape: const StadiumBorder(),
-                                    color: orangeColor,
-                                    child: Text(
-                                      "Submit",
-                                      style: TextStyle(
-                                          color: fullWhiteColor,
-                                          fontSize: DM.p15,
-                                          fontWeight: FontWeight.bold),
+                                      },
+                                      height: DM.p40,
+                                      minWidth: DM.p120,
+                                      shape: const StadiumBorder(),
+                                      color: orangeColor,
+                                      child: Text(
+                                        "Submit",
+                                        style: TextStyle(
+                                            color: fullWhiteColor,
+                                            fontSize: DM.p15,
+                                            fontWeight: FontWeight.bold),
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      )
+                        )
 
-                      // #buttons(facebook & github)
-                    ],
+                        // #buttons(facebook & github)
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -920,11 +941,11 @@ class FormUserInfo extends StatelessWidget {
           ),
           Flexible(
             child: Container(
-              height: DM.p42,
               child: TextFormField(
                 validator: validatorField,
                 onEditingComplete: (() {}),
-                keyboardType: textInputType,
+                keyboardType: TextInputType.multiline,
+                maxLines: null,
                 controller: controller,
                 readOnly: activate,
                 decoration: InputDecoration(
@@ -983,8 +1004,8 @@ class FormUserInfo extends StatelessWidget {
 //softdelete 0
 
 String? validateMobile(String? value) {
-  if (value?.length != 11)
-    return 'Mobile Number must be of 11 digits';
+  if (value?.length != 11 && value?.length != 12)
+    return 'Mobile Number must be of 11 and 12 digits';
   else
     return null;
 }

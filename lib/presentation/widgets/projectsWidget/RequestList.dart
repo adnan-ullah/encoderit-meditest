@@ -35,7 +35,7 @@ class _RequestListState extends State<RequestList> {
     3: "COLLECTED",
     4: "READY",
     5: "DELIVERED",
-    6: "NOITEM"
+    6: "CANCEL"
   };
 
   Future<void> getPhoneData() async {

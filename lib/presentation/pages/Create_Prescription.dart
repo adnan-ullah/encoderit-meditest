@@ -324,10 +324,11 @@ class _PrescriptionState extends State<Prescription> {
                       Padding(
                         padding: EdgeInsets.all(DM.p10),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             imageFile1 == null
                                 ? Container(
+                                  
                                     height: DM.p180,
                                     width: DM.p150,
                                     margin: EdgeInsets.symmetric(
