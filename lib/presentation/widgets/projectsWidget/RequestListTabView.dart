@@ -79,6 +79,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
 
     _dbref_testReqModel.onValue.listen((event) {
       setState(() {
+        _newTestRequestList.clear();
         testStatusRequestList.clear();
       });
 
@@ -91,6 +92,9 @@ class _RequestListTabViewState extends State<RequestListTabView> {
           });
         }
       }
+      setState(() {
+        tabStatusList();
+      });
 
       if (testStatusRequestList != null) _onLoading(false);
       //Get.back();
@@ -101,7 +105,6 @@ class _RequestListTabViewState extends State<RequestListTabView> {
   void initState() {
     Future.delayed(Duration.zero, () {
       this.getStatusData();
-      this.tabStatusList();
     });
     // TODO: implement initState
     super.initState();
@@ -173,13 +176,15 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                               color: Colors.black,
                             ),
                             Container(
-                              height: DM.screenHeight * 0.65,
+                              height: DM.screenHeight * 0.75,
                               child: ListView.builder(
                                 itemCount: _newTestRequestList.length,
                                 itemBuilder: (context, index) {
                                   return InkWell(
                                     onTap: () {
-                                      Get.to(TestRequestCreate(testEachRequest: _newTestRequestList[index]));
+                                      Get.to(TestRequestCreate(
+                                          testEachRequest:
+                                              _newTestRequestList[index]));
                                     },
                                     child: Container(
                                       decoration: BoxDecoration(

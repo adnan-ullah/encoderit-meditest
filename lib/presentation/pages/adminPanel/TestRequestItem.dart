@@ -7,6 +7,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:get/get.dart';
@@ -41,8 +42,6 @@ class TestRequestCreate extends StatefulWidget {
 }
 
 class _TestRequestCreateState extends State<TestRequestCreate> {
-  var updatedRequestItemData;
-
   bool isTestlistOpen = false;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -92,6 +91,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     referrer.text = widget.testEachRequest!.referrer.toString();
     servicecharge.text = widget.testEachRequest!.servicecharge.toString();
     totalprice.text = widget.testEachRequest!.totalprice.toString();
+    teststatus.text = widget.testEachRequest!.teststatus.toString();
 
     setState(
       () {
@@ -112,15 +112,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     else
       image_two.text = widget.testEachRequest!.image_two.toString();
 
-    print("Image Link" + image_one.text.toString());
-
     setState(() {
       gender = widget.testEachRequest!.gender;
     });
     softdelete.text = widget.testEachRequest!.softdelete.toString();
 
-    lastupdate.text = widget.testEachRequest!.lastupdate.toString();
-    dateofcreated.text = (DateFormat('dd-MMM-yyy').format(
+    lastupdate.text = currentTime.toString();
+    dateofcreated.text = (DateFormat('EEE, dd MMM, yyy').format(
             DateTime.fromMillisecondsSinceEpoch(
                 widget.testEachRequest!.dateofcreated)))
         .toString();
@@ -132,38 +130,42 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   }
 
   Future<void> _updateRequest() async {
+    int currentTime = DateTime.now().millisecondsSinceEpoch;
     late DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
 
     updateTestRequestItem = TestDataRequest(
-        id: ((Random().nextInt(900000) + 100000).toString()),
-        name: name.text,
-        gender: gender,
-        mobile: phone.text,
-        age: double.parse(age.text),
-        testlist: createReqController.testData,
+        id: widget.testEachRequest!.id.toString(),
+        name: name.text.toString(),
+        gender: gender.toString(),
+        mobile: phone.text.toString(),
+        age: int.parse(age.text),
+        testlist: testlist,
         totalprice: createReqController.totalCost.value,
         servicecharge: createReqController.serviceCost.value,
-        address: address.text,
-        referrer: referrer.text,
-        lastupdate: lastupdate.text,
+        address: address.text.toString(),
+        referrer: referrer.text.toString(),
+        lastupdate: currentTime,
         dateofcreated: widget.testEachRequest!.dateofcreated,
         softdelete: 0,
-        latitude: latitude,
-        longitude: longitude,
-        teststatus: 1,
+        latitude: widget.testEachRequest!.latitude,
+        longitude: widget.testEachRequest!.longitude,
+        teststatus: int.parse(teststatus.text),
         invoice_call: invoice_call.text,
         type: 1,
         image_one: null,
-        image_two: null);
+        image_two: null,
+        comments: null);
 
     if (updateTestRequestItem != null) {
       await _dbref_testReqModel
           .child("testRequest")
           .child(updateTestRequestItem.mobile)
           .child(updateTestRequestItem.id)
-          .update(updateTestRequestItem.toJson());
+          .update(jsonDecode(jsonEncode(updateTestRequestItem)));
     }
+
+    Get.back();
   }
 
   var testCost = 0;
@@ -742,15 +744,15 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           value: "20",
                           activate: false,
                         ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateString,
-                          textInputType: TextInputType.name,
-                          controller: lastupdate,
-                          title: "Last update",
-                          value: "50",
-                          activate: false,
-                        ),
+                        // FormUserInfo(
+                        //   formKey: _formKey,
+                        //   validatorField: validateString,
+                        //   textInputType: TextInputType.name,
+                        //   controller: lastupdate,
+                        //   title: "Last update",
+                        //   value: "50",
+                        //   activate: false,
+                        // ),
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
@@ -771,12 +773,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         ),
                         FormUserInfo(
                           formKey: _formKey,
-                          validatorField: validateString,
+                          validatorField: validateName,
                           textInputType: TextInputType.name,
                           controller: teststatus,
                           title: "Test status",
                           value: "PENDING",
-                          activate: true,
+                          activate: false,
                         ),
                         Padding(
                           padding: const EdgeInsets.all(5.0),
@@ -862,16 +864,16 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                           MainAxisAlignment.center,
                                       children: [
                                         image_one.text != "empty"
-                                            ?   Column(
-                                              children: [
-                                                InkWell(
+                                            ? Column(
+                                                children: [
+                                                  InkWell(
                                                     onTap: () => showDialog(
                                                         context: context,
                                                         builder: (context) {
                                                           return MyDialogView(
                                                               myChild: MyPhotoView(
-                                                                  image:
-                                                                      image_one.text));
+                                                                  image: image_one
+                                                                      .text));
                                                         }),
                                                     child: Container(
                                                       height: DM.p200,
@@ -883,19 +885,21 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                     ),
                                                   ),
                                                   IconButton(
-                                        color: orangeColor,
-                                        icon: Icon(
-                                          CupertinoIcons.xmark_circle_fill,
-                                          size: DM.p30,
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            image_one.text = "empty";
-                                          });
-                                        },
-                                      ),
-                                              ],
-                                            )
+                                                    color: orangeColor,
+                                                    icon: Icon(
+                                                      CupertinoIcons
+                                                          .xmark_circle_fill,
+                                                      size: DM.p30,
+                                                    ),
+                                                    onPressed: () {
+                                                      setState(() {
+                                                        image_one.text =
+                                                            "empty";
+                                                      });
+                                                    },
+                                                  ),
+                                                ],
+                                              )
                                             : Container(
                                                 height: DM.p60,
                                                 width: DM.p160,
@@ -929,15 +933,15 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                         ),
                                         image_two.text != "empty"
                                             ? Column(
-                                              children: [
-                                                InkWell(
+                                                children: [
+                                                  InkWell(
                                                     onTap: () => showDialog(
                                                         context: context,
                                                         builder: (context) {
                                                           return MyDialogView(
                                                               myChild: MyPhotoView(
-                                                                  image:
-                                                                      image_two.text));
+                                                                  image: image_two
+                                                                      .text));
                                                         }),
                                                     child: Container(
                                                       height: DM.p200,
@@ -949,19 +953,21 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                     ),
                                                   ),
                                                   IconButton(
-                                        color: orangeColor,
-                                        icon: Icon(
-                                          CupertinoIcons.xmark_circle_fill,
-                                          size: DM.p30,
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            image_two.text = "empty";
-                                          });
-                                        },
-                                      ),
-                                              ],
-                                            )
+                                                    color: orangeColor,
+                                                    icon: Icon(
+                                                      CupertinoIcons
+                                                          .xmark_circle_fill,
+                                                      size: DM.p30,
+                                                    ),
+                                                    onPressed: () {
+                                                      setState(() {
+                                                        image_two.text =
+                                                            "empty";
+                                                      });
+                                                    },
+                                                  ),
+                                                ],
+                                              )
                                             : Container(
                                                 height: DM.p60,
                                                 width: DM.p160,
@@ -1009,7 +1015,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                     onPressed: () async {
                       if (_formKey.currentState?.validate() == true) {
                         if (await chechkingInternet()) {
-                          //update
+                          _updateRequest();
                         }
                       } else {
                         Get.snackbar(

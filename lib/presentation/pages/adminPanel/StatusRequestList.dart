@@ -34,13 +34,8 @@ class _StatusRequestListState extends State<StatusRequestList>
   int _selectedIndex = 0;
   late TabController tabController;
 
-
-
   @override
   void initState() {
-    
-  
-
     tabController = TabController(
         length: cr_controller.status.length, vsync: this, initialIndex: 0);
 
@@ -97,8 +92,6 @@ class _StatusRequestListState extends State<StatusRequestList>
 
   @override
   Widget build(BuildContext context) {
-    
-
     return Scaffold(
       backgroundColor: creamColor,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
@@ -112,100 +105,103 @@ class _StatusRequestListState extends State<StatusRequestList>
           ),
         ),
       ]),
-      body: Center(
-        child: Column(
-          children: [
-            Container(
-              alignment: Alignment.center,
-              height: 40,
-              child: TabBar(
-                isScrollable: true,
-                controller: tabController,
-                onTap: ((value) {}),
-                tabs: [
-                  Tab(
-                    child: Text(
-                      "${cr_controller.status[1]}",
-                      style: TextStyle(
-                          color: blackFontColor,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold),
+      body: Padding(
+        padding: EdgeInsets.all(DM.p5),
+        child: Container(
+          child: Column(
+            children: [
+              Container(
+                alignment: Alignment.center,
+                height: 40,
+                child: TabBar(
+                  isScrollable: true,
+                  controller: tabController,
+                  onTap: ((value) {}),
+                  tabs: [
+                    Tab(
+                      child: Text(
+                        "${cr_controller.status[1]}",
+                        style: TextStyle(
+                            color: blackFontColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  Tab(
-                    child: Text(
-                      "${cr_controller.status[2]}",
-                      style: TextStyle(
-                          color: blackFontColor,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold),
+                    Tab(
+                      child: Text(
+                        "${cr_controller.status[2]}",
+                        style: TextStyle(
+                            color: blackFontColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  Tab(
-                    child: Text(
-                      "${cr_controller.status[3]}",
-                      style: TextStyle(
-                          color: blackFontColor,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold),
+                    Tab(
+                      child: Text(
+                        "${cr_controller.status[3]}",
+                        style: TextStyle(
+                            color: blackFontColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  Tab(
-                    child: Text(
-                      "${cr_controller.status[4]}",
-                      style: TextStyle(
-                          color: blackFontColor,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold),
+                    Tab(
+                      child: Text(
+                        "${cr_controller.status[4]}",
+                        style: TextStyle(
+                            color: blackFontColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  Tab(
-                    child: Text(
-                      "${cr_controller.status[5]}",
-                      style: TextStyle(
-                          color: blackFontColor,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold),
+                    Tab(
+                      child: Text(
+                        "${cr_controller.status[5]}",
+                        style: TextStyle(
+                            color: blackFontColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  Tab(
-                    child: Text(
-                      "${cr_controller.status[6]}",
-                      style: TextStyle(
-                          color: blackFontColor,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold),
+                    Tab(
+                      child: Text(
+                        "${cr_controller.status[6]}",
+                        style: TextStyle(
+                            color: blackFontColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: tabController,
-                children: [
-                  RequestListTabView(
-                    statusKey: cr_controller.status[1],
-                  ),
-                  RequestListTabView(
-                    statusKey: cr_controller.status[2],
-                  ),
-                  RequestListTabView(
-                    statusKey: cr_controller.status[3],
-                  ),
-                  RequestListTabView(
-                    statusKey: cr_controller.status[4],
-                  ),
-                  RequestListTabView(
-                    statusKey: cr_controller.status[5],
-                  ),
-                  RequestListTabView(
-                    statusKey: cr_controller.status[6],
-                  ),
-                ],
+              Expanded(
+                child: TabBarView(
+                  controller: tabController,
+                  children: [
+                    RequestListTabView(
+                      statusKey: cr_controller.status[1],
+                    ),
+                    RequestListTabView(
+                      statusKey: cr_controller.status[2],
+                    ),
+                    RequestListTabView(
+                      statusKey: cr_controller.status[3],
+                    ),
+                    RequestListTabView(
+                      statusKey: cr_controller.status[4],
+                    ),
+                    RequestListTabView(
+                      statusKey: cr_controller.status[5],
+                    ),
+                    RequestListTabView(
+                      statusKey: cr_controller.status[6],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -246,4 +242,3 @@ Future<void> populateAllRequest() async {
     // }
   });
 }
-
