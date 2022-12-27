@@ -27,39 +27,13 @@ class AdminHome extends StatefulWidget {
   State<AdminHome> createState() => _AdminHomeState();
 }
 
-String messageTitle = "Empty";
-String notificationAlert = "alert";
-
-FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-Future<void> getNotification() async {
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    announcement: false,
-    badge: true,
-    carPlay: false,
-    criticalAlert: false,
-    provisional: false,
-    sound: true,
-  );
-
-  print('User granted permission: ${settings.authorizationStatus}');
-
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data.values}');
-
-    if (message.notification != null) {
-      print('Message also contained a notification: ${message.notification}');
-    }
-  });
-}
 
 class _AdminHomeState extends State<AdminHome> {
   @override
   void initState() {
-    getTestItemList();
-    getNotification();
+    
+    // getTestItemList();
+  
 
     // TODO: implement initState
     super.initState();
@@ -151,11 +125,10 @@ class _AdminHomeState extends State<AdminHome> {
                                           BorderRadius.circular(DM.p10)),
                                   primary: orangeColor),
                               onPressed: () {
-                                _onLoading(true);
-                                Timer(Duration(seconds: 2), () {
-                                  _onLoading(false);
+                               
+                              
                                   Get.to(TestItemList());
-                                });
+                        
                               },
                               child: Text(
                                 "Test Item",
@@ -166,31 +139,35 @@ class _AdminHomeState extends State<AdminHome> {
                               ),
                             ),
                           ),
-                          Container(
-                            height: DM.p180,
-                            width: DM.screenWidth * 0.4,
-                            margin: EdgeInsets.symmetric(
-                                vertical: DM.p25, horizontal: DM.p16),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: DM.p30, vertical: DM.p20),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(DM.p10)),
-                                  primary: orangeColor),
-                              onPressed: () {
-                                Get.to(StatusRequestList());
-                              },
-                              child: Text(
-                                "Test Request",
-                                style: TextStyle(
-                                    color: fullWhiteColor,
-                                    fontSize: DM.p15,
-                                    fontWeight: FontWeight.bold),
+                         Container(
+                              height: DM.p180,
+                              width: DM.screenWidth * 0.4,
+                              margin: EdgeInsets.symmetric(
+                                  vertical: DM.p25, horizontal: DM.p16),
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: DM.p30, vertical: DM.p20),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(DM.p10)),
+                                    primary: orangeColor),
+                                onPressed: () {
+                                    
+                                 Get.to(StatusRequestList());
+                             
+                                
+                                },
+                                child: Text(
+                                  "Test Request",
+                                  style: TextStyle(
+                                      color: fullWhiteColor,
+                                      fontSize: DM.p15,
+                                      fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ),
-                          ),
+                        
                         ],
                       ),
                     ),
@@ -198,7 +175,7 @@ class _AdminHomeState extends State<AdminHome> {
                       margin: EdgeInsets.symmetric(vertical: DM.p25),
                       child: MaterialButton(
                         onPressed: () {
-                         //
+                          //
                         },
                         height: DM.p45,
                         minWidth: DM.p130,
@@ -222,6 +199,6 @@ class _AdminHomeState extends State<AdminHome> {
   }
 }
 
-
 //radious
 //backgrounddd
+

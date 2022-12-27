@@ -31,9 +31,8 @@ import '../../../state_programming/getController.dart';
 import '../Login_info.dart';
 
 class TestRequestCreate extends StatefulWidget {
-  // static const String id = "sign_up_page";
-  TestDataRequest? testItem;
-  TestRequestCreate({Key? key, this.testItem}) : super(key: key);
+  TestDataRequest? testEachRequest;
+  TestRequestCreate({Key? key, this.testEachRequest}) : super(key: key);
 
   @override
   _TestRequestCreateState createState() => _TestRequestCreateState();
@@ -80,32 +79,48 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     }
   }
 
-  Future<void> updateRequestItem() async {
+  Future<void> retreiveEachDataRequest() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
+    type.text = widget.testEachRequest!.type.toString();
+    invoice_call.text = widget.testEachRequest!.invoice_call.toString();
+    name.text = widget.testEachRequest!.name.toString();
+    age.text = widget.testEachRequest!.age.toString();
+    phone.text = widget.testEachRequest!.mobile.toString();
+    address.text = widget.testEachRequest!.address.toString();
+    referrer.text = widget.testEachRequest!.referrer.toString();
+    servicecharge.text = widget.testEachRequest!.servicecharge.toString();
+    totalprice.text = widget.testEachRequest!.totalprice.toString();
 
-    name.text = widget.testItem!.name;
-    phone.text = widget.testItem!.mobile;
-    gender = widget.testItem!.gender;
-    servicecharge.text = widget.testItem!.servicecharge.toString();
-    currentTime = widget.testItem!.lastupdate;
-    softdelete.text = widget.testItem!.softdelete.toString();
+    if (widget.testEachRequest!.image_one == null)
+      image_one.text = "empty";
+    else
+      image_one.text = widget.testEachRequest!.image_one.toString();
 
-    address.text = widget.testItem!.address.toString();
-    referrer.text = widget.testItem!.referrer.toString();
-    lastupdate.text = widget.testItem!.lastupdate.toString();
-    dateofcreated.text = (DateFormat('dd-MMM-yyy').format(
-            DateTime.fromMillisecondsSinceEpoch(
-                widget.testItem!.dateofcreated)))
-        .toString();
+    if (widget.testEachRequest!.image_two == null)
+      image_two.text = "empty";
+    else
+      image_two.text = widget.testEachRequest!.image_two.toString();
 
-    invoice_call.text = widget.testItem!.invoice_call.toString();
-    totalprice.text = widget.testItem!.totalprice.toString();
+    print("Image Link" + image_one.text.toString());
 
     setState(() {
-      latitude = widget.testItem!.latitude.toString();
-      longitude = widget.testItem!.longitude.toString();
+      gender = widget.testEachRequest!.gender;
     });
+    softdelete.text = widget.testEachRequest!.softdelete.toString();
 
+    lastupdate.text = widget.testEachRequest!.lastupdate.toString();
+    dateofcreated.text = (DateFormat('dd-MMM-yyy').format(
+            DateTime.fromMillisecondsSinceEpoch(
+                widget.testEachRequest!.dateofcreated)))
+        .toString();
+
+    setState(() {
+      latitude = widget.testEachRequest!.latitude.toString();
+      longitude = widget.testEachRequest!.longitude.toString();
+    });
+  }
+
+  Future<void> _updateRequest() async {
     late DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
 
@@ -120,8 +135,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         servicecharge: createReqController.serviceCost.value,
         address: address.text,
         referrer: referrer.text,
-        lastupdate: currentTime,
-        dateofcreated: currentTime,
+        lastupdate: lastupdate.text,
+        dateofcreated: widget.testEachRequest!.dateofcreated,
         softdelete: 0,
         latitude: latitude,
         longitude: longitude,
@@ -180,9 +195,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
   @override
   void initState() {
-    if (widget.testItem != null) {
+    if (widget.testEachRequest != null) {
       print("From Update Class");
-      updateRequestItem();
+      this.retreiveEachDataRequest();
     } else {
       print("From New Item Class");
     }
@@ -267,7 +282,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateMobile,
-                          textInputType: TextInputType.name,
+                          textInputType: TextInputType.phone,
                           controller: phone,
                           title: "Contact Number",
                           value: "#0000",
@@ -317,10 +332,10 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
-                          textInputType: TextInputType.name,
+                          textInputType: TextInputType.number,
                           controller: age,
                           title: "Age",
-                          value: "Age",
+                          value: "2",
                           activate: false,
                         ),
                         Padding(
@@ -467,7 +482,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           textInputType: TextInputType.name,
                           controller: dateofcreated,
                           title: "Date of created",
-                          value: "15.0",
+                          value: "15 Dec 2014",
                           activate: true,
                         ),
                         Column(
@@ -717,10 +732,10 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
-                          textInputType: TextInputType.name,
+                          textInputType: TextInputType.number,
                           controller: servicecharge,
                           title: "Collection charge",
-                          value: "20.0",
+                          value: "20",
                           activate: false,
                         ),
                         FormUserInfo(
@@ -729,25 +744,25 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           textInputType: TextInputType.name,
                           controller: lastupdate,
                           title: "Last update",
-                          value: "50.0",
+                          value: "50",
                           activate: false,
                         ),
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
-                          textInputType: TextInputType.name,
+                          textInputType: TextInputType.number,
                           controller: softdelete,
                           title: "Soft delete",
-                          value: "70.0",
+                          value: "0",
                           activate: false,
                         ),
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
-                          textInputType: TextInputType.name,
+                          textInputType: TextInputType.number,
                           controller: totalprice,
                           title: "Total price",
-                          value: "70.0",
+                          value: "70",
                           activate: false,
                         ),
                         FormUserInfo(
@@ -774,22 +789,45 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                               SizedBox(
                                 height: DM.p5,
                               ),
-                              Row(
-                                children: [
-                                  Container(
-                                    margin: EdgeInsets.symmetric(horizontal: 5),
-                                    color: Colors.red,
-                                    height: DM.p220,
-                                    width: DM.p170,
-                                  ),
-                                  Container(
-                                    margin: EdgeInsets.symmetric(horizontal: 5),
-                                    color: Colors.red,
-                                    height: DM.p220,
-                                    width: DM.p170,
-                                  ),
-                                ],
-                              ),
+                              image_one.text == "empty"
+                                  ? Row(
+                                      children: [
+                                        Container(
+                                          margin: EdgeInsets.symmetric(
+                                              horizontal: 5),
+                                          color: Colors.red,
+                                          height: DM.p220,
+                                          width: DM.p170,
+                                        ),
+                                        Container(
+                                          margin: EdgeInsets.symmetric(
+                                              horizontal: 5),
+                                          color: Colors.red,
+                                          height: DM.p220,
+                                          width: DM.p170,
+                                        ),
+                                      ],
+                                    )
+                                  : Row(
+                                      children: [
+                                        Container(
+                                          margin: EdgeInsets.symmetric(
+                                              horizontal: 5),
+                                          color: Color.fromARGB(
+                                              255, 111, 245, 155),
+                                          height: DM.p220,
+                                          width: DM.p170,
+                                        ),
+                                        Container(
+                                          margin: EdgeInsets.symmetric(
+                                              horizontal: 5),
+                                          color:
+                                              Color.fromARGB(255, 64, 241, 94),
+                                          height: DM.p220,
+                                          width: DM.p170,
+                                        ),
+                                      ],
+                                    ),
                             ],
                           ),
                         )
@@ -807,23 +845,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                     onPressed: () async {
                       if (_formKey.currentState?.validate() == true) {
                         if (await chechkingInternet()) {
-                          // showDialog(
-                          //     context: context,
-                          //     builder: (context) {
-                          //       return MyDialogView(
-                          //         myChild: widget.testItem == null
-                          //             ? ConfirmationTestItem(
-                          //                 newRequestData:
-                          //                     newTestListData,
-                          //                 addTestRequest:
-                          //                     insertNewTestItem)
-                          //             : ConfirmationTestItem(
-                          //                 addTestRequest:
-                          //                     updateTestItem,
-                          //                 newRequestData:
-                          //                     newTestListData),
-                          //       );
-                          //     });
+                          //update
                         }
                       } else {
                         Get.snackbar(
@@ -842,7 +864,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                     shape: const StadiumBorder(),
                     color: orangeColor,
                     child: Text(
-                      widget.testItem == null ? "Submit" : "Update",
+                      "Update",
                       style: TextStyle(
                           color: fullWhiteColor,
                           fontSize: DM.p15,
@@ -914,6 +936,7 @@ class FormUserInfo extends StatelessWidget {
                 validator: validatorField,
                 onEditingComplete: (() {}),
                 keyboardType: textInputType,
+                maxLines: null,
                 controller: controller,
                 readOnly: activate,
                 decoration: InputDecoration(

@@ -28,8 +28,7 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
 
   bool isClear = false;
 
-  var searchinText = TextEditingController();
-
+  var searchingText = TextEditingController();
 
   void filterigTestItem(dynamic value) {
     if (value.toString().isNotEmpty) {
@@ -109,7 +108,7 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
     return Padding(
       padding: EdgeInsets.all(DM.p8),
       child: Obx(
-        ()=>Stack(
+        () => Stack(
           children: [
             Container(
                 color: creamColor,
@@ -133,176 +132,175 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                         Flexible(
-                              child: Container(
-                                height: DM.p45,
-                                child: TextFormField(
-                                  keyboardType: TextInputType.text,
-                                  controller: searchinText,
-                                  onChanged: ((value) {
-                                    filterigTestItem(value);
-                                  }),
-                                  decoration: InputDecoration(
-                                      suffixIcon: isClear
-                                          ? InkWell(
-                                              onTap: (() {
-                                               filterigTestItem("");
-                                              }),
-                                              child: cr_Controller.clearBox.value)
-                                          : cr_Controller.searchBox.value,
-                                      focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(40),
-                                          borderSide: BorderSide(
-                                              width: DM.p1, color: orangeColor)),
-                                      enabledBorder: OutlineInputBorder(
+                          Flexible(
+                            child: Container(
+                              height: DM.p45,
+                              child: TextFormField(
+                                keyboardType: TextInputType.text,
+                                controller: searchingText,
+                                onChanged: ((value) {
+                                  filterigTestItem(value);
+                                }),
+                                decoration: InputDecoration(
+                                    suffixIcon: isClear
+                                        ? InkWell(
+                                            onTap: (() {
+                                              filterigTestItem("");
+                                              searchingText.text = "";
+                                            }),
+                                            child: cr_Controller.clearBox.value)
+                                        : cr_Controller.searchBox.value,
+                                    focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(40),
                                         borderSide: BorderSide(
-                                            width: DM.p1,
-                                            color: orangeColor), //<-- SEE HERE
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      border: InputBorder.none,
-                                      hintText: "Search",
-                                      hintStyle: TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: DM.p14,
-                                      )),
-                                ),
+                                            width: DM.p1, color: orangeColor)),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(40),
+                                      borderSide: BorderSide(
+                                          width: DM.p1,
+                                          color: orangeColor), //<-- SEE HERE
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    border: InputBorder.none,
+                                    hintText: "Search",
+                                    hintStyle: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: DM.p14,
+                                    )),
                               ),
                             ),
-                         
+                          ),
                         ],
                       ),
                     ),
                     Card(
                         child: Container(
                       height: DM.screenHeight * 0.60,
-                      child:  ListView.builder(
-                          itemCount: cr_Controller.filter_testItemList.length,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              color: whiteColor,
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: DM.p10, vertical: DM.p10),
-                              margin: EdgeInsets.symmetric(vertical: DM.p2),
-                              height: DM.p50,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  SizedBox(
-                                    width: DM.p130,
-                                    child: Text(
-                                      cr_Controller
-                                              .filter_testItemList[index].name +
-                                          " (${cr_Controller.filter_testItemList[index].diagnostic_center})",
-                                      overflow: TextOverflow.visible,
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w900,
-                                          fontSize: DM.p12,
-                                          color: Color.fromARGB(255, 26, 1, 1)),
-                                    ),
-                                  ),
-                                  Text(
-                                    "Price: " +
-                                        "${cr_Controller.filter_testItemList[index].testprice}"
-                                            .toString(),
+                      child: ListView.builder(
+                        itemCount: cr_Controller.filter_testItemList.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            color: whiteColor,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: DM.p10, vertical: DM.p10),
+                            margin: EdgeInsets.symmetric(vertical: DM.p8),
+                            height: DM.p50,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                SizedBox(
+                                  width: DM.p130,
+                                  child: Text(
+                                    cr_Controller
+                                            .filter_testItemList[index].name +
+                                        " (${cr_Controller.filter_testItemList[index].diagnostic_center})",
+                                    overflow: TextOverflow.visible,
                                     style: TextStyle(
                                         fontWeight: FontWeight.w900,
                                         fontSize: DM.p12,
                                         color: Color.fromARGB(255, 26, 1, 1)),
                                   ),
-                                  SizedBox(
-                                      height: DM.p45,
-                                      width: DM.p80,
-                                      child: cr_Controller
-                                                      .testItemListWithSelected[
-                                                  cr_Controller
-                                                      .filter_testItemList[index]
-                                                      .id] ==
-                                              false
-                                          ? MaterialButton(
-                                              onPressed: () {
-                                                // cr_Controller.testData.add(
-                                                //     cr_Controller
-                                                //             .filter_testItemList[
-                                                //         index]);
-      
-                                                setState(() {
-                                                  cr_Controller
-                                                              .testItemListWithSelected[
-                                                          cr_Controller
-                                                              .filter_testItemList[
-                                                                  index]
-                                                              .id] =
-                                                      !cr_Controller
-                                                              .testItemListWithSelected[
-                                                          cr_Controller
-                                                              .filter_testItemList[
-                                                                  index]
-                                                              .id]!;
-                                                });
-      
-                                                // deleteFromStore(snapshot.key);
-                                              },
-                                              shape: const StadiumBorder(),
-                                              color: orangeColor,
-                                              child: Text(
-                                                "Add",
-                                                style: TextStyle(
-                                                    color: fullWhiteColor,
-                                                    fontSize: DM.p10,
-                                                    fontWeight: FontWeight.bold),
-                                              ))
-                                          : MaterialButton(
-                                              onPressed: () {
-                                                // cr_Controller.testData
-                                                //     .removeWhere((element) =>
-                                                //         element.id ==
-                                                //         cr_Controller
-                                                //             .filter_testItemList[
-                                                //                 index]
-                                                //             .id);
-      
-                                                setState(() {
-                                                  cr_Controller
-                                                              .testItemListWithSelected[
-                                                          cr_Controller
-                                                              .filter_testItemList[
-                                                                  index]
-                                                              .id] =
-                                                      !cr_Controller
-                                                              .testItemListWithSelected[
-                                                          cr_Controller
-                                                              .filter_testItemList[
-                                                                  index]
-                                                              .id]!;
-                                                });
-      
-                                                // deleteFromStore(snapshot.key);
-                                              },
-                                              shape: const StadiumBorder(),
-                                              color: redColor,
-                                              child: Text(
-                                                "Remove",
-                                                style: TextStyle(
-                                                    color: fullWhiteColor,
-                                                    fontSize: DM.p10,
-                                                    fontWeight: FontWeight.bold),
-                                              ))),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                     
+                                ),
+                                Text(
+                                  "Price: " +
+                                      "${cr_Controller.filter_testItemList[index].testprice}"
+                                          .toString(),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: DM.p12,
+                                      color: Color.fromARGB(255, 26, 1, 1)),
+                                ),
+                                SizedBox(
+                                    height: DM.p45,
+                                    width: DM.p80,
+                                    child: cr_Controller
+                                                    .testItemListWithSelected[
+                                                cr_Controller
+                                                    .filter_testItemList[index]
+                                                    .id] ==
+                                            false
+                                        ? MaterialButton(
+                                            onPressed: () {
+                                              // cr_Controller.testData.add(
+                                              //     cr_Controller
+                                              //             .filter_testItemList[
+                                              //         index]);
+
+                                              setState(() {
+                                                cr_Controller
+                                                            .testItemListWithSelected[
+                                                        cr_Controller
+                                                            .filter_testItemList[
+                                                                index]
+                                                            .id] =
+                                                    !cr_Controller
+                                                            .testItemListWithSelected[
+                                                        cr_Controller
+                                                            .filter_testItemList[
+                                                                index]
+                                                            .id]!;
+                                              });
+
+                                              // deleteFromStore(snapshot.key);
+                                            },
+                                            shape: const StadiumBorder(),
+                                            color: orangeColor,
+                                            child: Text(
+                                              "Add",
+                                              style: TextStyle(
+                                                  color: fullWhiteColor,
+                                                  fontSize: DM.p10,
+                                                  fontWeight: FontWeight.bold),
+                                            ))
+                                        : MaterialButton(
+                                            onPressed: () {
+                                              // cr_Controller.testData
+                                              //     .removeWhere((element) =>
+                                              //         element.id ==
+                                              //         cr_Controller
+                                              //             .filter_testItemList[
+                                              //                 index]
+                                              //             .id);
+
+                                              setState(() {
+                                                cr_Controller
+                                                            .testItemListWithSelected[
+                                                        cr_Controller
+                                                            .filter_testItemList[
+                                                                index]
+                                                            .id] =
+                                                    !cr_Controller
+                                                            .testItemListWithSelected[
+                                                        cr_Controller
+                                                            .filter_testItemList[
+                                                                index]
+                                                            .id]!;
+                                              });
+
+                                              // deleteFromStore(snapshot.key);
+                                            },
+                                            shape: const StadiumBorder(),
+                                            color: redColor,
+                                            child: Text(
+                                              "Remove",
+                                              style: TextStyle(
+                                                  color: fullWhiteColor,
+                                                  fontSize: DM.p10,
+                                                  fontWeight: FontWeight.bold),
+                                            ))),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     )),
                     Container(
                       margin: EdgeInsets.symmetric(vertical: DM.p10),
                       child: MaterialButton(
                         onPressed: () {
                           calculationProcess();
-      
+
                           // Get.to(CreateRequest());
                         },
                         height: DM.p45,

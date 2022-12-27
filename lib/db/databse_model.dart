@@ -1,6 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
 
-
 class TestData {
   TestData(
       {this.id,
@@ -15,7 +14,7 @@ class TestData {
       required this.niddle_cost,
       required this.servicecharge});
 
-   final dynamic id;
+  final dynamic id;
   final dynamic name;
   final dynamic testprice;
   final dynamic discount;
@@ -77,7 +76,8 @@ class TestDataRequest {
       required this.invoice_call,
       required this.type,
       required this.image_one,
-      required this.image_two});
+      required this.image_two,
+      this.comments});
 
   final dynamic id;
   final dynamic name;
@@ -97,8 +97,9 @@ class TestDataRequest {
   final dynamic teststatus;
   final dynamic invoice_call;
   final dynamic type;
-  final dynamic image_one;
+  late final dynamic image_one;
   final dynamic image_two;
+  final dynamic comments;
 
   Map toJson() => {
         'id': id,
@@ -121,6 +122,8 @@ class TestDataRequest {
         'type': type,
         'image_one': image_one,
         'image_two': image_two,
+
+         'comments': comments,
       };
 
   factory TestDataRequest.fromJson(Map<String, dynamic> parsedJson) {
@@ -149,6 +152,7 @@ class TestDataRequest {
       type: parsedJson['type'],
       image_one: parsedJson['image_one'],
       image_two: parsedJson['image_two'],
+      comments: parsedJson['comments'],
     );
   }
 }

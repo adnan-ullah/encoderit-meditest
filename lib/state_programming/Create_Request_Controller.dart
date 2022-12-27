@@ -16,7 +16,9 @@ class CreateRequest_controller extends GetxController {
   var filter_testItemList = <TestData>[].obs;
 
 
-    var testRequestList = <TestData>[].obs;
+  var testRequestList = <TestData>[].obs;
+
+  var testStatusRequestList = <TestDataRequest>[].obs;
   var filter_testRequestList = <TestData>[].obs;
 
 
@@ -26,6 +28,20 @@ class CreateRequest_controller extends GetxController {
   //var testItemListWithSelected = <Map<String, bool>>[].obs;
 
   final Map<String, bool> testItemListWithSelected = {};
+
+  Map<int, String> status = {
+    1: "PENDING",
+    2: "RECIEVED",
+    3: "COLLECTED",
+    4: "READY",
+    5: "DELIVERED",
+    6: "CANCEL"
+  };
+   Map<int, String> typeName = {
+    1: "FORM",
+    2: "PRESCRIPTION",
+
+  };
 
   RxInt totalTestCost = 0.obs;
   RxInt totalCost = 0.obs;

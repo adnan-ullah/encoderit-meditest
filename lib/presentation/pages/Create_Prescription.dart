@@ -96,6 +96,8 @@ class _PrescriptionState extends State<Prescription> {
           colorText: whiteColor,
           "Added",
           "Data added , successfully!");
+
+      Get.to(HomeScreen());
     } else {
       //_onLoading(true);
       Get.snackbar(
@@ -121,11 +123,16 @@ class _PrescriptionState extends State<Prescription> {
               child: new Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  new CircularProgressIndicator(),
+                  new CircularProgressIndicator(
+                    color: orangeColor,
+                  ),
                   SizedBox(
                     width: DM.p10,
                   ),
-                  new Text("Submitting, please wait..."),
+                  new Text(
+                    "Submitting, please wait...",
+                    style: TextStyle(color: orangeColor),
+                  ),
                 ],
               ),
             ),
@@ -328,7 +335,6 @@ class _PrescriptionState extends State<Prescription> {
                           children: <Widget>[
                             imageFile1 == null
                                 ? Container(
-                                  
                                     height: DM.p180,
                                     width: DM.p150,
                                     margin: EdgeInsets.symmetric(
@@ -635,6 +641,17 @@ class _PrescriptionState extends State<Prescription> {
                                   if (imageFile1 != null ||
                                       imageFile2 != null) {
                                     uploadImage();
+                                   
+                                  } else {
+                                    Get.snackbar(
+                                        margin: EdgeInsets.symmetric(
+                                            horizontal: DM.p70,
+                                            vertical: DM.p60),
+                                        duration: Duration(milliseconds: 3000),
+                                        backgroundColor: redColor,
+                                        colorText: whiteColor,
+                                        "Need prescriptions",
+                                        "Failed to submit , add image!");
                                   }
                                 }
                               },
@@ -679,9 +696,3 @@ String? validateMobile(String? value) {
     return null;
 }
 
-String? validateString(String? value) {
-  if (value?.length == 0)
-    return 'Please fill this form';
-  else
-    return null;
-}

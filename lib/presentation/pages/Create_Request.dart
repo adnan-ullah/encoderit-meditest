@@ -10,6 +10,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
+import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/ConfirmationList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListDialogueBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
@@ -187,7 +188,7 @@ class _CreateRequestState extends State<CreateRequest> {
                 (Random().nextInt(900000) + 100000).toString(),
             type: 1,
             image_one: null,
-            image_two: null)!;
+            image_two: null);
       });
     }
 
@@ -288,7 +289,8 @@ class _CreateRequestState extends State<CreateRequest> {
             .child(newRequestData.mobile.toString())
             .child(newRequestData.id)
             .set(newRequestData.toJson());
-
+         
+          Get.back();
         Get.snackbar(
             margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
             duration: Duration(milliseconds: 2000),
@@ -296,6 +298,8 @@ class _CreateRequestState extends State<CreateRequest> {
             colorText: whiteColor,
             "Added",
             "Data added , successfully!");
+
+        
       } else {
         Get.snackbar(
             margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
@@ -357,7 +361,7 @@ class _CreateRequestState extends State<CreateRequest> {
                               children: [
                                 FormUserInfo(
                                   formKey: _formKey,
-                                  validatorField: validateString,
+                                  validatorField: validateName,
                                   textInputType: TextInputType.name,
                                   controller: name,
                                   title: "Patient Name",
@@ -366,7 +370,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                 ),
                                 FormUserInfo(
                                   formKey: _formKey,
-                                  validatorField: validateString,
+                                  validatorField: validateAge,
                                   textInputType: TextInputType.number,
                                   controller: age,
                                   title: "Age",
@@ -832,32 +836,36 @@ class _CreateRequestState extends State<CreateRequest> {
                                         if (_formKey.currentState?.validate() ==
                                             true) {
                                           if (await chechkingInternet()) {
-                                            initialTestRequest();
-                                            showDialog(
-                                                context: context,
-                                                builder: (context) {
-                                                  return MyDialogView(
-                                                    myChild: ConfirmationList(
-                                                        newRequestData:
-                                                            newRequestData,
-                                                        addTestRequest:
-                                                            addTestRequest),
-                                                  );
-                                                });
+                                            if (createReqController.testData !=
+                                                    null &&
+                                                createReqController
+                                                        .testData.length >
+                                                    0) {
+                                              initialTestRequest();
+                                              showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return MyDialogView(
+                                                      myChild: ConfirmationList(
+                                                          newRequestData:
+                                                              newRequestData,
+                                                          addTestRequest:
+                                                              addTestRequest),
+                                                    );
+                                                  });
+                                            } else {
+                                              Get.snackbar(
+                                                  margin: EdgeInsets.symmetric(
+                                                      horizontal: DM.p70,
+                                                      vertical: DM.p60),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor: redColor,
+                                                  colorText: whiteColor,
+                                                  "No Test Item",
+                                                  "No test selected.");
+                                            }
                                           }
-                                        } else {
-                                          Get.snackbar(
-                                              duration:
-                                                  Duration(milliseconds: 2000),
-                                              icon: Icon(Icons.error),
-                                              margin: EdgeInsets.symmetric(
-                                                  horizontal: DM.p70,
-                                                  vertical: DM.p60),
-                                              backgroundColor: Color.fromARGB(
-                                                  255, 202, 0, 0),
-                                              colorText: whiteColor,
-                                              "Error!",
-                                              "Please add info properly!");
                                         }
                                       },
                                       height: DM.p40,
@@ -943,7 +951,10 @@ class FormUserInfo extends StatelessWidget {
             child: Container(
               child: TextFormField(
                 validator: validatorField,
-                onEditingComplete: (() {}),
+                onChanged: ((value) {
+                  if (!formKey.currentState?.validate())
+                    formKey.currentState?.validate();
+                }),
                 keyboardType: TextInputType.multiline,
                 maxLines: null,
                 controller: controller,
@@ -953,9 +964,9 @@ class FormUserInfo extends StatelessWidget {
                     disabledBorder: OutlineInputBorder(
                         borderSide:
                             BorderSide(width: DM.p1, color: orangeColor)),
-                    // focusedErrorBorder: OutlineInputBorder(
-                    //     borderSide:
-                    //         BorderSide(width: DM.p1, color: orangeColor)),
+                    focusedErrorBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(width: DM.p1, color: orangeColor)),
                     focusedBorder: OutlineInputBorder(
                         borderSide:
                             BorderSide(width: DM.p1, color: orangeColor)),
@@ -981,28 +992,6 @@ class FormUserInfo extends StatelessWidget {
   }
 }
 
-//top : flat
-
-//: edit text
-//gender
-//:add test button brdr rdius
-// cross sign in list
-//golden rose light..
-//address
-//add test popup
-//write your name
-//test , transport, total cost
-//light green arektu ligh
-//outline_border listiitem and info
-//freshers...bdjobs
-
-//test , service charge , total cost
-//invoice //timestamp millisecond
-//only title mobile number
-//invoie last 5 digit+ randomnumber
-//teststatus enum
-//softdelete 0
-
 String? validateMobile(String? value) {
   if (value?.length != 11 && value?.length != 12)
     return 'Mobile Number must be of 11 and 12 digits';
@@ -1010,7 +999,14 @@ String? validateMobile(String? value) {
     return null;
 }
 
-String? validateString(String? value) {
+String? validateName(String? value) {
+  if (value?.length == 0)
+    return 'Please fill this form';
+  else
+    return null;
+}
+
+String? validateAge(String? value) {
   if (value?.length == 0)
     return 'Please fill this form';
   else

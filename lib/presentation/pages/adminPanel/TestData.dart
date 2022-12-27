@@ -40,8 +40,6 @@ class _TestDataCreateState extends State<TestDataCreate> {
   var inserNewTestItem;
 
   Future<void> updateTestItem() async {
-    
-
     name.text = widget.testItem!.name;
     servicecharge.text = widget.testItem!.servicecharge.toString();
     softdelete.text = widget.testItem!.softdelete.toString();
@@ -207,61 +205,61 @@ class _TestDataCreateState extends State<TestDataCreate> {
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
-                          textInputType: TextInputType.name,
+                          textInputType: TextInputType.number,
                           controller: servicecharge,
                           title: "Collection charge",
-                          value: "20.0",
+                          value: "20",
                           activate: false,
                         ),
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
-                          textInputType: TextInputType.name,
+                          textInputType: TextInputType.number,
                           controller: discount,
                           title: "Discount",
-                          value: "15.0",
+                          value: "15",
                           activate: false,
                         ),
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
-                          textInputType: TextInputType.name,
+                          textInputType: TextInputType.number,
                           controller: niddle_cost,
                           title: "Niddle Cost",
-                          value: "10.0",
+                          value: "10",
                           activate: false,
                         ),
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
-                          textInputType: TextInputType.name,
+                          textInputType: TextInputType.number,
                           controller: transport_cost,
                           title: "Transport cost",
-                          value: "50.0",
+                          value: "50",
                           activate: false,
                         ),
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
-                          textInputType: TextInputType.name,
+                          textInputType: TextInputType.number,
                           controller: testkitprice,
                           title: "Tube Cost",
-                          value: "70.0",
+                          value: "70",
                           activate: false,
                         ),
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
-                          textInputType: TextInputType.name,
+                          textInputType: TextInputType.number,
                           controller: testprice,
                           title: "Testprice",
-                          value: "70.0",
+                          value: "70",
                           activate: false,
                         ),
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
-                          textInputType: TextInputType.name,
+                          textInputType: TextInputType.number,
                           controller: softdelete,
                           title: "Softdelete",
                           value: "0",
@@ -283,10 +281,11 @@ class _TestDataCreateState extends State<TestDataCreate> {
                         if (await chechkingInternet()) {
                           if (widget.testItem == null) {
                             insertNewTestItemMethod();
-                      
                           } else {
                             updateToFirebase();
                           }
+
+                          Get.back();
                         }
                       } else {
                         Get.snackbar(
@@ -374,7 +373,7 @@ class FormUserInfo extends StatelessWidget {
             child: Container(
               child: TextFormField(
                 autofocus: true,
-                keyboardType: TextInputType.multiline,
+                keyboardType: textInputType,
                 maxLines: null,
                 validator: validatorField,
                 onEditingComplete: (() {}),

@@ -202,7 +202,6 @@ class _ConfirmationListState extends State<ConfirmationList> {
                         onPressed: () async {
                           if (await chechkingInternet()) {
                             widget.addTestRequest();
-
                             Get.back();
                           }
                         },

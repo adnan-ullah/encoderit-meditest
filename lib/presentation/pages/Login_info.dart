@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminHom.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sizer/sizer.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
@@ -16,6 +17,7 @@ import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
 import 'package:healthcare_homelab/presentation/pages/Template.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import '../../constants/colors.dart';
 import '../../responsives/dimensions.dart';
@@ -41,8 +43,105 @@ class _LoginScreenState extends State<LoginScreen> {
     phone.text = prefs.getString("phoneNumber")!;
   }
 
+  void updateCheck() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+
+    int? update_version = sharedPreferences.getInt("update_version");
+    String? update_details = sharedPreferences.getString("update_details");
+
+    sharedPreferences.remove("update_version");
+    sharedPreferences.remove("update_details");
+
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+    String build_Number = packageInfo.buildNumber;
+
+    if (update_version! > int.parse(build_Number)) {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return Scaffold(
+              backgroundColor: Colors.transparent,
+              body: Center(
+                child: Container(
+                    margin: EdgeInsets.all(DM.p10),
+                    height: DM.p200,
+                    color: creamColor,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(16),
+                          margin: EdgeInsets.all(16),
+                          child: Text(
+                            "${update_details}",
+                            style: TextStyle(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 14,
+                                color: Color.fromARGB(255, 26, 1, 1)),
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: DM.p20, vertical: DM.p10),
+                              child: MaterialButton(
+                                onPressed: () {
+                                  Get.back();
+                                },
+                                height: DM.p40,
+                                minWidth: DM.p120,
+                                shape: const StadiumBorder(),
+                                color: orangeColor,
+                                child: Text(
+                                  "Cancel",
+                                  style: TextStyle(
+                                      color: fullWhiteColor,
+                                      fontSize: DM.p15,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: DM.p20, vertical: DM.p10),
+                              child: MaterialButton(
+                                onPressed: () async {
+                                  final Uri _url = Uri.parse(
+                                      "https://play.google.com/store/apps/details?id=com.innova.meditest");
+                                  if (!await launchUrl(_url)) {
+                                    throw 'Could not launch $_url';
+                                  }
+                                },
+                                height: DM.p40,
+                                minWidth: DM.p120,
+                                shape: const StadiumBorder(),
+                                color: orangeColor,
+                                child: Text(
+                                  "Update",
+                                  style: TextStyle(
+                                      color: fullWhiteColor,
+                                      fontSize: DM.p15,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ],
+                    )),
+              ),
+            );
+          });
+    }
+  }
+
   @override
   void initState() {
+    updateCheck();
     getPhoneNumber();
 
     // TODO: implement initState
@@ -51,9 +150,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(20.sp);
-    print(DM.screenHeight / DM.p200);
     chechkingInternet();
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
@@ -194,7 +292,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           true &&
                                       await chechkingInternet()) {
                                     savePhone(phone.text);
-                                    if (phone.text == "111111111111") {
+                                    if (phone.text == "#999#888#11#") {
                                       Get.to(AdminHome());
                                     } else {
                                       Get.to(HomeScreen());

@@ -29,14 +29,6 @@ class _RequestListState extends State<RequestList> {
   late DatabaseReference _dbref_testReqModel;
   String? phoneNumber;
 
-  Map<int, String> status = {
-    1: "PENDING",
-    2: "RECIEVED",
-    3: "COLLECTED",
-    4: "READY",
-    5: "DELIVERED",
-    6: "CANCEL"
-  };
 
   Future<void> getPhoneData() async {
     _onLoading(true);
@@ -48,7 +40,6 @@ class _RequestListState extends State<RequestList> {
 
     _dbref_testReqModel.onValue.listen((event) {
       setState(() {
-        print("testDataEach + " + testDataEach.length.toString());
         testDataEach.clear();
       });
       for (DataSnapshot ds in event.snapshot.children) {
@@ -216,7 +207,7 @@ class _RequestListState extends State<RequestList> {
                                               ),
                                             ),
                                             Text(
-                                              status[testDataEach[index]
+                                              createRequest_controller.status[testDataEach[index]
                                                       .teststatus]
                                                   .toString(),
                                               style: TextStyle(

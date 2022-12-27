@@ -41,6 +41,10 @@ dependencies:
   firebase_storage: ^11.0.9
 
 
+
+  package_info_plus: ^1.0.6
+
+
  
 
   

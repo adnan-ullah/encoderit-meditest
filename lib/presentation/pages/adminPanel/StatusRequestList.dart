@@ -18,6 +18,7 @@ import 'package:healthcare_homelab/state_programming/Create_Request_Controller.d
 
 import '../../../constants/app_info.dart';
 import '../../../responsives/dimensions.dart';
+import '../../widgets/projectsWidget/RequestListTabView.dart';
 
 class StatusRequestList extends StatefulWidget {
   StatusRequestList({super.key});
@@ -26,16 +27,26 @@ class StatusRequestList extends StatefulWidget {
   State<StatusRequestList> createState() => _StatusRequestListState();
 }
 
-String messageTitle = "Empty";
-String notificationAlert = "alert";
-
 FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-class _StatusRequestListState extends State<StatusRequestList> {
+class _StatusRequestListState extends State<StatusRequestList>
+    with TickerProviderStateMixin {
+  int _selectedIndex = 0;
+  late TabController tabController;
+
+
+
   @override
   void initState() {
-    populateAllRequest();
+    
+  
 
+    tabController = TabController(
+        length: cr_controller.status.length, vsync: this, initialIndex: 0);
+
+    setState(() {
+      _selectedIndex = tabController.index;
+    });
     // TODO: implement initState
     super.initState();
   }
@@ -86,6 +97,8 @@ class _StatusRequestListState extends State<StatusRequestList> {
 
   @override
   Widget build(BuildContext context) {
+    
+
     return Scaffold(
       backgroundColor: creamColor,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
@@ -93,103 +106,105 @@ class _StatusRequestListState extends State<StatusRequestList> {
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
           width: DM.screenWidth,
           child: Text(
-            "Admin",
+            "Status",
             textAlign: TextAlign.left,
             style: TextStyle(color: creamColor, fontSize: DM.p30),
           ),
         ),
       ]),
-      body: Padding(
-        padding: EdgeInsets.all(DM.p8),
+      body: Center(
         child: Column(
           children: [
             Container(
-                color: creamColor,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            height: DM.p180,
-                            width: DM.screenWidth * 0.4,
-                            margin: EdgeInsets.symmetric(
-                                vertical: DM.p25, horizontal: DM.p16),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: DM.p30, vertical: DM.p20),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(DM.p10)),
-                                  primary: orangeColor),
-                              onPressed: () {
-                                _onLoading(true);
-                                Timer(Duration(seconds: 2), () {
-                                  _onLoading(false);
-                                  Get.to(TestItemList());
-                                });
-                              },
-                              child: Text(
-                                "Test Item",
-                                style: TextStyle(
-                                    color: fullWhiteColor,
-                                    fontSize: DM.p15,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ),
-                          Container(
-                            height: DM.p180,
-                            width: DM.screenWidth * 0.4,
-                            margin: EdgeInsets.symmetric(
-                                vertical: DM.p25, horizontal: DM.p16),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: DM.p30, vertical: DM.p20),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(DM.p10)),
-                                  primary: orangeColor),
-                              onPressed: () {
-                                Get.to(TestRequestCreate());
-                              },
-                              child: Text(
-                                "Test Request",
-                                style: TextStyle(
-                                    color: fullWhiteColor,
-                                    fontSize: DM.p15,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+              alignment: Alignment.center,
+              height: 40,
+              child: TabBar(
+                isScrollable: true,
+                controller: tabController,
+                onTap: ((value) {}),
+                tabs: [
+                  Tab(
+                    child: Text(
+                      "${cr_controller.status[1]}",
+                      style: TextStyle(
+                          color: blackFontColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold),
                     ),
-                    Container(
-                      margin: EdgeInsets.symmetric(vertical: DM.p25),
-                      child: MaterialButton(
-                        onPressed: () {
-                          //
-                        },
-                        height: DM.p45,
-                        minWidth: DM.p130,
-                        shape: const StadiumBorder(),
-                        color: orangeColor,
-                        child: Text(
-                          "Add Item",
-                          style: TextStyle(
-                              color: fullWhiteColor,
-                              fontSize: DM.p15,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    )
-                  ],
-                )),
+                  ),
+                  Tab(
+                    child: Text(
+                      "${cr_controller.status[2]}",
+                      style: TextStyle(
+                          color: blackFontColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Tab(
+                    child: Text(
+                      "${cr_controller.status[3]}",
+                      style: TextStyle(
+                          color: blackFontColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Tab(
+                    child: Text(
+                      "${cr_controller.status[4]}",
+                      style: TextStyle(
+                          color: blackFontColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Tab(
+                    child: Text(
+                      "${cr_controller.status[5]}",
+                      style: TextStyle(
+                          color: blackFontColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Tab(
+                    child: Text(
+                      "${cr_controller.status[6]}",
+                      style: TextStyle(
+                          color: blackFontColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: tabController,
+                children: [
+                  RequestListTabView(
+                    statusKey: cr_controller.status[1],
+                  ),
+                  RequestListTabView(
+                    statusKey: cr_controller.status[2],
+                  ),
+                  RequestListTabView(
+                    statusKey: cr_controller.status[3],
+                  ),
+                  RequestListTabView(
+                    statusKey: cr_controller.status[4],
+                  ),
+                  RequestListTabView(
+                    statusKey: cr_controller.status[5],
+                  ),
+                  RequestListTabView(
+                    statusKey: cr_controller.status[6],
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -231,3 +246,4 @@ Future<void> populateAllRequest() async {
     // }
   });
 }
+

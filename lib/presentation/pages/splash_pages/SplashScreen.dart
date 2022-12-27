@@ -22,11 +22,11 @@ class SplashScreen extends StatelessWidget {
           loaderColor: orangeColor,
           //backgroundImage: Image.asset('lib/assets/images/plus.png',,).image,
           logo: Image(image: AssetImage("lib/assets/images/new_plus.png")),
-          logoWidth: 100,
+          
           title: Text(
             "Health Care Homelab",
             style: TextStyle(
-              fontSize: DM.p18,
+              fontSize: DM.p22,
               fontWeight: FontWeight.bold,
             ),
           ),
