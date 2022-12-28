@@ -37,6 +37,15 @@ class CreateRequest_controller extends GetxController {
     5: "DELIVERED",
     6: "CANCEL"
   };
+
+  Map<String, int> toStatus = {
+  "PENDING" :  1,
+  "RECIEVED" :  2,
+  "COLLECTED" :  3,
+ "READY" :  4,
+  "DELIVERED" :  5,
+  "CANCEL" :  6,
+  };
    Map<int, String> typeName = {
     1: "FORM",
     2: "PRESCRIPTION",

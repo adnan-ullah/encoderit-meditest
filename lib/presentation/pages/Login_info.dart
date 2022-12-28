@@ -243,9 +243,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: TextFormField(
                                   keyboardType: TextInputType.phone,
                                   controller: phone,
-                                  // inputFormatters: <TextInputFormatter>[
-                                  //   FilteringTextInputFormatter.digitsOnly
-                                  // ],
+                                  inputFormatters: <TextInputFormatter>[
+                                    FilteringTextInputFormatter.digitsOnly
+                                  ],
                                   validator: validateMobile,
                                   onChanged: ((value) {
                                     _formKey.currentState?.validate();
@@ -297,10 +297,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                           true &&
                                       await chechkingInternet()) {
                                    //admin-app
+
+                                     savePhone(phone.text);
                                     if (phone.text == "111000222999") {
                                       savePhone(phone.text);
                                       Get.to(AdminHome());
-                                    } else {}
+                                    } else {
+                                       Get.to(HomeScreen());
+                                    }
 
                                
                               
@@ -311,21 +315,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                   // ],
                                 
                                   
-                                  //   // if (!phone.text.contains("*") &&
-                                  //   //     !phone.text.contains("#")) {
-                                  //   //   savePhone(phone.text);
+                                  //   if (!phone.text.contains("*") &&
+                                  //       !phone.text.contains("#")) {
+                                  //     savePhone(phone.text);
 
-                                  //   //   // Get.to(HomeScreen());
+                                  //      Get.to(HomeScreen());
 
-                                  //   // } else {
-                                  //   //   Get.snackbar("Number error!",
-                                  //   //       "Please put a valid number",
-                                  //   //       margin: EdgeInsets.symmetric(
-                                  //   //           horizontal: DM.p70,
-                                  //   //           vertical: DM.p60),
-                                  //   //       backgroundColor: orangeColor,
-                                  //   //       colorText: whiteColor);
-                                  //   // }
+                                  //   } else {
+                                  //     Get.snackbar("Number error!",
+                                  //         "Please put a valid number",
+                                  //         margin: EdgeInsets.symmetric(
+                                  //             horizontal: DM.p70,
+                                  //             vertical: DM.p60),
+                                  //         backgroundColor: orangeColor,
+                                  //         colorText: whiteColor);
+                                  //   }
                                   }
                                 },
                                 height: DM.p50,

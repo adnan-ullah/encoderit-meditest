@@ -97,7 +97,7 @@ class TestDataRequest {
   final dynamic teststatus;
   final dynamic invoice_call;
   final dynamic type;
-  late final dynamic image_one;
+  final dynamic image_one;
   final dynamic image_two;
   final dynamic comments;
 

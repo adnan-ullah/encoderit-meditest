@@ -54,7 +54,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   String gender = "Male";
   var phone = new TextEditingController();
   var age = new TextEditingController();
-    List<TestData> testDataPreList = [];
+  List<TestData> testDataPreList = [];
   var totalprice = new TextEditingController();
   var servicecharge = new TextEditingController();
   var address = new TextEditingController();
@@ -99,15 +99,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
           testItemListWithSelected[testData.id] = false;
         });
 
-      
-
         //false -> add button
         //true -> remove button
 
         print(testItemList.length);
       }
-        
-  
     });
   }
 
@@ -125,7 +121,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
   Future<void> retreiveEachDataRequest() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
-    type.text = widget.testEachRequest!.type.toString();
+    type.text =
+        createReqController.typeName[widget.testEachRequest!.type].toString();
     invoice_call.text = widget.testEachRequest!.invoice_call.toString();
     name.text = widget.testEachRequest!.name.toString();
     age.text = widget.testEachRequest!.age.toString();
@@ -139,9 +136,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     setState(
       () {
         if (widget.testEachRequest!.testlist != null)
-          testDataPreList.addAll(widget.testEachRequest!.testlist as List<TestData>);
-
-       
+          testDataPreList
+              .addAll(widget.testEachRequest!.testlist as List<TestData>);
       },
     );
 
@@ -201,8 +197,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         comments: null);
 
     if (updateTestRequestItem != null) {
-      await DbrefTestReqModel
-          .child("testRequest")
+      await DbrefTestReqModel.child("testRequest")
           .child(updateTestRequestItem.mobile)
           .child(updateTestRequestItem.id)
           .update(jsonDecode(jsonEncode(updateTestRequestItem)));
@@ -896,7 +891,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                 SizedBox(
                                                   width: DM.p170,
                                                   child: Text(
-                                                    testData_updated[index].name,
+                                                    testData_updated[index]
+                                                        .name,
                                                     style: TextStyle(
                                                         fontWeight:
                                                             FontWeight.w900,
@@ -929,7 +925,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                       //     index);
                                                       setState(() {
                                                         removeCalulationProcess(
-                                                            testData_updated[index].id);
+                                                            testData_updated[
+                                                                    index]
+                                                                .id);
                                                       });
 
                                                       // createReqController
@@ -1027,7 +1025,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                               ),
                               InkWell(
                                 onTap: () {
-                                  openMap(22.4977292, 91.8024407);
+                                  openMap(double.parse(latitude),
+                                      double.parse(longitude));
                                 },
                                 child: Text(
                                   "Click to see details",
@@ -1078,15 +1077,65 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           value: "70",
                           activate: false,
                         ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateName,
-                          textInputType: TextInputType.name,
-                          controller: teststatus,
-                          title: "Test status",
-                          value: "PENDING",
-                          activate: false,
+
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Next Status",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: Color.fromARGB(255, 26, 1, 1)),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              DropdownButton<String>(
+                                hint: Text(
+                                    "${createReqController.status[int.parse(teststatus.text)]}"),
+                                items: <String>[
+                                  "PENDING",
+                                  "RECIEVED",
+                                  "COLLECTED",
+                                  "READY",
+                                  "DELIVERED",
+                                  "CANCEL"
+                                ].map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text("$value"),
+                                  );
+                                }).toList(),
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    teststatus.text = createReqController
+                                        .toStatus[newValue]
+                                        .toString();
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
                         ),
+
+                        // FormUserInfo(
+                        //   formKey: _formKey,
+                        //   validatorField: validateName,
+                        //   textInputType: TextInputType.name,
+                        //   controller: teststatus,
+                        //   title: "Next status",
+                        //   value: "PENDING",
+                        //   activate: false,
+                        // ),
                       ],
                     )),
 
@@ -1101,7 +1150,94 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                     onPressed: () async {
                       if (_formKey.currentState?.validate() == true) {
                         if (await chechkingInternet()) {
-                          _updateRequest();
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return Scaffold(
+                                  backgroundColor: Colors.transparent,
+                                  body: Center(
+                                    child: Container(
+                                        margin: EdgeInsets.all(DM.p10),
+                                        height: DM.p180,
+                                        color: creamColor,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              padding: EdgeInsets.all(16),
+                                              margin: EdgeInsets.all(16),
+                                              child: Text(
+                                                "Are you sure?",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w400,
+                                                    fontSize: DM.p20,
+                                                    color: Color.fromARGB(
+                                                        255, 26, 1, 1)),
+                                              ),
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Container(
+                                                  margin: EdgeInsets.symmetric(
+                                                      horizontal: DM.p20,
+                                                      vertical: DM.p10),
+                                                  child: MaterialButton(
+                                                    onPressed: () {
+                                                      Get.back();
+                                                    },
+                                                    height: DM.p40,
+                                                    minWidth: DM.p120,
+                                                    shape:
+                                                        const StadiumBorder(),
+                                                    color: orangeColor,
+                                                    child: Text(
+                                                      "Cancel",
+                                                      style: TextStyle(
+                                                          color: fullWhiteColor,
+                                                          fontSize: DM.p15,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  margin: EdgeInsets.symmetric(
+                                                      horizontal: DM.p20,
+                                                      vertical: DM.p10),
+                                                  child: MaterialButton(
+                                                    onPressed: () async {
+                                                      _updateRequest();
+
+                                                      //cr_controller.filter_testItemList.removeAt(index);
+                                                      Get.back();
+                                                    },
+                                                    height: DM.p40,
+                                                    minWidth: DM.p120,
+                                                    shape:
+                                                        const StadiumBorder(),
+                                                    color: orangeColor,
+                                                    child: Text(
+                                                      "Yes",
+                                                      style: TextStyle(
+                                                          color: fullWhiteColor,
+                                                          fontSize: DM.p15,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                          ],
+                                        )),
+                                  ),
+                                );
+                              });
                         }
                       } else {
                         Get.snackbar(
@@ -1120,7 +1256,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                     shape: const StadiumBorder(),
                     color: orangeColor,
                     child: Text(
-                      "Update",
+                      "Confirm",
                       style: TextStyle(
                           color: fullWhiteColor,
                           fontSize: DM.p15,

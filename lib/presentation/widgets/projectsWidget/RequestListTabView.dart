@@ -18,7 +18,10 @@ import '../../../state_programming/Request_Enum.dart';
 
 class RequestListTabView extends StatefulWidget {
   var statusKey;
-  RequestListTabView({super.key, required this.statusKey});
+
+  var isButton;
+  RequestListTabView(
+      {super.key, required this.statusKey, required this.isButton});
 
   @override
   State<RequestListTabView> createState() => _RequestListTabViewState();
@@ -68,6 +71,42 @@ class _RequestListTabViewState extends State<RequestListTabView> {
         isLoading = false;
       });
       Navigator.pop(context);
+    }
+  }
+
+  Future<void> _updateStatus(TestDataRequest requestItem) async {
+    int currentTime = DateTime.now().millisecondsSinceEpoch;
+    late DatabaseReference DbrefTestReqModel;
+    DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
+    TestDataRequest updateTestRequestItem;
+    updateTestRequestItem = TestDataRequest(
+        id: requestItem.id,
+        name: requestItem.name,
+        gender: requestItem.gender,
+        mobile: requestItem.mobile,
+        age: requestItem.age,
+        testlist: requestItem.testlist,
+        totalprice: requestItem.totalprice,
+        servicecharge: requestItem.servicecharge,
+        address: requestItem.address,
+        referrer: requestItem.referrer,
+        lastupdate: currentTime,
+        dateofcreated: requestItem.dateofcreated,
+        softdelete: 0,
+        latitude: requestItem.latitude,
+        longitude: requestItem.longitude,
+        teststatus: requestItem.teststatus+1,
+        invoice_call: requestItem.invoice_call,
+        type: requestItem.type,
+        image_one: requestItem.image_one,
+        image_two: requestItem.image_two,
+        comments: requestItem.comments);
+
+    if (updateTestRequestItem != null) {
+      await DbrefTestReqModel.child("testRequest")
+          .child(updateTestRequestItem.mobile)
+          .child(updateTestRequestItem.id)
+          .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
     }
   }
 
@@ -136,11 +175,9 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                             Padding(
                               padding: EdgeInsets.all(DM.p8),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   SizedBox(
-                                    width: DM.p85,
+                                    width: DM.p80,
                                     child: Text(
                                       "Type",
                                       style: TextStyle(
@@ -150,6 +187,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                     ),
                                   ),
                                   Container(
+                                    width: DM.p120,
                                     child: Text(
                                       "Invoice Call",
                                       style: TextStyle(
@@ -159,7 +197,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                     ),
                                   ),
                                   Container(
-                                    margin: EdgeInsets.only(right: DM.p45),
+                                    width: DM.p120,
                                     child: Text(
                                       "Date",
                                       style: TextStyle(
@@ -198,11 +236,9 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                           EdgeInsets.symmetric(vertical: DM.p5),
                                       height: DM.p60,
                                       child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           SizedBox(
-                                            width: DM.p90,
+                                            width: DM.p80,
                                             child: Text(
                                               "${createRequest_controller.typeName[_newTestRequestList[index].type]}",
                                               style: TextStyle(
@@ -213,6 +249,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                             ),
                                           ),
                                           SizedBox(
+                                            width: DM.p100,
                                             child: Text(
                                               "#${_newTestRequestList[index].invoice_call.toString()}",
                                               style: TextStyle(
@@ -222,19 +259,48 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                                       255, 26, 1, 1)),
                                             ),
                                           ),
-                                          Text(
-                                            (DateFormat('dd-MMM-yyy').format(DateTime
-                                                    .fromMillisecondsSinceEpoch(
-                                                        _newTestRequestList[
-                                                                index]
-                                                            .dateofcreated)))
-                                                .toString(),
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: DM.p12,
-                                                color: Color.fromARGB(
-                                                    255, 26, 1, 1)),
+                                          SizedBox(
+                                            width: DM.p100,
+                                            child: Text(
+                                              (DateFormat('dd-MMM-yyy').format(DateTime
+                                                      .fromMillisecondsSinceEpoch(
+                                                          _newTestRequestList[
+                                                                  index]
+                                                              .dateofcreated)))
+                                                  .toString(),
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: DM.p12,
+                                                  color: Color.fromARGB(
+                                                      255, 26, 1, 1)),
+                                            ),
                                           ),
+                                          widget.isButton == true
+                                              ? Container(
+                                                  width: DM.p70,
+                                                  child: MaterialButton(
+                                                    onPressed: () async {
+                                                      _updateStatus(
+                                                          _newTestRequestList[
+                                                              index]);
+                                                    },
+                                                    height: DM.p50,
+                                                    shape:
+                                                        const StadiumBorder(),
+                                                    color: orangeColor,
+                                                    child: Text(
+                                                      "Done",
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                          color: fullWhiteColor,
+                                                          fontSize: DM.p15,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                )
+                                              : Container()
                                         ],
                                       ),
                                     ),
