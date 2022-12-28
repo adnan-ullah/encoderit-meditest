@@ -112,7 +112,7 @@ class _StatusRequestListState extends State<StatusRequestList>
             children: [
               Container(
                 alignment: Alignment.center,
-                height: 40,
+                height: DM.p40,
                 child: TabBar(
                   isScrollable: true,
                   controller: tabController,
@@ -123,7 +123,7 @@ class _StatusRequestListState extends State<StatusRequestList>
                         "${cr_controller.status[1]}",
                         style: TextStyle(
                             color: blackFontColor,
-                            fontSize: 10,
+                            fontSize: DM.p11,
                             fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -132,7 +132,7 @@ class _StatusRequestListState extends State<StatusRequestList>
                         "${cr_controller.status[2]}",
                         style: TextStyle(
                             color: blackFontColor,
-                            fontSize: 10,
+                            fontSize: DM.p11,
                             fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -141,7 +141,7 @@ class _StatusRequestListState extends State<StatusRequestList>
                         "${cr_controller.status[3]}",
                         style: TextStyle(
                             color: blackFontColor,
-                            fontSize: 10,
+                            fontSize: DM.p11,
                             fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -150,7 +150,7 @@ class _StatusRequestListState extends State<StatusRequestList>
                         "${cr_controller.status[4]}",
                         style: TextStyle(
                             color: blackFontColor,
-                            fontSize: 10,
+                            fontSize: DM.p11,
                             fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -159,7 +159,7 @@ class _StatusRequestListState extends State<StatusRequestList>
                         "${cr_controller.status[5]}",
                         style: TextStyle(
                             color: blackFontColor,
-                            fontSize: 10,
+                            fontSize: DM.p11,
                             fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -168,7 +168,7 @@ class _StatusRequestListState extends State<StatusRequestList>
                         "${cr_controller.status[6]}",
                         style: TextStyle(
                             color: blackFontColor,
-                            fontSize: 10,
+                            fontSize: DM.p11,
                             fontWeight: FontWeight.bold),
                       ),
                     ),

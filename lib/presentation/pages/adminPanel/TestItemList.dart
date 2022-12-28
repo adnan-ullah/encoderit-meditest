@@ -207,13 +207,13 @@ class _TestItemListState extends State<TestItemList> {
                                             : cr_controller.searchBox.value,
                                         focusedBorder: OutlineInputBorder(
                                             borderRadius:
-                                                BorderRadius.circular(40),
+                                                BorderRadius.circular(DM.p40),
                                             borderSide: BorderSide(
                                                 width: DM.p1,
                                                 color: orangeColor)),
                                         enabledBorder: OutlineInputBorder(
                                           borderRadius:
-                                              BorderRadius.circular(40),
+                                              BorderRadius.circular(DM.p40),
                                           borderSide: BorderSide(
                                               width: DM.p1,
                                               color:

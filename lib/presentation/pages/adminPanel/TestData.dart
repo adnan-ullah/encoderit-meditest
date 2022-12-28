@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
+import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/ConfirmationList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Confirmation_TestItem.dart';
@@ -137,11 +138,6 @@ class _TestDataCreateState extends State<TestDataCreate> {
   CreateRequest_controller createReqController =
       Get.put(CreateRequest_controller());
 
-  // Future<void> getSharedData() async {
-  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   phone.text = prefs.getString("phoneNumber").toString();
-  // }
-
   @override
   Widget build(BuildContext context) {
     chechkingInternet();
@@ -186,7 +182,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                       children: [
                         FormUserInfo(
                           formKey: _formKey,
-                          validatorField: validateString,
+                          validatorField: validateName,
                           textInputType: TextInputType.name,
                           controller: name,
                           title: "Name",
@@ -195,7 +191,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                         ),
                         FormUserInfo(
                           formKey: _formKey,
-                          validatorField: validateString,
+                          validatorField: validateName,
                           textInputType: TextInputType.name,
                           controller: diagnostic_center,
                           title: "Diagnostic center",
@@ -204,7 +200,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                         ),
                         FormUserInfo(
                           formKey: _formKey,
-                          validatorField: validateString,
+                          validatorField: validateNumber,
                           textInputType: TextInputType.number,
                           controller: servicecharge,
                           title: "Collection charge",
@@ -213,7 +209,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                         ),
                         FormUserInfo(
                           formKey: _formKey,
-                          validatorField: validateString,
+                          validatorField: validateNumber,
                           textInputType: TextInputType.number,
                           controller: discount,
                           title: "Discount",
@@ -222,7 +218,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                         ),
                         FormUserInfo(
                           formKey: _formKey,
-                          validatorField: validateString,
+                          validatorField: validateNumber,
                           textInputType: TextInputType.number,
                           controller: niddle_cost,
                           title: "Niddle Cost",
@@ -231,7 +227,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                         ),
                         FormUserInfo(
                           formKey: _formKey,
-                          validatorField: validateString,
+                          validatorField: validateNumber,
                           textInputType: TextInputType.number,
                           controller: transport_cost,
                           title: "Transport cost",
@@ -240,7 +236,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                         ),
                         FormUserInfo(
                           formKey: _formKey,
-                          validatorField: validateString,
+                          validatorField: validateNumber,
                           textInputType: TextInputType.number,
                           controller: testkitprice,
                           title: "Tube Cost",
@@ -249,7 +245,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                         ),
                         FormUserInfo(
                           formKey: _formKey,
-                          validatorField: validateString,
+                          validatorField: validateNumber,
                           textInputType: TextInputType.number,
                           controller: testprice,
                           title: "Testprice",
@@ -258,7 +254,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                         ),
                         FormUserInfo(
                           formKey: _formKey,
-                          validatorField: validateString,
+                          validatorField: validateNumber,
                           textInputType: TextInputType.number,
                           controller: softdelete,
                           title: "Softdelete",
@@ -424,4 +420,18 @@ String? validateString(String? value) {
     return 'Please fill this form';
   else
     return null;
+}
+
+// String? validateNumber(String? value) {
+//   if (value?.length == 0 && (double.parse(value!) != null))
+//     return 'Please fill this form';
+//   else
+//     return null;
+// }
+
+String?  validateNumber(String? value) {
+ if (value?.length  == 0 || (double.tryParse(value!) == null)) {
+    return 'Please fill numbers only';
+ }
+ return null;
 }

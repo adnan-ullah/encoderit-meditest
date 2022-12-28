@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
+import 'package:flutter/services.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminHom.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -40,7 +41,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> getPhoneNumber() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    phone.text = prefs.getString("phoneNumber")!;
+    if (prefs.getString("phoneNumber") != null)
+      phone.text = prefs.getString("phoneNumber")!;
   }
 
   void updateCheck() async {
@@ -49,14 +51,14 @@ class _LoginScreenState extends State<LoginScreen> {
     int? update_version = sharedPreferences.getInt("update_version");
     String? update_details = sharedPreferences.getString("update_details");
 
-    sharedPreferences.remove("update_version");
-    sharedPreferences.remove("update_details");
+    // sharedPreferences.remove("update_version");
+    // sharedPreferences.remove("update_details");
 
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
     String build_Number = packageInfo.buildNumber;
-
-    if (update_version! > int.parse(build_Number)) {
+    if (update_version != null && update_details != null) if (update_version! >
+        int.parse(build_Number)) {
       showDialog(
           context: context,
           builder: (context) {
@@ -241,6 +243,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: TextFormField(
                                   keyboardType: TextInputType.phone,
                                   controller: phone,
+                                  // inputFormatters: <TextInputFormatter>[
+                                  //   FilteringTextInputFormatter.digitsOnly
+                                  // ],
                                   validator: validateMobile,
                                   onChanged: ((value) {
                                     _formKey.currentState?.validate();
@@ -288,15 +293,39 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: DM.p130,
                               child: MaterialButton(
                                 onPressed: () async {
-                                  if (_formKey.currentState?.validate() ==
+                                   if (_formKey.currentState?.validate() ==
                                           true &&
                                       await chechkingInternet()) {
-                                    savePhone(phone.text);
-                                    if (phone.text == "#999#888#11#") {
+                                   //admin-app
+                                    if (phone.text == "111000222999") {
+                                      savePhone(phone.text);
                                       Get.to(AdminHome());
-                                    } else {
-                                      Get.to(HomeScreen());
-                                    }
+                                    } else {}
+
+                               
+                              
+                                   
+                                  //client-app please add this
+                                  //// inputFormatters: <TextInputFormatter>[
+                                  //   FilteringTextInputFormatter.digitsOnly
+                                  // ],
+                                
+                                  
+                                  //   // if (!phone.text.contains("*") &&
+                                  //   //     !phone.text.contains("#")) {
+                                  //   //   savePhone(phone.text);
+
+                                  //   //   // Get.to(HomeScreen());
+
+                                  //   // } else {
+                                  //   //   Get.snackbar("Number error!",
+                                  //   //       "Please put a valid number",
+                                  //   //       margin: EdgeInsets.symmetric(
+                                  //   //           horizontal: DM.p70,
+                                  //   //           vertical: DM.p60),
+                                  //   //       backgroundColor: orangeColor,
+                                  //   //       colorText: whiteColor);
+                                  //   // }
                                   }
                                 },
                                 height: DM.p50,

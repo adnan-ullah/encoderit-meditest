@@ -92,7 +92,7 @@ Future<void> getNotification() async {
     String build_Number = packageInfo.buildNumber;
     print(build_Number);
 
-    if (message.data["update_version"] != null) {
+   
       if (int.parse(message.data["update_version"]) > int.parse(build_Number)) {
         SharedPreferences sharedPreferences =
             await SharedPreferences.getInstance();
@@ -101,7 +101,7 @@ Future<void> getNotification() async {
         sharedPreferences.setString(
             "update_details", message.data["update_details"]);
       }
-    }
+    
 
     if (message.notification != null) {
       print('Message also contained a notification: ${message.notification}');

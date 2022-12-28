@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
+import 'package:healthcare_homelab/presentation/pages/adminPanel/TestListDialogueAdmin.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
@@ -53,7 +54,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   String gender = "Male";
   var phone = new TextEditingController();
   var age = new TextEditingController();
-  List<TestData> testlist = [];
+    List<TestData> testDataPreList = [];
   var totalprice = new TextEditingController();
   var servicecharge = new TextEditingController();
   var address = new TextEditingController();
@@ -67,6 +68,48 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   var type = new TextEditingController();
   var image_one = new TextEditingController();
   var image_two = new TextEditingController();
+
+  List<TestData> testItemList = [];
+
+  List<TestData> testData_updated = [];
+
+  final Map<String, bool> testItemListWithSelected = {};
+
+  var totalTestCost = 0;
+  var totalCost = 0;
+  var serviceCost = 0;
+  var tubeCost = 0;
+  var totalDiscount = 0;
+  var newRequestData;
+
+  Future<void> _getTestItemList() async {
+    late DatabaseReference DbrefTestModel;
+    DbrefTestModel = FirebaseDatabase.instance.ref("meditest/testModel/");
+
+    DbrefTestModel.onValue.listen((event) {
+      setState(() {
+        testItemList.clear();
+        testItemListWithSelected.clear();
+      });
+      for (DataSnapshot ds in event.snapshot.children) {
+        TestData testData =
+            TestData.fromJson(json.decode(jsonEncode(ds.value)));
+        setState(() {
+          testItemList.add(testData);
+          testItemListWithSelected[testData.id] = false;
+        });
+
+      
+
+        //false -> add button
+        //true -> remove button
+
+        print(testItemList.length);
+      }
+        
+  
+    });
+  }
 
   Future<void> openMap(double latitude, double longitude) async {
     if (await MapLauncher.isMapAvailable(MapType.google) != null) {
@@ -96,9 +139,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     setState(
       () {
         if (widget.testEachRequest!.testlist != null)
-          testlist.addAll(widget.testEachRequest!.testlist as List<TestData>);
+          testDataPreList.addAll(widget.testEachRequest!.testlist as List<TestData>);
 
-        print(testlist.toList());
+       
       },
     );
 
@@ -131,8 +174,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
   Future<void> _updateRequest() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
-    late DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
+    late DatabaseReference DbrefTestReqModel;
+    DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
 
     updateTestRequestItem = TestDataRequest(
         id: widget.testEachRequest!.id.toString(),
@@ -140,7 +183,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         gender: gender.toString(),
         mobile: phone.text.toString(),
         age: int.parse(age.text),
-        testlist: testlist,
+        testlist: testData_updated,
         totalprice: createReqController.totalCost.value,
         servicecharge: createReqController.serviceCost.value,
         address: address.text.toString(),
@@ -158,7 +201,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         comments: null);
 
     if (updateTestRequestItem != null) {
-      await _dbref_testReqModel
+      await DbrefTestReqModel
           .child("testRequest")
           .child(updateTestRequestItem.mobile)
           .child(updateTestRequestItem.id)
@@ -168,17 +211,24 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     Get.back();
   }
 
-  var testCost = 0;
-  var totalCost = 0;
-  var serviceCost = 0;
-  var tubeCost = 0;
-  var totalDiscount = 0;
-  var newRequestData;
-  void removeCalulationProcess(id) {
-    createReqController.testData.removeWhere((element) => element.id == id);
+  void calculationProcess() {
+    testData_updated.clear();
+    totalTestCost = 0;
+    totalCost = 0;
+    serviceCost = 0;
+    tubeCost = 0;
+    totalDiscount = 0;
+    testItemList.map((item) {
+      if (testItemListWithSelected[item.id] == true) {
+        testData_updated.add(item);
+        testItemListWithSelected[item.id] == false;
+      }
+    }).toList();
+
     setState(() {
-      createReqController.testData.map((testItem) {
-        testCost = testCost + int.parse(testItem.testprice.toString());
+      testData_updated.map((testItem) {
+        totalTestCost =
+            totalTestCost + int.parse(testItem.testprice.toString());
         serviceCost =
             max(serviceCost, int.parse(testItem.servicecharge.toString()));
 
@@ -186,33 +236,41 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         totalDiscount = totalDiscount + int.parse(testItem.discount.toString());
       }).toList();
 
-      totalCost = testCost + serviceCost + tubeCost - totalDiscount;
+      totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
+    });
+  }
 
-      createReqController.testItemListWithSelected[id] =
-          !createReqController.testItemListWithSelected[id]!;
+  Future<void> removeCalulationProcess(id) async {
+    setState(() {
+      testData_updated.removeWhere((element) => element.id == id);
+      testItemListWithSelected[id] = false;
 
-      createReqController.totalCost.value = totalCost;
-      createReqController.totalTestCost.value = testCost;
-      createReqController.serviceCost.value = serviceCost;
-      createReqController.totalDiscount.value = totalDiscount;
-      createReqController.tubeCost.value = tubeCost;
-
-      testCost = 0;
+      totalTestCost = 0;
       totalCost = 0;
       serviceCost = 0;
       tubeCost = 0;
-
       totalDiscount = 0;
+
+      testData_updated.map((testItem) {
+        totalTestCost =
+            totalTestCost + int.parse(testItem.testprice.toString());
+        serviceCost =
+            max(serviceCost, int.parse(testItem.servicecharge.toString()));
+
+        tubeCost = tubeCost + int.parse(testItem.testkitprice.toString());
+        totalDiscount = totalDiscount + int.parse(testItem.discount.toString());
+      }).toList();
+
+      totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
+      testItemListWithSelected[id] = testItemListWithSelected[id]!;
     });
   }
 
   @override
   void initState() {
     if (widget.testEachRequest != null) {
-      print("From Update Class");
       this.retreiveEachDataRequest();
-    } else {
-      print("From New Item Class");
+      _getTestItemList();
     }
 
     // TODO: implement initState
@@ -227,6 +285,18 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   @override
   Widget build(BuildContext context) {
     chechkingInternet();
+
+    setState(() {
+      testData_updated.clear();
+      testItemList.map((e) {
+        if (testItemListWithSelected[e.id] == true) {
+          testData_updated.add(e);
+          testItemListWithSelected[e.id] == true;
+          calculationProcess();
+        }
+      }).toList();
+    });
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
@@ -498,302 +568,32 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           value: "15 Dec 2014",
                           activate: true,
                         ),
-                        Column(
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.all(DM.p5),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    "Test Item  ",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: DM.p14,
-                                        color: Color.fromARGB(255, 26, 1, 1)),
-                                  ),
-                                  SizedBox(
-                                    width: DM.p40,
-                                  ),
-                                  Text(":"),
-                                  Container(
-                                    margin: EdgeInsets.symmetric(
-                                        horizontal: DM.p20, vertical: DM.p1),
-                                    child: MaterialButton(
-                                      height: DM.p40,
-                                      minWidth: DM.p100,
-                                      shape: const StadiumBorder(),
-                                      color: orangeColor,
-                                      onPressed: () async {
-                                        if (await chechkingInternet()) {
-                                          createReqController.testData
-                                              .map((element) {
-                                            createReqController
-                                                    .testItemListWithSelected[
-                                                element.id] = true;
-                                          }).toList();
 
-                                          showDialog(
-                                              context: context,
-                                              builder: (context) {
-                                                return MyDialogView(
-                                                  myChild: TestItemDialogueBox(
-                                                    keyTitle:
-                                                        "Referred Address",
-                                                  ),
-                                                );
-                                              });
-                                        }
-                                      },
-                                      child: Text(
-                                        "Add",
-                                        style: TextStyle(
-                                            color: fullWhiteColor,
-                                            fontSize: DM.p15,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                            Container(
-                              margin: EdgeInsets.symmetric(
-                                  horizontal: DM.p10, vertical: DM.p3),
-                              height: DM.screenHeight * 0.35,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: whiteColor,
-                                borderRadius: BorderRadius.circular(DM.p10),
-                              ),
-                              child: testlist.length != 0
-                                  ? ListView.builder(
-                                      itemCount: testlist.length,
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: DM.p15),
-                                      itemBuilder: (context, index) {
-                                        return Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: DM.p1,
-                                          ),
-                                          margin: EdgeInsets.only(top: DM.p10),
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(DM.p10),
-                                          ),
-                                          child: Container(
-                                            margin: EdgeInsets.only(left: 10),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                SizedBox(
-                                                  width: DM.p170,
-                                                  child: Text(
-                                                    testlist[index].name,
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p15,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                ),
-                                                Text(
-                                                  "Price: ${testlist[index].testprice}",
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w900,
-                                                      fontSize: DM.p15,
-                                                      color: Color.fromARGB(
-                                                          255, 26, 1, 1)),
-                                                ),
-                                                Container(
-                                                  child: IconButton(
-                                                    color: orangeColor,
-                                                    icon: Icon(
-                                                      CupertinoIcons
-                                                          .xmark_circle_fill,
-                                                      size: DM.p30,
-                                                    ),
-                                                    onPressed: () {
-                                                      // createReqController.removeTestData(
-                                                      //     createReqController
-                                                      //         .testData[index].id,
-                                                      //     index);
-                                                      removeCalulationProcess(
-                                                          testlist[index].id);
-                                                      // createReqController
-                                                      //     .calulationTestdata();
-                                                    },
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    )
-                                  : Container(
-                                      margin: EdgeInsets.all(DM.p10),
-                                      height: DM.screenHeight * 0.33,
-                                      width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        color: whiteColor,
-                                        borderRadius:
-                                            BorderRadius.circular(DM.p10),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          "${createReqController.emptyString}",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              fontSize: DM.p15,
-                                              color: Color.fromARGB(
-                                                  255, 26, 1, 1)),
-                                        ),
-                                      ),
-                                    ),
-                            ),
-                            Obx(
-                              () => Container(
-                                margin: EdgeInsets.symmetric(
-                                    horizontal: DM.p20, vertical: DM.p2),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "(Test + Tube + Collection) = (${createReqController.totalTestCost.value}+${createReqController.tubeCost.value}+${createReqController.serviceCost.value} ) =  ${createReqController.totalTestCost.value + createReqController.tubeCost.value + createReqController.serviceCost.value} /-",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: DM.p12,
-                                          color: Color.fromARGB(255, 26, 1, 1)),
-                                    ),
-                                    Text(
-                                      "Discount : ${createReqController.totalDiscount.value} /-",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w900,
-                                          fontSize: DM.p12,
-                                          color: Color.fromARGB(255, 26, 1, 1)),
-                                    ),
-                                    Divider(
-                                      thickness: DM.p1,
-                                      color: blackFontColor,
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          "Total Cost: ${createReqController.totalCost.value} /-",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: DM.p15,
-                                              color: Color.fromARGB(
-                                                  255, 26, 1, 1)),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
                         Padding(
                           padding: EdgeInsets.all(DM.p5),
-                          child: Row(
-                            children: [
-                              Text(
-                                "Location  ",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: DM.p14,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                              SizedBox(
-                                width: DM.p40,
-                              ),
-                              Text(":"),
-                              SizedBox(
-                                width: DM.p10,
-                              ),
-                              InkWell(
-                                onTap: () {
-                                  openMap(22.4977292, 91.8024407);
-                                },
-                                child: Text(
-                                  "Click to see details",
-                                  style: TextStyle(
-                                      decoration: TextDecoration.underline,
-                                      decorationThickness: 2,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: DM.p14,
-                                      color: Color.fromARGB(255, 12, 81, 177)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateString,
-                          textInputType: TextInputType.number,
-                          controller: servicecharge,
-                          title: "Collection charge",
-                          value: "20",
-                          activate: false,
-                        ),
-                        // FormUserInfo(
-                        //   formKey: _formKey,
-                        //   validatorField: validateString,
-                        //   textInputType: TextInputType.name,
-                        //   controller: lastupdate,
-                        //   title: "Last update",
-                        //   value: "50",
-                        //   activate: false,
-                        // ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateString,
-                          textInputType: TextInputType.number,
-                          controller: softdelete,
-                          title: "Soft delete",
-                          value: "0",
-                          activate: false,
-                        ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateString,
-                          textInputType: TextInputType.number,
-                          controller: totalprice,
-                          title: "Total price",
-                          value: "70",
-                          activate: false,
-                        ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateName,
-                          textInputType: TextInputType.name,
-                          controller: teststatus,
-                          title: "Test status",
-                          value: "PENDING",
-                          activate: false,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                "Images",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: DM.p14,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
+                              Row(
+                                children: [
+                                  SizedBox(
+                                    width: DM.p100,
+                                    child: Text(
+                                      "Images",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: DM.p14,
+                                          color: Color.fromARGB(255, 26, 1, 1)),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: DM.p5,
+                                  ),
+                                  Text(":"),
+                                ],
                               ),
                               SizedBox(
-                                height: DM.p5,
+                                height: DM.p10,
                               ),
                               widget.testEachRequest!.type == 1
                                   ? Container(
@@ -876,8 +676,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                       .text));
                                                         }),
                                                     child: Container(
-                                                      height: DM.p200,
-                                                      width: DM.p160,
+                                                      height: DM.p170,
+                                                      width: DM.p130,
                                                       child: Image.network(
                                                         image_one.text,
                                                         fit: BoxFit.cover,
@@ -944,8 +744,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                       .text));
                                                         }),
                                                     child: Container(
-                                                      height: DM.p200,
-                                                      width: DM.p160,
+                                                      height: DM.p170,
+                                                      width: DM.p130,
                                                       child: Image.network(
                                                         image_two.text,
                                                         fit: BoxFit.cover,
@@ -1000,7 +800,293 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                     ),
                             ],
                           ),
-                        )
+                        ),
+                        Column(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(DM.p5),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    "Test Item  ",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: DM.p14,
+                                        color: Color.fromARGB(255, 26, 1, 1)),
+                                  ),
+                                  SizedBox(
+                                    width: DM.p40,
+                                  ),
+                                  Text(":"),
+                                  Container(
+                                    margin: EdgeInsets.symmetric(
+                                        horizontal: DM.p20, vertical: DM.p1),
+                                    child: MaterialButton(
+                                      height: DM.p40,
+                                      minWidth: DM.p100,
+                                      shape: const StadiumBorder(),
+                                      color: orangeColor,
+                                      onPressed: () async {
+                                        if (await chechkingInternet()) {
+                                          createReqController.testData
+                                              .map((element) {
+                                            createReqController
+                                                    .testItemListWithSelected[
+                                                element.id] = true;
+                                          }).toList();
+
+                                          showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return MyDialogView(
+                                                        myChild:
+                                                            TestListDialogueAdmin(
+                                                      testItemList:
+                                                          testItemList,
+                                                      testItemWithSelected:
+                                                          testItemListWithSelected,
+                                                    ));
+                                                  })
+                                              .then((value) => setState(() {}));
+                                        }
+                                      },
+                                      child: Text(
+                                        "Add",
+                                        style: TextStyle(
+                                            color: fullWhiteColor,
+                                            fontSize: DM.p15,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: DM.p10, vertical: DM.p3),
+                              height: DM.screenHeight * 0.35,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: whiteColor,
+                                borderRadius: BorderRadius.circular(DM.p10),
+                              ),
+                              child: testData_updated.length != 0
+                                  ? ListView.builder(
+                                      itemCount: testData_updated.length,
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: DM.p15),
+                                      itemBuilder: (context, index) {
+                                        return Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: DM.p1,
+                                          ),
+                                          margin: EdgeInsets.only(top: DM.p10),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(DM.p10),
+                                          ),
+                                          child: Container(
+                                            margin: EdgeInsets.only(left: 10),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                SizedBox(
+                                                  width: DM.p170,
+                                                  child: Text(
+                                                    testData_updated[index].name,
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p15,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                ),
+                                                Text(
+                                                  "Price: ${testData_updated[index].testprice}",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      fontSize: DM.p15,
+                                                      color: Color.fromARGB(
+                                                          255, 26, 1, 1)),
+                                                ),
+                                                Container(
+                                                  child: IconButton(
+                                                    color: orangeColor,
+                                                    icon: Icon(
+                                                      CupertinoIcons
+                                                          .xmark_circle_fill,
+                                                      size: DM.p30,
+                                                    ),
+                                                    onPressed: () {
+                                                      // createReqController.removeTestData(
+                                                      //     createReqController
+                                                      //         .testData[index].id,
+                                                      //     index);
+                                                      setState(() {
+                                                        removeCalulationProcess(
+                                                            testData_updated[index].id);
+                                                      });
+
+                                                      // createReqController
+                                                      //     .calulationTestdata();
+                                                    },
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  : Container(
+                                      margin: EdgeInsets.all(DM.p10),
+                                      height: DM.screenHeight * 0.33,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: whiteColor,
+                                        borderRadius:
+                                            BorderRadius.circular(DM.p10),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          "${createReqController.emptyString}",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: DM.p15,
+                                              color: Color.fromARGB(
+                                                  255, 26, 1, 1)),
+                                        ),
+                                      ),
+                                    ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: DM.p20, vertical: DM.p2),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "(Test + Tube + Collection) = (${totalTestCost}+${tubeCost}+${serviceCost} ) =  ${totalTestCost + tubeCost + serviceCost} /-",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: DM.p12,
+                                        color: Color.fromARGB(255, 26, 1, 1)),
+                                  ),
+                                  Text(
+                                    "Discount : ${totalDiscount} /-",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: DM.p12,
+                                        color: Color.fromARGB(255, 26, 1, 1)),
+                                  ),
+                                  Divider(
+                                    thickness: DM.p1,
+                                    color: blackFontColor,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "Total Cost: ${totalCost} /-",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: DM.p15,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            children: [
+                              Text(
+                                "Location  ",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: DM.p14,
+                                    color: Color.fromARGB(255, 26, 1, 1)),
+                              ),
+                              SizedBox(
+                                width: DM.p40,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  openMap(22.4977292, 91.8024407);
+                                },
+                                child: Text(
+                                  "Click to see details",
+                                  style: TextStyle(
+                                      decoration: TextDecoration.underline,
+                                      decorationThickness: DM.p2,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: DM.p14,
+                                      color: Color.fromARGB(255, 12, 81, 177)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          validatorField: validateString,
+                          textInputType: TextInputType.number,
+                          controller: servicecharge,
+                          title: "Collection charge",
+                          value: "20",
+                          activate: false,
+                        ),
+                        // FormUserInfo(
+                        //   formKey: _formKey,
+                        //   validatorField: validateString,
+                        //   textInputType: TextInputType.name,
+                        //   controller: lastupdate,
+                        //   title: "Last update",
+                        //   value: "50",
+                        //   activate: false,
+                        // ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          validatorField: validateString,
+                          textInputType: TextInputType.number,
+                          controller: softdelete,
+                          title: "Soft delete",
+                          value: "0",
+                          activate: false,
+                        ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          validatorField: validateString,
+                          textInputType: TextInputType.number,
+                          controller: totalprice,
+                          title: "Total price",
+                          value: "70",
+                          activate: false,
+                        ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          validatorField: validateName,
+                          textInputType: TextInputType.name,
+                          controller: teststatus,
+                          title: "Test status",
+                          value: "PENDING",
+                          activate: false,
+                        ),
                       ],
                     )),
 
