@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
@@ -48,13 +49,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   dynamic latitude;
   dynamic longitude;
-
+  var dateTime_delivery;
   var updateTestRequestItem;
   var name = new TextEditingController();
   String gender = "Male";
   var phone = new TextEditingController();
   var age = new TextEditingController();
-  List<TestData> testDataPreList = [];
   var totalprice = new TextEditingController();
   var servicecharge = new TextEditingController();
   var address = new TextEditingController();
@@ -69,6 +69,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   var image_one = new TextEditingController();
   var image_two = new TextEditingController();
 
+  var comments = new TextEditingController();
+  var delivery_date = new TextEditingController();
+
   List<TestData> testItemList = [];
 
   List<TestData> testData_updated = [];
@@ -82,27 +85,28 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   var totalDiscount = 0;
   var newRequestData;
 
+  bool init = false;
   Future<void> _getTestItemList() async {
     late DatabaseReference DbrefTestModel;
     DbrefTestModel = FirebaseDatabase.instance.ref("meditest/testModel/");
 
     DbrefTestModel.onValue.listen((event) {
-      setState(() {
-        testItemList.clear();
-        testItemListWithSelected.clear();
-      });
+      testItemList.clear();
+      // testItemListWithSelected.clear();
+
       for (DataSnapshot ds in event.snapshot.children) {
         TestData testData =
             TestData.fromJson(json.decode(jsonEncode(ds.value)));
-        setState(() {
-          testItemList.add(testData);
+
+        testItemList.add(testData);
+        if (testItemListWithSelected[testData.id] != true)
           testItemListWithSelected[testData.id] = false;
-        });
+
+        print("HEREEEE");
 
         //false -> add button
         //true -> remove button
 
-        print(testItemList.length);
       }
     });
   }
@@ -132,14 +136,31 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     servicecharge.text = widget.testEachRequest!.servicecharge.toString();
     totalprice.text = widget.testEachRequest!.totalprice.toString();
     teststatus.text = widget.testEachRequest!.teststatus.toString();
+    delivery_date.text = widget.testEachRequest!.delivery_date.toString();
 
-    setState(
-      () {
-        if (widget.testEachRequest!.testlist != null)
-          testDataPreList
-              .addAll(widget.testEachRequest!.testlist as List<TestData>);
-      },
-    );
+    if (widget.testEachRequest!.delivery_date != null) {
+      dateTime_delivery = widget.testEachRequest!.delivery_date;
+      delivery_date.text = (DateFormat.yMMMd().format(
+          DateTime.fromMillisecondsSinceEpoch(
+              widget.testEachRequest!.delivery_date)));
+    } else {
+      dateTime_delivery = currentTime + 86400000;
+
+      delivery_date.text = (DateFormat.yMMMd()
+          .format(DateTime.fromMillisecondsSinceEpoch(currentTime + 86400000)));
+    }
+
+    if (widget.testEachRequest!.comments != null)
+      comments.text = widget.testEachRequest!.comments;
+    else
+      comments.text = "";
+
+    if (widget.testEachRequest!.testlist != null) {
+      widget.testEachRequest!.testlist!.map((e) {
+        testData_updated.add(e);
+        testItemListWithSelected[e.id] = true;
+      }).toList();
+    }
 
     if (widget.testEachRequest!.image_one == null)
       image_one.text = "empty";
@@ -174,65 +195,60 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
 
     updateTestRequestItem = TestDataRequest(
-        id: widget.testEachRequest!.id.toString(),
-        name: name.text.toString(),
-        gender: gender.toString(),
-        mobile: phone.text.toString(),
-        age: int.parse(age.text),
-        testlist: testData_updated,
-        totalprice: createReqController.totalCost.value,
-        servicecharge: createReqController.serviceCost.value,
-        address: address.text.toString(),
-        referrer: referrer.text.toString(),
-        lastupdate: currentTime,
-        dateofcreated: widget.testEachRequest!.dateofcreated,
-        softdelete: 0,
-        latitude: widget.testEachRequest!.latitude,
-        longitude: widget.testEachRequest!.longitude,
-        teststatus: int.parse(teststatus.text),
-        invoice_call: invoice_call.text,
-        type: 1,
-        image_one: null,
-        image_two: null,
-        comments: null);
+      id: widget.testEachRequest!.id.toString(),
+      name: name.text.toString(),
+      gender: gender.toString(),
+      mobile: phone.text.toString(),
+      age: int.parse(age.text),
+      testlist: testData_updated,
+      totalprice: createReqController.totalCost.value,
+      servicecharge: createReqController.serviceCost.value,
+      address: address.text.toString(),
+      referrer: referrer.text.toString(),
+      lastupdate: currentTime,
+      dateofcreated: widget.testEachRequest!.dateofcreated,
+      softdelete: 0,
+      latitude: widget.testEachRequest!.latitude,
+      longitude: widget.testEachRequest!.longitude,
+      teststatus: int.parse(teststatus.text),
+      invoice_call: invoice_call.text.toString(),
+      type: 1,
+      image_one: null,
+      image_two: null,
+      delivery_date: dateTime_delivery,
+      comments: comments.text.toString(),
+    );
 
     if (updateTestRequestItem != null) {
       await DbrefTestReqModel.child("testRequest")
           .child(updateTestRequestItem.mobile)
           .child(updateTestRequestItem.id)
-          .update(jsonDecode(jsonEncode(updateTestRequestItem)));
+          .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
     }
 
     Get.back();
   }
 
   void calculationProcess() {
-    testData_updated.clear();
     totalTestCost = 0;
     totalCost = 0;
     serviceCost = 0;
     tubeCost = 0;
     totalDiscount = 0;
-    testItemList.map((item) {
-      if (testItemListWithSelected[item.id] == true) {
-        testData_updated.add(item);
-        testItemListWithSelected[item.id] == false;
-      }
+
+    testData_updated.map((testItem) {
+      totalTestCost = totalTestCost + int.parse(testItem.testprice.toString());
+      serviceCost =
+          max(serviceCost, int.parse(testItem.servicecharge.toString()));
+
+      tubeCost = tubeCost + int.parse(testItem.testkitprice.toString());
+      totalDiscount = totalDiscount + int.parse(testItem.discount.toString());
     }).toList();
 
-    setState(() {
-      testData_updated.map((testItem) {
-        totalTestCost =
-            totalTestCost + int.parse(testItem.testprice.toString());
-        serviceCost =
-            max(serviceCost, int.parse(testItem.servicecharge.toString()));
+    totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
 
-        tubeCost = tubeCost + int.parse(testItem.testkitprice.toString());
-        totalDiscount = totalDiscount + int.parse(testItem.discount.toString());
-      }).toList();
-
-      totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
-    });
+    totalprice.text = totalCost.toString();
+    servicecharge.text = serviceCost.toString();
   }
 
   Future<void> removeCalulationProcess(id) async {
@@ -257,7 +273,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       }).toList();
 
       totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
-      testItemListWithSelected[id] = testItemListWithSelected[id]!;
+      totalprice.text = totalCost.toString();
+      //totaltestprice.text = totalTestCost.toString();
+      servicecharge.text = serviceCost.toString();
     });
   }
 
@@ -265,14 +283,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   void initState() {
     if (widget.testEachRequest != null) {
       this.retreiveEachDataRequest();
+      print("InitState");
       _getTestItemList();
     }
-
+    init = true;
     // TODO: implement initState
     super.initState();
   }
-
-  var newTestListData;
 
   CreateRequest_controller createReqController =
       Get.put(CreateRequest_controller());
@@ -281,19 +298,21 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   Widget build(BuildContext context) {
     chechkingInternet();
 
-    setState(() {
+    if (init == false) {
       testData_updated.clear();
+
       testItemList.map((e) {
         if (testItemListWithSelected[e.id] == true) {
           testData_updated.add(e);
-          testItemListWithSelected[e.id] == true;
-          calculationProcess();
+          testItemListWithSelected[e.id] = true;
         }
       }).toList();
-    });
+    }
+    init = false;
+    calculationProcess();
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
@@ -556,7 +575,6 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         ),
                         FormUserInfo(
                           formKey: _formKey,
-                          validatorField: validateString,
                           textInputType: TextInputType.name,
                           controller: dateofcreated,
                           title: "Date of created",
@@ -823,13 +841,6 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                       color: orangeColor,
                                       onPressed: () async {
                                         if (await chechkingInternet()) {
-                                          createReqController.testData
-                                              .map((element) {
-                                            createReqController
-                                                    .testItemListWithSelected[
-                                                element.id] = true;
-                                          }).toList();
-
                                           showDialog(
                                                   context: context,
                                                   builder: (context) {
@@ -892,7 +903,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                   width: DM.p170,
                                                   child: Text(
                                                     testData_updated[index]
-                                                        .name,
+                                                            .name +
+                                                        " (" +
+                                                        testData_updated[index]
+                                                            .diagnostic_center
+                                                            .toString() +
+                                                        ")",
                                                     style: TextStyle(
                                                         fontWeight:
                                                             FontWeight.w900,
@@ -1061,7 +1077,6 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         // ),
                         FormUserInfo(
                           formKey: _formKey,
-                          validatorField: validateString,
                           textInputType: TextInputType.number,
                           controller: softdelete,
                           title: "Soft delete",
@@ -1101,7 +1116,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                               ),
                               DropdownButton<String>(
                                 hint: Text(
-                                    "${createReqController.status[int.parse(teststatus.text)]}"),
+                                    "${createReqController.status[int.parse(teststatus.text)]}",
+                                    style: TextStyle(color: blackFontColor)),
                                 items: <String>[
                                   "PENDING",
                                   "RECIEVED",
@@ -1112,7 +1128,10 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 ].map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
-                                    child: Text("$value"),
+                                    child: Text(
+                                      "$value",
+                                      style: TextStyle(color: blackFontColor),
+                                    ),
                                   );
                                 }).toList(),
                                 onChanged: (newValue) {
@@ -1127,15 +1146,110 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           ),
                         ),
 
-                        // FormUserInfo(
-                        //   formKey: _formKey,
-                        //   validatorField: validateName,
-                        //   textInputType: TextInputType.name,
-                        //   controller: teststatus,
-                        //   title: "Next status",
-                        //   value: "PENDING",
-                        //   activate: false,
-                        // ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Delivery Date",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: InkWell(
+                                    onTap: () async {
+                                      print("ADNANN");
+                                      final DateTime? picked =
+                                          await showDatePicker(
+                                              context: context,
+                                              initialDate: DateTime
+                                                  .fromMillisecondsSinceEpoch(
+                                                      dateTime_delivery),
+                                              initialDatePickerMode:
+                                                  DatePickerMode.day,
+                                              firstDate:
+                                                  DateTime
+                                                      .fromMillisecondsSinceEpoch(
+                                                          1669831200000),
+                                              lastDate: DateTime
+                                                  .fromMillisecondsSinceEpoch(
+                                                      1922292000000));
+                                      if (picked != null)
+                                        setState(() {
+                                          delivery_date.text =
+                                              DateFormat.yMMMd().format(picked);
+                                          print(picked.millisecondsSinceEpoch);
+
+                                          dateTime_delivery =
+                                              picked.millisecondsSinceEpoch;
+                                        });
+                                    },
+                                    child: IgnorePointer(
+                                      child: TextFormField(
+                                        controller: delivery_date,
+                                        decoration: InputDecoration(
+                                            errorStyle:
+                                                TextStyle(fontSize: DM.p9),
+                                            // focusedErrorBorder:
+                                            //     OutlineInputBorder(
+                                            //         borderSide: BorderSide(
+                                            //             width: DM.p1,
+                                            //             color:
+                                            //                 orangeColor)),
+                                            focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    width: DM.p1,
+                                                    color: orangeColor)),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  width: DM.p1,
+                                                  color:
+                                                      orangeColor), //<-- SEE HERE
+                                            ),
+                                            filled: true,
+                                            fillColor: fullWhiteColor,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    horizontal: DM.p10),
+                                            border: InputBorder.none,
+                                            hintText: "Ex:Chittagong",
+                                            hintStyle: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: DM.p14,
+                                            )),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        FormUserInfo(
+                          formKey: _formKey,
+                          textInputType: TextInputType.name,
+                          controller: comments,
+                          title: "Comments",
+                          value: "Write yout comments",
+                          activate: false,
+                        ),
                       ],
                     )),
 
@@ -1150,94 +1264,381 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                     onPressed: () async {
                       if (_formKey.currentState?.validate() == true) {
                         if (await chechkingInternet()) {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                return Scaffold(
-                                  backgroundColor: Colors.transparent,
-                                  body: Center(
-                                    child: Container(
-                                        margin: EdgeInsets.all(DM.p10),
-                                        height: DM.p180,
-                                        color: creamColor,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Container(
-                                              padding: EdgeInsets.all(16),
-                                              margin: EdgeInsets.all(16),
-                                              child: Text(
-                                                "Are you sure?",
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w400,
-                                                    fontSize: DM.p20,
-                                                    color: Color.fromARGB(
-                                                        255, 26, 1, 1)),
-                                              ),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Container(
-                                                  margin: EdgeInsets.symmetric(
-                                                      horizontal: DM.p20,
-                                                      vertical: DM.p10),
-                                                  child: MaterialButton(
-                                                    onPressed: () {
-                                                      Get.back();
-                                                    },
-                                                    height: DM.p40,
-                                                    minWidth: DM.p120,
-                                                    shape:
-                                                        const StadiumBorder(),
-                                                    color: orangeColor,
-                                                    child: Text(
-                                                      "Cancel",
-                                                      style: TextStyle(
-                                                          color: fullWhiteColor,
-                                                          fontSize: DM.p15,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
+                          if (widget.testEachRequest!.teststatus == 2) {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return MyDialogView(
+                                    myChild: Padding(
+                                      padding: EdgeInsets.all(DM.p8),
+                                      child: Stack(
+                                        children: [
+                                          Container(
+                                              color: creamColor,
+                                              height: DM.screenHeight * 0.8,
+                                              width: DM.screenWidth * 0.9,
+                                              padding: EdgeInsets.all(DM.p15),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    "Confirmation",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p25,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
                                                   ),
+                                                  Text(
+                                                    "Name: ${name.text}",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontSize: DM.p15,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                  Text(
+                                                    "Phone: ${phone.text}",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontSize: DM.p15,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                  Text(
+                                                    "Address: ${address.text}",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontSize: DM.p15,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                  Text(
+                                                    "Referrer: ${referrer.text}",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontSize: DM.p15,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                  Text(
+                                                    "Delivery Date: ${delivery_date.text}",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontSize: DM.p15,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                  Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Text(
+                                                        "Test List",
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                            fontSize: DM.p20,
+                                                            color:
+                                                                Color.fromARGB(
+                                                                    255,
+                                                                    26,
+                                                                    1,
+                                                                    1)),
+                                                      ),
+                                                      Divider(
+                                                        thickness: DM.p1,
+                                                        color: blackFontColor,
+                                                        indent: DM.screenWidth *
+                                                            0.2,
+                                                        endIndent:
+                                                            DM.screenWidth *
+                                                                0.2,
+                                                      ),
+                                                      Card(
+                                                          child: Container(
+                                                        height:
+                                                            DM.screenHeight *
+                                                                0.30,
+                                                        child: ListView.builder(
+                                                          itemCount:
+                                                              testData_updated
+                                                                  .length,
+                                                          itemBuilder:
+                                                              (context, index) {
+                                                            return Container(
+                                                              color: whiteColor,
+                                                              padding: EdgeInsets
+                                                                  .symmetric(
+                                                                      horizontal: DM
+                                                                          .p10,
+                                                                      vertical:
+                                                                          DM.p5),
+                                                              margin: EdgeInsets
+                                                                  .symmetric(
+                                                                      vertical:
+                                                                          DM.p10),
+                                                              child: Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .spaceBetween,
+                                                                children: [
+                                                                  Expanded(
+                                                                    child:
+                                                                        SizedBox(
+                                                                      width: DM
+                                                                          .p130,
+                                                                      child:
+                                                                          Text(
+                                                                        testData_updated[index].name +
+                                                                            " (${testData_updated[index].diagnostic_center})",
+                                                                        style: TextStyle(
+                                                                            fontWeight: FontWeight
+                                                                                .w900,
+                                                                            fontSize: DM
+                                                                                .p12,
+                                                                            color: Color.fromARGB(
+                                                                                255,
+                                                                                26,
+                                                                                1,
+                                                                                1)),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                  Text(
+                                                                    "Price: " +
+                                                                        (testData_updated[index].testprice)
+                                                                            .toString(),
+                                                                    style: TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w900,
+                                                                        fontSize: DM
+                                                                            .p12,
+                                                                        color: Color.fromARGB(
+                                                                            255,
+                                                                            26,
+                                                                            1,
+                                                                            1)),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            );
+                                                          },
+                                                        ),
+                                                      )),
+                                                    ],
+                                                  ),
+                                                  Text(
+                                                    "(Test + Tube + Collection) = (${totalTestCost}+${tubeCost}+${serviceCost} ) =  ${totalTestCost + tubeCost + serviceCost} /-",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p12,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                  Text(
+                                                    "Discount : ${totalDiscount} /-",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p13,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                  Divider(
+                                                    thickness: DM.p1,
+                                                    color: blackFontColor,
+                                                    endIndent: DM.p100,
+                                                  ),
+                                                  Text(
+                                                    "Total Cost: ${totalCost} /-",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p18,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      MaterialButton(
+                                                        onPressed: () {
+                                                          Get.back();
+                                                        },
+                                                        height: DM.p45,
+                                                        minWidth: DM.p120,
+                                                        shape:
+                                                            const StadiumBorder(),
+                                                        color: redColor,
+                                                        child: Text(
+                                                          "Cancel",
+                                                          style: TextStyle(
+                                                              color:
+                                                                  fullWhiteColor,
+                                                              fontSize: DM.p15,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                      MaterialButton(
+                                                        onPressed: () async {
+                                                          if (await chechkingInternet()) {
+                                                            _updateRequest();
+                                                            Get.back();
+                                                          }
+                                                        },
+                                                        height: DM.p45,
+                                                        minWidth: DM.p120,
+                                                        shape:
+                                                            const StadiumBorder(),
+                                                        color: orangeColor,
+                                                        child: Text(
+                                                          "Confirm",
+                                                          style: TextStyle(
+                                                              color:
+                                                                  fullWhiteColor,
+                                                              fontSize: DM.p15,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  )
+                                                ],
+                                              )),
+                                          Positioned(
+                                              right: DM.p10,
+                                              top: DM.p10,
+                                              child: IconButton(
+                                                icon:
+                                                    Icon(CupertinoIcons.xmark),
+                                                onPressed: () {
+                                                  Get.back();
+                                                },
+                                              ))
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                });
+                          } else {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return Scaffold(
+                                    backgroundColor: Colors.transparent,
+                                    body: Center(
+                                      child: Container(
+                                          margin: EdgeInsets.all(DM.p10),
+                                          height: DM.p180,
+                                          color: creamColor,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Container(
+                                                padding: EdgeInsets.all(16),
+                                                margin: EdgeInsets.all(16),
+                                                child: Text(
+                                                  "Are you sure?",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                      fontSize: DM.p20,
+                                                      color: Color.fromARGB(
+                                                          255, 26, 1, 1)),
                                                 ),
-                                                Container(
-                                                  margin: EdgeInsets.symmetric(
-                                                      horizontal: DM.p20,
-                                                      vertical: DM.p10),
-                                                  child: MaterialButton(
-                                                    onPressed: () async {
-                                                      _updateRequest();
-
-                                                      //cr_controller.filter_testItemList.removeAt(index);
-                                                      Get.back();
-                                                    },
-                                                    height: DM.p40,
-                                                    minWidth: DM.p120,
-                                                    shape:
-                                                        const StadiumBorder(),
-                                                    color: orangeColor,
-                                                    child: Text(
-                                                      "Yes",
-                                                      style: TextStyle(
-                                                          color: fullWhiteColor,
-                                                          fontSize: DM.p15,
-                                                          fontWeight:
-                                                              FontWeight.bold),
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Container(
+                                                    margin:
+                                                        EdgeInsets.symmetric(
+                                                            horizontal: DM.p20,
+                                                            vertical: DM.p10),
+                                                    child: MaterialButton(
+                                                      onPressed: () {
+                                                        Get.back();
+                                                      },
+                                                      height: DM.p40,
+                                                      minWidth: DM.p120,
+                                                      shape:
+                                                          const StadiumBorder(),
+                                                      color: orangeColor,
+                                                      child: Text(
+                                                        "Cancel",
+                                                        style: TextStyle(
+                                                            color:
+                                                                fullWhiteColor,
+                                                            fontSize: DM.p15,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
                                                     ),
                                                   ),
-                                                )
-                                              ],
-                                            ),
-                                          ],
-                                        )),
-                                  ),
-                                );
-                              });
+                                                  Container(
+                                                    margin:
+                                                        EdgeInsets.symmetric(
+                                                            horizontal: DM.p20,
+                                                            vertical: DM.p10),
+                                                    child: MaterialButton(
+                                                      onPressed: () async {
+                                                        _updateRequest();
+
+                                                        //cr_controller.filter_testItemList.removeAt(index);
+                                                        Get.back();
+                                                      },
+                                                      height: DM.p40,
+                                                      minWidth: DM.p120,
+                                                      shape:
+                                                          const StadiumBorder(),
+                                                      color: orangeColor,
+                                                      child: Text(
+                                                        "Yes",
+                                                        style: TextStyle(
+                                                            color:
+                                                                fullWhiteColor,
+                                                            fontSize: DM.p15,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            ],
+                                          )),
+                                    ),
+                                  );
+                                });
+                          }
                         }
                       } else {
                         Get.snackbar(
@@ -1281,18 +1682,19 @@ class FormUserInfo extends StatelessWidget {
   dynamic activate;
   dynamic formKey;
   dynamic validatorField;
+
   var controller = new TextEditingController();
   var textInputType;
-  FormUserInfo(
-      {Key? key,
-      required this.formKey,
-      required this.title,
-      required this.value,
-      required this.activate,
-      required this.controller,
-      required this.textInputType,
-      required this.validatorField})
-      : super(
+  FormUserInfo({
+    Key? key,
+    required this.formKey,
+    required this.title,
+    required this.value,
+    required this.activate,
+    required this.controller,
+    required this.textInputType,
+    this.validatorField,
+  }) : super(
           key: key,
         );
 
@@ -1365,8 +1767,8 @@ class FormUserInfo extends StatelessWidget {
 }
 
 String? validateMobile(String? value) {
-  if (value?.length != 11)
-    return 'Mobile Number must be of 11 digits';
+  if (value?.length != 11 && value?.length != 12)
+    return 'Mobile Number must be of 11 and 12 digits';
   else
     return null;
 }

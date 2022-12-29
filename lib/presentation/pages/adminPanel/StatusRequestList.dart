@@ -219,6 +219,8 @@ Future<void> populateAllRequest() async {
       Get.put(CreateRequest_controller());
   late DatabaseReference dbrefTestRequest;
   dbrefTestRequest = FirebaseDatabase.instance.ref("meditest/testRequest/");
+  FirebaseDatabase.instance.setPersistenceEnabled(true);
+  dbrefTestRequest.keepSynced(true);
 
   createRequestController.testItemList.clear();
   createRequestController.testItemListWithSelected.clear();

@@ -55,7 +55,7 @@ class _MyAppState extends State<MyApp> {
         home: SafeArea(
             maintainBottomViewPadding: true,
             child: Scaffold(
-                resizeToAvoidBottomInset: false,
+                resizeToAvoidBottomInset: true,
                 body: MyScaffold(
                     container: SplashScreen(),
                     color1: creamColor,

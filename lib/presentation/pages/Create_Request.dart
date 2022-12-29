@@ -188,7 +188,9 @@ class _CreateRequestState extends State<CreateRequest> {
                 (Random().nextInt(900000) + 100000).toString(),
             type: 1,
             image_one: null,
-            image_two: null);
+            image_two: null,
+            comments:null,
+            delivery_date: null);
       });
     }
 
@@ -277,7 +279,10 @@ class _CreateRequestState extends State<CreateRequest> {
               (Random().nextInt(900000) + 100000).toString(),
           type: 1,
           image_one: null,
-          image_two: null);
+          image_two: null,
+          comments:null,
+          delivery_date: null,
+          );
 
       // DatabaseEvent ds = await _dbref_testReqModel
       //     .child("testRequest/${newRequestData.mobile.toString()}")
@@ -1018,6 +1023,8 @@ Future<void> getTestItemList() async {
       Get.put(CreateRequest_controller());
   late DatabaseReference _dbref_testModel;
   _dbref_testModel = FirebaseDatabase.instance.ref("meditest/testModel/");
+  FirebaseDatabase.instance.setPersistenceEnabled(true);
+  _dbref_testModel.keepSynced(true);
 
   createRequest_controller.testItemList.clear();
 

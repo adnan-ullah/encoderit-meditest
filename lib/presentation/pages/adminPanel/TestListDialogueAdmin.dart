@@ -18,11 +18,11 @@ class TestListDialogueAdmin extends StatefulWidget {
   var testItemList;
   var testItemWithSelected;
 
-  TestListDialogueAdmin(
-      {super.key,
-      required this.testItemList,
-      required this.testItemWithSelected,
-   });
+  TestListDialogueAdmin({
+    super.key,
+    required this.testItemList,
+    required this.testItemWithSelected,
+  });
 
   @override
   State<TestListDialogueAdmin> createState() => _TestListDialogueAdminState();
@@ -30,6 +30,7 @@ class TestListDialogueAdmin extends StatefulWidget {
 
 class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
   late CreateRequest_controller cr_Controller;
+  var filter_testItemList = [];
 
   bool isClear = false;
 
@@ -41,30 +42,30 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
         isClear = true;
       });
 
-      cr_Controller.filter_testItemList.clear();
+    filter_testItemList.clear();
 
-      cr_Controller.testItemList.map((element) {
+     widget.testItemList.map((element) {
         if (element.name
             .toString()
             .toLowerCase()
             .contains(value.toString().toLowerCase())) {
-          cr_Controller.filter_testItemList.add(element);
+         filter_testItemList.add(element);
         }
       }).toList();
     } else {
       setState(() {
         isClear = false;
       });
-      cr_Controller.filter_testItemList.clear();
-      cr_Controller.filter_testItemList.addAll(cr_Controller.testItemList);
+    filter_testItemList.clear();
+     filter_testItemList.addAll(widget.testItemList);
     }
   }
 
   @override
   void initState() {
     cr_Controller = Get.put(CreateRequest_controller());
-    // cr_Controller.filter_testItemList.clear();
-    // cr_Controller.filter_testItemList.addAll(cr_Controller.testItemList);
+  
+   filter_testItemList.addAll(widget.testItemList);
 
     // print("ADNAN" + cr_Controller.testItemList.length.toString());
     // TODO: implement initState
@@ -152,7 +153,7 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
                         child: Container(
                       height: DM.screenHeight * 0.60,
                       child: ListView.builder(
-                        itemCount: widget.testItemList.length,
+                        itemCount: filter_testItemList.length,
                         itemBuilder: (context, index) {
                           return Container(
                             color: whiteColor,
@@ -166,8 +167,8 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
                                 SizedBox(
                                   width: DM.p130,
                                   child: Text(
-                                    widget.testItemList[index].name +
-                                        " (${widget.testItemList[index].diagnostic_center})",
+                                   filter_testItemList[index].name +
+                                        " (${filter_testItemList[index].diagnostic_center})",
                                     overflow: TextOverflow.visible,
                                     style: TextStyle(
                                         fontWeight: FontWeight.w900,
@@ -177,7 +178,7 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
                                 ),
                                 Text(
                                   "Price: " +
-                                      "${widget.testItemList[index].testprice}"
+                                      "${filter_testItemList[index].testprice}"
                                           .toString(),
                                   style: TextStyle(
                                       fontWeight: FontWeight.w900,
@@ -187,24 +188,16 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
                                 SizedBox(
                                     height: DM.p45,
                                     width: DM.p80,
-                                    child: widget.testItemWithSelected[widget
-                                                .testItemList[index].id] ==
+                                    child: widget.testItemWithSelected[filter_testItemList[index].id] ==
                                             false
                                         ? MaterialButton(
                                             onPressed: () {
-                                              // cr_Controller.testData.add(
-                                              //     cr_Controller
-                                              //             .filter_testItemList[
-                                              //         index]);
-
                                               setState(() {
                                                 widget.testItemWithSelected[
-                                                        widget
-                                                            .testItemList[index]
+                                                        filter_testItemList[index]
                                                             .id] =
                                                     !widget.testItemWithSelected[
-                                                        widget
-                                                            .testItemList[index]
+                                                        filter_testItemList[index]
                                                             .id]!;
                                               });
 
@@ -221,22 +214,12 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
                                             ))
                                         : MaterialButton(
                                             onPressed: () {
-                                              // cr_Controller.testData
-                                              //     .removeWhere((element) =>
-                                              //         element.id ==
-                                              //         cr_Controller
-                                              //             .filter_testItemList[
-                                              //                 index]
-                                              //             .id);
-
                                               setState(() {
                                                 widget.testItemWithSelected[
-                                                        widget
-                                                            .testItemList[index]
+                                                        filter_testItemList[index]
                                                             .id] =
                                                     !widget.testItemWithSelected[
-                                                        widget
-                                                            .testItemList[index]
+                                                       filter_testItemList[index]
                                                             .id]!;
                                               });
 
@@ -262,7 +245,7 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
                       child: MaterialButton(
                         onPressed: () {
                           Get.back();
-                         // calculationProcess();
+                          // calculationProcess();
 
                           // Get.to(CreateRequest());
                         },

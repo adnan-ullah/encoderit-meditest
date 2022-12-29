@@ -32,6 +32,8 @@ class _TestItemListState extends State<TestItemList> {
     _onLoading(true);
     late DatabaseReference DbrefTestModel;
     DbrefTestModel = FirebaseDatabase.instance.ref("meditest/testModel/");
+    FirebaseDatabase.instance.setPersistenceEnabled(true);
+    DbrefTestModel.keepSynced(true);
 
     DbrefTestModel.onValue.listen((event) {
       setState(() {
@@ -136,6 +138,7 @@ class _TestItemListState extends State<TestItemList> {
   Future<void> removeFromFirebase(testItemId) async {
     DatabaseReference DbrefTestReqModel;
     DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
+    
 
     if (testItemId != null) {
       await DbrefTestReqModel.child("testModel").child(testItemId).remove();
@@ -350,7 +353,7 @@ class _TestItemListState extends State<TestItemList> {
                                                                               16),
                                                                       child:
                                                                           Text(
-                                                                        "Do you want to delete test item \"${_testItemsListAdmin[index].name + " (${_testItemsListAdmin[index].diagnostic_center})\" ?"}",
+                                                                        "Do you want to delete test item \"${_filterTestItemsList[index].name + " (${_filterTestItemsList[index].diagnostic_center})\" ?"}",
                                                                         style: TextStyle(
                                                                             fontWeight: FontWeight
                                                                                 .w400,

@@ -142,7 +142,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
   Widget build(BuildContext context) {
     chechkingInternet();
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),

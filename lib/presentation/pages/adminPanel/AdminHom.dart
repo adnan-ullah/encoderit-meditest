@@ -27,13 +27,10 @@ class AdminHome extends StatefulWidget {
   State<AdminHome> createState() => _AdminHomeState();
 }
 
-
 class _AdminHomeState extends State<AdminHome> {
   @override
   void initState() {
-    
     // getTestItemList();
-  
 
     // TODO: implement initState
     super.initState();
@@ -125,10 +122,7 @@ class _AdminHomeState extends State<AdminHome> {
                                           BorderRadius.circular(DM.p10)),
                                   primary: orangeColor),
                               onPressed: () {
-                               
-                              
-                              //    Get.to(TestItemList());
-                        
+                                Get.to(TestItemList());
                               },
                               child: Text(
                                 "Test Item",
@@ -139,57 +133,34 @@ class _AdminHomeState extends State<AdminHome> {
                               ),
                             ),
                           ),
-                         Container(
-                              height: DM.p180,
-                              width: DM.screenWidth * 0.4,
-                              margin: EdgeInsets.symmetric(
-                                  vertical: DM.p25, horizontal: DM.p16),
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: DM.p30, vertical: DM.p20),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(DM.p10)),
-                                    primary: orangeColor),
-                                onPressed: () {
-                                    
-                                 Get.to(StatusRequestList());
-                             
-                                
-                                },
-                                child: Text(
-                                  "Test Request",
-                                  style: TextStyle(
-                                      color: fullWhiteColor,
-                                      fontSize: DM.p15,
-                                      fontWeight: FontWeight.bold),
-                                ),
+                          Container(
+                            height: DM.p180,
+                            width: DM.screenWidth * 0.4,
+                            margin: EdgeInsets.symmetric(
+                                vertical: DM.p25, horizontal: DM.p16),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: DM.p30, vertical: DM.p20),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(DM.p10)),
+                                  primary: orangeColor),
+                              onPressed: () {
+                                Get.to(StatusRequestList());
+                              },
+                              child: Text(
+                                "Test Request",
+                                style: TextStyle(
+                                    color: fullWhiteColor,
+                                    fontSize: DM.p15,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ),
-                        
+                          ),
                         ],
                       ),
                     ),
-                    Container(
-                      margin: EdgeInsets.symmetric(vertical: DM.p25),
-                      child: MaterialButton(
-                        onPressed: () {
-                          //
-                        },
-                        height: DM.p45,
-                        minWidth: DM.p130,
-                        shape: const StadiumBorder(),
-                        color: orangeColor,
-                        child: Text(
-                          "Add Item",
-                          style: TextStyle(
-                              color: fullWhiteColor,
-                              fontSize: DM.p15,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    )
                   ],
                 )),
           ],

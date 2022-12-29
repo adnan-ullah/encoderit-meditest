@@ -95,7 +95,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
         softdelete: 0,
         latitude: requestItem.latitude,
         longitude: requestItem.longitude,
-        teststatus: requestItem.teststatus+1,
+        teststatus: requestItem.teststatus + 1,
         invoice_call: requestItem.invoice_call,
         type: requestItem.type,
         image_one: requestItem.image_one,
@@ -316,7 +316,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                         margin: EdgeInsets.symmetric(vertical: DM.p16),
                         child: Center(
                           child: Text(
-                            "Request list empty " + widget.statusKey,
+                            "Request list empty ",
                             style: TextStyle(
                                 fontWeight: FontWeight.w400,
                                 fontSize: DM.p25,
