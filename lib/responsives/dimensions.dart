@@ -13,7 +13,7 @@ class DM extends GetxController {
 // ;
 //  static double screenHeight = BoxFit.fitHeight;
 
-  static double screenWidth = Get.context!.width ;
+  static double screenWidth = Get.context!.width - (20/Get.mediaQuery.devicePixelRatio);
 
   // static double resLinuxOrAndroid =
   //     Platform.isAndroid == true ? (Get.context!.devicePixelRatio) : 1;

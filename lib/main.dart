@@ -51,6 +51,7 @@ class _MyAppState extends State<MyApp> {
     return Sizer(builder:
         (BuildContext context, Orientation orientation, DeviceType deviceType) {
       return GetMaterialApp(
+        
         debugShowCheckedModeBanner: false,
         home: SafeArea(
             maintainBottomViewPadding: true,

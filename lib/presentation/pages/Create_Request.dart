@@ -189,7 +189,7 @@ class _CreateRequestState extends State<CreateRequest> {
             type: 1,
             image_one: null,
             image_two: null,
-            comments:null,
+            comments: null,
             delivery_date: null);
       });
     }
@@ -258,31 +258,31 @@ class _CreateRequestState extends State<CreateRequest> {
       _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
 
       newRequestData = TestDataRequest(
-          id: ((Random().nextInt(900000) + 100000).toString()),
-          name: name.text,
-          gender: gender,
-          mobile: phone.text,
-          age: double.parse(age.text),
-          testlist: createReqController.testData,
-          totalprice: createReqController.totalCost.value,
-          servicecharge: createReqController.serviceCost.value,
-          address: addressText.text,
-          referrer: referredAddressText.text,
-          lastupdate: currentTime,
-          dateofcreated: currentTime,
-          softdelete: 0,
-          latitude: latitude,
-          longitude: longitude,
-          teststatus: 1,
-          invoice_call: phone.text.substring(7) +
-              "-" +
-              (Random().nextInt(900000) + 100000).toString(),
-          type: 1,
-          image_one: null,
-          image_two: null,
-          comments:null,
-          delivery_date: null,
-          );
+        id: ((Random().nextInt(900000) + 100000).toString()),
+        name: name.text,
+        gender: gender,
+        mobile: phone.text,
+        age: double.parse(age.text),
+        testlist: createReqController.testData,
+        totalprice: createReqController.totalCost.value,
+        servicecharge: createReqController.serviceCost.value,
+        address: addressText.text,
+        referrer: referredAddressText.text,
+        lastupdate: currentTime,
+        dateofcreated: currentTime,
+        softdelete: 0,
+        latitude: latitude,
+        longitude: longitude,
+        teststatus: 1,
+        invoice_call: phone.text.substring(7) +
+            "-" +
+            (Random().nextInt(900000) + 100000).toString(),
+        type: 1,
+        image_one: null,
+        image_two: null,
+        comments: null,
+        delivery_date: null,
+      );
 
       // DatabaseEvent ds = await _dbref_testReqModel
       //     .child("testRequest/${newRequestData.mobile.toString()}")
@@ -294,8 +294,8 @@ class _CreateRequestState extends State<CreateRequest> {
             .child(newRequestData.mobile.toString())
             .child(newRequestData.id)
             .set(newRequestData.toJson());
-         
-          Get.back();
+
+        Get.back();
         Get.snackbar(
             margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
             duration: Duration(milliseconds: 2000),
@@ -303,8 +303,6 @@ class _CreateRequestState extends State<CreateRequest> {
             colorText: whiteColor,
             "Added",
             "Data added , successfully!");
-
-        
       } else {
         Get.snackbar(
             margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),

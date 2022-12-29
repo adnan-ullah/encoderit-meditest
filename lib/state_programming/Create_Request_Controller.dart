@@ -51,6 +51,11 @@ class CreateRequest_controller extends GetxController {
     2: "PRESCRIPTION",
 
   };
+    Map<String, int> toType = {
+     "FORM":1,
+   "PRESCRIPTION":2,
+
+  };
 
   RxInt totalTestCost = 0.obs;
   RxInt totalCost = 0.obs;

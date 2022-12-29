@@ -180,24 +180,16 @@ class _StatusRequestListState extends State<StatusRequestList>
                   controller: tabController,
                   children: [
                     RequestListTabView(
-                      statusKey: cr_controller.status[1],
-                      isButton : false
-                    ),
+                        statusKey: cr_controller.status[1], isButton: false),
                     RequestListTabView(
-                      statusKey: cr_controller.status[2],
-                          isButton : false
-                    ),
+                        statusKey: cr_controller.status[2], isButton: false),
                     RequestListTabView(
-                      statusKey: cr_controller.status[3],
-                          isButton : true
-                    ),
+                        statusKey: cr_controller.status[3], isButton: true),
                     RequestListTabView(
-                      statusKey: cr_controller.status[4],
-                          isButton : true
-                    ),
+                        statusKey: cr_controller.status[4], isButton: true),
                     RequestListTabView(
                       statusKey: cr_controller.status[5],
-                      isButton: true,
+                      isButton: false,
                     ),
                     RequestListTabView(
                       statusKey: cr_controller.status[6],

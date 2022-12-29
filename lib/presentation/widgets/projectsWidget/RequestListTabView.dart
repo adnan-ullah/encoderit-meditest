@@ -117,23 +117,31 @@ class _RequestListTabViewState extends State<RequestListTabView> {
         await FirebaseDatabase.instance.ref("meditest/testRequest/");
 
     _dbref_testReqModel.onValue.listen((event) {
-      setState(() {
-        _newTestRequestList.clear();
-        testStatusRequestList.clear();
-      });
+      _newTestRequestList.clear();
+      testStatusRequestList.clear();
+
+      //  setState(() {
+      //   _newTestRequestList.clear();
+      //   testStatusRequestList.clear();
+      // });
 
       for (DataSnapshot ds in event.snapshot.children) {
         for (DataSnapshot dsLater in ds.children) {
           TestDataRequest testData =
               TestDataRequest.fromJson(json.decode(jsonEncode(dsLater.value)));
-          setState(() {
-            testStatusRequestList.add(testData);
-          });
+
+          testStatusRequestList.add(testData);
+
+          // setState(() {
+          //   testStatusRequestList.add(testData);
+          // });
         }
       }
-      setState(() {
-        tabStatusList();
-      });
+      // setState(() {
+      //   tabStatusList();
+      // });
+
+      tabStatusList();
 
       if (testStatusRequestList != null) _onLoading(false);
       //Get.back();
@@ -177,7 +185,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                               child: Row(
                                 children: [
                                   SizedBox(
-                                    width: DM.p80,
+                                    width: DM.p100,
                                     child: Text(
                                       "Type",
                                       style: TextStyle(
@@ -187,7 +195,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                     ),
                                   ),
                                   Container(
-                                    width: DM.p120,
+                                    width: DM.p100,
                                     child: Text(
                                       "Invoice Call",
                                       style: TextStyle(
@@ -238,7 +246,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                       child: Row(
                                         children: [
                                           SizedBox(
-                                            width: DM.p80,
+                                            width: DM.p100,
                                             child: Text(
                                               "${createRequest_controller.typeName[_newTestRequestList[index].type]}",
                                               style: TextStyle(
@@ -260,7 +268,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                             ),
                                           ),
                                           SizedBox(
-                                            width: DM.p100,
+                                            width: DM.p85,
                                             child: Text(
                                               (DateFormat('dd-MMM-yyy').format(DateTime
                                                       .fromMillisecondsSinceEpoch(
@@ -277,14 +285,14 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                           ),
                                           widget.isButton == true
                                               ? Container(
-                                                  width: DM.p70,
+                                                  width: DM.p65,
                                                   child: MaterialButton(
                                                     onPressed: () async {
                                                       _updateStatus(
                                                           _newTestRequestList[
                                                               index]);
                                                     },
-                                                    height: DM.p50,
+                                                    height: DM.p40,
                                                     shape:
                                                         const StadiumBorder(),
                                                     color: orangeColor,
@@ -294,7 +302,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                                           TextAlign.center,
                                                       style: TextStyle(
                                                           color: fullWhiteColor,
-                                                          fontSize: DM.p15,
+                                                          fontSize: DM.p13,
                                                           fontWeight:
                                                               FontWeight.bold),
                                                     ),

@@ -201,8 +201,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       mobile: phone.text.toString(),
       age: int.parse(age.text),
       testlist: testData_updated,
-      totalprice: createReqController.totalCost.value,
-      servicecharge: createReqController.serviceCost.value,
+      totalprice: totalCost,
+      servicecharge: serviceCost,
       address: address.text.toString(),
       referrer: referrer.text.toString(),
       lastupdate: currentTime,
@@ -212,9 +212,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       longitude: widget.testEachRequest!.longitude,
       teststatus: int.parse(teststatus.text),
       invoice_call: invoice_call.text.toString(),
-      type: 1,
-      image_one: null,
-      image_two: null,
+      type: createReqController.toType[type.text.toString()],
+      image_one: image_one.text.toString() == "empty"
+          ? null
+          : image_one.text.toString(),
+      image_two: image_two.text.toString() == "empty"
+          ? null
+          : image_two.text.toString(),
       delivery_date: dateTime_delivery,
       comments: comments.text.toString(),
     );
@@ -335,7 +339,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
               children: [
                 Container(
                     margin: EdgeInsets.symmetric(
-                        horizontal: DM.p15, vertical: DM.p10),
+                        horizontal: DM.p10, vertical: DM.p10),
                     decoration: BoxDecoration(
                         color: whiteColor,
                         borderRadius: BorderRadius.circular(DM.p10),
@@ -870,7 +874,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                             ),
                             Container(
                               margin: EdgeInsets.symmetric(
-                                  horizontal: DM.p10, vertical: DM.p3),
+                                  horizontal: DM.p5, vertical: DM.p3),
                               height: DM.screenHeight * 0.35,
                               width: double.infinity,
                               decoration: BoxDecoration(
@@ -1609,10 +1613,17 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                             vertical: DM.p10),
                                                     child: MaterialButton(
                                                       onPressed: () async {
-                                                        _updateRequest();
+                                                        if (_formKey
+                                                                .currentState
+                                                                ?.validate() ==
+                                                            true) {
+                                                          if (await chechkingInternet()) {
+                                                            _updateRequest();
 
-                                                        //cr_controller.filter_testItemList.removeAt(index);
-                                                        Get.back();
+                                                            //cr_controller.filter_testItemList.removeAt(index);
+                                                            Get.back();
+                                                          }
+                                                        }
                                                       },
                                                       height: DM.p40,
                                                       minWidth: DM.p120,
