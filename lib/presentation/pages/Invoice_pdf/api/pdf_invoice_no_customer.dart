@@ -33,7 +33,7 @@ class PdfInvoiceApiNoCustomer {
       ],
     ));
 
-    return PdfApi.saveDocument(name: '${invoice.customer.invoice_id.toString()} (No_Customer___Copy).pdf', pdf: pdf);
+    return PdfApi.saveDocument(name: '${invoice.customer.invoice_id.toString()} (Lab_Copy.pdf', pdf: pdf);
   }
 
   static Widget buildHeader(Invoice invoice) => Column(
@@ -84,10 +84,18 @@ class PdfInvoiceApiNoCustomer {
 
   static Widget buildInvoiceInfo(Customer customer) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(
+     Text(
           "Date: " +
               DateFormat(
-                'dd-MMM-yyy hh:mm a',
+                'dd-MMM-yyy',
+              )
+                  .format(DateTime.fromMillisecondsSinceEpoch(customer.date))
+                  .toString(),
+          style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold)),
+       Text(
+            "Time: "+
+              DateFormat(
+                'hh:mm a',
               )
                   .format(DateTime.fromMillisecondsSinceEpoch(customer.date))
                   .toString(),
@@ -121,7 +129,7 @@ class PdfInvoiceApiNoCustomer {
     final headers = [
       'SL',
       'TEST NAME',
-      'TEST PRICE',
+    
     ];
     final data = invoice.items.map((item) {
       //  final total = item.unitPrice * item.quantity * (1 + item.vat);
@@ -129,12 +137,12 @@ class PdfInvoiceApiNoCustomer {
       return [
         '${item.serialNumber}',
         item.testName,
-        item.testPrice,
+   
       ];
     }).toList();
 
-    data.add(["", "Collection Charge" ,invoice.customer.collection_charge]);
-    data.add(["", "Tube Cost" , invoice.customer.tube_cost]);
+    data.add(["", "Collection Charge" ,""]);
+    data.add(["", "Tube Cost" , ""]);
 
     return Table.fromTextArray(
       headers: headers,
@@ -257,12 +265,29 @@ class PdfInvoiceApiNoCustomer {
                     style: TextStyle(fontSize: 8),
                   ),
                   Text(
-                    invoice.customer.totalAmount.toString(),
+                    "",
                     textAlign: TextAlign.right,
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
                   ),
                 ]),
           ),
+           Container(
+              width: PdfPageFormat.inch * 1.3,
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      "Discount:",
+                      style: TextStyle(fontSize: 8),
+                    ),
+                    Text(
+                      "",
+                      textAlign: TextAlign.right,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
+                    )
+                  ])),
           Container(
               width: PdfPageFormat.inch * 1.3,
               child: Row(
@@ -274,29 +299,13 @@ class PdfInvoiceApiNoCustomer {
                       style: TextStyle(fontSize: 8),
                     ),
                     Text(
-                      invoice.customer.advance.toString(),
+                      "",
                       textAlign: TextAlign.right,
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
                     )
                   ])),
-          Container(
-              width: PdfPageFormat.inch * 1.3,
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "Discount:",
-                      style: TextStyle(fontSize: 8),
-                    ),
-                    Text(
-                      invoice.customer.totalDiscount.toString(),
-                      textAlign: TextAlign.right,
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
-                    )
-                  ])),
+         
           Container(
               width: PdfPageFormat.inch * 1.3,
               child: Row(
@@ -308,7 +317,7 @@ class PdfInvoiceApiNoCustomer {
                       style: TextStyle(fontSize: 8),
                     ),
                     Text(
-                      invoice.customer.dueAmount.toString(),
+                      "",
                       textAlign: TextAlign.right,
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
@@ -333,7 +342,7 @@ class PdfInvoiceApiNoCustomer {
 
           Text("Mobile: 01785890750 , 01862739539",
               style: TextStyle(fontSize: 8), textAlign: TextAlign.center),
-          Text("No Customer Copy",
+          Text("Lab Copy",
               style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center),
 

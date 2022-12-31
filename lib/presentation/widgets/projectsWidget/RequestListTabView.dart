@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
@@ -11,6 +12,7 @@ import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../responsives/dimensions.dart';
@@ -148,9 +150,25 @@ class _RequestListTabViewState extends State<RequestListTabView> {
     });
   }
 
+ Future getStoragePermission() async {
+  PermissionStatus status = await Permission.storage.request();
+  //PermissionStatus status1 = await Permission.accessMediaLocation.request();
+  PermissionStatus status2 = await Permission.manageExternalStorage.request();
+  print('status $status   -> $status2');
+  if (status.isGranted && status2.isGranted) {
+    return true;
+  } else if (status.isPermanentlyDenied || status2.isPermanentlyDenied) {
+    await openAppSettings();
+  } else if (status.isDenied) {
+    print('Permission Denied');
+  }
+}
+
   @override
   void initState() {
     Future.delayed(Duration.zero, () {
+
+      
       this.getStatusData();
     });
     // TODO: implement initState

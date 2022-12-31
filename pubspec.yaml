@@ -38,28 +38,12 @@ dependencies:
   firebase_core: ^2.4.0
   firebase_core_desktop: null
   firebase_database: null
+  firebase_messaging: ^14.2.0
   firebase_storage: ^11.0.9
-
-
-
-  package_info_plus: ^1.0.6
-
-
-  #invoice
-  pdf: ^3.1.0
-
-  # save file
-  path_provider: ^2.0.1
-
-  # open pdf document
-  open_file: ^3.1.0
-
-
- 
-
-  
   flutter:
     sdk: flutter
+  flutter_datetime_picker: ^1.5.1
+  flutter_phone_direct_caller: ^2.1.1
   fluttertoast: ^8.1.2
   geolocator: ^9.0.2
   get: ^4.6.5
@@ -69,16 +53,18 @@ dependencies:
   image_picker: ^0.8.6
   intl: ^0.17.0
   json_annotation: ^4.7.0
+  map_launcher: ^2.4.0
+ 
+  open_file: ^3.1.0
+  package_info_plus: ^1.0.6
+  path_provider: ^2.0.1
+  pdf: ^3.1.0
   permission_handler: ^6.1.1
+  photo_view: ^0.14.0
   shared_preferences: ^2.0.15
   sizer: ^2.0.15
   url_launcher: ^6.1.7
   uuid: ^3.0.6
-  flutter_phone_direct_caller: ^2.1.1
-  firebase_messaging: ^14.2.0
-  map_launcher: ^2.4.0
-  photo_view: ^0.14.0
-  flutter_datetime_picker: ^1.5.1
 
 # dependency_overrides:
 #   firebase_messaging_platform_interface: 3.1.6

@@ -21,6 +21,7 @@ import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListD
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -79,6 +80,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
   var advanced = new TextEditingController();
   var due_amount = new TextEditingController();
+  var admin_discount = new TextEditingController();
 
   List<TestData> testItemList = [];
 
@@ -168,6 +170,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     else
       advanced.text = "0";
 
+    if (widget.testEachRequest!.admin_discount != null)
+      admin_discount.text = widget.testEachRequest!.admin_discount;
+    else
+      admin_discount.text = "0";
+
     if (widget.testEachRequest!.due_amount != null)
       due_amount.text = widget.testEachRequest!.due_amount;
     else
@@ -213,35 +220,35 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
 
     updateTestRequestItem = TestDataRequest(
-      id: widget.testEachRequest!.id.toString(),
-      name: name.text.toString(),
-      gender: gender.toString(),
-      mobile: phone.text.toString(),
-      age: int.parse(age.text),
-      testlist: testData_updated,
-      totalprice: totalCost,
-      servicecharge: serviceCost,
-      address: address.text.toString(),
-      referrer: referrer.text.toString(),
-      lastupdate: currentTime,
-      dateofcreated: widget.testEachRequest!.dateofcreated,
-      softdelete: 0,
-      latitude: widget.testEachRequest!.latitude,
-      longitude: widget.testEachRequest!.longitude,
-      teststatus: int.parse(teststatus.text),
-      invoice_call: invoice_call.text.toString(),
-      type: createReqController.toType[type.text.toString()],
-      image_one: image_one.text.toString() == "empty"
-          ? null
-          : image_one.text.toString(),
-      image_two: image_two.text.toString() == "empty"
-          ? null
-          : image_two.text.toString(),
-      delivery_date: dateTime_delivery,
-      comments: comments.text.toString(),
-      advanced: advanced.text.toString(),
-      due_amount: due_amount.text.toString(),
-    );
+        id: widget.testEachRequest!.id.toString(),
+        name: name.text.toString(),
+        gender: gender.toString(),
+        mobile: phone.text.toString(),
+        age: int.parse(age.text),
+        testlist: testData_updated,
+        totalprice: totalCost,
+        servicecharge: serviceCost,
+        address: address.text.toString(),
+        referrer: referrer.text.toString(),
+        lastupdate: currentTime,
+        dateofcreated: widget.testEachRequest!.dateofcreated,
+        softdelete: 0,
+        latitude: widget.testEachRequest!.latitude,
+        longitude: widget.testEachRequest!.longitude,
+        teststatus: int.parse(teststatus.text),
+        invoice_call: invoice_call.text.toString(),
+        type: createReqController.toType[type.text.toString()],
+        image_one: image_one.text.toString() == "empty"
+            ? null
+            : image_one.text.toString(),
+        image_two: image_two.text.toString() == "empty"
+            ? null
+            : image_two.text.toString(),
+        delivery_date: dateTime_delivery,
+        comments: comments.text.toString(),
+        advanced: advanced.text.toString(),
+        due_amount: due_amount.text.toString(),
+        admin_discount: admin_discount.text.toString());
 
     if (updateTestRequestItem != null) {
       await DbrefTestReqModel.child("testRequest")
@@ -260,6 +267,10 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     tubeCost = 0;
     totalDiscount = 0;
 
+    if (admin_discount.text != null && admin_discount.text.isNotEmpty) {
+      totalDiscount = totalDiscount + int.parse(admin_discount.text.toString());
+    }
+
     testData_updated.map((testItem) {
       totalTestCost = totalTestCost + int.parse(testItem.testprice.toString());
       serviceCost =
@@ -273,6 +284,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
     totalprice.text = totalCost.toString();
     servicecharge.text = serviceCost.toString();
+
+    if (advanced.text != null && advanced.text.isNotEmpty) {
+      due_amount.text =
+          (totalCost - int.parse(advanced.text.toString())).toString();
+    }
   }
 
   Future<void> removeCalulationProcess(id) async {
@@ -305,8 +321,15 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     });
   }
 
+  Future<void> permissionNeed() async {
+    final status = await Permission.storage.request();
+    var state = await Permission.manageExternalStorage.status;
+    var state2 = await Permission.storage.status;
+  }
+
   @override
   void initState() {
+    permissionNeed();
     if (widget.testEachRequest != null) {
       this.retreiveEachDataRequest();
       print("InitState");
@@ -1077,22 +1100,77 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         //   value: "50",
                         //   activate: false,
                         // ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          textInputType: TextInputType.number,
-                          controller: softdelete,
-                          title: "Soft delete",
-                          value: "0",
-                          activate: false,
-                        ),
+
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateString,
                           textInputType: TextInputType.number,
                           controller: totalprice,
                           title: "Total price",
-                          value: "70",
+                          value: "0",
                           activate: false,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Admin Discount",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        calculationProcess();
+                                      });
+                                    },
+                                    controller: admin_discount,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
 
                         Padding(
@@ -1282,10 +1360,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                   child: TextFormField(
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
-                                      due_amount.text = (totalCost -
-                                              int.parse(
-                                                  advanced.text.toString()))
-                                          .toString();
+                                      if (advanced.text != null &&
+                                          advanced.text.isNotEmpty) {
+                                        due_amount.text = (totalCost -
+                                                int.parse(
+                                                    advanced.text.toString()))
+                                            .toString();
+                                      }
                                     },
                                     controller: advanced,
                                     decoration: InputDecoration(
@@ -1323,6 +1404,15 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           controller: due_amount,
                           title: "Due Amount",
                           value: "${totalCost - int.parse(advanced.text)}",
+                          activate: false,
+                        ),
+
+                        FormUserInfo(
+                          formKey: _formKey,
+                          textInputType: TextInputType.number,
+                          controller: softdelete,
+                          title: "Soft delete",
+                          value: "0",
                           activate: false,
                         ),
                       ],

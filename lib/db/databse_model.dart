@@ -80,8 +80,8 @@ class TestDataRequest {
       this.comments,
       this.delivery_date,
       this.advanced,
-      this.due_amount
-      });
+      this.due_amount,
+      this.admin_discount});
 
   final dynamic id;
   final dynamic name;
@@ -107,6 +107,7 @@ class TestDataRequest {
   final dynamic delivery_date;
   final dynamic advanced;
   final dynamic due_amount;
+  final dynamic admin_discount;
 
   Map toJson() => {
         'id': id,
@@ -133,6 +134,7 @@ class TestDataRequest {
         'delivery_date': delivery_date,
         'advanced': advanced,
         'due_amount': due_amount,
+        'admin_discount': admin_discount,
       };
 
   factory TestDataRequest.fromJson(Map<String, dynamic> parsedJson) {
@@ -163,8 +165,9 @@ class TestDataRequest {
       image_two: parsedJson['image_two'],
       comments: parsedJson['comments'],
       delivery_date: parsedJson['delivery_date'],
-        advanced: parsedJson['advanced'],
+      advanced: parsedJson['advanced'],
       due_amount: parsedJson['due_amount'],
+      admin_discount: parsedJson['admin_discount'],
     );
   }
 }
