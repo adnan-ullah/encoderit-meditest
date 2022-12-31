@@ -322,14 +322,23 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   }
 
   Future<void> permissionNeed() async {
-    final status = await Permission.storage.request();
-    var state = await Permission.manageExternalStorage.status;
-    var state2 = await Permission.storage.status;
+    // final status = await Permission.request();
+
+    // var state = await Permission.manageExternalStorage.request();
+    //var state2 = await Permission.storage.status;
+
+
+
+    if (await Permission.storage.request()==true) {
+        
+
+    }
   }
 
   @override
   void initState() {
     permissionNeed();
+
     if (widget.testEachRequest != null) {
       this.retreiveEachDataRequest();
       print("InitState");
@@ -513,19 +522,20 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                               ),
                               Flexible(
                                 child: Container(
-                                  height: DM.p42,
                                   child: TextFormField(
                                     controller: address,
-                                    onTap: (() {
-                                      showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            return MyDialogView(
-                                                myChild: TextDialogueBox(
-                                                    keyTitle: "Address",
-                                                    addressText: address));
-                                          });
-                                    }),
+                                    keyboardType: TextInputType.multiline,
+                                    maxLines: null,
+                                    // onTap: (() {
+                                    //   showDialog(
+                                    //       context: context,
+                                    //       builder: (context) {
+                                    //         return MyDialogView(
+                                    //             myChild: TextDialogueBox(
+                                    //                 keyTitle: "Address",
+                                    //                 addressText: address));
+                                    //       });
+                                    // }),
                                     decoration: InputDecoration(
                                         errorStyle: TextStyle(fontSize: DM.p9),
                                         // focusedErrorBorder:
@@ -549,7 +559,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                         contentPadding: EdgeInsets.symmetric(
                                             horizontal: DM.p10),
                                         border: InputBorder.none,
-                                        hintText: "Ex:Chittagong",
+                                        hintText: "Your Address",
                                         hintStyle: TextStyle(
                                           color: Colors.grey,
                                           fontSize: DM.p14,
@@ -585,19 +595,20 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                               ),
                               Flexible(
                                 child: Container(
-                                  height: DM.p42,
                                   child: TextFormField(
                                     controller: referrer,
-                                    onTap: (() {
-                                      showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            return MyDialogView(
-                                                myChild: TextDialogueBox(
-                                                    keyTitle: "Referrer Info",
-                                                    addressText: referrer));
-                                          });
-                                    }),
+                                    keyboardType: TextInputType.multiline,
+                                    maxLines: null,
+                                    // onTap: (() {
+                                    //   showDialog(
+                                    //       context: context,
+                                    //       builder: (context) {
+                                    //         return MyDialogView(
+                                    //             myChild: TextDialogueBox(
+                                    //                 keyTitle: "Referrer Info",
+                                    //                 addressText: referrer));
+                                    //       });
+                                    // }),
                                     decoration: InputDecoration(
                                         errorStyle: TextStyle(fontSize: DM.p9),
                                         focusedBorder: OutlineInputBorder(
@@ -1922,7 +1933,6 @@ class FormUserInfo extends StatelessWidget {
           ),
           Flexible(
             child: Container(
-              height: DM.p42,
               child: TextFormField(
                 validator: validatorField,
                 onChanged: ((value) {

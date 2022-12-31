@@ -15,6 +15,7 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(MediaQuery.of(context).size.width); print(MediaQuery.of(context).size.height);
     return MyScaffold(
         color1: Colors.amber,
         color2: Colors.amber,
@@ -22,7 +23,7 @@ class SplashScreen extends StatelessWidget {
           loaderColor: orangeColor,
           //backgroundImage: Image.asset('lib/assets/images/plus.png',,).image,
           logo: Image(image: AssetImage("lib/assets/images/new_plus.png")),
-          
+
           title: Text(
             "Health Care Homelab",
             style: TextStyle(
@@ -32,7 +33,7 @@ class SplashScreen extends StatelessWidget {
           ),
           backgroundColor: creamColor,
           showLoader: true,
-    
+
           loadingText: Text(
             "Loading...",
             style: TextStyle(

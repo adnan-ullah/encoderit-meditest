@@ -183,9 +183,8 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                           return Container(
                             color: whiteColor,
                             padding: EdgeInsets.symmetric(
-                                horizontal: DM.p10, vertical: DM.p10),
+                                horizontal: DM.p10, vertical: DM.p4),
                             margin: EdgeInsets.symmetric(vertical: DM.p8),
-                            height: DM.p50,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -212,7 +211,7 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                                       color: Color.fromARGB(255, 26, 1, 1)),
                                 ),
                                 SizedBox(
-                                    height: DM.p45,
+                                    height: DM.p35,
                                     width: DM.p80,
                                     child: cr_Controller
                                                     .testItemListWithSelected[
@@ -286,7 +285,7 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                                               "Remove",
                                               style: TextStyle(
                                                   color: fullWhiteColor,
-                                                  fontSize: DM.p10,
+                                                  fontSize: DM.p8,
                                                   fontWeight: FontWeight.bold),
                                             ))),
                               ],

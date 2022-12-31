@@ -57,8 +57,8 @@ class _TextDialogueBoxState extends State<TextDialogueBox> {
                         padding: EdgeInsets.all(DM.p8),
                         child: TextField(
                           controller: contentController,
-
-                          maxLines: 8, //or null
+                           keyboardType: TextInputType.multiline,
+                          maxLines: null, //or null
                           decoration: InputDecoration.collapsed(
                               hintText: "Write here..."),
 

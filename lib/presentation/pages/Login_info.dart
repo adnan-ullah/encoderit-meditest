@@ -192,21 +192,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Column(
                             children: [
                               Text(
-                                "Enter your phone",
+                                "Enter your phone number",
                                 textAlign: TextAlign.left,
                                 style: TextStyle(
-                                    fontWeight: FontWeight.w300,
-                                    fontSize: DM.p40,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: DM.p30,
                                     color: orangeColor),
                               ),
-                              Text(
-                                "number",
-                                textAlign: TextAlign.left,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w300,
-                                    fontSize: DM.p40,
-                                    color: orangeColor),
-                              ),
+                              
                             ],
                           ),
                         ),

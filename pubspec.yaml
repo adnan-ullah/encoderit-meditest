@@ -33,6 +33,7 @@ dependencies:
   bubble: ^1.2.1
   cloud_firestore: null
   cupertino_icons: ^1.0.2
+  device_preview: ^1.1.0
   easy_splash_screen: ^1.0.4
   firebase_auth: null
   firebase_core: ^2.4.0
@@ -54,7 +55,6 @@ dependencies:
   intl: ^0.17.0
   json_annotation: ^4.7.0
   map_launcher: ^2.4.0
- 
   open_file: ^3.1.0
   package_info_plus: ^1.0.6
   path_provider: ^2.0.1

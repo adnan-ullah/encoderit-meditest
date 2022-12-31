@@ -323,7 +323,7 @@ class _CreateRequestState extends State<CreateRequest> {
           child: Text(
             "Requisition form",
             textAlign: TextAlign.left,
-            style: TextStyle(color: creamColor, fontSize: DM.p30),
+            style: TextStyle(color: creamColor, fontWeight: FontWeight.bold, fontSize: DM.p25),
           ),
         ),
       ]),
@@ -403,14 +403,22 @@ class _CreateRequestState extends State<CreateRequest> {
                                         width: DM.p10,
                                       ),
                                       DropdownButton<String>(
-                                        hint: Text("$gender"),
+                                        hint: Text(
+                                          "$gender",
+                                          style:
+                                              TextStyle(color: blackFontColor),
+                                        ),
                                         items: <String>[
                                           'Male',
                                           'Female',
                                         ].map((String value) {
                                           return DropdownMenuItem<String>(
                                             value: value,
-                                            child: Text("$value"),
+                                            child: Text(
+                                              "$value",
+                                              style: TextStyle(
+                                                  color: blackFontColor),
+                                            ),
                                           );
                                         }).toList(),
                                         onChanged: (newValue) {
@@ -448,20 +456,22 @@ class _CreateRequestState extends State<CreateRequest> {
                                       ),
                                       Flexible(
                                         child: Container(
-                                          height: DM.p42,
                                           child: TextFormField(
                                             controller: addressText,
-                                            onTap: (() {
-                                              showDialog(
-                                                  context: context,
-                                                  builder: (context) {
-                                                    return MyDialogView(
-                                                        myChild: TextDialogueBox(
-                                                            keyTitle: "Address",
-                                                            addressText:
-                                                                addressText));
-                                                  });
-                                            }),
+                                            keyboardType:
+                                                TextInputType.multiline,
+                                            maxLines: null,
+                                            // onTap: (() {
+                                            //   showDialog(
+                                            //       context: context,
+                                            //       builder: (context) {
+                                            //         return MyDialogView(
+                                            //             myChild: TextDialogueBox(
+                                            //                 keyTitle: "Address",
+                                            //                 addressText:
+                                            //                     addressText));
+                                            //       });
+                                            // }),
                                             decoration: InputDecoration(
                                                 errorStyle:
                                                     TextStyle(fontSize: DM.p9),
@@ -490,7 +500,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                                     EdgeInsets.symmetric(
                                                         horizontal: DM.p10),
                                                 border: InputBorder.none,
-                                                hintText: "Ex:Chittagong",
+                                                hintText: "Your Address",
                                                 hintStyle: TextStyle(
                                                   color: Colors.grey,
                                                   fontSize: DM.p14,
@@ -527,21 +537,23 @@ class _CreateRequestState extends State<CreateRequest> {
                                       ),
                                       Flexible(
                                         child: Container(
-                                          height: DM.p42,
                                           child: TextFormField(
                                             controller: referredAddressText,
-                                            onTap: (() {
-                                              showDialog(
-                                                  context: context,
-                                                  builder: (context) {
-                                                    return MyDialogView(
-                                                        myChild: TextDialogueBox(
-                                                            keyTitle:
-                                                                "Referrer Info",
-                                                            addressText:
-                                                                referredAddressText));
-                                                  });
-                                            }),
+                                            keyboardType:
+                                                TextInputType.multiline,
+                                            maxLines: null,
+                                            // onTap: (() {
+                                            //   showDialog(
+                                            //       context: context,
+                                            //       builder: (context) {
+                                            //         return MyDialogView(
+                                            //             myChild: TextDialogueBox(
+                                            //                 keyTitle:
+                                            //                     "Referrer Info",
+                                            //                 addressText:
+                                            //                     referredAddressText));
+                                            //       });
+                                            // }),
                                             decoration: InputDecoration(
                                                 errorStyle:
                                                     TextStyle(fontSize: DM.p9),
@@ -889,7 +901,7 @@ class _CreateRequestState extends State<CreateRequest> {
                             ),
                           ),
                         ),
-                          
+
                         // #buttons(facebook & github)
                       ],
                     ),

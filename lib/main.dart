@@ -24,6 +24,8 @@ import 'presentation/pages/splash_pages/SplashScreen.dart';
 import 'presentation/widgets/majorWidgets/MyScaffold.dart';
 import 'responsives/dimensions.dart';
 
+import 'package:device_preview/device_preview.dart';
+
 // void main() => runApp(const MyApp());
 
 Future<void> main() async {
@@ -42,17 +44,15 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   void initState() {
-      getNotification();
+    getNotification();
     // TODO: implement initState
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Sizer(builder:
-        (BuildContext context, Orientation orientation, DeviceType deviceType) {
+    
       return GetMaterialApp(
-        
         debugShowCheckedModeBanner: false,
         home: SafeArea(
             maintainBottomViewPadding: true,
@@ -63,7 +63,7 @@ class _MyAppState extends State<MyApp> {
                     color1: creamColor,
                     color2: creamColor))),
       );
-    });
+    
   }
 }
 
@@ -94,16 +94,14 @@ Future<void> getNotification() async {
     String build_Number = packageInfo.buildNumber;
     print(build_Number);
 
-   
-      if (int.parse(message.data["update_version"]) > int.parse(build_Number)) {
-        SharedPreferences sharedPreferences =
-            await SharedPreferences.getInstance();
-        sharedPreferences.setInt(
-            "update_version", int.parse(message.data["update_version"]));
-        sharedPreferences.setString(
-            "update_details", message.data["update_details"]);
-      }
-    
+    if (int.parse(message.data["update_version"]) > int.parse(build_Number)) {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      sharedPreferences.setInt(
+          "update_version", int.parse(message.data["update_version"]));
+      sharedPreferences.setString(
+          "update_details", message.data["update_details"]);
+    }
 
     if (message.notification != null) {
       print('Message also contained a notification: ${message.notification}');

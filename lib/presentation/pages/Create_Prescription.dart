@@ -226,7 +226,7 @@ class _PrescriptionState extends State<Prescription> {
           child: Text(
             "Prescription Form",
             textAlign: TextAlign.left,
-            style: TextStyle(color: creamColor, fontSize: DM.p30),
+            style: TextStyle(color: creamColor,fontWeight: FontWeight.bold, fontSize: DM.p25),
           ),
         ),
       ]),
@@ -253,7 +253,7 @@ class _PrescriptionState extends State<Prescription> {
                                   "Enter your phone number & prescription photo",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      fontWeight: FontWeight.w400,
+                                      fontWeight: FontWeight.w600,
                                       fontSize: DM.p30,
                                       color: orangeColor),
                                 ),
@@ -269,9 +269,9 @@ class _PrescriptionState extends State<Prescription> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               SizedBox(
-                                width: DM.p70,
+                                width: DM.p100,
                                 child: Text(
-                                  "Contact Number",
+                                  "Contact\nNumber",
                                   style: TextStyle(
                                       fontWeight: FontWeight.w500,
                                       fontSize: DM.p14,
@@ -456,7 +456,7 @@ class _PrescriptionState extends State<Prescription> {
                                           textAlign: TextAlign.start,
                                           style: TextStyle(
                                               color: fullWhiteColor,
-                                              fontSize: DM.p25,
+                                              fontSize: DM.p20,
                                               fontWeight: FontWeight.bold),
                                         ),
                                       ),
@@ -605,7 +605,7 @@ class _PrescriptionState extends State<Prescription> {
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                               color: fullWhiteColor,
-                                              fontSize: DM.p25,
+                                              fontSize: DM.p20,
                                               fontWeight: FontWeight.bold),
                                         ),
                                       ),

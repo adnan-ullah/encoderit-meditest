@@ -42,30 +42,30 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
         isClear = true;
       });
 
-    filter_testItemList.clear();
+      filter_testItemList.clear();
 
-     widget.testItemList.map((element) {
+      widget.testItemList.map((element) {
         if (element.name
             .toString()
             .toLowerCase()
             .contains(value.toString().toLowerCase())) {
-         filter_testItemList.add(element);
+          filter_testItemList.add(element);
         }
       }).toList();
     } else {
       setState(() {
         isClear = false;
       });
-    filter_testItemList.clear();
-     filter_testItemList.addAll(widget.testItemList);
+      filter_testItemList.clear();
+      filter_testItemList.addAll(widget.testItemList);
     }
   }
 
   @override
   void initState() {
     cr_Controller = Get.put(CreateRequest_controller());
-  
-   filter_testItemList.addAll(widget.testItemList);
+
+    filter_testItemList.addAll(widget.testItemList);
 
     // print("ADNAN" + cr_Controller.testItemList.length.toString());
     // TODO: implement initState
@@ -158,16 +158,15 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
                           return Container(
                             color: whiteColor,
                             padding: EdgeInsets.symmetric(
-                                horizontal: DM.p10, vertical: DM.p10),
+                                horizontal: DM.p10, vertical: DM.p4),
                             margin: EdgeInsets.symmetric(vertical: DM.p8),
-                            height: DM.p50,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 SizedBox(
                                   width: DM.p130,
                                   child: Text(
-                                   filter_testItemList[index].name +
+                                    filter_testItemList[index].name +
                                         " (${filter_testItemList[index].diagnostic_center})",
                                     overflow: TextOverflow.visible,
                                     style: TextStyle(
@@ -186,18 +185,22 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
                                       color: Color.fromARGB(255, 26, 1, 1)),
                                 ),
                                 SizedBox(
-                                    height: DM.p45,
+                                    height: DM.p35,
                                     width: DM.p80,
-                                    child: widget.testItemWithSelected[filter_testItemList[index].id] ==
+                                    child: widget.testItemWithSelected[
+                                                filter_testItemList[index]
+                                                    .id] ==
                                             false
                                         ? MaterialButton(
                                             onPressed: () {
                                               setState(() {
                                                 widget.testItemWithSelected[
-                                                        filter_testItemList[index]
+                                                        filter_testItemList[
+                                                                index]
                                                             .id] =
                                                     !widget.testItemWithSelected[
-                                                        filter_testItemList[index]
+                                                        filter_testItemList[
+                                                                index]
                                                             .id]!;
                                               });
 
@@ -216,10 +219,12 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
                                             onPressed: () {
                                               setState(() {
                                                 widget.testItemWithSelected[
-                                                        filter_testItemList[index]
+                                                        filter_testItemList[
+                                                                index]
                                                             .id] =
                                                     !widget.testItemWithSelected[
-                                                       filter_testItemList[index]
+                                                        filter_testItemList[
+                                                                index]
                                                             .id]!;
                                               });
 
@@ -231,7 +236,7 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
                                               "Remove",
                                               style: TextStyle(
                                                   color: fullWhiteColor,
-                                                  fontSize: DM.p10,
+                                                  fontSize: DM.p8,
                                                   fontWeight: FontWeight.bold),
                                             ))),
                               ],

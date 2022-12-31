@@ -61,7 +61,7 @@ class _ConfirmationListState extends State<ConfirmationList> {
         children: [
           Container(
               color: creamColor,
-              height: DM.screenHeight * 0.8,
+              height: DM.screenHeight * 0.9,
               width: DM.screenWidth * 0.9,
               padding: EdgeInsets.all(DM.p15),
               child: Column(

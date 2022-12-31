@@ -126,6 +126,7 @@ class _AdminHomeState extends State<AdminHome> {
                               },
                               child: Text(
                                 "Test Item",
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: fullWhiteColor,
                                     fontSize: DM.p15,
@@ -151,6 +152,7 @@ class _AdminHomeState extends State<AdminHome> {
                               },
                               child: Text(
                                 "Test Request",
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: fullWhiteColor,
                                     fontSize: DM.p15,
