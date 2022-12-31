@@ -112,7 +112,7 @@ class _AdminHomeState extends State<AdminHome> {
                             height: DM.p180,
                             width: DM.screenWidth * 0.4,
                             margin: EdgeInsets.symmetric(
-                                vertical: DM.p25, horizontal: DM.p16),
+                                vertical: DM.p25, horizontal: DM.p10),
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                   padding: EdgeInsets.symmetric(
@@ -137,7 +137,7 @@ class _AdminHomeState extends State<AdminHome> {
                             height: DM.p180,
                             width: DM.screenWidth * 0.4,
                             margin: EdgeInsets.symmetric(
-                                vertical: DM.p25, horizontal: DM.p16),
+                                vertical: DM.p25, horizontal: DM.p10),
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                   padding: EdgeInsets.symmetric(

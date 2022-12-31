@@ -888,8 +888,8 @@ class _CreateRequestState extends State<CreateRequest> {
                               ],
                             ),
                           ),
-                        )
-
+                        ),
+                          
                         // #buttons(facebook & github)
                       ],
                     ),

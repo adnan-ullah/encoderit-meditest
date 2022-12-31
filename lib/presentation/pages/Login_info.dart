@@ -155,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
     chechkingInternet();
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
         Container(
           alignment: Alignment.centerLeft,
@@ -178,15 +178,13 @@ class _LoginScreenState extends State<LoginScreen> {
           height: DM.screenHeight,
           width: DM.screenWidth,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Container(
                   width: DM.screenWidth,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Center(
                         child: Container(
@@ -284,7 +282,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       Container(
                         margin: EdgeInsets.symmetric(
-                            horizontal: DM.p20, vertical: DM.p30),
+                            horizontal: DM.p20, vertical: DM.p24),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -293,43 +291,41 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: DM.p130,
                               child: MaterialButton(
                                 onPressed: () async {
-                                   if (_formKey.currentState?.validate() ==
+                                  if (_formKey.currentState?.validate() ==
                                           true &&
                                       await chechkingInternet()) {
-                                   //admin-app
+                                    //admin-app
+                                    // savePhone(phone.text);
+                                    // Get.to(HomeScreen());
 
-                                     savePhone(phone.text);
+                                    savePhone(phone.text);
                                     if (phone.text == "111000222999") {
                                       savePhone(phone.text);
                                       Get.to(AdminHome());
                                     } else {
-                                       Get.to(HomeScreen());
+                                      Get.to(HomeScreen());
                                     }
 
-                               
-                              
-                                   
-                                  //client-app please add this
-                                  //// inputFormatters: <TextInputFormatter>[
-                                  //   FilteringTextInputFormatter.digitsOnly
-                                  // ],
-                                
-                                  
-                                  //   if (!phone.text.contains("*") &&
-                                  //       !phone.text.contains("#")) {
-                                  //     savePhone(phone.text);
+                                    //client-app please add this
+                                    //// inputFormatters: <TextInputFormatter>[
+                                    //   FilteringTextInputFormatter.digitsOnly
+                                    // ],
 
-                                  //      Get.to(HomeScreen());
+                                    //   if (!phone.text.contains("*") &&
+                                    //       !phone.text.contains("#")) {
+                                    //     savePhone(phone.text);
 
-                                  //   } else {
-                                  //     Get.snackbar("Number error!",
-                                  //         "Please put a valid number",
-                                  //         margin: EdgeInsets.symmetric(
-                                  //             horizontal: DM.p70,
-                                  //             vertical: DM.p60),
-                                  //         backgroundColor: orangeColor,
-                                  //         colorText: whiteColor);
-                                  //   }
+                                    //      Get.to(HomeScreen());
+
+                                    //   } else {
+                                    //     Get.snackbar("Number error!",
+                                    //         "Please put a valid number",
+                                    //         margin: EdgeInsets.symmetric(
+                                    //             horizontal: DM.p70,
+                                    //             vertical: DM.p60),
+                                    //         backgroundColor: orangeColor,
+                                    //         colorText: whiteColor);
+                                    //   }
                                   }
                                 },
                                 height: DM.p50,
@@ -347,8 +343,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ],
                         ),
-                      )
-
+                      ),
+                      Flexible(
+                          child: Container(height: DM.p20, child: TextField()))
                       // #buttons(facebook & github)
                     ],
                   ),

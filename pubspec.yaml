@@ -45,6 +45,16 @@ dependencies:
   package_info_plus: ^1.0.6
 
 
+  #invoice
+  pdf: ^3.1.0
+
+  # save file
+  path_provider: ^2.0.1
+
+  # open pdf document
+  open_file: ^3.1.0
+
+
  
 
   

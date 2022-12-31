@@ -82,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
             InkWell(
               onTap: _callNumber,
               child: Container(
-                padding: EdgeInsets.all(DM.p8),
+                padding: EdgeInsets.all(DM.p12),
                 child: Text(
                   "Hotline: 01785890750",
                   style: TextStyle(
@@ -147,6 +147,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+
+            Flexible(child: Container(height: DM.p24, child: TextField()))
           ],
         ),
       ),

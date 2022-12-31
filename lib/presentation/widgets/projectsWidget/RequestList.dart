@@ -29,7 +29,6 @@ class _RequestListState extends State<RequestList> {
   late DatabaseReference _dbref_testReqModel;
   String? phoneNumber;
 
-
   Future<void> getPhoneData() async {
     _onLoading(true);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -88,12 +87,9 @@ class _RequestListState extends State<RequestList> {
               ),
             ),
           );
-
-
         },
       );
-    } 
-    else if (!isClosed && isLoading) {
+    } else if (!isClosed && isLoading) {
       setState(() {
         isLoading = false;
       });
@@ -176,7 +172,7 @@ class _RequestListState extends State<RequestList> {
                                   color: Colors.black,
                                 ),
                                 Container(
-                                  height: DM.screenHeight * 0.65,
+                                  height: DM.screenHeight * 0.60,
                                   child: ListView.builder(
                                     itemCount: testDataEach.length,
                                     itemBuilder: (context, index) {
@@ -207,8 +203,9 @@ class _RequestListState extends State<RequestList> {
                                               ),
                                             ),
                                             Text(
-                                              createRequest_controller.status[testDataEach[index]
-                                                      .teststatus]
+                                              createRequest_controller.status[
+                                                      testDataEach[index]
+                                                          .teststatus]
                                                   .toString(),
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w900,

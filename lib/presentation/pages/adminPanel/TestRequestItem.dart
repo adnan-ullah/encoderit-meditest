@@ -33,6 +33,11 @@ import '../../../responsives/dimensions.dart';
 import '../../../state_programming/Create_Request_Controller.dart';
 import '../../../state_programming/getController.dart';
 import '../../widgets/minorWidgets/PhotoViewImage.dart';
+import '../Invoice_pdf/api/pdf_api.dart';
+import '../Invoice_pdf/api/pdf_invoice_api.dart';
+import '../Invoice_pdf/api/pdf_invoice_no_customer.dart';
+import '../Invoice_pdf/model/customer.dart';
+import '../Invoice_pdf/model/invoice.dart';
 import '../Login_info.dart';
 
 class TestRequestCreate extends StatefulWidget {
@@ -71,6 +76,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
   var comments = new TextEditingController();
   var delivery_date = new TextEditingController();
+
+  var advanced = new TextEditingController();
+  var due_amount = new TextEditingController();
 
   List<TestData> testItemList = [];
 
@@ -155,6 +163,16 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     else
       comments.text = "";
 
+    if (widget.testEachRequest!.advanced != null)
+      advanced.text = widget.testEachRequest!.advanced;
+    else
+      advanced.text = "0";
+
+    if (widget.testEachRequest!.due_amount != null)
+      due_amount.text = widget.testEachRequest!.due_amount;
+    else
+      due_amount.text = totalprice.text.toString();
+
     if (widget.testEachRequest!.testlist != null) {
       widget.testEachRequest!.testlist!.map((e) {
         testData_updated.add(e);
@@ -221,6 +239,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
           : image_two.text.toString(),
       delivery_date: dateTime_delivery,
       comments: comments.text.toString(),
+      advanced: advanced.text.toString(),
+      due_amount: due_amount.text.toString(),
     );
 
     if (updateTestRequestItem != null) {
@@ -280,6 +300,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       totalprice.text = totalCost.toString();
       //totaltestprice.text = totalTestCost.toString();
       servicecharge.text = serviceCost.toString();
+      due_amount.text =
+          (totalCost - int.parse(advanced.text.toString())).toString();
     });
   }
 
@@ -411,14 +433,18 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 width: DM.p10,
                               ),
                               DropdownButton<String>(
-                                hint: Text("$gender"),
+                                hint: Text("$gender",
+                                    style: TextStyle(color: blackFontColor)),
                                 items: <String>[
                                   'Male',
                                   'Female',
                                 ].map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
-                                    child: Text("$value"),
+                                    child: Text(
+                                      "$value",
+                                      style: TextStyle(color: Colors.black),
+                                    ),
                                   );
                                 }).toList(),
                                 onChanged: (newValue) {
@@ -436,7 +462,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           textInputType: TextInputType.number,
                           controller: age,
                           title: "Age",
-                          value: "2",
+                          value: "0",
                           activate: false,
                         ),
                         Padding(
@@ -701,20 +727,6 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                       ),
                                                     ),
                                                   ),
-                                                  IconButton(
-                                                    color: orangeColor,
-                                                    icon: Icon(
-                                                      CupertinoIcons
-                                                          .xmark_circle_fill,
-                                                      size: DM.p30,
-                                                    ),
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        image_one.text =
-                                                            "empty";
-                                                      });
-                                                    },
-                                                  ),
                                                 ],
                                               )
                                             : Container(
@@ -768,20 +780,6 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                         fit: BoxFit.cover,
                                                       ),
                                                     ),
-                                                  ),
-                                                  IconButton(
-                                                    color: orangeColor,
-                                                    icon: Icon(
-                                                      CupertinoIcons
-                                                          .xmark_circle_fill,
-                                                      size: DM.p30,
-                                                    ),
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        image_two.text =
-                                                            "empty";
-                                                      });
-                                                    },
                                                   ),
                                                 ],
                                               )
@@ -1254,6 +1252,79 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           value: "Write yout comments",
                           activate: false,
                         ),
+
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Advanced",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      due_amount.text = (totalCost -
+                                              int.parse(
+                                                  advanced.text.toString()))
+                                          .toString();
+                                    },
+                                    controller: advanced,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        FormUserInfo(
+                          formKey: _formKey,
+                          textInputType: TextInputType.name,
+                          controller: due_amount,
+                          title: "Due Amount",
+                          value: "${totalCost - int.parse(advanced.text)}",
+                          activate: false,
+                        ),
                       ],
                     )),
 
@@ -1335,7 +1406,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                             255, 26, 1, 1)),
                                                   ),
                                                   Text(
-                                                    "Delivery Date: ${delivery_date.text}",
+                                                    "Delivery Date: ${delivery_date.text} 8:00 PM",
                                                     style: TextStyle(
                                                         fontWeight:
                                                             FontWeight.w500,
@@ -1476,6 +1547,24 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                         color: Color.fromARGB(
                                                             255, 26, 1, 1)),
                                                   ),
+                                                  Text(
+                                                    "Advanced: ${advanced.text} /-",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        fontSize: DM.p14,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                  Text(
+                                                    "Due Amount: ${due_amount.text} /-",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        fontSize: DM.p14,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
                                                   Row(
                                                     mainAxisAlignment:
                                                         MainAxisAlignment
@@ -1508,6 +1597,14 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                         onPressed: () async {
                                                           if (await chechkingInternet()) {
                                                             _updateRequest();
+
+                                                            InvoicePrint(
+                                                                updateTestRequestItem,
+                                                                totalDiscount,
+                                                                due_amount,
+                                                                advanced,
+                                                                tubeCost);
+
                                                             Get.back();
                                                           }
                                                         },
@@ -1555,11 +1652,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                     body: Center(
                                       child: Container(
                                           margin: EdgeInsets.all(DM.p10),
-                                          height: DM.p180,
+                                          height: DM.p200,
                                           color: creamColor,
                                           child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.center,
                                             children: [
@@ -1567,7 +1662,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                 padding: EdgeInsets.all(16),
                                                 margin: EdgeInsets.all(16),
                                                 child: Text(
-                                                  "Are you sure?",
+                                                  "Are you want to submit to ${createReqController.status[int.parse(teststatus.text)]}?",
                                                   style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.w400,
@@ -1618,6 +1713,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                 ?.validate() ==
                                                             true) {
                                                           if (await chechkingInternet()) {
+                                                            print("ADNANAAAA");
                                                             _updateRequest();
 
                                                             //cr_controller.filter_testItemList.removeAt(index);
@@ -1739,7 +1835,10 @@ class FormUserInfo extends StatelessWidget {
               height: DM.p42,
               child: TextFormField(
                 validator: validatorField,
-                onEditingComplete: (() {}),
+                onChanged: ((value) {
+                  if (!formKey.currentState?.validate())
+                    formKey.currentState?.validate();
+                }),
                 keyboardType: textInputType,
                 maxLines: null,
                 controller: controller,
@@ -1789,4 +1888,81 @@ String? validateString(String? value) {
     return 'Please fill this form';
   else
     return null;
+}
+
+Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
+    due_amount, advanced, tubeCost) async {
+  final date = DateTime.now().millisecondsSinceEpoch;
+
+  final invoice = Invoice(
+    // supplier: Supplier(
+    //   name: 'Sarah Field',
+    //   address: 'Sarah Street 9, Beijing, China',
+    //   paymentInfo: 'https://paypal.me/sarahfieldzz',
+    // ),
+    customer: Customer(
+        id: testDataRequest.id,
+        invoice_id: testDataRequest.invoice_call,
+        name: testDataRequest.name,
+        address: testDataRequest.address,
+        gender: testDataRequest.gender,
+        referrer: testDataRequest.referrer,
+        age: testDataRequest.age,
+        date: date,
+        totalAmount: testDataRequest.totalprice,
+        advance: advanced.text.toString(),
+        dueAmount: due_amount.text.toString(),
+        totalDiscount: totalDiscount,
+        testItems: testDataRequest.testlist,
+        collection_charge: testDataRequest.servicecharge,
+        tube_cost: tubeCost,
+        deliveryDate: testDataRequest.delivery_date),
+
+    info: InvoiceInfo(
+      date: DateTime.now(),
+      description: 'My description...',
+      number: '${DateTime.now().year}-9999',
+    ),
+
+    items: List.generate(
+        testDataRequest.testlist!.length,
+        (index) => InvoiceItem(
+            testName: testDataRequest.testlist![index].name +
+                " (${testDataRequest.testlist![index].diagnostic_center})",
+            testPrice: testDataRequest.testlist![index].testprice,
+            serialNumber: index + 1))
+
+    // InvoiceItem(
+    //   testName: 'Coffee',
+    //   quantity: 3,
+    //   testPrice: 5.999999,
+    // ),
+    // InvoiceItem(
+    //   testName: 'Water',
+    //   quantity: 8,
+    //   testPrice: 0.99,
+    // ),
+    // InvoiceItem(
+    //   testName: 'Orange',
+    //   quantity: 3,
+    //   testPrice: 2.99,
+    // ),
+    // InvoiceItem(
+    //   testName: 'Apple',
+    //   quantity: 8,
+    //   testPrice: 3.99,
+    // ),
+    // InvoiceItem(
+    //   testName: 'Mango',
+    //   quantity: 1,
+    //   testPrice: 1.59,
+    // ),
+    ,
+  );
+
+  final pdfFile = await PdfInvoiceApi.generate(invoice);
+  final pdfFile2 = await PdfInvoiceApiNoCustomer.generate(invoice);
+
+  PdfApi.openFile(pdfFile);
+  PdfApi.openFile(pdfFile2);
 }

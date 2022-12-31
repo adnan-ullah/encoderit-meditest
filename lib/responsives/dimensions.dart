@@ -8,12 +8,12 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 //Dynamic pixel
 class DM extends GetxController {
   //static double screenHeight =  Get.context!.height ;
-  static double screenHeight = Get.context!.height - 20;
+  static double screenHeight = Get.context!.height - 24;
 
 // ;
 //  static double screenHeight = BoxFit.fitHeight;
 
-  static double screenWidth = Get.context!.width - (20/Get.mediaQuery.devicePixelRatio);
+  static double screenWidth = Get.context!.width;
 
   // static double resLinuxOrAndroid =
   //     Platform.isAndroid == true ? (Get.context!.devicePixelRatio) : 1;
