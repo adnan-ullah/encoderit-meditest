@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
@@ -371,15 +372,90 @@ class _CreateRequestState extends State<CreateRequest> {
                                   value: "Write Your Name",
                                   activate: false,
                                 ),
-                                FormUserInfo(
-                                  formKey: _formKey,
-                                  validatorField: validateAge,
-                                  textInputType: TextInputType.number,
-                                  controller: age,
-                                  title: "Age",
-                                  value: "Write Your Age",
-                                  activate: false,
+
+                                
+                                
+                                Padding(
+                                  padding: EdgeInsets.all(DM.p1),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: DM.p100,
+                                        child: Text(
+                                          "Age",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: DM.p14,
+                                              color: blackFontColor),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: DM.p5,
+                                      ),
+                                      Text(":"),
+                                      SizedBox(
+                                        width: DM.p10,
+                                      ),
+                                      Flexible(
+                                        child: Container(
+                                          child: TextFormField(
+                                            controller: age,
+                                            keyboardType:
+                                                TextInputType.phone,
+                                                inputFormatters: <TextInputFormatter>[
+                                    FilteringTextInputFormatter.digitsOnly
+                                  ],
+                                            maxLines: null,
+                                            // onTap: (() {
+                                            //   showDialog(
+                                            //       context: context,
+                                            //       builder: (context) {
+                                            //         return MyDialogView(
+                                            //             myChild: TextDialogueBox(
+                                            //                 keyTitle:
+                                            //                     "Referrer Info",
+                                            //                 addressText:
+                                            //                     referredAddressText));
+                                            //       });
+                                            // }),
+                                            decoration: InputDecoration(
+                                                errorStyle:
+                                                    TextStyle(fontSize: DM.p9),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                            width: DM.p1,
+                                                            color:
+                                                                orangeColor)),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      width: DM.p1,
+                                                      color:
+                                                          orangeColor), //<-- SEE HERE
+                                                ),
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                contentPadding:
+                                                    EdgeInsets.symmetric(
+                                                        horizontal: DM.p10),
+                                                border: InputBorder.none,
+                                                hintText: "Write Your Age",
+                                                hintStyle: TextStyle(
+                                                  color: Colors.grey,
+                                                  fontSize: DM.p14,
+                                                )),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
+
+
                                 Padding(
                                   padding: EdgeInsets.all(DM.p1),
                                   child: Row(

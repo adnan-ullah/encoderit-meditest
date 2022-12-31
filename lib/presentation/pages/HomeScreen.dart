@@ -112,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: fullWhiteColor,
-                              fontSize: DM.p15,
+                              fontSize: DM.p13,
                               fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -138,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: fullWhiteColor,
-                              fontSize: DM.p15,
+                              fontSize: DM.p13,
                               fontWeight: FontWeight.bold),
                         ),
                       ),

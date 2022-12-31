@@ -288,16 +288,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                           true &&
                                       await chechkingInternet()) {
                                     //admin-app
-                                    // savePhone(phone.text);
-                                    // Get.to(HomeScreen());
-
                                     savePhone(phone.text);
-                                    if (phone.text == "111000222999") {
-                                      savePhone(phone.text);
-                                      Get.to(AdminHome());
-                                    } else {
-                                      Get.to(HomeScreen());
-                                    }
+                                    Get.to(HomeScreen());
+
+                                    // savePhone(phone.text);
+                                    // if (phone.text == "111000222999") {
+                                    //   savePhone(phone.text);
+                                    //   Get.to(AdminHome());
+                                    // } else {
+                                    //   Get.to(HomeScreen());
+                                    // }
 
                                     //client-app please add this
                                     //// inputFormatters: <TextInputFormatter>[
