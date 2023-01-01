@@ -332,26 +332,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     //   Get.to(HomeScreen());
                                     // }
 
-                                    //client-app please add this
-                                    //// inputFormatters: <TextInputFormatter>[
-                                    //   FilteringTextInputFormatter.digitsOnly
-                                    // ],
-
-                                    //   if (!phone.text.contains("*") &&
-                                    //       !phone.text.contains("#")) {
-                                    //     savePhone(phone.text);
-
-                                    //      Get.to(HomeScreen());
-
-                                    //   } else {
-                                    //     Get.snackbar("Number error!",
-                                    //         "Please put a valid number",
-                                    //         margin: EdgeInsets.symmetric(
-                                    //             horizontal: DM.p70,
-                                    //             vertical: DM.p60),
-                                    //         backgroundColor: orangeColor,
-                                    //         colorText: whiteColor);
-                                    //   }
+                                   
                                   }
                                 },
                                 height: DM.p50,
