@@ -108,7 +108,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         shape: const StadiumBorder(),
                         color: orangeColor,
                         child: Text(
-                          "Prescription \nRequest",
+                          // "Prescription \nRequest",
+                          "প্রেসক্রিপশনের \nছবি তুলুন",
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: fullWhiteColor,
@@ -118,8 +119,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: DM.p10,
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: DM.p10),
+                    width: DM.p40,
+                    child: Text(
+                      "অথবা",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: DM.p13,
+                          color: Color.fromARGB(255, 26, 1, 1)),
+                    ),
                   ),
                   Expanded(
                     child: SizedBox(
@@ -134,7 +143,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         shape: const StadiumBorder(),
                         color: orangeColor,
                         child: Text(
-                          "Request \nForm",
+                          //"Request \nForm",
+                          "ফরম পূরণ \nকরুন",
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: fullWhiteColor,

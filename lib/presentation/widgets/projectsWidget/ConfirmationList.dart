@@ -210,7 +210,7 @@ class _ConfirmationListState extends State<ConfirmationList> {
                         shape: const StadiumBorder(),
                         color: orangeColor,
                         child: Text(
-                          "Confirm",
+                          "কনফার্ম",
                           style: TextStyle(
                               color: fullWhiteColor,
                               fontSize: DM.p15,

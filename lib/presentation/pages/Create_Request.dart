@@ -368,7 +368,8 @@ class _CreateRequestState extends State<CreateRequest> {
                                   validatorField: validateName,
                                   textInputType: TextInputType.name,
                                   controller: name,
-                                  title: "Patient Name",
+                                  title: "Patient Name (রোগীর নাম)",
+                                  // title: "Patient Name",
                                   value: "Write Your Name",
                                   activate: false,
                                 ),
@@ -385,7 +386,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                       SizedBox(
                                         width: DM.p100,
                                         child: Text(
-                                          "Age",
+                                          "Age (বয়স)",
                                           style: TextStyle(
                                               fontWeight: FontWeight.w500,
                                               fontSize: DM.p14,
@@ -964,7 +965,8 @@ class _CreateRequestState extends State<CreateRequest> {
                                       shape: const StadiumBorder(),
                                       color: orangeColor,
                                       child: Text(
-                                        "Submit",
+                                        // "Submit",
+                                        "সাবমিট",
                                         style: TextStyle(
                                             color: fullWhiteColor,
                                             fontSize: DM.p15,

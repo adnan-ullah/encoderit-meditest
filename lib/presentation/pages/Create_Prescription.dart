@@ -667,7 +667,8 @@ class _PrescriptionState extends State<Prescription> {
                                 shape: const StadiumBorder(),
                                 color: orangeColor,
                                 child: Text(
-                                  "Submit",
+                                  // "Submit",
+                                  "সাবমিট",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       color: fullWhiteColor,
