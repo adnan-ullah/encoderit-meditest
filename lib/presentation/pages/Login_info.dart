@@ -37,20 +37,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
   var type = "1";
 
-  Future<void> getAdminUserList() async {
-    late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("meditest/admin_user/");
-    FirebaseDatabase.instance.setPersistenceEnabled(true);
-    DbrefTestModel.keepSynced(true);
+  // Future<void> getAdminUserList() async {
+  //   late DatabaseReference DbrefTestModel;
+  //   DbrefTestModel = FirebaseDatabase.instance.ref("meditest/admin_user/");
+  //   FirebaseDatabase.instance.setPersistenceEnabled(true);
+  //   DbrefTestModel.keepSynced(true);
 
-    DbrefTestModel.onValue.listen((event) {
-      for (DataSnapshot ds in event.snapshot.children) {
-        AdminUserModel testData =
-            AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
-        adminUserList.add(testData);
-      }
-    });
-  }
+  //   DbrefTestModel.onValue.listen((event) {
+  //     for (DataSnapshot ds in event.snapshot.children) {
+  //       AdminUserModel testData =
+  //           AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
+  //       adminUserList.add(testData);
+  //     }
+  //   });
+  // }
 
   bool checkUser(phone) {
     bool returnType = false;
