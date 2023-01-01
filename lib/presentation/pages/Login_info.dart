@@ -33,6 +33,38 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  List<AdminUserModel> adminUserList = [];
+
+  var type = "1";
+
+  Future<void> getAdminUserList() async {
+    late DatabaseReference DbrefTestModel;
+    DbrefTestModel = FirebaseDatabase.instance.ref("meditest/admin_user/");
+    FirebaseDatabase.instance.setPersistenceEnabled(true);
+    DbrefTestModel.keepSynced(true);
+
+    DbrefTestModel.onValue.listen((event) {
+      for (DataSnapshot ds in event.snapshot.children) {
+        AdminUserModel testData =
+            AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
+        adminUserList.add(testData);
+      }
+    });
+  }
+
+  bool checkUser(phone) {
+    bool returnType = false;
+    adminUserList.map((e) {
+      if (e.phone.toString()==(phone.toString()) &&
+          e.active.toString()=="1") {
+        type = e.type;
+        returnType = true;
+      }
+    }).toList();
+
+    return returnType;
+  }
+
   CreateRequest_controller createReqController =
       Get.put(CreateRequest_controller());
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -143,6 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void initState() {
+    getAdminUserList();
     updateCheck();
     getPhoneNumber();
 
@@ -199,7 +232,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     fontSize: DM.p30,
                                     color: orangeColor),
                               ),
-                              
                             ],
                           ),
                         ),
@@ -288,16 +320,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                           true &&
                                       await chechkingInternet()) {
                                     //admin-app
-                                    savePhone(phone.text);
-                                    Get.to(HomeScreen());
-
                                     // savePhone(phone.text);
-                                    // if (phone.text == "111000222999") {
-                                    //   savePhone(phone.text);
-                                    //   Get.to(AdminHome());
-                                    // } else {
-                                    //   Get.to(HomeScreen());
-                                    // }
+                                    // Get.to(HomeScreen());
+
+                                    savePhone(phone.text);
+                                    if (phone.text == "111000222999" ||
+                                        checkUser(phone.text) == true) {
+                                      savePhone(phone.text);
+                                      Get.to(AdminHome());
+                                    } else {
+                                      Get.to(HomeScreen());
+                                    }
 
                                     //client-app please add this
                                     //// inputFormatters: <TextInputFormatter>[
@@ -353,6 +386,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> savePhone(phoneNumber) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("type", type.toString());
     prefs.setString('phoneNumber', phoneNumber);
   }
 }

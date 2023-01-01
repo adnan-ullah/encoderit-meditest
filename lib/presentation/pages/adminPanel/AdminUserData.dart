@@ -27,29 +27,25 @@ import '../../../state_programming/Create_Request_Controller.dart';
 import '../../../state_programming/getController.dart';
 import '../Login_info.dart';
 
-class TestDataCreate extends StatefulWidget {
+class AdminUserData extends StatefulWidget {
   // static const String id = "sign_up_page";
-  TestData? testItem;
-  TestDataCreate({Key? key, this.testItem}) : super(key: key);
+  AdminUserModel? testItem;
+  AdminUserData({Key? key, this.testItem}) : super(key: key);
 
   @override
-  _TestDataCreateState createState() => _TestDataCreateState();
+  _AdminUserDataState createState() => _AdminUserDataState();
 }
 
-class _TestDataCreateState extends State<TestDataCreate> {
+class _AdminUserDataState extends State<AdminUserData> {
   var updatedTestItemData;
   var inserNewTestItem;
 
   Future<void> updateTestItem() async {
     name.text = widget.testItem!.name;
-    servicecharge.text = widget.testItem!.servicecharge.toString();
-    softdelete.text = widget.testItem!.softdelete.toString();
-    diagnostic_center.text = widget.testItem!.diagnostic_center.toString();
-    discount.text = widget.testItem!.discount.toString();
-    niddle_cost.text = widget.testItem!.niddle_cost.toString();
-    testkitprice.text = widget.testItem!.testkitprice.toString();
-    testprice.text = widget.testItem!.testprice.toString();
-    transport_cost.text = widget.testItem!.transport_cost.toString();
+    active.text = widget.testItem!.active.toString();
+    password.text = widget.testItem!.password.toString();
+    phone.text = widget.testItem!.phone.toString();
+    type.text = widget.testItem!.type.toString();
   }
 
   Future<void> updateToFirebase() async {
@@ -57,24 +53,18 @@ class _TestDataCreateState extends State<TestDataCreate> {
     late DatabaseReference dbrefTestReqModel;
     dbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
 
-    updatedTestItemData = TestData(
-      id: widget.testItem!.id.toString(),
+    updatedTestItemData = AdminUserModel(
       name: name.text.toString(),
-      servicecharge: servicecharge.text.toString(),
-      lastupdate: currentTime.toString(),
-      softdelete: softdelete.text.toString(),
-      diagnostic_center: diagnostic_center.text.toString(),
-      discount: discount.text.toString(),
-      niddle_cost: niddle_cost.text.toString(),
-      testkitprice: testkitprice.text.toString(),
-      testprice: testprice.text.toString(),
-      transport_cost: transport_cost.text.toString(),
+      active: active.text.toString(),
+      password: password.text.toString(),
+      phone: phone.text.toString(),
+      type: type.text.toString(),
     );
 
     if (updatedTestItemData != null) {
       await dbrefTestReqModel
-          .child("testModel")
-          .child(updatedTestItemData.id)
+          .child("admin_user")
+          .child(updatedTestItemData.phone)
           .update(jsonDecode(jsonEncode(updatedTestItemData)));
     }
   }
@@ -84,23 +74,17 @@ class _TestDataCreateState extends State<TestDataCreate> {
     DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
 
-    inserNewTestItem = TestData(
-      id: Uuid().v4(),
-      name: name.text,
-      servicecharge: servicecharge.text,
-      lastupdate: currentTime,
-      softdelete: softdelete.text,
-      diagnostic_center: diagnostic_center.text,
-      discount: discount.text,
-      niddle_cost: niddle_cost.text,
-      testkitprice: testkitprice.text,
-      testprice: testprice.text,
-      transport_cost: transport_cost.text,
+    inserNewTestItem = AdminUserModel(
+      name: name.text.toString(),
+      active: active.text.toString(),
+      password: password.text.toString(),
+      phone: phone.text.toString(),
+      type: type.text.toString(),
     );
     if (inserNewTestItem != null) {
       await _dbref_testReqModel
-          .child("testModel")
-          .child(inserNewTestItem.id)
+          .child("admin_user")
+          .child(inserNewTestItem.phone)
           .set(inserNewTestItem.toJson());
     }
   }
@@ -123,14 +107,11 @@ class _TestDataCreateState extends State<TestDataCreate> {
   String? longitude;
 
   var name = new TextEditingController();
-  var diagnostic_center = new TextEditingController();
-  var testkitprice = TextEditingController();
-  var softdelete = TextEditingController();
-  var transport_cost = TextEditingController();
-  var niddle_cost = new TextEditingController();
-  var servicecharge = TextEditingController();
-  var discount = TextEditingController();
-  var testprice = TextEditingController();
+  var active = new TextEditingController();
+  var password = TextEditingController();
+  var phone = TextEditingController();
+  var type = TextEditingController();
+
   //form variables:
 
   var newTestListData;
@@ -148,7 +129,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
           width: DM.screenWidth,
           child: Text(
-            "Test Item form",
+            "Admin User form",
             textAlign: TextAlign.left,
             style: TextStyle(color: creamColor, fontSize: DM.p30),
           ),
@@ -186,79 +167,43 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           textInputType: TextInputType.name,
                           controller: name,
                           title: "Name",
-                          value: "Write your name",
+                          value: "Write user name",
                           activate: false,
                         ),
                         FormUserInfo(
                           formKey: _formKey,
-                          validatorField: validateName,
+                          validatorField: validateMobile,
+                          textInputType: TextInputType.number,
+                          controller: phone,
+                          title: "Phone",
+                          value: "Write user phone",
+                          activate: false,
+                        ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          validatorField: validateNumber,
+                          textInputType: TextInputType.number,
+                          controller: active,
+                          title: "Active",
+                          value: "1",
+                          activate: false,
+                        ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          validatorField: validateString,
                           textInputType: TextInputType.name,
-                          controller: diagnostic_center,
-                          title: "Diagnostic center",
-                          value: "Write Diagnostic Name",
+                          controller: password,
+                          title: "Password",
+                          value: "Password",
                           activate: false,
                         ),
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateNumber,
                           textInputType: TextInputType.number,
-                          controller: servicecharge,
-                          title: "Collection charge",
-                          value: "20",
-                          activate: false,
-                        ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateNumber,
-                          textInputType: TextInputType.number,
-                          controller: discount,
-                          title: "Discount",
-                          value: "15",
-                          activate: false,
-                        ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateNumber,
-                          textInputType: TextInputType.number,
-                          controller: niddle_cost,
-                          title: "Niddle Cost",
-                          value: "10",
-                          activate: false,
-                        ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateNumber,
-                          textInputType: TextInputType.number,
-                          controller: transport_cost,
-                          title: "Transport cost",
-                          value: "50",
-                          activate: false,
-                        ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateNumber,
-                          textInputType: TextInputType.number,
-                          controller: testkitprice,
-                          title: "Tube Cost",
-                          value: "70",
-                          activate: false,
-                        ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateNumber,
-                          textInputType: TextInputType.number,
-                          controller: testprice,
-                          title: "Testprice",
-                          value: "70",
-                          activate: false,
-                        ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateNumber,
-                          textInputType: TextInputType.number,
-                          controller: softdelete,
-                          title: "Softdelete",
-                          value: "0",
+                          controller: type,
+                          title: "Type",
+                          value: "1",
                           activate: false,
                         ),
                       ],
@@ -372,7 +317,10 @@ class FormUserInfo extends StatelessWidget {
                 keyboardType: textInputType,
                 maxLines: null,
                 validator: validatorField,
-                onEditingComplete: (() {}),
+                onChanged: ((value) {
+                  if (!formKey.currentState?.validate())
+                    formKey.currentState?.validate();
+                }),
                 controller: controller,
                 readOnly: activate,
                 decoration: InputDecoration(
@@ -409,8 +357,8 @@ class FormUserInfo extends StatelessWidget {
 }
 
 String? validateMobile(String? value) {
-  if (value?.length != 11)
-    return 'Mobile Number must be of 11 digits';
+  if (value?.length != 11 && value?.length != 12)
+    return 'Mobile Number must be of 11 and 12 digits';
   else
     return null;
 }
@@ -429,9 +377,9 @@ String? validateString(String? value) {
 //     return null;
 // }
 
-String?  validateNumber(String? value) {
- if (value?.length  == 0 || (double.tryParse(value!) == null)) {
+String? validateNumber(String? value) {
+  if (value?.length == 0 || (double.tryParse(value!) == null)) {
     return 'Please fill numbers only';
- }
- return null;
+  }
+  return null;
 }

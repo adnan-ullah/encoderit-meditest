@@ -171,3 +171,36 @@ class TestDataRequest {
     );
   }
 }
+
+class AdminUserModel {
+  AdminUserModel({
+    required this.name,
+    required this.phone,
+    required this.password,
+    required this.active,
+    required this.type,
+  });
+
+  final dynamic name;
+  final dynamic phone;
+  final dynamic password;
+  final dynamic active;
+  final dynamic type;
+
+  Map toJson() => {
+        'name': name,
+        'phone': phone,
+        'password': password,
+        'active': active,
+        'type': type,
+      };
+
+  factory AdminUserModel.fromJson(Map<String, dynamic> parsedJson) {
+    return AdminUserModel(
+        name: parsedJson['name'],
+        phone: parsedJson['phone'],
+        password: parsedJson['password'],
+        active: parsedJson['active'],
+        type: parsedJson['type']);
+  }
+}

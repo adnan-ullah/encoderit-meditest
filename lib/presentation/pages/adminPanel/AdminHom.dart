@@ -11,11 +11,13 @@ import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
+import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminUser.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/StatusRequestList.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../constants/app_info.dart';
 import '../../../responsives/dimensions.dart';
@@ -121,8 +123,16 @@ class _AdminHomeState extends State<AdminHome> {
                                       borderRadius:
                                           BorderRadius.circular(DM.p10)),
                                   primary: orangeColor),
-                              onPressed: () {
-                                Get.to(TestItemList());
+                              onPressed: () async {
+                                SharedPreferences ref =
+                                    await SharedPreferences.getInstance();
+                                var type = ref.getString("type");
+
+                                var phone = ref.getString("phoneNumber");
+                                if (phone!.contains("111000222999") ||
+                                    (type != null && type!.contains("7"))) {
+                                  Get.to(TestItemList());
+                                }
                               },
                               child: Text(
                                 "Test Item",
@@ -152,6 +162,45 @@ class _AdminHomeState extends State<AdminHome> {
                               },
                               child: Text(
                                 "Test Request",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: fullWhiteColor,
+                                    fontSize: DM.p15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            height: DM.p180,
+                            width: DM.screenWidth * 0.4,
+                            margin: EdgeInsets.symmetric(
+                                vertical: DM.p25, horizontal: DM.p10),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: DM.p30, vertical: DM.p20),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(DM.p10)),
+                                  primary: orangeColor),
+                              onPressed: () async {
+                                SharedPreferences ref =
+                                    await SharedPreferences.getInstance();
+
+                                var phone = ref.getString("phoneNumber");
+                                if (phone!.contains("111000222999")) {
+                                  Get.to(AdminUser());
+                                }
+                              },
+                              child: Text(
+                                "Admin User",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: fullWhiteColor,
