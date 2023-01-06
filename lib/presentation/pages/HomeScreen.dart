@@ -42,8 +42,14 @@ class _HomeScreenState extends State<HomeScreen> {
   CreateRequest_controller createReqController =
       Get.put(CreateRequest_controller());
 
+  Future<void> resetSharedData() async {
+    SharedPreferences refs = await SharedPreferences.getInstance();
+    refs.setString("type", "0");
+  }
+
   @override
   void initState() {
+    resetSharedData();
     super.initState();
   }
 

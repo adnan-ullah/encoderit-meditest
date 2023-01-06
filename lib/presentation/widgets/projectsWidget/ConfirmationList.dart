@@ -10,6 +10,7 @@ import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../responsives/dimensions.dart';
 import '../../pages/Login_info.dart';
@@ -202,6 +203,11 @@ class _ConfirmationListState extends State<ConfirmationList> {
                         onPressed: () async {
                           if (await chechkingInternet()) {
                             widget.addTestRequest();
+                              final SharedPreferences prefs = await SharedPreferences.getInstance();
+                            var type = prefs.getString("type");
+                            getAdminNotification(
+                                widget.newRequestData.mobile.toString(),type,
+                                context);
                             Get.back();
                           }
                         },

@@ -14,7 +14,10 @@ import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/NotificationServices.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../constants/app_info.dart';
 import '../../../responsives/dimensions.dart';
@@ -90,8 +93,50 @@ class _StatusRequestListState extends State<StatusRequestList>
     }
   }
 
+  dynamic status1, status2, status3;
+  late DatabaseReference _dbref_testReqModel;
+  Future<void> _getNotification(context) async {
+    _dbref_testReqModel =
+        await FirebaseDatabase.instance.ref("meditest/testRequest/");
+
+    status1 = _dbref_testReqModel.onValue.listen((event) async {
+      SharedPreferences refs = await SharedPreferences.getInstance();
+      var phoneNumber = refs.getString("phoneNumber");
+      var type_admin = refs.getString("type");
+      getAdminNotification(phoneNumber, type_admin, context);
+    });
+
+    status2 = _dbref_testReqModel.onChildAdded.listen((event) async {
+      SharedPreferences refs = await SharedPreferences.getInstance();
+      var phoneNumber = refs.getString("phoneNumber");
+      var type_admin = refs.getString("type");
+      getAdminNotification(phoneNumber, type_admin, context);
+    });
+
+    status3 = _dbref_testReqModel.onChildRemoved.listen((event) async {
+      SharedPreferences refs = await SharedPreferences.getInstance();
+      var phoneNumber = refs.getString("phoneNumber");
+      var type_admin = refs.getString("type");
+      getAdminNotification(phoneNumber, type_admin, context);
+    });
+  }
+
+  @override
+  void dispose() {
+  
+    status1?.cancel();
+    status2?.cancel();
+    status3?.cancel();
+    // TODO: implement dispose
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    setState(() {
+      _getNotification(context);
+    });
+
     return Scaffold(
       backgroundColor: creamColor,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
@@ -240,5 +285,26 @@ Future<void> populateAllRequest() async {
 
     // print(testData.name);
     // }
+  });
+}
+
+Future<void> getAdminNotification(phone, type, context) async {
+  late DatabaseReference DbrefTestModel;
+  DbrefTestModel = FirebaseDatabase.instance.ref("meditest/admin_user/");
+  FirebaseDatabase.instance.setPersistenceEnabled(true);
+  DbrefTestModel.keepSynced(true);
+
+  DbrefTestModel.onValue.listen((event) async {
+    for (DataSnapshot ds in event.snapshot.children) {
+      AdminUserModel testData =
+          AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
+
+      if (testData.phone == phone || phone == "111000222999") {
+        if (type == "1" || type == "7" || phone == "111000222999") {
+          createPlantFoodNotification();
+          showNotification(context);
+        }
+      }
+    }
   });
 }

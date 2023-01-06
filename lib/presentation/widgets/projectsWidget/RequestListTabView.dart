@@ -10,6 +10,8 @@ import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/NotificationServices.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -82,27 +84,35 @@ class _RequestListTabViewState extends State<RequestListTabView> {
     DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
     TestDataRequest updateTestRequestItem;
     updateTestRequestItem = TestDataRequest(
-        id: requestItem.id,
-        name: requestItem.name,
-        gender: requestItem.gender,
-        mobile: requestItem.mobile,
-        age: requestItem.age,
-        testlist: requestItem.testlist,
-        totalprice: requestItem.totalprice,
-        servicecharge: requestItem.servicecharge,
-        address: requestItem.address,
-        referrer: requestItem.referrer,
-        lastupdate: currentTime,
-        dateofcreated: requestItem.dateofcreated,
-        softdelete: 0,
-        latitude: requestItem.latitude,
-        longitude: requestItem.longitude,
-        teststatus: requestItem.teststatus + 1,
-        invoice_call: requestItem.invoice_call,
-        type: requestItem.type,
-        image_one: requestItem.image_one,
-        image_two: requestItem.image_two,
-        comments: requestItem.comments);
+      id: requestItem.id,
+      name: requestItem.name,
+      gender: requestItem.gender,
+      mobile: requestItem.mobile,
+      age: requestItem.age,
+      testlist: requestItem.testlist,
+      totalprice: requestItem.totalprice,
+      servicecharge: requestItem.servicecharge,
+      address: requestItem.address,
+      referrer: requestItem.referrer,
+      lastupdate: currentTime,
+      dateofcreated: requestItem.dateofcreated,
+      softdelete: 0,
+      latitude: requestItem.latitude,
+      longitude: requestItem.longitude,
+      teststatus: requestItem.teststatus + 1,
+      invoice_call: requestItem.invoice_call,
+      type: requestItem.type,
+      image_one: requestItem.image_one,
+      image_two: requestItem.image_two,
+      comments: requestItem.comments,
+      advanced: requestItem.advanced,
+      due_amount: requestItem.due_amount,
+      admin_discount: requestItem.admin_discount,
+      agent_discount: requestItem.agent_discount,
+      test_item_cost: requestItem.test_item_cost,
+      test_item_discount: requestItem.test_item_discount,
+      total_discount: requestItem.total_discount,
+    );
 
     if (updateTestRequestItem != null) {
       await DbrefTestReqModel.child("testRequest")
@@ -112,13 +122,15 @@ class _RequestListTabViewState extends State<RequestListTabView> {
     }
   }
 
-  Future<void> getStatusData() async {
+  Future<void> getStatusData(context) async {
     _onLoading(true);
     late DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel =
         await FirebaseDatabase.instance.ref("meditest/testRequest/");
 
-    _dbref_testReqModel.onValue.listen((event) {
+  
+
+    _dbref_testReqModel.onValue.listen((event) async {
       _newTestRequestList.clear();
       testStatusRequestList.clear();
 
@@ -150,26 +162,24 @@ class _RequestListTabViewState extends State<RequestListTabView> {
     });
   }
 
- Future getStoragePermission() async {
-  PermissionStatus status = await Permission.storage.request();
-  //PermissionStatus status1 = await Permission.accessMediaLocation.request();
-  PermissionStatus status2 = await Permission.manageExternalStorage.request();
-  print('status $status   -> $status2');
-  if (status.isGranted && status2.isGranted) {
-    return true;
-  } else if (status.isPermanentlyDenied || status2.isPermanentlyDenied) {
-    await openAppSettings();
-  } else if (status.isDenied) {
-    print('Permission Denied');
+  Future getStoragePermission() async {
+    PermissionStatus status = await Permission.storage.request();
+    //PermissionStatus status1 = await Permission.accessMediaLocation.request();
+    PermissionStatus status2 = await Permission.manageExternalStorage.request();
+    print('status $status   -> $status2');
+    if (status.isGranted && status2.isGranted) {
+      return true;
+    } else if (status.isPermanentlyDenied || status2.isPermanentlyDenied) {
+      await openAppSettings();
+    } else if (status.isDenied) {
+      print('Permission Denied');
+    }
   }
-}
 
   @override
   void initState() {
     Future.delayed(Duration.zero, () {
-
-      
-      this.getStatusData();
+      this.getStatusData(context);
     });
     // TODO: implement initState
     super.initState();
@@ -355,4 +365,25 @@ class _RequestListTabViewState extends State<RequestListTabView> {
 
   //Return String
 
+}
+
+Future<void> getAdminNotification(phone, type, context) async {
+  late DatabaseReference DbrefTestModel;
+  DbrefTestModel = FirebaseDatabase.instance.ref("meditest/admin_user/");
+  FirebaseDatabase.instance.setPersistenceEnabled(true);
+  DbrefTestModel.keepSynced(true);
+
+  DbrefTestModel.onValue.listen((event) async {
+    for (DataSnapshot ds in event.snapshot.children) {
+      AdminUserModel testData =
+          AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
+
+      if (testData.phone == phone || phone == "111000222999") {
+        if (type == "1" || type == "7" || phone == "111000222999") {
+          createPlantFoodNotification();
+          showNotification(context);
+        }
+      }
+    }
+  });
 }

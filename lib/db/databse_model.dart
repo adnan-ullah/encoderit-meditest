@@ -81,7 +81,11 @@ class TestDataRequest {
       this.delivery_date,
       this.advanced,
       this.due_amount,
-      this.admin_discount});
+      this.admin_discount,
+      this.agent_discount,
+      this.total_discount,
+      this.test_item_cost,
+      this.test_item_discount});
 
   final dynamic id;
   final dynamic name;
@@ -108,6 +112,11 @@ class TestDataRequest {
   final dynamic advanced;
   final dynamic due_amount;
   final dynamic admin_discount;
+  final dynamic agent_discount;
+
+  final dynamic total_discount;
+  final dynamic test_item_cost;
+  final dynamic test_item_discount;
 
   Map toJson() => {
         'id': id,
@@ -135,6 +144,10 @@ class TestDataRequest {
         'advanced': advanced,
         'due_amount': due_amount,
         'admin_discount': admin_discount,
+        'agent_discount': agent_discount,
+        'total_discount': total_discount,
+        'test_item_cost': test_item_cost,
+         'test_item_discount': test_item_discount,
       };
 
   factory TestDataRequest.fromJson(Map<String, dynamic> parsedJson) {
@@ -168,6 +181,10 @@ class TestDataRequest {
       advanced: parsedJson['advanced'],
       due_amount: parsedJson['due_amount'],
       admin_discount: parsedJson['admin_discount'],
+      agent_discount: parsedJson['agent_discount'],
+      total_discount: parsedJson['total_discount'],
+      test_item_cost: parsedJson['test_item_cost'],
+        test_item_discount: parsedJson['test_item_discount'],
     );
   }
 }
@@ -179,6 +196,9 @@ class AdminUserModel {
     required this.password,
     required this.active,
     required this.type,
+    required this.referrer_code,
+    required this.commission,
+    required this.address,
   });
 
   final dynamic name;
@@ -186,6 +206,9 @@ class AdminUserModel {
   final dynamic password;
   final dynamic active;
   final dynamic type;
+  final dynamic address;
+  final dynamic referrer_code;
+  final dynamic commission;
 
   Map toJson() => {
         'name': name,
@@ -193,6 +216,9 @@ class AdminUserModel {
         'password': password,
         'active': active,
         'type': type,
+        'referrer_code': referrer_code,
+        'commision': commission,
+        'address': address,
       };
 
   factory AdminUserModel.fromJson(Map<String, dynamic> parsedJson) {
@@ -201,6 +227,9 @@ class AdminUserModel {
         phone: parsedJson['phone'],
         password: parsedJson['password'],
         active: parsedJson['active'],
-        type: parsedJson['type']);
+        type: parsedJson['type'],
+        referrer_code: parsedJson['referrer_code'],
+        commission: parsedJson['commision'],
+        address: parsedJson['address']);
   }
 }

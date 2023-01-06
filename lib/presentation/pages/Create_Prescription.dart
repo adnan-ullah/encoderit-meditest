@@ -13,6 +13,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
+import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
 import 'package:healthcare_homelab/presentation/pages/Template.dart';
 import 'package:image_picker/image_picker.dart';
@@ -90,7 +91,7 @@ class _PrescriptionState extends State<Prescription> {
 
       //  _onLoading(true);
       Get.snackbar(
-          margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
+          margin: EdgeInsets.symmetric(horizontal: DM.p70,  vertical: DM.p120),
           duration: Duration(milliseconds: 2000),
           backgroundColor: limeBGColor,
           colorText: whiteColor,
@@ -99,7 +100,7 @@ class _PrescriptionState extends State<Prescription> {
     } else {
       //_onLoading(true);
       Get.snackbar(
-          margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
+          margin: EdgeInsets.symmetric(horizontal: DM.p70,  vertical: DM.p120),
           duration: Duration(milliseconds: 2000),
           backgroundColor: redColor,
           colorText: whiteColor,
@@ -170,6 +171,9 @@ class _PrescriptionState extends State<Prescription> {
     }
 
     addImages(urlDownload1, urlDownload2);
+      
+   
+
     Get.back();
     _onLoading(false);
   }
@@ -649,6 +653,9 @@ class _PrescriptionState extends State<Prescription> {
                                     if (imageFile1 != null ||
                                         imageFile2 != null) {
                                       uploadImage();
+
+                                       
+
                                     } else {
                                       Get.snackbar(
                                           margin: EdgeInsets.symmetric(

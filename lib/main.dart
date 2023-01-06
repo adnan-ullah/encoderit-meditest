@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +32,21 @@ import 'package:device_preview/device_preview.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  AwesomeNotifications().initialize(
+  'resource://drawable/new_plus',
+  [
+    NotificationChannel(
+      channelKey: 'basic_channel',
+      channelName: 'Basic Notifications',
+      defaultColor: Color.fromARGB(255, 2, 39, 35),
+      importance: NotificationImportance.High,
+      channelShowBadge: true,  
+    ),
+  ],
+);
+
+ 
   await Firebase.initializeApp();
   runApp(MyApp());
 }

@@ -5,6 +5,8 @@ import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminHom.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/NotificationServices.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sizer/sizer.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -36,6 +38,9 @@ class _LoginScreenState extends State<LoginScreen> {
   List<AdminUserModel> adminUserList = [];
 
   var type = "1";
+  var commission = "0";
+  var referrer_code = "0";
+  var admin_password ;
 
   Future<void> getAdminUserList() async {
     late DatabaseReference DbrefTestModel;
@@ -55,9 +60,12 @@ class _LoginScreenState extends State<LoginScreen> {
   bool checkUser(phone) {
     bool returnType = false;
     adminUserList.map((e) {
-      if (e.phone.toString()==(phone.toString()) &&
-          e.active.toString()=="1") {
+      if (e.phone.toString() == (phone.toString()) &&
+          e.active.toString() == "1") {
         type = e.type;
+        commission = e.commission;
+        referrer_code = e.referrer_code;
+        admin_password = e.password;
         returnType = true;
       }
     }).toList();
@@ -70,6 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   var phone = TextEditingController();
+  var password = TextEditingController();
 
   Future<void> getPhoneNumber() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -175,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void initState() {
-    //getAdminUserList();
+    getAdminUserList();
     updateCheck();
     getPhoneNumber();
 
@@ -237,74 +246,148 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
 
-                      Padding(
-                        padding: EdgeInsets.all(DM.p40),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: DM.p70,
-                              child: Text(
-                                "Phone",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: DM.p14,
-                                    color: blackFontColor),
-                              ),
-                            ),
-                            SizedBox(
-                              width: DM.p5,
-                            ),
-                            Text(":"),
-                            SizedBox(
-                              width: DM.p10,
-                            ),
-                            Flexible(
-                              child: Container(
-                                height: DM.p50,
-                                child: TextFormField(
-                                  keyboardType: TextInputType.phone,
-                                  controller: phone,
-                                  inputFormatters: <TextInputFormatter>[
-                                    FilteringTextInputFormatter.digitsOnly
-                                  ],
-                                  validator: validateMobile,
-                                  onChanged: ((value) {
-                                    _formKey.currentState?.validate();
-                                  }),
-                                  decoration: InputDecoration(
-                                      errorStyle: TextStyle(fontSize: DM.p9),
-
-                                      // focusedErrorBorder:
-                                      //     OutlineInputBorder(
-                                      //         borderSide: BorderSide(
-                                      //             width: DM.p1,
-                                      //             color:
-                                      //                 orangeColor)),
-                                      focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              width: DM.p1,
-                                              color: orangeColor)),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            width: DM.p1,
-                                            color: orangeColor), //<-- SEE HERE
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      border: InputBorder.none,
-                                      hintText: "Ex: 01888888888",
-                                      hintStyle: TextStyle(
-                                        color: Colors.grey,
+                      Container(
+                          child: Column(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.all(DM.p10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: DM.p70,
+                                  child: Text(
+                                    "Phone",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w500,
                                         fontSize: DM.p14,
-                                      )),
+                                        color: blackFontColor),
+                                  ),
                                 ),
-                              ),
+                                SizedBox(
+                                  width: DM.p5,
+                                ),
+                                Text(":"),
+                                SizedBox(
+                                  width: DM.p10,
+                                ),
+                                Flexible(
+                                  child: Container(
+                                    height: DM.p50,
+                                    child: TextFormField(
+                                      keyboardType: TextInputType.phone,
+                                      controller: phone,
+                                      inputFormatters: <TextInputFormatter>[
+                                        FilteringTextInputFormatter.digitsOnly
+                                      ],
+                                      validator: validateMobile,
+                                      onChanged: ((value) {
+                                        _formKey.currentState?.validate();
+                                      }),
+                                      decoration: InputDecoration(
+                                          errorStyle:
+                                              TextStyle(fontSize: DM.p9),
+
+                                          // focusedErrorBorder:
+                                          //     OutlineInputBorder(
+                                          //         borderSide: BorderSide(
+                                          //             width: DM.p1,
+                                          //             color:
+                                          //                 orangeColor)),
+                                          focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  width: DM.p1,
+                                                  color: orangeColor)),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color:
+                                                    orangeColor), //<-- SEE HERE
+                                          ),
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          border: InputBorder.none,
+                                          hintText: "Ex: 01888888888",
+                                          hintStyle: TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: DM.p14,
+                                          )),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(DM.p10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: DM.p70,
+                                  child: Text(
+                                    "Password",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: DM.p14,
+                                        color: blackFontColor),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: DM.p5,
+                                ),
+                                Text(":"),
+                                SizedBox(
+                                  width: DM.p10,
+                                ),
+                                Flexible(
+                                  child: Container(
+                                    height: DM.p50,
+                                    child: TextFormField(
+                                      keyboardType: TextInputType.name,
+                                      controller: password,
+                                      obscureText: true,
+                                    
+                                     
+                                      decoration: InputDecoration(
+                                          errorStyle:
+                                              TextStyle(fontSize: DM.p9),
+
+                                          // focusedErrorBorder:
+                                          //     OutlineInputBorder(
+                                          //         borderSide: BorderSide(
+                                          //             width: DM.p1,
+                                          //             color:
+                                          //                 orangeColor)),
+                                          focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  width: DM.p1,
+                                                  color: orangeColor)),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color:
+                                                    orangeColor), //<-- SEE HERE
+                                          ),
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          border: InputBorder.none,
+                                          hintText: "Password",
+                                          hintStyle: TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: DM.p14,
+                                          )),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )),
+
                       Container(
                         margin: EdgeInsets.symmetric(
                             horizontal: DM.p20, vertical: DM.p24),
@@ -319,39 +402,34 @@ class _LoginScreenState extends State<LoginScreen> {
                                   if (_formKey.currentState?.validate() ==
                                           true &&
                                       await chechkingInternet()) {
-                                    //admin-app
-                                    savePhone(phone.text);
-                                    Get.to(HomeScreen());
-
+                                    //client-app
                                     // savePhone(phone.text);
-                                    // if (phone.text == "111000222999" ||
-                                    //     checkUser(phone.text) == true) {
-                                    //   savePhone(phone.text);
-                                    //   Get.to(AdminHome());
-                                    // } else {
-                                    //   Get.to(HomeScreen());
-                                    // }
+                                    // Get.to(HomeScreen());
 
-                                    //client-app please add this
-                                    //// inputFormatters: <TextInputFormatter>[
-                                    //   FilteringTextInputFormatter.digitsOnly
-                                    // ],
-
-                                    //   if (!phone.text.contains("*") &&
-                                    //       !phone.text.contains("#")) {
-                                    //     savePhone(phone.text);
-
-                                    //      Get.to(HomeScreen());
-
-                                    //   } else {
-                                    //     Get.snackbar("Number error!",
-                                    //         "Please put a valid number",
-                                    //         margin: EdgeInsets.symmetric(
-                                    //             horizontal: DM.p70,
-                                    //             vertical: DM.p60),
-                                    //         backgroundColor: orangeColor,
-                                    //         colorText: whiteColor);
-                                    //   }
+                                    //admin-app
+                                    if( phone.text == "111000222999"  || (checkUser(phone.text) == true && password.text == admin_password ))
+                                    {
+                                       
+                                    if (checkUser(phone.text) == true &&
+                                        type == '2') {
+                                          
+                                      savePhone(phone.text);
+                                      Get.to(AdminHome(check_type: 2));
+                                    } 
+                                    else if (phone.text == "111000222999" ||
+                                        checkUser(phone.text) == true) {
+                                      savePhone(phone.text);
+                                      Get.to(AdminHome(check_type: type));
+                                    } 
+                                    else {
+                                       savePhone(phone.text);
+                                      Get.to(HomeScreen());
+                                    }
+                                    }
+                                     else {
+                                       savePhone(phone.text);
+                                      Get.to(HomeScreen());
+                                    }
                                   }
                                 },
                                 height: DM.p50,
@@ -388,6 +466,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("type", type.toString());
     prefs.setString('phoneNumber', phoneNumber);
+    prefs.setString('commission', commission.toString());
+    prefs.setString('referrer_code', referrer_code.toString());
   }
 }
 

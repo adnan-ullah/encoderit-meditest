@@ -16,6 +16,7 @@ import 'package:healthcare_homelab/presentation/pages/adminPanel/StatusRequestLi
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminReportList.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,7 +24,8 @@ import '../../../constants/app_info.dart';
 import '../../../responsives/dimensions.dart';
 
 class AdminHome extends StatefulWidget {
-  AdminHome({super.key});
+  var check_type;
+  AdminHome({super.key, required this.check_type});
 
   @override
   State<AdminHome> createState() => _AdminHomeState();
@@ -101,119 +103,163 @@ class _AdminHomeState extends State<AdminHome> {
         padding: EdgeInsets.all(DM.p8),
         child: Column(
           children: [
-            Container(
-                color: creamColor,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            height: DM.p180,
-                            width: DM.screenWidth * 0.4,
-                            margin: EdgeInsets.symmetric(
-                                vertical: DM.p25, horizontal: DM.p10),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: DM.p30, vertical: DM.p20),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(DM.p10)),
-                                  primary: orangeColor),
-                              onPressed: () async {
-                                SharedPreferences ref =
-                                    await SharedPreferences.getInstance();
-                                var type = ref.getString("type");
+            widget.check_type != 2
+                ? Container(
+                    color: creamColor,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                height: DM.p180,
+                                width: DM.screenWidth * 0.4,
+                                margin: EdgeInsets.symmetric(
+                                    vertical: DM.p25, horizontal: DM.p10),
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: DM.p30, vertical: DM.p20),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(DM.p10)),
+                                      primary: orangeColor),
+                                  onPressed: () async {
+                                    SharedPreferences ref =
+                                        await SharedPreferences.getInstance();
+                                    var type = ref.getString("type");
 
-                                var phone = ref.getString("phoneNumber");
-                                if (phone!.contains("111000222999") ||
-                                    (type != null && type!.contains("7"))) {
-                                  Get.to(TestItemList());
-                                }
-                              },
-                              child: Text(
-                                "Test Item",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: fullWhiteColor,
-                                    fontSize: DM.p15,
-                                    fontWeight: FontWeight.bold),
+                                    var phone = ref.getString("phoneNumber");
+                                    if (phone!.contains("111000222999") ||
+                                        (type != null && type!.contains("7"))) {
+                                      Get.to(TestItemList());
+                                    }
+                                  },
+                                  child: Text(
+                                    "Test Item",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        color: fullWhiteColor,
+                                        fontSize: DM.p15,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          Container(
-                            height: DM.p180,
-                            width: DM.screenWidth * 0.4,
-                            margin: EdgeInsets.symmetric(
-                                vertical: DM.p25, horizontal: DM.p10),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: DM.p30, vertical: DM.p20),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(DM.p10)),
-                                  primary: orangeColor),
-                              onPressed: () {
-                                Get.to(StatusRequestList());
-                              },
-                              child: Text(
-                                "Test Request",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: fullWhiteColor,
-                                    fontSize: DM.p15,
-                                    fontWeight: FontWeight.bold),
+                              Container(
+                                height: DM.p180,
+                                width: DM.screenWidth * 0.4,
+                                margin: EdgeInsets.symmetric(
+                                    vertical: DM.p25, horizontal: DM.p10),
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: DM.p30, vertical: DM.p20),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(DM.p10)),
+                                      primary: orangeColor),
+                                  onPressed: () {
+                                    Get.to(StatusRequestList());
+                                  },
+                                  child: Text(
+                                    "Test Request",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        color: fullWhiteColor,
+                                        fontSize: DM.p15,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            height: DM.p180,
-                            width: DM.screenWidth * 0.4,
-                            margin: EdgeInsets.symmetric(
-                                vertical: DM.p25, horizontal: DM.p10),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: DM.p30, vertical: DM.p20),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(DM.p10)),
-                                  primary: orangeColor),
-                              onPressed: () async {
-                                SharedPreferences ref =
-                                    await SharedPreferences.getInstance();
+                        ),
+                        Container(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                height: DM.p180,
+                                width: DM.screenWidth * 0.4,
+                                margin: EdgeInsets.symmetric(
+                                    vertical: DM.p25, horizontal: DM.p10),
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: DM.p30, vertical: DM.p20),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(DM.p10)),
+                                      primary: orangeColor),
+                                  onPressed: () async {
+                                    SharedPreferences ref =
+                                        await SharedPreferences.getInstance();
 
-                                var phone = ref.getString("phoneNumber");
-                                if (phone!.contains("111000222999")) {
-                                  Get.to(AdminUser());
-                                }
-                              },
-                              child: Text(
-                                "Admin User",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: fullWhiteColor,
-                                    fontSize: DM.p15,
-                                    fontWeight: FontWeight.bold),
+                                    var phone = ref.getString("phoneNumber");
+                                    if (phone!.contains("111000222999")) {
+                                      Get.to(AdminUser());
+                                    }
+                                  },
+                                  child: Text(
+                                    "Admin User",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        color: fullWhiteColor,
+                                        fontSize: DM.p15,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                  ],
-                )),
+                        ),
+                      ],
+                    ))
+                :
+
+                //report section
+                Container(
+                    color: creamColor,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                height: DM.p180,
+                                width: DM.screenWidth * 0.4,
+                                margin: EdgeInsets.symmetric(
+                                    vertical: DM.p25, horizontal: DM.p10),
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: DM.p30, vertical: DM.p20),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(DM.p10)),
+                                      primary: orangeColor),
+                                  onPressed: () async {
+                                    Get.to(AdminReportList());
+                                  },
+                                  child: Text(
+                                    "Daily Report",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        color: fullWhiteColor,
+                                        fontSize: DM.p15,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )),
           ],
         ),
       ),

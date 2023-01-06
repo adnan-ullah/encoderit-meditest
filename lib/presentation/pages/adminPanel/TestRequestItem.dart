@@ -11,6 +11,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestListDialogueAdmin.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
@@ -34,6 +35,7 @@ import '../../../responsives/dimensions.dart';
 import '../../../state_programming/Create_Request_Controller.dart';
 import '../../../state_programming/getController.dart';
 import '../../widgets/minorWidgets/PhotoViewImage.dart';
+import '../../widgets/projectsWidget/Notifications/NotificationServices.dart';
 import '../Invoice_pdf/api/pdf_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_no_customer.dart';
@@ -82,17 +84,25 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   var due_amount = new TextEditingController();
   var admin_discount = new TextEditingController();
 
-  List<TestData> testItemList = [];
+  var agent_discount = new TextEditingController();
+  var total_discount = new TextEditingController();
+  var commission = new TextEditingController();
 
+  List<TestData> testItemList = [];
+  List<AdminUserModel> adminUserList = [];
   List<TestData> testData_updated = [];
 
   final Map<String, bool> testItemListWithSelected = {};
 
   var totalTestCost = 0;
+
   var totalCost = 0;
   var serviceCost = 0;
   var tubeCost = 0;
   var totalDiscount = 0;
+  var test_item_cost = 0;
+  var test_item_discount = 0;
+
   var newRequestData;
 
   bool init = false;
@@ -117,6 +127,22 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         //false -> add button
         //true -> remove button
 
+      }
+    });
+  }
+
+  Future<void> getAdminUserList() async {
+    late DatabaseReference DbrefTestModel;
+    DbrefTestModel = FirebaseDatabase.instance.ref("meditest/admin_user/");
+    FirebaseDatabase.instance.setPersistenceEnabled(true);
+    DbrefTestModel.keepSynced(true);
+
+    DbrefTestModel.onValue.listen((event) {
+      for (DataSnapshot ds in event.snapshot.children) {
+        AdminUserModel testData =
+            AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
+
+        adminUserList.add(testData);
       }
     });
   }
@@ -146,7 +172,6 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     servicecharge.text = widget.testEachRequest!.servicecharge.toString();
     totalprice.text = widget.testEachRequest!.totalprice.toString();
     teststatus.text = widget.testEachRequest!.teststatus.toString();
-    delivery_date.text = widget.testEachRequest!.delivery_date.toString();
 
     if (widget.testEachRequest!.delivery_date != null) {
       dateTime_delivery = widget.testEachRequest!.delivery_date;
@@ -171,12 +196,22 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       advanced.text = "0";
 
     if (widget.testEachRequest!.admin_discount != null)
-      admin_discount.text = widget.testEachRequest!.admin_discount;
+      admin_discount.text = widget.testEachRequest!.admin_discount.toString();
     else
       admin_discount.text = "0";
 
+    if (widget.testEachRequest!.agent_discount != null)
+      agent_discount.text = widget.testEachRequest!.agent_discount.toString();
+    else
+      agent_discount.text = "0";
+
+    if (widget.testEachRequest!.total_discount != null)
+      total_discount.text = widget.testEachRequest!.total_discount.toString();
+    else
+      total_discount.text = "0";
+
     if (widget.testEachRequest!.due_amount != null)
-      due_amount.text = widget.testEachRequest!.due_amount;
+      due_amount.text = widget.testEachRequest!.due_amount.toString();
     else
       due_amount.text = totalprice.text.toString();
 
@@ -212,12 +247,52 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       latitude = widget.testEachRequest!.latitude.toString();
       longitude = widget.testEachRequest!.longitude.toString();
     });
+
+    if (widget.testEachRequest!.test_item_cost != null)
+      test_item_cost = widget.testEachRequest!.test_item_cost;
+    else
+      test_item_cost = 0;
+
+    if (widget.testEachRequest!.test_item_discount != null)
+      test_item_discount = widget.testEachRequest!.test_item_discount;
+    else
+      test_item_discount = 0;
+
+    commission.text = "0";
+
+//for agent commission
+    late DatabaseReference _DbrefTestModel;
+    _DbrefTestModel = FirebaseDatabase.instance.ref("meditest/admin_user/");
+    FirebaseDatabase.instance.setPersistenceEnabled(true);
+    _DbrefTestModel.keepSynced(true);
+    _DbrefTestModel.onValue.listen((event) async {
+      for (DataSnapshot ds in event.snapshot.children) {
+        AdminUserModel testData =
+            AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
+
+        if (testData.referrer_code.contains(referrer.text.toString())) {
+          commission.text = (((widget.testEachRequest!.test_item_cost -
+                          widget.testEachRequest!.test_item_discount) *
+                      int.parse(testData.commission)) /
+                  100)
+              .toInt()
+              .toString();
+        }
+      }
+    });
   }
 
   Future<void> _updateRequest() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     late DatabaseReference DbrefTestReqModel;
     DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
+
+    if (admin_discount.text == null || admin_discount.text.isEmpty) {
+      admin_discount.text = "0";
+    }
+     if (agent_discount.text == null || agent_discount.text.isEmpty) {
+      agent_discount.text = "0";
+    }
 
     updateTestRequestItem = TestDataRequest(
         id: widget.testEachRequest!.id.toString(),
@@ -248,7 +323,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         comments: comments.text.toString(),
         advanced: advanced.text.toString(),
         due_amount: due_amount.text.toString(),
-        admin_discount: admin_discount.text.toString());
+        admin_discount: int.parse(admin_discount.text.toString()),
+        agent_discount: int.parse(agent_discount.text.toString()),
+        test_item_cost: test_item_cost,
+        test_item_discount: test_item_discount,
+        total_discount: totalDiscount);
 
     if (updateTestRequestItem != null) {
       await DbrefTestReqModel.child("testRequest")
@@ -266,29 +345,61 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     serviceCost = 0;
     tubeCost = 0;
     totalDiscount = 0;
+    test_item_discount = 0;
 
-    if (admin_discount.text != null && admin_discount.text.isNotEmpty) {
-      totalDiscount = totalDiscount + int.parse(admin_discount.text.toString());
+    if (admin_discount.text == null || admin_discount.text.isEmpty) {
+      admin_discount.text = "0";
     }
+    totalDiscount = totalDiscount + int.parse(admin_discount.text.toString());
+
+    if (agent_discount.text == null || agent_discount.text.isEmpty) {
+      agent_discount.text = "0";
+    }
+
+    totalDiscount = totalDiscount + int.parse(agent_discount.text.toString());
 
     testData_updated.map((testItem) {
       totalTestCost = totalTestCost + int.parse(testItem.testprice.toString());
+
       serviceCost =
           max(serviceCost, int.parse(testItem.servicecharge.toString()));
 
+      test_item_discount =
+          test_item_discount + int.parse(testItem.discount.toString());
       tubeCost = tubeCost + int.parse(testItem.testkitprice.toString());
       totalDiscount = totalDiscount + int.parse(testItem.discount.toString());
     }).toList();
 
     totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
+    //totalCost = totalTestCost  + serviceCost - totalDiscount;
 
     totalprice.text = totalCost.toString();
     servicecharge.text = serviceCost.toString();
+    test_item_cost = totalTestCost;
 
     if (advanced.text != null && advanced.text.isNotEmpty) {
       due_amount.text =
           (totalCost - int.parse(advanced.text.toString())).toString();
     }
+    if (testData_updated.length == 0) {
+      totalDiscount = 0;
+      agent_discount.text = "0";
+      admin_discount.text = "0";
+    }
+
+    total_discount.text = totalDiscount.toString();
+
+    adminUserList.map((e) {
+      if (e.referrer_code.contains(referrer.text.toString())) {
+        commission.text =
+            (((test_item_cost - test_item_discount) * int.parse(e.commission)) /
+                    100)
+                .toInt()
+                .toString();
+
+        return;
+      }
+    }).toList();
   }
 
   Future<void> removeCalulationProcess(id) async {
@@ -301,23 +412,51 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       serviceCost = 0;
       tubeCost = 0;
       totalDiscount = 0;
+      test_item_discount = 0;
 
       testData_updated.map((testItem) {
         totalTestCost =
             totalTestCost + int.parse(testItem.testprice.toString());
+
         serviceCost =
             max(serviceCost, int.parse(testItem.servicecharge.toString()));
 
         tubeCost = tubeCost + int.parse(testItem.testkitprice.toString());
         totalDiscount = totalDiscount + int.parse(testItem.discount.toString());
+        test_item_discount =
+            test_item_discount + int.parse(testItem.discount.toString());
       }).toList();
 
       totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
+      // totalCost = totalTestCost  + tubeCost ;
+      //totalCost = totalTestCost  + serviceCost - totalDiscount;
+
       totalprice.text = totalCost.toString();
       //totaltestprice.text = totalTestCost.toString();
       servicecharge.text = serviceCost.toString();
+      test_item_cost = totalTestCost;
       due_amount.text =
           (totalCost - int.parse(advanced.text.toString())).toString();
+
+      if (testData_updated.length == 0) {
+        totalDiscount = 0;
+        agent_discount.text = "0";
+        admin_discount.text = "0";
+      }
+
+      total_discount.text = totalDiscount.toString();
+
+      adminUserList.map((e) {
+        if (e.referrer_code.contains(referrer.text.toString())) {
+          commission.text = (((test_item_cost - test_item_discount) *
+                      int.parse(e.commission)) /
+                  100)
+              .toInt()
+              .toString();
+
+          return;
+        }
+      }).toList();
     });
   }
 
@@ -327,21 +466,16 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     // var state = await Permission.manageExternalStorage.request();
     //var state2 = await Permission.storage.status;
 
-
-
-    if (await Permission.storage.request()==true) {
-        
-
-    }
+    if (await Permission.storage.request() == true) {}
   }
 
   @override
   void initState() {
     permissionNeed();
-
+    getAdminUserList();
     if (widget.testEachRequest != null) {
       this.retreiveEachDataRequest();
-      print("InitState");
+
       _getTestItemList();
     }
     init = true;
@@ -431,7 +565,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           textInputType: TextInputType.name,
                           controller: name,
                           title: "Name",
-                          value: "Write yout name",
+                          value: "Write your name",
                           activate: false,
                         ),
                         FormUserInfo(
@@ -599,16 +733,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                     controller: referrer,
                                     keyboardType: TextInputType.multiline,
                                     maxLines: null,
-                                    // onTap: (() {
-                                    //   showDialog(
-                                    //       context: context,
-                                    //       builder: (context) {
-                                    //         return MyDialogView(
-                                    //             myChild: TextDialogueBox(
-                                    //                 keyTitle: "Referrer Info",
-                                    //                 addressText: referrer));
-                                    //       });
-                                    // }),
+                                    onEditingComplete: () {
+                                      calculationProcess();
+                                    },
                                     decoration: InputDecoration(
                                         errorStyle: TextStyle(fontSize: DM.p9),
                                         focusedBorder: OutlineInputBorder(
@@ -626,7 +753,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                         contentPadding: EdgeInsets.symmetric(
                                             horizontal: DM.p10),
                                         border: InputBorder.none,
-                                        hintText: "Name of Doctor",
+                                        hintText: "0",
                                         hintStyle: TextStyle(
                                           color: Colors.grey,
                                           fontSize: DM.p14,
@@ -1150,9 +1277,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                   child: TextFormField(
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
-                                      setState(() {
-                                        calculationProcess();
-                                      });
+                                      if (value.length != 0) {
+                                        setState(() {
+                                          calculationProcess();
+                                        });
+                                      }
                                     },
                                     controller: admin_discount,
                                     decoration: InputDecoration(
@@ -1184,6 +1313,79 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           ),
                         ),
 
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Agent Discount",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      if (value.length != 0) {
+                                        setState(() {
+                                          calculationProcess();
+                                        });
+                                      }
+                                    },
+                                    controller: agent_discount,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        FormUserInfo(
+                          formKey: _formKey,
+                          textInputType: TextInputType.number,
+                          controller: commission,
+                          title: "Agent Commission",
+                          value: "0",
+                          activate: true,
+                        ),
                         Padding(
                           padding: EdgeInsets.all(DM.p5),
                           child: Row(
@@ -1338,7 +1540,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           textInputType: TextInputType.name,
                           controller: comments,
                           title: "Comments",
-                          value: "Write yout comments",
+                          value: "Write your comments",
                           activate: false,
                         ),
 
@@ -1415,6 +1617,15 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           controller: due_amount,
                           title: "Due Amount",
                           value: "${totalCost - int.parse(advanced.text)}",
+                          activate: false,
+                        ),
+
+                        FormUserInfo(
+                          formKey: _formKey,
+                          textInputType: TextInputType.number,
+                          controller: total_discount,
+                          title: "Total Discount",
+                          value: "0",
                           activate: false,
                         ),
 

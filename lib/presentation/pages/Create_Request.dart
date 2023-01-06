@@ -13,6 +13,7 @@ import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/ConfirmationList.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListDialogueBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
@@ -25,6 +26,7 @@ import '../../db/databse_model.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/Create_Request_Controller.dart';
 import '../../state_programming/getController.dart';
+import '../widgets/projectsWidget/Notifications/NotificationServices.dart';
 import 'Login_info.dart';
 
 class CreateRequest extends StatefulWidget {
@@ -298,7 +300,7 @@ class _CreateRequestState extends State<CreateRequest> {
 
         Get.back();
         Get.snackbar(
-            margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
+            margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p120),
             duration: Duration(milliseconds: 2000),
             backgroundColor: limeBGColor,
             colorText: whiteColor,
@@ -306,7 +308,7 @@ class _CreateRequestState extends State<CreateRequest> {
             "Data added , successfully!");
       } else {
         Get.snackbar(
-            margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
+            margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p120),
             duration: Duration(milliseconds: 2000),
             backgroundColor: redColor,
             colorText: whiteColor,
@@ -324,7 +326,10 @@ class _CreateRequestState extends State<CreateRequest> {
           child: Text(
             "Requisition form",
             textAlign: TextAlign.left,
-            style: TextStyle(color: creamColor, fontWeight: FontWeight.bold, fontSize: DM.p25),
+            style: TextStyle(
+                color: creamColor,
+                fontWeight: FontWeight.bold,
+                fontSize: DM.p25),
           ),
         ),
       ]),
@@ -373,9 +378,6 @@ class _CreateRequestState extends State<CreateRequest> {
                                   value: "Write Your Name",
                                   activate: false,
                                 ),
-
-                                
-                                
                                 Padding(
                                   padding: EdgeInsets.all(DM.p1),
                                   child: Row(
@@ -404,11 +406,12 @@ class _CreateRequestState extends State<CreateRequest> {
                                         child: Container(
                                           child: TextFormField(
                                             controller: age,
-                                            keyboardType:
-                                                TextInputType.phone,
-                                                inputFormatters: <TextInputFormatter>[
-                                    FilteringTextInputFormatter.digitsOnly
-                                  ],
+                                            keyboardType: TextInputType.phone,
+                                            inputFormatters: <
+                                                TextInputFormatter>[
+                                              FilteringTextInputFormatter
+                                                  .digitsOnly
+                                            ],
                                             maxLines: null,
                                             // onTap: (() {
                                             //   showDialog(
@@ -455,8 +458,6 @@ class _CreateRequestState extends State<CreateRequest> {
                                     ],
                                   ),
                                 ),
-
-
                                 Padding(
                                   padding: EdgeInsets.all(DM.p1),
                                   child: Row(
@@ -1127,6 +1128,35 @@ Future<void> getTestItemList() async {
       //true -> remove button
 
       print(testData.name);
+    }
+  });
+}
+
+Future<void> getAdminNotification(phone,type, context) async {
+  late DatabaseReference DbrefTestModel;
+  DbrefTestModel = FirebaseDatabase.instance.ref("meditest/admin_user/");
+  FirebaseDatabase.instance.setPersistenceEnabled(true);
+  DbrefTestModel.keepSynced(true);
+
+  DbrefTestModel.onValue.listen((event) async {
+    for (DataSnapshot ds in event.snapshot.children) {
+      AdminUserModel testData =
+          AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
+
+      if (testData.phone == phone) {
+    
+          if (type == "1" ||
+             type == "7" ||
+            phone == "111000222999") {
+                final SharedPreferences prefs = await SharedPreferences.getInstance();
+              createPlantFoodNotification();
+               showNotification(context);
+
+          
+        
+        }
+      
+      }
     }
   });
 }

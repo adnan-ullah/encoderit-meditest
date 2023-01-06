@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
@@ -25,6 +26,7 @@ import '../../../db/databse_model.dart';
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/Create_Request_Controller.dart';
 import '../../../state_programming/getController.dart';
+import '../../widgets/projectsWidget/Notifications/NotificationServices.dart';
 import '../Login_info.dart';
 
 class AdminUserData extends StatefulWidget {
@@ -46,6 +48,10 @@ class _AdminUserDataState extends State<AdminUserData> {
     password.text = widget.testItem!.password.toString();
     phone.text = widget.testItem!.phone.toString();
     type.text = widget.testItem!.type.toString();
+
+    commission.text = widget.testItem!.commission.toString();
+    referrer_code.text = widget.testItem!.referrer_code.toString();
+    address.text = widget.testItem!.address.toString();
   }
 
   Future<void> updateToFirebase() async {
@@ -59,6 +65,9 @@ class _AdminUserDataState extends State<AdminUserData> {
       password: password.text.toString(),
       phone: phone.text.toString(),
       type: type.text.toString(),
+      commission: commission.text.toString(),
+      referrer_code: referrer_code.text.toString(),
+      address: address.text.toString(),
     );
 
     if (updatedTestItemData != null) {
@@ -80,6 +89,9 @@ class _AdminUserDataState extends State<AdminUserData> {
       password: password.text.toString(),
       phone: phone.text.toString(),
       type: type.text.toString(),
+      commission: commission.text.toString(),
+      referrer_code: referrer_code.text.toString(),
+      address: address.text.toString(),
     );
     if (inserNewTestItem != null) {
       await _dbref_testReqModel
@@ -103,15 +115,15 @@ class _AdminUserDataState extends State<AdminUserData> {
   }
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  String? latitude;
-  String? longitude;
 
   var name = new TextEditingController();
   var active = new TextEditingController();
   var password = TextEditingController();
   var phone = TextEditingController();
   var type = TextEditingController();
-
+  var referrer_code = TextEditingController();
+  var commission = TextEditingController();
+  var address = TextEditingController();
   //form variables:
 
   var newTestListData;
@@ -170,14 +182,77 @@ class _AdminUserDataState extends State<AdminUserData> {
                           value: "Write user name",
                           activate: false,
                         ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateMobile,
-                          textInputType: TextInputType.number,
-                          controller: phone,
-                          title: "Phone",
-                          value: "Write user phone",
-                          activate: false,
+                        Padding(
+                          padding: EdgeInsets.all(DM.p1),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Phone",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  child: TextFormField(
+                                    controller: phone,
+                                    keyboardType: TextInputType.phone,
+                                    inputFormatters: <TextInputFormatter>[
+                                      FilteringTextInputFormatter.digitsOnly
+                                    ],
+                                    maxLines: null,
+                                    onChanged: (value) {
+                                      if (phone.text.length > 10 &&
+                                          phone.text.length < 13) {
+                                        if (phone.text.length == 11) {
+                                          referrer_code.text =
+                                              phone.text.substring(5);
+                                        } else if (phone.text.length == 12) {
+                                          referrer_code.text =
+                                              phone.text.substring(6);
+                                        }
+                                      }
+                                    },
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "Write user phone",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         FormUserInfo(
                           formKey: _formKey,
@@ -205,6 +280,132 @@ class _AdminUserDataState extends State<AdminUserData> {
                           title: "Type",
                           value: "1",
                           activate: false,
+                        ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          validatorField: validateName,
+                          textInputType: TextInputType.name,
+                          controller: referrer_code,
+                          title: "Referrer Code",
+                          value: "0",
+                          activate: false,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p1),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Commission",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  child: TextFormField(
+                                    controller: commission,
+                                    keyboardType: TextInputType.phone,
+                                    inputFormatters: <TextInputFormatter>[
+                                      FilteringTextInputFormatter.digitsOnly
+                                    ],
+                                    maxLines: null,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p1),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Address",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  child: TextFormField(
+                                    controller: address,
+                                    keyboardType: TextInputType.multiline,
+                                    maxLines: null,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "Your Address",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     )),
