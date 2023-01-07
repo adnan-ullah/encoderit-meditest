@@ -17,6 +17,8 @@ import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminReportList.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminSuperReport.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminUserReport.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,7 +27,8 @@ import '../../../responsives/dimensions.dart';
 
 class AdminHome extends StatefulWidget {
   var check_type;
-  AdminHome({super.key, required this.check_type});
+  var check_number;
+  AdminHome({super.key, required this.check_type , required this.check_number});
 
   @override
   State<AdminHome> createState() => _AdminHomeState();
@@ -103,7 +106,7 @@ class _AdminHomeState extends State<AdminHome> {
         padding: EdgeInsets.all(DM.p8),
         child: Column(
           children: [
-            widget.check_type != 2
+            widget.check_number == "111000222999" || widget.check_type==7 || widget.check_type==1
                 ? Container(
                     color: creamColor,
                     child: Column(
@@ -113,6 +116,7 @@ class _AdminHomeState extends State<AdminHome> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
+                              widget.check_type==7 || widget.check_number == "111000222999"?
                               Container(
                                 height: DM.p180,
                                 width: DM.screenWidth * 0.4,
@@ -146,7 +150,7 @@ class _AdminHomeState extends State<AdminHome> {
                                         fontWeight: FontWeight.bold),
                                   ),
                                 ),
-                              ),
+                              ):SizedBox(),
                               Container(
                                 height: DM.p180,
                                 width: DM.screenWidth * 0.4,
@@ -176,10 +180,12 @@ class _AdminHomeState extends State<AdminHome> {
                             ],
                           ),
                         ),
+                     
                         Container(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
+                                 widget.check_number=="111000222999"?
                               Container(
                                 height: DM.p180,
                                 width: DM.screenWidth * 0.4,
@@ -211,14 +217,79 @@ class _AdminHomeState extends State<AdminHome> {
                                         fontWeight: FontWeight.bold),
                                   ),
                                 ),
-                              ),
+                              ):SizedBox(),
+                              Container(
+                                  color: creamColor,
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+
+                                      widget.check_number=="111000222999" || widget.check_type==7?
+                                      Container(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              height: DM.p180,
+                                              width: DM.screenWidth * 0.4,
+                                              margin: EdgeInsets.symmetric(
+                                                  vertical: DM.p25,
+                                                  horizontal: DM.p10),
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                            horizontal: DM.p30,
+                                                            vertical: DM.p20),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(DM
+                                                                        .p10)),
+                                                    primary: orangeColor),
+                                                onPressed: () async {
+                                                  SharedPreferences ref =
+                                                      await SharedPreferences
+                                                          .getInstance();
+
+                                                  var phone = ref
+                                                      .getString("phoneNumber");
+                                                  var type =
+                                                      ref.getString("type");
+                                                  if (phone!.contains(
+                                                      "111000222999")) {
+                                                    Get.to(AdminSuperReport());
+                                                  } else if (type == "1" ||
+                                                      type == "7") {
+                                                    Get.to(AdminUserReport());
+                                                  }
+                                                },
+                                                child: Text(
+                                                  "Report",
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                      color: fullWhiteColor,
+                                                      fontSize: DM.p15,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ):SizedBox(),
+                                    ],
+                                  )),
                             ],
                           ),
                         ),
                       ],
                     ))
                 :
-
+                widget.check_type==2?
                 //report section
                 Container(
                     color: creamColor,
@@ -259,7 +330,7 @@ class _AdminHomeState extends State<AdminHome> {
                           ),
                         ),
                       ],
-                    )),
+                    )):Container(),
           ],
         ),
       ),

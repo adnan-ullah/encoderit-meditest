@@ -214,6 +214,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                 children: [
                                   SizedBox(
                                     width: DM.p100,
+                                    
                                     child: Text(
                                       "Type",
                                       style: TextStyle(

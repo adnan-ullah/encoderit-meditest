@@ -5,7 +5,9 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
@@ -17,14 +19,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/Request_Enum.dart';
+import '../../pages/Login_info.dart';
 
-class AdminReportList extends StatefulWidget {
-  AdminReportList({
+class AdminSuperReport extends StatefulWidget {
+  AdminSuperReport({
     super.key,
   });
 
   @override
-  State<AdminReportList> createState() => _AdminReportListState();
+  State<AdminSuperReport> createState() => _AdminSuperReportState();
 }
 
 var isLoading = false;
@@ -35,9 +38,16 @@ var end_datetime = DateTime.now().millisecondsSinceEpoch;
 
 var start_datetime = DateTime(DateTime.now().year, DateTime.now().month, 1)
     .millisecondsSinceEpoch;
-double totalEarning = 0;
+// double totalEarning = 0;
 
-class _AdminReportListState extends State<AdminReportList> {
+double totalCost = 0;
+double totalTestCost = 0;
+double totalDiscount = 0;
+
+var referrer_input = new TextEditingController();
+List<TestDataRequest> _cancelRequestList = [];
+
+class _AdminSuperReportState extends State<AdminSuperReport> {
   CreateRequest_controller createRequest_controller =
       Get.put(CreateRequest_controller());
 
@@ -81,42 +91,6 @@ class _AdminReportListState extends State<AdminReportList> {
     }
   }
 
-  Future<void> _updateStatus(TestDataRequest requestItem) async {
-    int currentTime = DateTime.now().millisecondsSinceEpoch;
-    late DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
-    TestDataRequest updateTestRequestItem;
-    updateTestRequestItem = TestDataRequest(
-        id: requestItem.id,
-        name: requestItem.name,
-        gender: requestItem.gender,
-        mobile: requestItem.mobile,
-        age: requestItem.age,
-        testlist: requestItem.testlist,
-        totalprice: requestItem.totalprice,
-        servicecharge: requestItem.servicecharge,
-        address: requestItem.address,
-        referrer: requestItem.referrer,
-        lastupdate: currentTime,
-        dateofcreated: requestItem.dateofcreated,
-        softdelete: 0,
-        latitude: requestItem.latitude,
-        longitude: requestItem.longitude,
-        teststatus: requestItem.teststatus + 1,
-        invoice_call: requestItem.invoice_call,
-        type: requestItem.type,
-        image_one: requestItem.image_one,
-        image_two: requestItem.image_two,
-        comments: requestItem.comments);
-
-    if (updateTestRequestItem != null) {
-      await DbrefTestReqModel.child("testRequest")
-          .child(updateTestRequestItem.mobile)
-          .child(updateTestRequestItem.id)
-          .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
-    }
-  }
-
   Future<void> getStatusData() async {
     _onLoading(true);
     late DatabaseReference _dbref_testReqModel;
@@ -130,6 +104,7 @@ class _AdminReportListState extends State<AdminReportList> {
       //   _newTestRequestList.clear();
       //   testStatusRequestList.clear();
       // });
+
       SharedPreferences ref = await SharedPreferences.getInstance();
       commission = ref.getString("commission");
       referrer_code = ref.getString("referrer_code");
@@ -139,7 +114,8 @@ class _AdminReportListState extends State<AdminReportList> {
           TestDataRequest testData =
               TestDataRequest.fromJson(json.decode(jsonEncode(dsLater.value)));
 
-          //_newTestRequestList.add(testData);
+          _newTestRequestList.add(testData);
+
           _allRequestListAdmin.add(testData);
 
           // setState(() {
@@ -148,23 +124,21 @@ class _AdminReportListState extends State<AdminReportList> {
         }
       }
 
-      _newTestRequestList = _allRequestListAdmin
-          .where((element) =>
-              element.referrer.toString() == referrer_code.toString())
-          .toList();
+      // _newTestRequestList = _allRequestListAdmin
+      //     .where((element) =>
+      //         element.referrer.toString() == referrer_code.toString())
+      //     .toList();
 
       print(_newTestRequestList.length);
-      totalEarning = 0;
+
+      totalCost = 0;
+      totalTestCost = 0;
+      totalDiscount = 0;
 
       _newTestRequestList.map((e) {
-        if (e.teststatus == 5) {
-          totalEarning = totalEarning +
-              ((e.test_item_cost - e.test_item_discount) *
-                      int.parse(commission) /
-                      100)
-                  .toInt() -
-              e.agent_discount;
-        }
+        totalCost = totalCost + e.totalprice;
+        totalTestCost = totalTestCost + e.test_item_cost;
+        totalDiscount = totalDiscount + e.total_discount;
       }).toList();
 
       if (_newTestRequestList != null) _onLoading(false);
@@ -177,23 +151,30 @@ class _AdminReportListState extends State<AdminReportList> {
     _newTestRequestList.addAll(_allRequestListAdmin);
     print(_newTestRequestList);
 
-    _newTestRequestList = _allRequestListAdmin
-        .where((element) =>
-            element.referrer.toString() == referrer_code &&
-            (start_datetime <= element.dateofcreated &&
-                element.dateofcreated <= end_datetime))
-        .toList();
+    if (referrer_input.text.isNotEmpty) {
+      _newTestRequestList = _allRequestListAdmin
+          .where((element) =>
+              element.referrer
+                  .toString()
+                  .contains(referrer_input.text.toString()) &&
+              (start_datetime <= element.dateofcreated &&
+                  element.dateofcreated <= end_datetime))
+          .toList();
+    } else {
+      _newTestRequestList = _allRequestListAdmin
+          .where((element) => (start_datetime <= element.dateofcreated &&
+              element.dateofcreated <= end_datetime))
+          .toList();
+    }
 
-    totalEarning = 0;
+    totalCost = 0;
+    totalTestCost = 0;
+    totalDiscount = 0;
+
     _newTestRequestList.map((e) {
-      if (e.teststatus == 5) {
-        totalEarning = totalEarning +
-            ((e.test_item_cost - e.test_item_discount) *
-                int.parse(commission) /
-                100) -
-            e.agent_discount;
-            
-      }
+      totalCost = totalCost + e.totalprice;
+      totalTestCost = totalTestCost + e.test_item_cost;
+      totalDiscount = totalDiscount + e.total_discount;
     }).toList();
 
     // var end_dateFormat = DateTime.fromMillisecondsSinceEpoch(end_datetime);
@@ -223,6 +204,28 @@ class _AdminReportListState extends State<AdminReportList> {
     }
   }
 
+  Future<void> removeRequestFromFirebase(TestDataRequest testReq) async {
+    DatabaseReference DbrefTestReqModel;
+    DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
+    if (testReq != null) {
+      await DbrefTestReqModel.child("testRequest")
+          .child(testReq.mobile)
+          .child(testReq.id)
+          .remove();
+
+      Get.back();
+      Get.back();
+
+      // Get.snackbar(
+      //     margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p120),
+      //     duration: Duration(milliseconds: 2000),
+      //     backgroundColor: limeBGColor,
+      //     colorText: whiteColor,
+      //     "Added",
+      //     "Data added , successfully!");
+    }
+  }
+
   @override
   void initState() {
     Future.delayed(Duration.zero, () {
@@ -238,6 +241,7 @@ class _AdminReportListState extends State<AdminReportList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: creamColor,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
         Container(
@@ -253,31 +257,82 @@ class _AdminReportListState extends State<AdminReportList> {
       body: Padding(
           padding: EdgeInsets.symmetric(horizontal: DM.p8),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.all(DM.p15),
+                padding: EdgeInsets.all(DM.p10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: DM.p70,
+                      child: Text(
+                        "Referrer Code",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: DM.p14,
+                            color: blackFontColor),
+                      ),
+                    ),
+                    SizedBox(
+                      width: DM.p5,
+                    ),
+                    Text(":"),
+                    SizedBox(
+                      width: DM.p10,
+                    ),
+                    Flexible(
+                      child: Container(
+                        height: DM.p50,
+                        child: TextFormField(
+                          keyboardType: TextInputType.name,
+                          controller: referrer_input,
+                          // inputFormatters: <TextInputFormatter>[
+                          //   FilteringTextInputFormatter.digitsOnly
+                          // ],
+                          // validator: validateMobile,
+                          onChanged: ((value) {
+                            setState(() {
+                              filterStatusDateTime();
+                            });
+
+                            //_formKey.currentState?.validate();
+                          }),
+                          decoration: InputDecoration(
+                              errorStyle: TextStyle(fontSize: DM.p9),
+                              focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      width: DM.p1, color: orangeColor)),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    width: DM.p1,
+                                    color: orangeColor), //<-- SEE HERE
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: InputBorder.none,
+                              hintText: "0",
+                              hintStyle: TextStyle(
+                                color: Colors.grey,
+                                fontSize: DM.p14,
+                              )),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: EdgeInsets.all(DM.p5),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // SizedBox(
-                    //   width: DM.p100,
-                    //   child: Text(
-                    //     "Pick a date time",
-                    //     style: TextStyle(
-                    //         fontWeight: FontWeight.w500,
-                    //         fontSize: DM.p14,
-                    //         color: blackFontColor),
-                    //   ),
-                    // ),
-                    // SizedBox(
-                    //   width: DM.p5,
-                    // ),
-                    // Text(":"),
-
                     Flexible(
                       child: Container(
-                        height: DM.p60,
+                        height: DM.p45,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                               backgroundColor: orangeColor, elevation: 0),
@@ -315,14 +370,12 @@ class _AdminReportListState extends State<AdminReportList> {
                         ),
                       ),
                     ),
-
                     SizedBox(
                       width: DM.p15,
                     ),
-
                     Flexible(
                       child: Container(
-                        height: DM.p60,
+                        height: DM.p45,
                         child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: orangeColor, elevation: 0),
@@ -406,7 +459,7 @@ class _AdminReportListState extends State<AdminReportList> {
                                     Container(
                                       width: DM.p55,
                                       child: Text(
-                                        "Test Cost",
+                                        "Total Cost",
                                         textAlign: TextAlign.left,
                                         style: TextStyle(
                                             fontWeight: FontWeight.w900,
@@ -418,19 +471,7 @@ class _AdminReportListState extends State<AdminReportList> {
                                     Container(
                                       width: DM.p55,
                                       child: Text(
-                                        "Commission",
-                                        textAlign: TextAlign.left,
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: DM.p8,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: DM.p70,
-                                      child: Text(
-                                        "Agent Discount",
+                                        "Test Cost",
                                         textAlign: TextAlign.left,
                                         style: TextStyle(
                                             fontWeight: FontWeight.w900,
@@ -440,9 +481,9 @@ class _AdminReportListState extends State<AdminReportList> {
                                       ),
                                     ),
                                     Container(
-                                      width: DM.p50,
+                                      width: DM.p80,
                                       child: Text(
-                                        "Earning",
+                                        "Total Discount",
                                         textAlign: TextAlign.left,
                                         style: TextStyle(
                                             fontWeight: FontWeight.w900,
@@ -471,7 +512,7 @@ class _AdminReportListState extends State<AdminReportList> {
                                 color: Colors.black,
                               ),
                               Container(
-                                height: DM.screenHeight * 0.65,
+                                height: DM.screenHeight * 0.55,
                                 child: ListView.builder(
                                   itemCount: _newTestRequestList.length,
                                   itemBuilder: (context, index) {
@@ -506,7 +547,7 @@ class _AdminReportListState extends State<AdminReportList> {
                                               ? SizedBox(
                                                   width: DM.p55,
                                                   child: Text(
-                                                    "${(_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount - _newTestRequestList[index].admin_discount).toString()}",
+                                                    "${(_newTestRequestList[index].totalprice).toString()}",
                                                     textAlign: TextAlign.left,
                                                     style: TextStyle(
                                                         fontWeight:
@@ -535,7 +576,7 @@ class _AdminReportListState extends State<AdminReportList> {
                                               ? SizedBox(
                                                   width: DM.p55,
                                                   child: Text(
-                                                    "${(((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100).toInt().toString()}",
+                                                    "${(_newTestRequestList[index].test_item_cost).toString()}",
                                                     textAlign: TextAlign.left,
                                                     style: TextStyle(
                                                         fontWeight:
@@ -565,7 +606,7 @@ class _AdminReportListState extends State<AdminReportList> {
                                                   width: DM.p70,
                                                   child: Text(
                                                     _newTestRequestList[index]
-                                                        .agent_discount
+                                                        .total_discount
                                                         .toString(),
                                                     textAlign: TextAlign.left,
                                                     style: TextStyle(
@@ -590,37 +631,6 @@ class _AdminReportListState extends State<AdminReportList> {
                                                   ),
                                                 ),
                                           SizedBox(
-                                            width: DM.p50,
-                                            child: _newTestRequestList[index]
-                                                        .teststatus ==
-                                                    5
-                                                ? Text(
-                                                    "${((((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100).toInt() - _newTestRequestList[index].agent_discount).toString()}",
-
-                                                    // "${((int.parse(((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100)) - int.parse(_newTestRequestList[index].agent_discount)).toString()}",
-                                                    textAlign: TextAlign.left,
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p8,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  )
-                                                : SizedBox(
-                                                    width: DM.p50,
-                                                    child: Text(
-                                                      "Processing",
-                                                      textAlign: TextAlign.left,
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: DM.p8,
-                                                          color: Color.fromARGB(
-                                                              255, 26, 1, 1)),
-                                                    ),
-                                                  ),
-                                          ),
-                                          SizedBox(
                                             width: DM.p55,
                                             child: Text(
                                               createRequest_controller.status[
@@ -633,6 +643,30 @@ class _AdminReportListState extends State<AdminReportList> {
                                                   fontSize: DM.p8,
                                                   color: Color.fromARGB(
                                                       255, 26, 1, 1)),
+                                            ),
+                                          ),
+                                          Container(
+                                            margin:
+                                                EdgeInsets.only(right: DM.p5),
+                                            child: IconButton(
+                                              color: orangeColor,
+                                              icon: Icon(
+                                                CupertinoIcons
+                                                    .xmark_circle_fill,
+                                                size: DM.p20,
+                                              ),
+                                              onPressed: () {
+                                                setState(() {
+                                                  if (!_cancelRequestList
+                                                      .contains(
+                                                          _newTestRequestList[
+                                                              index])) {
+                                                    _cancelRequestList.add(
+                                                        _newTestRequestList[
+                                                            index]);
+                                                  }
+                                                });
+                                              },
                                             ),
                                           ),
                                         ],
@@ -651,9 +685,25 @@ class _AdminReportListState extends State<AdminReportList> {
                                         color: blackFontColor,
                                       ),
                                       Text(
-                                        "Total Earning =  ${totalEarning}",
+                                        "Total Cost =  ${totalCost}",
                                         style: TextStyle(
-                                            fontWeight: FontWeight.w800,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: DM.p15,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                      Text(
+                                        "Total Test Cost =  ${totalTestCost}",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: DM.p15,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                      Text(
+                                        "Total Discount =  ${totalDiscount}",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600,
                                             fontSize: DM.p15,
                                             color:
                                                 Color.fromARGB(255, 26, 1, 1)),
@@ -674,7 +724,199 @@ class _AdminReportListState extends State<AdminReportList> {
                                   fontSize: DM.p25,
                                   color: orangeColor),
                             ),
-                          )))
+                          ))),
+
+              Flexible(
+                  child: Container(
+                height: DM.p45,
+                width: DM.p150,
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: orangeColor, elevation: 0),
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return MyDialogView(
+                                myChild: Container(
+                              margin: EdgeInsets.all(DM.p10),
+                              color: creamColor,
+                              height: DM.screenHeight * 0.70,
+                              child: Column(
+                                children: [
+                                  Card(
+                                      child: Container(
+                                    color: creamColor,
+                                    height: DM.screenHeight * 0.60,
+                                    child: ListView.builder(
+                                      itemCount: _cancelRequestList.length,
+                                      itemBuilder: (context, index) {
+                                        return Container(
+                                          color: whiteColor,
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: DM.p10,
+                                              vertical: DM.p4),
+                                          margin: EdgeInsets.symmetric(
+                                              vertical: DM.p8),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              SizedBox(
+                                                width: DM.p130,
+                                                child: Text(
+                                                  "#" +
+                                                      _cancelRequestList[index]
+                                                          .invoice_call,
+                                                  overflow:
+                                                      TextOverflow.visible,
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      fontSize: DM.p12,
+                                                      color: Color.fromARGB(
+                                                          255, 26, 1, 1)),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: DM.p130,
+                                                child: Text(
+                                                  _cancelRequestList[index]
+                                                      .name,
+                                                  overflow:
+                                                      TextOverflow.visible,
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      fontSize: DM.p12,
+                                                      color: Color.fromARGB(
+                                                          255, 26, 1, 1)),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                  height: DM.p35,
+                                                  width: DM.p80,
+                                                  child: MaterialButton(
+                                                      onPressed: () {
+                                                        showDialog(
+                                                            context: context,
+                                                            builder: (context) {
+                                                              return Scaffold(
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .transparent,
+                                                                body: Center(
+                                                                  child: Container(
+                                                                      margin: EdgeInsets.all(DM.p10),
+                                                                      height: DM.p200,
+                                                                      color: creamColor,
+                                                                      child: Column(
+                                                                        crossAxisAlignment:
+                                                                            CrossAxisAlignment.center,
+                                                                        children: [
+                                                                          Container(
+                                                                            padding:
+                                                                                EdgeInsets.all(16),
+                                                                            margin:
+                                                                                EdgeInsets.all(16),
+                                                                            child:
+                                                                                Text(
+                                                                              "Are you want to submit to ${_cancelRequestList[index].invoice_call}?",
+                                                                              style: TextStyle(fontWeight: FontWeight.w400, fontSize: DM.p20, color: Color.fromARGB(255, 26, 1, 1)),
+                                                                            ),
+                                                                          ),
+                                                                          Row(
+                                                                            mainAxisAlignment:
+                                                                                MainAxisAlignment.center,
+                                                                            children: [
+                                                                              Container(
+                                                                                margin: EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p10),
+                                                                                child: MaterialButton(
+                                                                                  onPressed: () {
+                                                                                    Get.back();
+                                                                                  },
+                                                                                  height: DM.p40,
+                                                                                  minWidth: DM.p120,
+                                                                                  shape: const StadiumBorder(),
+                                                                                  color: orangeColor,
+                                                                                  child: Text(
+                                                                                    "Cancel",
+                                                                                    style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                              Container(
+                                                                                margin: EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p10),
+                                                                                child: MaterialButton(
+                                                                                  onPressed: () async {
+                                                                                    if (await chechkingInternet()) {
+                                                                                      removeRequestFromFirebase(_newTestRequestList[index]);
+                                                                                    }
+                                                                                  },
+                                                                                  height: DM.p40,
+                                                                                  minWidth: DM.p120,
+                                                                                  shape: const StadiumBorder(),
+                                                                                  color: orangeColor,
+                                                                                  child: Text(
+                                                                                    "Yes",
+                                                                                    style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
+                                                                                  ),
+                                                                                ),
+                                                                              )
+                                                                            ],
+                                                                          ),
+                                                                        ],
+                                                                      )),
+                                                                ),
+                                                              );
+                                                            });
+                                                      },
+                                                      shape:
+                                                          const StadiumBorder(),
+                                                      color: redColor,
+                                                      child: Text(
+                                                        "Remove",
+                                                        style: TextStyle(
+                                                            color:
+                                                                fullWhiteColor,
+                                                            fontSize: DM.p8,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ))),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  )),
+                                  Container(
+                                    margin: EdgeInsets.symmetric(
+                                        horizontal: DM.p20, vertical: DM.p10),
+                                    child: MaterialButton(
+                                      onPressed: () {
+                                        Get.back();
+                                      },
+                                      height: DM.p40,
+                                      minWidth: DM.p120,
+                                      shape: const StadiumBorder(),
+                                      color: orangeColor,
+                                      child: Text(
+                                        "Cancel",
+                                        style: TextStyle(
+                                            color: fullWhiteColor,
+                                            fontSize: DM.p15,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ));
+                          });
+                    },
+                    child: Text("Cancel Requests")),
+              )),
             ],
           )),
     );

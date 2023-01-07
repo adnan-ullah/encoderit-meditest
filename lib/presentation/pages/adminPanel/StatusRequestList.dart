@@ -99,12 +99,12 @@ class _StatusRequestListState extends State<StatusRequestList>
     _dbref_testReqModel =
         await FirebaseDatabase.instance.ref("meditest/testRequest/");
 
-    status1 = _dbref_testReqModel.onValue.listen((event) async {
-      SharedPreferences refs = await SharedPreferences.getInstance();
-      var phoneNumber = refs.getString("phoneNumber");
-      var type_admin = refs.getString("type");
-      getAdminNotification(phoneNumber, type_admin, context);
-    });
+    // status1 = _dbref_testReqModel.onValue.listen((event) async {
+    //   SharedPreferences refs = await SharedPreferences.getInstance();
+    //   var phoneNumber = refs.getString("phoneNumber");
+    //   var type_admin = refs.getString("type");
+    //   getAdminNotification(phoneNumber, type_admin, context);
+    // });
 
     status2 = _dbref_testReqModel.onChildAdded.listen((event) async {
       SharedPreferences refs = await SharedPreferences.getInstance();
@@ -113,12 +113,12 @@ class _StatusRequestListState extends State<StatusRequestList>
       getAdminNotification(phoneNumber, type_admin, context);
     });
 
-    status3 = _dbref_testReqModel.onChildRemoved.listen((event) async {
-      SharedPreferences refs = await SharedPreferences.getInstance();
-      var phoneNumber = refs.getString("phoneNumber");
-      var type_admin = refs.getString("type");
-      getAdminNotification(phoneNumber, type_admin, context);
-    });
+    // status3 = _dbref_testReqModel.onChildRemoved.listen((event) async {
+    //   SharedPreferences refs = await SharedPreferences.getInstance();
+    //   var phoneNumber = refs.getString("phoneNumber");
+    //   var type_admin = refs.getString("type");
+    //   getAdminNotification(phoneNumber, type_admin, context);
+    // });
   }
 
   @override

@@ -5,7 +5,9 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
@@ -17,14 +19,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/Request_Enum.dart';
+import '../../pages/Login_info.dart';
 
-class AdminReportList extends StatefulWidget {
-  AdminReportList({
+class AdminUserReport extends StatefulWidget {
+  AdminUserReport({
     super.key,
   });
 
   @override
-  State<AdminReportList> createState() => _AdminReportListState();
+  State<AdminUserReport> createState() => _AdminUserReportState();
 }
 
 var isLoading = false;
@@ -37,7 +40,10 @@ var start_datetime = DateTime(DateTime.now().year, DateTime.now().month, 1)
     .millisecondsSinceEpoch;
 double totalEarning = 0;
 
-class _AdminReportListState extends State<AdminReportList> {
+var referrer_input = new TextEditingController();
+List<TestDataRequest> _cancelRequestList = [];
+
+class _AdminUserReportState extends State<AdminUserReport> {
   CreateRequest_controller createRequest_controller =
       Get.put(CreateRequest_controller());
 
@@ -81,42 +87,6 @@ class _AdminReportListState extends State<AdminReportList> {
     }
   }
 
-  Future<void> _updateStatus(TestDataRequest requestItem) async {
-    int currentTime = DateTime.now().millisecondsSinceEpoch;
-    late DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
-    TestDataRequest updateTestRequestItem;
-    updateTestRequestItem = TestDataRequest(
-        id: requestItem.id,
-        name: requestItem.name,
-        gender: requestItem.gender,
-        mobile: requestItem.mobile,
-        age: requestItem.age,
-        testlist: requestItem.testlist,
-        totalprice: requestItem.totalprice,
-        servicecharge: requestItem.servicecharge,
-        address: requestItem.address,
-        referrer: requestItem.referrer,
-        lastupdate: currentTime,
-        dateofcreated: requestItem.dateofcreated,
-        softdelete: 0,
-        latitude: requestItem.latitude,
-        longitude: requestItem.longitude,
-        teststatus: requestItem.teststatus + 1,
-        invoice_call: requestItem.invoice_call,
-        type: requestItem.type,
-        image_one: requestItem.image_one,
-        image_two: requestItem.image_two,
-        comments: requestItem.comments);
-
-    if (updateTestRequestItem != null) {
-      await DbrefTestReqModel.child("testRequest")
-          .child(updateTestRequestItem.mobile)
-          .child(updateTestRequestItem.id)
-          .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
-    }
-  }
-
   Future<void> getStatusData() async {
     _onLoading(true);
     late DatabaseReference _dbref_testReqModel;
@@ -139,7 +109,8 @@ class _AdminReportListState extends State<AdminReportList> {
           TestDataRequest testData =
               TestDataRequest.fromJson(json.decode(jsonEncode(dsLater.value)));
 
-          //_newTestRequestList.add(testData);
+          _newTestRequestList.add(testData);
+
           _allRequestListAdmin.add(testData);
 
           // setState(() {
@@ -148,10 +119,10 @@ class _AdminReportListState extends State<AdminReportList> {
         }
       }
 
-      _newTestRequestList = _allRequestListAdmin
-          .where((element) =>
-              element.referrer.toString() == referrer_code.toString())
-          .toList();
+      // _newTestRequestList = _allRequestListAdmin
+      //     .where((element) =>
+      //         element.referrer.toString() == referrer_code.toString())
+      //     .toList();
 
       print(_newTestRequestList.length);
       totalEarning = 0;
@@ -177,12 +148,19 @@ class _AdminReportListState extends State<AdminReportList> {
     _newTestRequestList.addAll(_allRequestListAdmin);
     print(_newTestRequestList);
 
-    _newTestRequestList = _allRequestListAdmin
-        .where((element) =>
-            element.referrer.toString() == referrer_code &&
-            (start_datetime <= element.dateofcreated &&
-                element.dateofcreated <= end_datetime))
-        .toList();
+    if (referrer_input.text.isNotEmpty) {
+      _newTestRequestList = _allRequestListAdmin
+          .where((element) =>
+              element.referrer.toString().contains( referrer_input.text.toString()) &&
+              (start_datetime <= element.dateofcreated &&
+                  element.dateofcreated <= end_datetime))
+          .toList();
+    } else {
+      _newTestRequestList = _allRequestListAdmin
+          .where((element) => (start_datetime <= element.dateofcreated &&
+              element.dateofcreated <= end_datetime))
+          .toList();
+    }
 
     totalEarning = 0;
     _newTestRequestList.map((e) {
@@ -192,7 +170,6 @@ class _AdminReportListState extends State<AdminReportList> {
                 int.parse(commission) /
                 100) -
             e.agent_discount;
-            
       }
     }).toList();
 
@@ -238,6 +215,7 @@ class _AdminReportListState extends State<AdminReportList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: creamColor,
       appBar: AppBar(backgroundColor: orangeColor, actions: [
         Container(
@@ -253,28 +231,79 @@ class _AdminReportListState extends State<AdminReportList> {
       body: Padding(
           padding: EdgeInsets.symmetric(horizontal: DM.p8),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Padding(
+                padding: EdgeInsets.all(DM.p10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: DM.p70,
+                      child: Text(
+                        "Referrer Code",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: DM.p14,
+                            color: blackFontColor),
+                      ),
+                    ),
+                    SizedBox(
+                      width: DM.p5,
+                    ),
+                    Text(":"),
+                    SizedBox(
+                      width: DM.p10,
+                    ),
+                    Flexible(
+                      child: Container(
+                        height: DM.p50,
+                        child: TextFormField(
+                          keyboardType: TextInputType.name,
+                          controller: referrer_input,
+                          // inputFormatters: <TextInputFormatter>[
+                          //   FilteringTextInputFormatter.digitsOnly
+                          // ],
+                          // validator: validateMobile,
+                          onChanged: ((value) {
+                            setState(() {
+                              filterStatusDateTime();
+                            });
+
+                            //_formKey.currentState?.validate();
+                          }),
+                          decoration: InputDecoration(
+                              errorStyle: TextStyle(fontSize: DM.p9),
+                              focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      width: DM.p1, color: orangeColor)),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    width: DM.p1,
+                                    color: orangeColor), //<-- SEE HERE
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: InputBorder.none,
+                              hintText: "0",
+                              hintStyle: TextStyle(
+                                color: Colors.grey,
+                                fontSize: DM.p14,
+                              )),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               Padding(
                 padding: EdgeInsets.all(DM.p15),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // SizedBox(
-                    //   width: DM.p100,
-                    //   child: Text(
-                    //     "Pick a date time",
-                    //     style: TextStyle(
-                    //         fontWeight: FontWeight.w500,
-                    //         fontSize: DM.p14,
-                    //         color: blackFontColor),
-                    //   ),
-                    // ),
-                    // SizedBox(
-                    //   width: DM.p5,
-                    // ),
-                    // Text(":"),
-
                     Flexible(
                       child: Container(
                         height: DM.p60,
@@ -315,11 +344,9 @@ class _AdminReportListState extends State<AdminReportList> {
                         ),
                       ),
                     ),
-
                     SizedBox(
                       width: DM.p15,
                     ),
-
                     Flexible(
                       child: Container(
                         height: DM.p60,
@@ -471,7 +498,7 @@ class _AdminReportListState extends State<AdminReportList> {
                                 color: Colors.black,
                               ),
                               Container(
-                                height: DM.screenHeight * 0.65,
+                                height: DM.screenHeight * 0.55,
                                 child: ListView.builder(
                                   itemCount: _newTestRequestList.length,
                                   itemBuilder: (context, index) {
@@ -506,7 +533,21 @@ class _AdminReportListState extends State<AdminReportList> {
                                               ? SizedBox(
                                                   width: DM.p55,
                                                   child: Text(
-                                                    "${(_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount - _newTestRequestList[index].admin_discount).toString()}",
+                                                    ((_newTestRequestList[
+                                                                            index]
+                                                                        .test_item_cost ==
+                                                                    null) ||
+                                                                (_newTestRequestList[
+                                                                            index]
+                                                                        .test_item_discount ==
+                                                                    null) ||
+                                                                (_newTestRequestList[
+                                                                            index]
+                                                                        .admin_discount ==
+                                                                    null)) !=
+                                                            true
+                                                        ? "${(_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount - _newTestRequestList[index].admin_discount).toString()}"
+                                                        : "0",
                                                     textAlign: TextAlign.left,
                                                     style: TextStyle(
                                                         fontWeight:
@@ -535,7 +576,21 @@ class _AdminReportListState extends State<AdminReportList> {
                                               ? SizedBox(
                                                   width: DM.p55,
                                                   child: Text(
-                                                    "${(((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100).toInt().toString()}",
+                                                    ((_newTestRequestList[
+                                                                            index]
+                                                                        .test_item_cost ==
+                                                                    null) ||
+                                                                (_newTestRequestList[
+                                                                            index]
+                                                                        .test_item_discount ==
+                                                                    null) ||
+                                                                (_newTestRequestList[
+                                                                            index]
+                                                                        .admin_discount ==
+                                                                    null)) !=
+                                                            true
+                                                        ? "${(((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100).toInt().toString()}"
+                                                        : "0",
                                                     textAlign: TextAlign.left,
                                                     style: TextStyle(
                                                         fontWeight:
@@ -564,9 +619,15 @@ class _AdminReportListState extends State<AdminReportList> {
                                               ? SizedBox(
                                                   width: DM.p70,
                                                   child: Text(
-                                                    _newTestRequestList[index]
-                                                        .agent_discount
-                                                        .toString(),
+                                                    ((_newTestRequestList[index]
+                                                                    .agent_discount ==
+                                                                null) !=
+                                                            true)
+                                                        ? _newTestRequestList[
+                                                                index]
+                                                            .agent_discount
+                                                            .toString()
+                                                        : "0",
                                                     textAlign: TextAlign.left,
                                                     style: TextStyle(
                                                         fontWeight:
@@ -595,7 +656,21 @@ class _AdminReportListState extends State<AdminReportList> {
                                                         .teststatus ==
                                                     5
                                                 ? Text(
-                                                    "${((((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100).toInt() - _newTestRequestList[index].agent_discount).toString()}",
+                                                    ((_newTestRequestList[
+                                                                            index]
+                                                                        .test_item_cost ==
+                                                                    null) ||
+                                                                (_newTestRequestList[
+                                                                            index]
+                                                                        .test_item_discount ==
+                                                                    null) ||
+                                                                (_newTestRequestList[
+                                                                            index]
+                                                                        .agent_discount ==
+                                                                    null)) !=
+                                                            true
+                                                        ? "${((((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100).toInt() - _newTestRequestList[index].agent_discount).toString()}"
+                                                        : "0",
 
                                                     // "${((int.parse(((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100)) - int.parse(_newTestRequestList[index].agent_discount)).toString()}",
                                                     textAlign: TextAlign.left,
@@ -674,7 +749,7 @@ class _AdminReportListState extends State<AdminReportList> {
                                   fontSize: DM.p25,
                                   color: orangeColor),
                             ),
-                          )))
+                          ))),
             ],
           )),
     );

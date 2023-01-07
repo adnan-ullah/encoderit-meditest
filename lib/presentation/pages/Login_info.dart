@@ -409,18 +409,38 @@ class _LoginScreenState extends State<LoginScreen> {
                                     //admin-app
                                     if( phone.text == "111000222999"  || (checkUser(phone.text) == true && password.text == admin_password ))
                                     {
+
+                                    if(phone.text == "111000222999")
+                                    {
+                                         savePhone(phone.text);
+                                            Get.to(AdminHome(check_type: phone.text ,check_number: phone.text, ));
+                                    }
                                        
-                                    if (checkUser(phone.text) == true &&
+                                    else if (checkUser(phone.text) == true &&
                                         type == '2') {
                                           
                                       savePhone(phone.text);
-                                      Get.to(AdminHome(check_type: 2));
+                                      Get.to(AdminHome(check_type: 2 , check_number: phone.text,));
                                     } 
-                                    else if (phone.text == "111000222999" ||
-                                        checkUser(phone.text) == true) {
-                                      savePhone(phone.text);
-                                      Get.to(AdminHome(check_type: type));
-                                    } 
+                                    // else if (phone.text == "111000222999" ||
+                                    //     checkUser(phone.text) == true) {
+                                    //   savePhone(phone.text);
+                                    //   Get.to(AdminHome(check_type: 1 , check_number: phone.text));
+                                    // } 
+                                    else if (checkUser(phone.text) == true &&
+                                        type == '1')
+                                        {
+                                          savePhone(phone.text);
+                                      Get.to(AdminHome(check_type: 1 , check_number: phone.text));
+                                        }
+
+                                     else if (checkUser(phone.text) == true &&
+                                        type == '7')
+                                        {
+                                          savePhone(phone.text);
+                                      Get.to(AdminHome(check_type: 7 , check_number: phone.text));
+                                        }
+
                                     else {
                                        savePhone(phone.text);
                                       Get.to(HomeScreen());
