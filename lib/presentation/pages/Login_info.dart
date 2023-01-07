@@ -55,8 +55,8 @@ class _LoginScreenState extends State<LoginScreen> {
   bool checkUser(phone) {
     bool returnType = false;
     adminUserList.map((e) {
-      if (e.phone.toString()==(phone.toString()) &&
-          e.active.toString()=="1") {
+      if (e.phone.toString() == (phone.toString()) &&
+          e.active.toString() == "1") {
         type = e.type;
         returnType = true;
       }
@@ -270,7 +270,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     FilteringTextInputFormatter.digitsOnly
                                   ],
                                   validator: validateMobile,
-                                  onChanged: ((value) {
+                                  onFieldSubmitted: ((value) {
                                     _formKey.currentState?.validate();
                                   }),
                                   decoration: InputDecoration(
@@ -291,6 +291,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             width: DM.p1,
                                             color: orangeColor), //<-- SEE HERE
                                       ),
+                                    
                                       filled: true,
                                       fillColor: Colors.white,
                                       border: InputBorder.none,
@@ -332,7 +333,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     //   Get.to(HomeScreen());
                                     // }
 
-                                   
                                   }
                                 },
                                 height: DM.p50,

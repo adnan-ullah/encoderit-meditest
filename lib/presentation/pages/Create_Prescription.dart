@@ -38,6 +38,7 @@ class _PrescriptionState extends State<Prescription> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   var phone = TextEditingController();
+  var referrer = TextEditingController();
   File? imageFile1, imageFile2;
 
   var status;
@@ -64,7 +65,7 @@ class _PrescriptionState extends State<Prescription> {
         totalprice: "",
         servicecharge: "",
         address: "",
-        referrer: "",
+        referrer: referrer.text,
         lastupdate: currentTime,
         dateofcreated: currentTime,
         softdelete: 0,
@@ -226,7 +227,10 @@ class _PrescriptionState extends State<Prescription> {
           child: Text(
             "Prescription Form",
             textAlign: TextAlign.left,
-            style: TextStyle(color: creamColor,fontWeight: FontWeight.bold, fontSize: DM.p25),
+            style: TextStyle(
+                color: creamColor,
+                fontWeight: FontWeight.bold,
+                fontSize: DM.p25),
           ),
         ),
       ]),
@@ -262,379 +266,452 @@ class _PrescriptionState extends State<Prescription> {
                           ),
                         ),
 
-                        Padding(
-                          padding: EdgeInsets.all(DM.p40),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: DM.p100,
-                                child: Text(
-                                  "Contact\nNumber",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: DM.p14,
-                                      color: blackFontColor),
-                                ),
-                              ),
-                              SizedBox(
-                                width: DM.p5,
-                              ),
-                              Text(":"),
-                              SizedBox(
-                                width: DM.p10,
-                              ),
-                              Flexible(
-                                child: Container(
-                                  height: DM.p50,
-                                  child: TextFormField(
-                                    keyboardType: TextInputType.phone,
-                                    controller: phone,
-                                    validator: validateMobile,
-                                    onChanged: ((value) {
-                                      _formKey.currentState?.validate();
-                                    }),
-                                    decoration: InputDecoration(
-                                        errorStyle: TextStyle(fontSize: DM.p9),
-
-                                        // focusedErrorBorder:
-                                        //     OutlineInputBorder(
-                                        //         borderSide: BorderSide(
-                                        //             width: DM.p1,
-                                        //             color:
-                                        //                 orangeColor)),
-                                        focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                width: DM.p1,
-                                                color: orangeColor)),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              width: DM.p1,
-                                              color:
-                                                  orangeColor), //<-- SEE HERE
-                                        ),
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        border: InputBorder.none,
-                                        hintText: "Ex: 01888888888",
-                                        hintStyle: TextStyle(
-                                          color: Colors.grey,
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(DM.p12),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: DM.p100,
+                                    child: Text(
+                                      "Contact\nNumber",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
                                           fontSize: DM.p14,
-                                        )),
+                                          color: blackFontColor),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(DM.p10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              imageFile1 == null
-                                  ? Container(
-                                      height: DM.p180,
-                                      width: DM.p150,
-                                      margin: EdgeInsets.symmetric(
-                                          horizontal: DM.p15),
-                                      child: MaterialButton(
-                                        onPressed: () async {
-                                          showDialog(
-                                              context: context,
-                                              builder: (context) {
-                                                return Center(
-                                                  child: Container(
-                                                    color: whiteColor,
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Container(
-                                                          margin:
-                                                              EdgeInsets.all(
-                                                                  DM.p16),
-                                                          height: DM.p130,
-                                                          width: DM.p120,
-                                                          child: ElevatedButton(
-                                                              style: ElevatedButton
-                                                                  .styleFrom(
-                                                                      backgroundColor:
-                                                                          orangeColor,
-                                                                      elevation:
-                                                                          0),
-                                                              onPressed:
-                                                                  () async {
-                                                                PickedFile?
-                                                                    pickedFile =
-                                                                    await ImagePicker()
-                                                                        .getImage(
-                                                                  source:
-                                                                      ImageSource
-                                                                          .gallery,
-                                                                  maxWidth: 800,
-                                                                  maxHeight:
-                                                                      1200,
-                                                                );
-                                                                setState(() {
-                                                                  if (pickedFile !=
-                                                                      null)
-                                                                    imageFile1 =
-                                                                        File(pickedFile!
-                                                                            .path);
-                                                                });
+                                  SizedBox(
+                                    width: DM.p5,
+                                  ),
+                                  Text(":"),
+                                  SizedBox(
+                                    width: DM.p10,
+                                  ),
+                                  Flexible(
+                                    child: Container(
+                                      height: DM.p50,
+                                      child: TextFormField(
+                                        keyboardType: TextInputType.phone,
+                                        controller: phone,
+                                        validator: validateMobile,
+                                        onChanged: ((value) {
+                                          _formKey.currentState?.validate();
+                                        }),
+                                        decoration: InputDecoration(
+                                            errorStyle:
+                                                TextStyle(fontSize: DM.p9),
 
-                                                                Navigator.pop(
-                                                                    context);
-                                                              },
-                                                              child: Text(
-                                                                "Gallery",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        DM.p18),
-                                                              )),
-                                                        ),
-                                                        Container(
-                                                          margin:
-                                                              EdgeInsets.all(
-                                                                  DM.p16),
-                                                          decoration: BoxDecoration(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          25)),
-                                                          height: DM.p130,
-                                                          width: DM.p120,
-                                                          child: ElevatedButton(
-                                                              style: ElevatedButton
-                                                                  .styleFrom(
-                                                                      backgroundColor:
-                                                                          orangeColor,
-                                                                      elevation:
-                                                                          0),
-                                                              onPressed:
-                                                                  () async {
-                                                                PickedFile?
-                                                                    pickedFile =
-                                                                    await ImagePicker()
-                                                                        .getImage(
-                                                                  source:
-                                                                      ImageSource
-                                                                          .camera,
-                                                                  maxWidth: 800,
-                                                                  maxHeight:
-                                                                      1200,
-                                                                );
-                                                                setState(() {
-                                                                  if (pickedFile !=
-                                                                      null)
-                                                                    imageFile1 =
-                                                                        File(pickedFile!
-                                                                            .path);
-                                                                });
-                                                                Navigator.pop(
-                                                                    context);
-                                                              },
-                                                              child: Text(
-                                                                  "Camera",
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          DM.p18))),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                );
-                                              });
-                                        },
-                                        height: DM.p50,
-                                        color: orangeColor,
-                                        child: Text(
-                                          "Upload \nimage 1",
-                                          textAlign: TextAlign.start,
-                                          style: TextStyle(
-                                              color: fullWhiteColor,
-                                              fontSize: DM.p20,
-                                              fontWeight: FontWeight.bold),
-                                        ),
+                                            // focusedErrorBorder:
+                                            //     OutlineInputBorder(
+                                            //         borderSide: BorderSide(
+                                            //             width: DM.p1,
+                                            //             color:
+                                            //                 orangeColor)),
+                                            focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    width: DM.p1,
+                                                    color: orangeColor)),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  width: DM.p1,
+                                                  color:
+                                                      orangeColor), //<-- SEE HERE
+                                            ),
+                                            filled: true,
+                                            fillColor: Colors.white,
+                                            border: InputBorder.none,
+                                            hintText: "Ex: 01888888888",
+                                            hintStyle: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: DM.p14,
+                                            )),
                                       ),
-                                    )
-                                  : Column(
-                                      children: [
-                                        Container(
-                                          height: DM.p180,
-                                          width: DM.p150,
-                                          child: Image.file(
-                                            imageFile1 as File,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                        IconButton(
-                                          color: orangeColor,
-                                          icon: Icon(
-                                            CupertinoIcons.xmark_circle_fill,
-                                            size: DM.p30,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              imageFile1 = null;
-                                            });
-                                          },
-                                        ),
-                                      ],
                                     ),
-                              Container(
-                                height: DM.p40,
+                                  ),
+                                ],
                               ),
-                              imageFile2 == null
-                                  ? Container(
-                                      height: DM.p180,
-                                      width: DM.p150,
-                                      margin: EdgeInsets.symmetric(
-                                          horizontal: DM.p15),
-                                      child: MaterialButton(
-                                        onPressed: () async {
-                                          showDialog(
-                                              context: context,
-                                              builder: (context) {
-                                                return Center(
-                                                  child: Container(
-                                                    color: whiteColor,
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Container(
-                                                          margin:
-                                                              EdgeInsets.all(
-                                                                  DM.p16),
-                                                          height: DM.p130,
-                                                          width: DM.p120,
-                                                          child: ElevatedButton(
-                                                              style: ElevatedButton
-                                                                  .styleFrom(
-                                                                      backgroundColor:
-                                                                          orangeColor,
-                                                                      elevation:
-                                                                          0),
-                                                              onPressed:
-                                                                  () async {
-                                                                PickedFile?
-                                                                    pickedFile =
-                                                                    await ImagePicker()
-                                                                        .getImage(
-                                                                  source:
-                                                                      ImageSource
-                                                                          .gallery,
-                                                                  maxWidth: 800,
-                                                                  maxHeight:
-                                                                      1200,
-                                                                );
-                                                                setState(() {
-                                                                  if (pickedFile !=
-                                                                      null)
-                                                                    imageFile2 =
-                                                                        File(pickedFile!
-                                                                            .path);
-                                                                });
-                                                                Navigator.pop(
-                                                                    context);
-                                                              },
-                                                              child: Text(
-                                                                "Gallery",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        DM.p18),
-                                                              )),
-                                                        ),
-                                                        Container(
-                                                          margin:
-                                                              EdgeInsets.all(
-                                                                  DM.p16),
-                                                          height: DM.p130,
-                                                          width: DM.p120,
-                                                          child: ElevatedButton(
-                                                              style: ElevatedButton
-                                                                  .styleFrom(
-                                                                      backgroundColor:
-                                                                          orangeColor,
-                                                                      elevation:
-                                                                          0),
-                                                              onPressed:
-                                                                  () async {
-                                                                PickedFile?
-                                                                    pickedFile =
-                                                                    await ImagePicker()
-                                                                        .getImage(
-                                                                  source:
-                                                                      ImageSource
-                                                                          .camera,
-                                                                  maxWidth: 800,
-                                                                  maxHeight:
-                                                                      1200,
-                                                                );
-                                                                setState(() {
-                                                                  if (pickedFile !=
-                                                                      null)
-                                                                    imageFile2 =
-                                                                        File(pickedFile!
-                                                                            .path);
-                                                                });
-                                                                Navigator.pop(
-                                                                    context);
-                                                              },
-                                                              child: Text(
-                                                                  "Camera",
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          DM.p18))),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                );
-                                              });
-                                        },
-                                        height: DM.p50,
-                                        color: orangeColor,
-                                        child: Text(
-                                          "Upload \nimage 2",
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              color: fullWhiteColor,
-                                              fontSize: DM.p20,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    )
-                                  : Column(
-                                      children: [
-                                        Container(
-                                          height: DM.p180,
-                                          width: DM.p150,
-                                          child: Image.file(
-                                            imageFile2!,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                        IconButton(
-                                          color: orangeColor,
-                                          icon: Icon(
-                                            CupertinoIcons.xmark_circle_fill,
-                                            size: DM.p30,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              imageFile2 = null;
-                                            });
-                                          },
-                                        ),
-                                      ],
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(DM.p12),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: DM.p100,
+                                    child: Text(
+                                      "Referrer\n(যদি থাকে)",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: DM.p14,
+                                          color: blackFontColor),
                                     ),
-                            ],
+                                  ),
+                                  SizedBox(
+                                    width: DM.p5,
+                                  ),
+                                  Text(":"),
+                                  SizedBox(
+                                    width: DM.p10,
+                                  ),
+                                  Flexible(
+                                    child: Container(
+                                      height: DM.p50,
+                                      child: TextFormField(
+                                        keyboardType: TextInputType.phone,
+                                        controller: referrer,
+                              
+                                        decoration: InputDecoration(
+                                            errorStyle:
+                                                TextStyle(fontSize: DM.p9),
+
+                                            // focusedErrorBorder:
+                                            //     OutlineInputBorder(
+                                            //         borderSide: BorderSide(
+                                            //             width: DM.p1,
+                                            //             color:
+                                            //                 orangeColor)),
+                                            focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    width: DM.p1,
+                                                    color: orangeColor)),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  width: DM.p1,
+                                                  color:
+                                                      orangeColor), //<-- SEE HERE
+                                            ),
+                                            filled: true,
+                                            fillColor: Colors.white,
+                                            border: InputBorder.none,
+                                            hintText: "Referrer",
+                                            hintStyle: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: DM.p14,
+                                            )),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(top: DM.p24),
+                          child: Padding(
+                            padding: EdgeInsets.all(DM.p10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                imageFile1 == null
+                                    ? Container(
+                                        height: DM.p180,
+                                        width: DM.p150,
+                                        margin: EdgeInsets.symmetric(
+                                            horizontal: DM.p15),
+                                        child: MaterialButton(
+                                          onPressed: () async {
+                                            showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return Center(
+                                                    child: Container(
+                                                      color: whiteColor,
+                                                      child: Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Container(
+                                                            margin:
+                                                                EdgeInsets.all(
+                                                                    DM.p16),
+                                                            height: DM.p130,
+                                                            width: DM.p120,
+                                                            child:
+                                                                ElevatedButton(
+                                                                    style: ElevatedButton.styleFrom(
+                                                                        backgroundColor:
+                                                                            orangeColor,
+                                                                        elevation:
+                                                                            0),
+                                                                    onPressed:
+                                                                        () async {
+                                                                      PickedFile?
+                                                                          pickedFile =
+                                                                          await ImagePicker()
+                                                                              .getImage(
+                                                                        source:
+                                                                            ImageSource.gallery,
+                                                                        maxWidth:
+                                                                            800,
+                                                                        maxHeight:
+                                                                            1200,
+                                                                      );
+                                                                      setState(
+                                                                          () {
+                                                                        if (pickedFile !=
+                                                                            null)
+                                                                          imageFile1 =
+                                                                              File(pickedFile!.path);
+                                                                      });
+
+                                                                      Navigator.pop(
+                                                                          context);
+                                                                    },
+                                                                    child: Text(
+                                                                      "Gallery",
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              DM.p18),
+                                                                    )),
+                                                          ),
+                                                          Container(
+                                                            margin:
+                                                                EdgeInsets.all(
+                                                                    DM.p16),
+                                                            decoration: BoxDecoration(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            25)),
+                                                            height: DM.p130,
+                                                            width: DM.p120,
+                                                            child:
+                                                                ElevatedButton(
+                                                                    style: ElevatedButton.styleFrom(
+                                                                        backgroundColor:
+                                                                            orangeColor,
+                                                                        elevation:
+                                                                            0),
+                                                                    onPressed:
+                                                                        () async {
+                                                                      PickedFile?
+                                                                          pickedFile =
+                                                                          await ImagePicker()
+                                                                              .getImage(
+                                                                        source:
+                                                                            ImageSource.camera,
+                                                                        maxWidth:
+                                                                            800,
+                                                                        maxHeight:
+                                                                            1200,
+                                                                      );
+                                                                      setState(
+                                                                          () {
+                                                                        if (pickedFile !=
+                                                                            null)
+                                                                          imageFile1 =
+                                                                              File(pickedFile!.path);
+                                                                      });
+                                                                      Navigator.pop(
+                                                                          context);
+                                                                    },
+                                                                    child: Text(
+                                                                        "Camera",
+                                                                        style: TextStyle(
+                                                                            fontSize:
+                                                                                DM.p18))),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                });
+                                          },
+                                          height: DM.p50,
+                                          color: orangeColor,
+                                          child: Text(
+                                            "Upload \nimage 1",
+                                            textAlign: TextAlign.start,
+                                            style: TextStyle(
+                                                color: fullWhiteColor,
+                                                fontSize: DM.p20,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      )
+                                    : Column(
+                                        children: [
+                                          Container(
+                                            height: DM.p180,
+                                            width: DM.p150,
+                                            child: Image.file(
+                                              imageFile1 as File,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          IconButton(
+                                            color: orangeColor,
+                                            icon: Icon(
+                                              CupertinoIcons.xmark_circle_fill,
+                                              size: DM.p30,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                imageFile1 = null;
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                Container(
+                                  height: DM.p40,
+                                ),
+                                imageFile2 == null
+                                    ? Container(
+                                        height: DM.p180,
+                                        width: DM.p150,
+                                        margin: EdgeInsets.symmetric(
+                                            horizontal: DM.p15),
+                                        child: MaterialButton(
+                                          onPressed: () async {
+                                            showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return Center(
+                                                    child: Container(
+                                                      color: whiteColor,
+                                                      child: Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Container(
+                                                            margin:
+                                                                EdgeInsets.all(
+                                                                    DM.p16),
+                                                            height: DM.p130,
+                                                            width: DM.p120,
+                                                            child:
+                                                                ElevatedButton(
+                                                                    style: ElevatedButton.styleFrom(
+                                                                        backgroundColor:
+                                                                            orangeColor,
+                                                                        elevation:
+                                                                            0),
+                                                                    onPressed:
+                                                                        () async {
+                                                                      PickedFile?
+                                                                          pickedFile =
+                                                                          await ImagePicker()
+                                                                              .getImage(
+                                                                        source:
+                                                                            ImageSource.gallery,
+                                                                        maxWidth:
+                                                                            800,
+                                                                        maxHeight:
+                                                                            1200,
+                                                                      );
+                                                                      setState(
+                                                                          () {
+                                                                        if (pickedFile !=
+                                                                            null)
+                                                                          imageFile2 =
+                                                                              File(pickedFile!.path);
+                                                                      });
+                                                                      Navigator.pop(
+                                                                          context);
+                                                                    },
+                                                                    child: Text(
+                                                                      "Gallery",
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              DM.p18),
+                                                                    )),
+                                                          ),
+                                                          Container(
+                                                            margin:
+                                                                EdgeInsets.all(
+                                                                    DM.p16),
+                                                            height: DM.p130,
+                                                            width: DM.p120,
+                                                            child:
+                                                                ElevatedButton(
+                                                                    style: ElevatedButton.styleFrom(
+                                                                        backgroundColor:
+                                                                            orangeColor,
+                                                                        elevation:
+                                                                            0),
+                                                                    onPressed:
+                                                                        () async {
+                                                                      PickedFile?
+                                                                          pickedFile =
+                                                                          await ImagePicker()
+                                                                              .getImage(
+                                                                        source:
+                                                                            ImageSource.camera,
+                                                                        maxWidth:
+                                                                            800,
+                                                                        maxHeight:
+                                                                            1200,
+                                                                      );
+                                                                      setState(
+                                                                          () {
+                                                                        if (pickedFile !=
+                                                                            null)
+                                                                          imageFile2 =
+                                                                              File(pickedFile!.path);
+                                                                      });
+                                                                      Navigator.pop(
+                                                                          context);
+                                                                    },
+                                                                    child: Text(
+                                                                        "Camera",
+                                                                        style: TextStyle(
+                                                                            fontSize:
+                                                                                DM.p18))),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                });
+                                          },
+                                          height: DM.p50,
+                                          color: orangeColor,
+                                          child: Text(
+                                            "Upload \nimage 2",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                color: fullWhiteColor,
+                                                fontSize: DM.p20,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      )
+                                    : Column(
+                                        children: [
+                                          Container(
+                                            height: DM.p180,
+                                            width: DM.p150,
+                                            child: Image.file(
+                                              imageFile2!,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          IconButton(
+                                            color: orangeColor,
+                                            icon: Icon(
+                                              CupertinoIcons.xmark_circle_fill,
+                                              size: DM.p30,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                imageFile2 = null;
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                              ],
+                            ),
                           ),
                         ),
                         Container(
@@ -642,7 +719,7 @@ class _PrescriptionState extends State<Prescription> {
                               horizontal: DM.p20, vertical: DM.p32),
                           child: Center(
                             child: SizedBox(
-                              width: DM.p130,
+                              width: DM.p150,
                               child: MaterialButton(
                                 onPressed: () async {
                                   if (await chechkingInternet()) {
