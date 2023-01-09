@@ -282,7 +282,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         FilteringTextInputFormatter.digitsOnly
                                       ],
                                       validator: validateMobile,
-                                      onChanged: ((value) {
+                                      onFieldSubmitted: ((value) {
                                         _formKey.currentState?.validate();
                                       }),
                                       decoration: InputDecoration(

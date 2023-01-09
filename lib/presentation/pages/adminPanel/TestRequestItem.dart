@@ -185,15 +185,17 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
           .format(DateTime.fromMillisecondsSinceEpoch(currentTime + 86400000)));
     }
 
+   
+    if (teststatus.text.contains("2")) {
+      dateTime_delivery = DateTime(DateTime.now().year, DateTime.now().month,
+              DateTime.now().day + 1, 20, 0, 0)
+          .millisecondsSinceEpoch;
 
-    if(teststatus.text == "2")
-    {
-          dateTime_delivery =  DateTime(DateTime.now().year,DateTime.now().month, DateTime.now().day + 1, 20, 0, 0).millisecondsSinceEpoch;
+      delivery_date.text = (DateFormat.yMMMd()
+          .format(DateTime.fromMillisecondsSinceEpoch(dateTime_delivery)));
     }
 
-
-
-
+    
 
     if (widget.testEachRequest!.comments != null)
       comments.text = widget.testEachRequest!.comments;
@@ -295,15 +297,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   Future<void> _updateRequest() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
 
-  
-
     late DatabaseReference DbrefTestReqModel;
     DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
 
     if (admin_discount.text == null || admin_discount.text.isEmpty) {
       admin_discount.text = "0";
     }
-     if (agent_discount.text == null || agent_discount.text.isEmpty) {
+    if (agent_discount.text == null || agent_discount.text.isEmpty) {
       agent_discount.text = "0";
     }
 

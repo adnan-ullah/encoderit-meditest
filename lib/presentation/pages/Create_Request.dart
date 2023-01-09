@@ -128,6 +128,7 @@ class _CreateRequestState extends State<CreateRequest> {
   Future<void> getSharedData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     phone.text = prefs.getString("phoneNumber").toString();
+    referredAddressText.text =  prefs.getString("referrer_code").toString();
   }
 
   @override

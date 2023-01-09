@@ -123,10 +123,9 @@ class _StatusRequestListState extends State<StatusRequestList>
 
   @override
   void dispose() {
-  
-    status1?.cancel();
+    // status1?.cancel();
     status2?.cancel();
-    status3?.cancel();
+    // status3?.cancel();
     // TODO: implement dispose
     super.dispose();
   }
@@ -289,22 +288,9 @@ Future<void> populateAllRequest() async {
 }
 
 Future<void> getAdminNotification(phone, type, context) async {
-  late DatabaseReference DbrefTestModel;
-  DbrefTestModel = FirebaseDatabase.instance.ref("meditest/admin_user/");
-  FirebaseDatabase.instance.setPersistenceEnabled(true);
-  DbrefTestModel.keepSynced(true);
+  if (type == "1" || type == "7" || phone == "111000222999") {
 
-  DbrefTestModel.onValue.listen((event) async {
-    for (DataSnapshot ds in event.snapshot.children) {
-      AdminUserModel testData =
-          AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
-
-      if (testData.phone == phone || phone == "111000222999") {
-        if (type == "1" || type == "7" || phone == "111000222999") {
-          createPlantFoodNotification();
-          showNotification(context);
-        }
-      }
-    }
-  });
+    createPlantFoodNotification();
+    showNotification(context);
+  }
 }
