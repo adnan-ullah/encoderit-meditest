@@ -17,6 +17,7 @@ import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../constants/app_info.dart';
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/Request_Enum.dart';
 import '../../pages/Login_info.dart';
@@ -94,7 +95,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
     _onLoading(true);
     late DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel =
-        await FirebaseDatabase.instance.ref("meditest/testRequest/");
+        await FirebaseDatabase.instance.ref("$database_name/testRequest/");
 
     _dbref_testReqModel.onValue.listen((event) async {
       _newTestRequestList.clear();
@@ -146,7 +147,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
         if (e.test_item_cost != null &&
             !e.test_item_cost.toString().contains("null") &&
             e.test_item_cost.toString().isNotEmpty) {
-          totalTestCost = totalTestCost + e.test_item_cost;
+            totalTestCost = totalTestCost + e.test_item_cost;
         }
         if (e.total_discount != null &&
             !e.total_discount.toString().contains("null") &&
@@ -235,7 +236,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
 
   Future<void> removeRequestFromFirebase(TestDataRequest testReq) async {
     DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
+    DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
     if (testReq != null) {
       await DbrefTestReqModel.child("testRequest")
           .child(testReq.mobile)

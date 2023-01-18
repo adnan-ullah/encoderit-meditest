@@ -17,6 +17,7 @@ import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../constants/app_info.dart';
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/Request_Enum.dart';
 
@@ -81,7 +82,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
   Future<void> _updateStatus(TestDataRequest requestItem) async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     late DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
+    DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
     TestDataRequest updateTestRequestItem;
     updateTestRequestItem = TestDataRequest(
       id: requestItem.id,
@@ -126,7 +127,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
     _onLoading(true);
     late DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel =
-        await FirebaseDatabase.instance.ref("meditest/testRequest/");
+        await FirebaseDatabase.instance.ref("$database_name/testRequest/");
 
   
 
@@ -370,7 +371,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
 
 Future<void> getAdminNotification(phone, type, context) async {
   late DatabaseReference DbrefTestModel;
-  DbrefTestModel = FirebaseDatabase.instance.ref("meditest/admin_user/");
+  DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/admin_user/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);
   DbrefTestModel.keepSynced(true);
 

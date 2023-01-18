@@ -12,7 +12,12 @@ class TestData {
       required this.softdelete,
       required this.transport_cost,
       required this.niddle_cost,
-      required this.servicecharge});
+      required this.servicecharge,
+      required this.b2b_cost,
+      required this.is_payable,
+      required this.category,
+      
+      });
 
   final dynamic id;
   final dynamic name;
@@ -25,6 +30,10 @@ class TestData {
   final dynamic transport_cost;
   final dynamic niddle_cost;
   final dynamic servicecharge;
+   final dynamic b2b_cost;
+  final dynamic is_payable;
+  final dynamic category;
+
   Map toJson() => {
         'id': id,
         'name': name,
@@ -37,6 +46,10 @@ class TestData {
         'transport_cost': transport_cost,
         'niddle_cost': niddle_cost,
         'servicecharge': servicecharge,
+        'b2b_cost': b2b_cost,
+        'is_payable': is_payable,
+        'category': category,
+        
       };
 
   factory TestData.fromJson(Map<String, dynamic> parsedJson) {
@@ -51,7 +64,10 @@ class TestData {
         softdelete: parsedJson['softdelete'],
         transport_cost: parsedJson['transport_cost'],
         niddle_cost: parsedJson['niddle_cost'],
-        servicecharge: parsedJson['servicecharge']);
+        servicecharge: parsedJson['servicecharge'],
+         b2b_cost: parsedJson['b2b_cost'],
+        is_payable: parsedJson['is_payable'],
+        category: parsedJson['category']);
   }
 }
 

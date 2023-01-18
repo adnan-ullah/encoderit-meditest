@@ -19,6 +19,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
+import '../../constants/app_info.dart';
 import '../../constants/colors.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/Create_Request_Controller.dart';
@@ -81,7 +82,7 @@ class _PrescriptionState extends State<Prescription> {
         image_two: urlDownload2)!;
 
     late DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
 
     if (newRequestData != null) {
       await _dbref_testReqModel

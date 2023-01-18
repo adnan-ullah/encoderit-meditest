@@ -21,6 +21,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../constants/app_info.dart';
 import '../../constants/colors.dart';
 import '../../db/databse_model.dart';
 import '../../responsives/dimensions.dart';
@@ -204,7 +205,7 @@ class _CreateRequestState extends State<CreateRequest> {
       // String currentTime = DateFormat('dd-MMM-yyy').format(tsdate);
 
       late DatabaseReference _dbref_testReqModel;
-      _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
+      _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
 
       newRequestData = TestDataRequest(
           id: ((Random().nextInt(900000) + 100000).toString()),
@@ -259,7 +260,7 @@ class _CreateRequestState extends State<CreateRequest> {
       // String currentTime = DateFormat('dd-MMM-yyy').format(tsdate);
 
       late DatabaseReference _dbref_testReqModel;
-      _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
+      _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
 
       newRequestData = TestDataRequest(
         id: ((Random().nextInt(900000) + 100000).toString()),
@@ -1112,7 +1113,7 @@ Future<void> getTestItemList() async {
   CreateRequest_controller createRequest_controller =
       Get.put(CreateRequest_controller());
   late DatabaseReference _dbref_testModel;
-  _dbref_testModel = FirebaseDatabase.instance.ref("meditest/testModel/");
+  _dbref_testModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);
   _dbref_testModel.keepSynced(true);
 
@@ -1135,7 +1136,7 @@ Future<void> getTestItemList() async {
 
 Future<void> getAdminNotification(phone,type, context) async {
   late DatabaseReference DbrefTestModel;
-  DbrefTestModel = FirebaseDatabase.instance.ref("meditest/admin_user/");
+  DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/admin_user/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);
   DbrefTestModel.keepSynced(true);
 

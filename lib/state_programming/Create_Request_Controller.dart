@@ -35,7 +35,8 @@ class CreateRequest_controller extends GetxController {
     3: "COLLECTED",
     4: "READY",
     5: "DELIVERED",
-    6: "CANCEL"
+    6: "CANCEL",
+    7:"CONFIRM"
   };
 
   Map<String, int> toStatus = {
@@ -45,6 +46,7 @@ class CreateRequest_controller extends GetxController {
  "READY" :  4,
   "DELIVERED" :  5,
   "CANCEL" :  6,
+  "CONFIRM":7
   };
    Map<int, String> typeName = {
     1: "FORM",
@@ -54,6 +56,17 @@ class CreateRequest_controller extends GetxController {
     Map<String, int> toType = {
      "FORM":1,
    "PRESCRIPTION":2,
+
+  };
+
+    Map<int, String> categoryName = {
+    1: "PATHOLOGY",
+    2: "RADIO/IMAGE",
+
+  };
+    Map<String, int> toCategory = {
+     "PATHOLOGY":1,
+   "RADIO/IMAGE":2,
 
   };
 

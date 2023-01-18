@@ -13,6 +13,7 @@ import 'package:healthcare_homelab/state_programming/Create_Request_Controller.d
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../constants/app_info.dart';
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/Request_Enum.dart';
 import 'Notifications/NotificationServices.dart';
@@ -39,7 +40,7 @@ class _RequestListState extends State<RequestList> {
     phoneNumber = prefs.getString("phoneNumber")!;
 
     _dbref_testReqModel = await FirebaseDatabase.instance
-        .ref("meditest/testRequest/${phoneNumber}/");
+        .ref("$database_name/testRequest/${phoneNumber}/");
 
     _dbref_testReqModel.onValue.listen((event) {
   

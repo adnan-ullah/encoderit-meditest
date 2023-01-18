@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
+import 'package:healthcare_homelab/constants/app_info.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/ConfirmationList.dart';
@@ -39,6 +40,7 @@ class TestDataCreate extends StatefulWidget {
 class _TestDataCreateState extends State<TestDataCreate> {
   var updatedTestItemData;
   var inserNewTestItem;
+  var category = 1;
 
   Future<void> updateTestItem() async {
     name.text = widget.testItem!.name;
@@ -50,26 +52,31 @@ class _TestDataCreateState extends State<TestDataCreate> {
     testkitprice.text = widget.testItem!.testkitprice.toString();
     testprice.text = widget.testItem!.testprice.toString();
     transport_cost.text = widget.testItem!.transport_cost.toString();
+    b2b_cost.text = widget.testItem!.b2b_cost.toString();
+    is_payable = widget.testItem!.is_payable;
+    category = widget.testItem!.category;
   }
 
   Future<void> updateToFirebase() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     late DatabaseReference dbrefTestReqModel;
-    dbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
+    dbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name");
 
     updatedTestItemData = TestData(
-      id: widget.testItem!.id.toString(),
-      name: name.text.toString(),
-      servicecharge: servicecharge.text.toString(),
-      lastupdate: currentTime.toString(),
-      softdelete: softdelete.text.toString(),
-      diagnostic_center: diagnostic_center.text.toString(),
-      discount: discount.text.toString(),
-      niddle_cost: niddle_cost.text.toString(),
-      testkitprice: testkitprice.text.toString(),
-      testprice: testprice.text.toString(),
-      transport_cost: transport_cost.text.toString(),
-    );
+        id: widget.testItem!.id.toString(),
+        name: name.text.toString(),
+        servicecharge: servicecharge.text.toString(),
+        lastupdate: currentTime.toString(),
+        softdelete: softdelete.text.toString(),
+        diagnostic_center: diagnostic_center.text.toString(),
+        discount: discount.text.toString(),
+        niddle_cost: niddle_cost.text.toString(),
+        testkitprice: testkitprice.text.toString(),
+        testprice: testprice.text.toString(),
+        transport_cost: transport_cost.text.toString(),
+        b2b_cost: b2b_cost.text,
+        is_payable: is_payable,
+        category: category);
 
     if (updatedTestItemData != null) {
       await dbrefTestReqModel
@@ -82,21 +89,23 @@ class _TestDataCreateState extends State<TestDataCreate> {
   Future<void> insertNewTestItemMethod() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name");
 
     inserNewTestItem = TestData(
-      id: Uuid().v4(),
-      name: name.text,
-      servicecharge: servicecharge.text,
-      lastupdate: currentTime,
-      softdelete: softdelete.text,
-      diagnostic_center: diagnostic_center.text,
-      discount: discount.text,
-      niddle_cost: niddle_cost.text,
-      testkitprice: testkitprice.text,
-      testprice: testprice.text,
-      transport_cost: transport_cost.text,
-    );
+        id: Uuid().v4(),
+        name: name.text,
+        servicecharge: servicecharge.text,
+        lastupdate: currentTime,
+        softdelete: softdelete.text,
+        diagnostic_center: diagnostic_center.text,
+        discount: discount.text,
+        niddle_cost: niddle_cost.text,
+        testkitprice: testkitprice.text,
+        testprice: testprice.text,
+        transport_cost: transport_cost.text,
+        b2b_cost: b2b_cost.text,
+        is_payable: is_payable,
+        category: category);
     if (inserNewTestItem != null) {
       await _dbref_testReqModel
           .child("testModel")
@@ -131,6 +140,9 @@ class _TestDataCreateState extends State<TestDataCreate> {
   var servicecharge = TextEditingController();
   var discount = TextEditingController();
   var testprice = TextEditingController();
+  var b2b_cost = TextEditingController();
+
+  var is_payable = true;
   //form variables:
 
   var newTestListData;
@@ -194,17 +206,96 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           validatorField: validateName,
                           textInputType: TextInputType.name,
                           controller: diagnostic_center,
-                          title: "Diagnostic center",
+                          title: "Diagnostic Center",
                           value: "Write Diagnostic Name",
                           activate: false,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p1),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Is payable",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: Color.fromARGB(255, 26, 1, 1)),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Checkbox(
+                                  value: is_payable,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      is_payable = value!;
+                                    });
+                                  }),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p1),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Category",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: Color.fromARGB(255, 26, 1, 1)),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              DropdownButton<String>(
+                                hint: Text(
+                                  "${createReqController.categoryName[category]}",
+                                  style: TextStyle(color: blackFontColor),
+                                ),
+                                items: <String>[
+                                  'Pathology',
+                                  'Radio/Image',
+                                ].map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(
+                                      "$value",
+                                      style: TextStyle(color: blackFontColor),
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    category = createReqController
+                                        .toCategory[newValue]!;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                         FormUserInfo(
                           formKey: _formKey,
                           validatorField: validateNumber,
                           textInputType: TextInputType.number,
                           controller: servicecharge,
-                          title: "Collection charge",
-                          value: "20",
+                          title: "Collection Charge",
+                          value: "0",
                           activate: false,
                         ),
                         FormUserInfo(
@@ -213,7 +304,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           textInputType: TextInputType.number,
                           controller: discount,
                           title: "Discount",
-                          value: "15",
+                          value: "0",
                           activate: false,
                         ),
                         FormUserInfo(
@@ -222,7 +313,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           textInputType: TextInputType.number,
                           controller: niddle_cost,
                           title: "Niddle Cost",
-                          value: "10",
+                          value: "0",
                           activate: false,
                         ),
                         FormUserInfo(
@@ -231,7 +322,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           textInputType: TextInputType.number,
                           controller: transport_cost,
                           title: "Transport cost",
-                          value: "50",
+                          value: "0",
                           activate: false,
                         ),
                         FormUserInfo(
@@ -240,7 +331,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           textInputType: TextInputType.number,
                           controller: testkitprice,
                           title: "Tube Cost",
-                          value: "70",
+                          value: "0",
                           activate: false,
                         ),
                         FormUserInfo(
@@ -248,8 +339,17 @@ class _TestDataCreateState extends State<TestDataCreate> {
                           validatorField: validateNumber,
                           textInputType: TextInputType.number,
                           controller: testprice,
-                          title: "Testprice",
-                          value: "70",
+                          title: "Test Price",
+                          value: "0",
+                          activate: false,
+                        ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          validatorField: validateName,
+                          textInputType: TextInputType.number,
+                          controller: b2b_cost,
+                          title: "B2B Cost",
+                          value: "0",
                           activate: false,
                         ),
                         FormUserInfo(
@@ -429,9 +529,9 @@ String? validateString(String? value) {
 //     return null;
 // }
 
-String?  validateNumber(String? value) {
- if (value?.length  == 0 || (double.tryParse(value!) == null)) {
+String? validateNumber(String? value) {
+  if (value?.length == 0 || (double.tryParse(value!) == null)) {
     return 'Please fill numbers only';
- }
- return null;
+  }
+  return null;
 }

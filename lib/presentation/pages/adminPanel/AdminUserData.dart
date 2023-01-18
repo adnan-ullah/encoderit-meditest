@@ -21,6 +21,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../constants/app_info.dart';
 import '../../../constants/colors.dart';
 import '../../../db/databse_model.dart';
 import '../../../responsives/dimensions.dart';
@@ -57,7 +58,7 @@ class _AdminUserDataState extends State<AdminUserData> {
   Future<void> updateToFirebase() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     late DatabaseReference dbrefTestReqModel;
-    dbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
+    dbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
 
     updatedTestItemData = AdminUserModel(
       name: name.text.toString(),
@@ -81,7 +82,7 @@ class _AdminUserDataState extends State<AdminUserData> {
   Future<void> insertNewTestItemMethod() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = FirebaseDatabase.instance.ref("meditest/");
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
 
     inserNewTestItem = AdminUserModel(
       name: name.text.toString(),

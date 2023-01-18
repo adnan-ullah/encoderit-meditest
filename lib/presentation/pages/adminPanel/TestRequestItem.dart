@@ -29,6 +29,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../constants/app_info.dart';
 import '../../../constants/colors.dart';
 import '../../../db/databse_model.dart';
 import '../../../responsives/dimensions.dart';
@@ -108,7 +109,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   bool init = false;
   Future<void> _getTestItemList() async {
     late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("meditest/testModel/");
+    DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
 
     DbrefTestModel.onValue.listen((event) {
       testItemList.clear();
@@ -133,7 +134,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
   Future<void> getAdminUserList() async {
     late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("meditest/admin_user/");
+    DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/admin_user/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     DbrefTestModel.keepSynced(true);
 
@@ -274,7 +275,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
 //for agent commission
     late DatabaseReference _DbrefTestModel;
-    _DbrefTestModel = FirebaseDatabase.instance.ref("meditest/admin_user/");
+    _DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/admin_user/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     _DbrefTestModel.keepSynced(true);
     _DbrefTestModel.onValue.listen((event) async {
@@ -298,7 +299,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
 
     late DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
+    DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
 
     if (admin_discount.text == null || admin_discount.text.isEmpty) {
       admin_discount.text = "0";

@@ -32,7 +32,7 @@ class _AdminUserState extends State<AdminUser> {
   Future<void> getTestItemList() async {
     _onLoading(true);
     late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("meditest/admin_user/");
+    DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/admin_user/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     DbrefTestModel.keepSynced(true);
 
@@ -138,7 +138,7 @@ class _AdminUserState extends State<AdminUser> {
 
   Future<void> removeFromFirebase(phoneNumber) async {
     DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
+    DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
     
 
     if (phoneNumber != null) {
@@ -498,7 +498,7 @@ class _AdminUserState extends State<AdminUser> {
   //   CreateRequest_controller createRequest_controller =
   //       Get.put(CreateRequest_controller());
   //   late DatabaseReference _dbref_testModel;
-  //   _dbref_testModel = FirebaseDatabase.instance.ref("meditest/testModel/");
+  //   _dbref_testModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
 
   //   createRequest_controller.testItemList.clear();
 

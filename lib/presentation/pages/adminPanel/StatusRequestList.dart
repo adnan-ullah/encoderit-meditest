@@ -97,7 +97,7 @@ class _StatusRequestListState extends State<StatusRequestList>
   late DatabaseReference _dbref_testReqModel;
   Future<void> _getNotification(context) async {
     _dbref_testReqModel =
-        await FirebaseDatabase.instance.ref("meditest/testRequest/");
+        await FirebaseDatabase.instance.ref("$database_name/testRequest/");
 
     // status1 = _dbref_testReqModel.onValue.listen((event) async {
     //   SharedPreferences refs = await SharedPreferences.getInstance();
@@ -254,7 +254,7 @@ Future<void> populateAllRequest() async {
   CreateRequest_controller createRequestController =
       Get.put(CreateRequest_controller());
   late DatabaseReference dbrefTestRequest;
-  dbrefTestRequest = FirebaseDatabase.instance.ref("meditest/testRequest/");
+  dbrefTestRequest = FirebaseDatabase.instance.ref("$database_name/testRequest/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);
   dbrefTestRequest.keepSynced(true);
 

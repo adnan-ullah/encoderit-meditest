@@ -31,7 +31,7 @@ class _TestItemListState extends State<TestItemList> {
   Future<void> getTestItemList() async {
     _onLoading(true);
     late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("meditest/testModel/");
+    DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     DbrefTestModel.keepSynced(true);
 
@@ -137,7 +137,7 @@ class _TestItemListState extends State<TestItemList> {
 
   Future<void> removeFromFirebase(testItemId) async {
     DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("meditest/");
+    DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
     
 
     if (testItemId != null) {
@@ -496,7 +496,7 @@ class _TestItemListState extends State<TestItemList> {
   //   CreateRequest_controller createRequest_controller =
   //       Get.put(CreateRequest_controller());
   //   late DatabaseReference _dbref_testModel;
-  //   _dbref_testModel = FirebaseDatabase.instance.ref("meditest/testModel/");
+  //   _dbref_testModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
 
   //   createRequest_controller.testItemList.clear();
 
