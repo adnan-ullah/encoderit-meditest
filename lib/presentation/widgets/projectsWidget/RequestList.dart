@@ -32,8 +32,6 @@ class _RequestListState extends State<RequestList> {
   late DatabaseReference _dbref_testReqModel;
   String? phoneNumber;
 
-
-
   Future<void> getPhoneData() async {
     _onLoading(true);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -43,8 +41,6 @@ class _RequestListState extends State<RequestList> {
         .ref("$database_name/testRequest/${phoneNumber}/");
 
     _dbref_testReqModel.onValue.listen((event) {
-  
-
       setState(() {
         testDataEach.clear();
       });
@@ -209,17 +205,48 @@ class _RequestListState extends State<RequestList> {
                                                         255, 26, 1, 1)),
                                               ),
                                             ),
-                                            Text(
-                                              createRequest_controller.status[
-                                                      testDataEach[index]
-                                                          .teststatus]
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: DM.p12,
-                                                  color: Color.fromARGB(
-                                                      255, 26, 1, 1)),
-                                            ),
+                                            createRequest_controller.status[
+                                                        testDataEach[index]
+                                                            .teststatus] ==
+                                                    "R.RECIEVED"
+                                                ? Container(
+                                                    child: MaterialButton(
+                                                      onPressed: () async {
+                                                        _updateStatus(
+                                                            testDataEach[
+                                                                index]);
+                                                      },
+                                                      height: DM.p40,
+                                                      shape:
+                                                          const StadiumBorder(),
+                                                      color: orangeColor,
+                                                      child: Text(
+                                                        "RECIEVED",
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: TextStyle(
+                                                            color:
+                                                                fullWhiteColor,
+                                                            fontSize: DM.p13,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  )
+                                                : Text(
+                                                    createRequest_controller
+                                                        .status[
+                                                            testDataEach[index]
+                                                                .teststatus]
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p12,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
                                             Text(
                                               (DateFormat('dd-MMM-yyy').format(DateTime
                                                       .fromMillisecondsSinceEpoch(
@@ -263,4 +290,61 @@ class _RequestListState extends State<RequestList> {
 
   //Return String
 
+}
+
+Future<void> _updateStatus(TestDataRequest requestItem) async {
+  int currentTime = DateTime.now().millisecondsSinceEpoch;
+  late DatabaseReference DbrefTestReqModel;
+  DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
+  TestDataRequest updateTestRequestItem;
+  updateTestRequestItem = TestDataRequest(
+      id: requestItem.id,
+      name: requestItem.name,
+      gender: requestItem.gender,
+      mobile: requestItem.mobile,
+      age: requestItem.age,
+      testlist: requestItem.testlist,
+      totalprice: requestItem.totalprice,
+      servicecharge: requestItem.servicecharge,
+      address: requestItem.address,
+      referrer: requestItem.referrer,
+      lastupdate: currentTime,
+      dateofcreated: requestItem.dateofcreated,
+      softdelete: 0,
+      latitude: requestItem.latitude,
+      longitude: requestItem.longitude,
+      teststatus: requestItem.teststatus + 1,
+      invoice_call: requestItem.invoice_call,
+      type: requestItem.type,
+      image_one: requestItem.image_one,
+      image_two: requestItem.image_two,
+      comments: requestItem.comments,
+      advanced: requestItem.advanced,
+      due_amount: requestItem.due_amount,
+      total_admin_discount: requestItem.total_admin_discount,
+      total_agent_discount: requestItem.total_agent_discount,
+      test_item_cost: requestItem.test_item_cost,
+      test_item_discount: requestItem.test_item_discount,
+      total_discount: requestItem.total_discount,
+      total_payable_imagine_cost: 0,
+      total_payable_pathology_cost: 0,
+      total_payable: 0,
+      total_unpayable: 0,
+      admin_pathology_discount: 0,
+      admin_radiology_discount: 0,
+      agent_commission: 0,
+      agent_pathology_discount: 0,
+      agent_radiology_discount: 0,
+      area: "",
+      assigning: "",
+      assigning_commission: 0,
+      delivery_date: null,
+      is_paid: false, total_unpayable_pathology: 0, total_unpayable_imagine: 0);
+
+  if (updateTestRequestItem != null) {
+    await DbrefTestReqModel.child("testRequest")
+        .child(updateTestRequestItem.mobile)
+        .child(updateTestRequestItem.id)
+        .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
+  }
 }

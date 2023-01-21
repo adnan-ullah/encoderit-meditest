@@ -85,20 +85,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: RequestList()),
 
-            InkWell(
-              onTap: _callNumber,
-              child: Container(
-                padding: EdgeInsets.all(DM.p12),
-                child: Text(
-                  "Hotline: 01785890750",
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Hotline",
                   style: TextStyle(
                       fontWeight: FontWeight.w900,
                       fontSize: DM.p15,
                       color: redColor),
                 ),
-              ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Call_Number("01785890750" , _callNumber1),
+                    Call_Number("01862739539", _callNumber2),
+                  
+                  ],
+                ),
+              ],
             ),
-
             Container(
               margin: EdgeInsets.symmetric(horizontal: DM.p20),
               child: Row(
@@ -169,6 +176,22 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  InkWell Call_Number(number , callNumber) {
+    return InkWell(
+                    onTap: callNumber,
+                    child: Container(
+                      padding: EdgeInsets.all(DM.p12),
+                      child: Text(
+                        number,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: DM.p15,
+                            color: redColor),
+                      ),
+                    ),
+                  );
   }
 }
 
@@ -241,7 +264,12 @@ class FormUserInfo extends StatelessWidget {
   }
 }
 
-_callNumber() async {
+_callNumber1() async {
   const number = '01785890750'; //set the number here
+  bool? res = await FlutterPhoneDirectCaller.callNumber(number);
+}
+
+_callNumber2() async {
+  const number = '01862739539'; //set the number here
   bool? res = await FlutterPhoneDirectCaller.callNumber(number);
 }

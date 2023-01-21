@@ -108,7 +108,28 @@ class _AdminReportListState extends State<AdminReportList> {
         type: requestItem.type,
         image_one: requestItem.image_one,
         image_two: requestItem.image_two,
-        comments: requestItem.comments);
+        comments: requestItem.comments,
+        total_payable_imagine_cost: 0,
+        total_payable_pathology_cost: 0,
+        total_payable: 0,
+        total_unpayable: 0,
+        admin_pathology_discount: 0,
+        admin_radiology_discount: 0,
+        agent_commission: 0,
+        agent_pathology_discount: 0,
+        agent_radiology_discount: 0,
+        area: "",
+        assigning: "",
+        assigning_commission: 0,
+        advanced: 0,
+        delivery_date: null,
+        due_amount: 0,
+        test_item_cost: 0,
+        test_item_discount: 0,
+        total_admin_discount: 0,
+        total_agent_discount: 0,
+        total_discount: 0,
+        is_paid: false, total_unpayable_pathology: 0, total_unpayable_imagine: 0);
 
     if (updateTestRequestItem != null) {
       await DbrefTestReqModel.child("testRequest")
@@ -164,7 +185,7 @@ class _AdminReportListState extends State<AdminReportList> {
                       int.parse(commission) /
                       100)
                   .toInt() -
-              e.agent_discount;
+              e.total_agent_discount;
         }
       }).toList();
 
@@ -192,8 +213,7 @@ class _AdminReportListState extends State<AdminReportList> {
             ((e.test_item_cost - e.test_item_discount) *
                 int.parse(commission) /
                 100) -
-            e.agent_discount;
-            
+            e.total_agent_discount;
       }
     }).toList();
 
@@ -507,7 +527,7 @@ class _AdminReportListState extends State<AdminReportList> {
                                               ? SizedBox(
                                                   width: DM.p55,
                                                   child: Text(
-                                                    "${(_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount - _newTestRequestList[index].admin_discount).toString()}",
+                                                    "${(_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount - _newTestRequestList[index].total_admin_discount).toString()}",
                                                     textAlign: TextAlign.left,
                                                     style: TextStyle(
                                                         fontWeight:
@@ -566,7 +586,7 @@ class _AdminReportListState extends State<AdminReportList> {
                                                   width: DM.p70,
                                                   child: Text(
                                                     _newTestRequestList[index]
-                                                        .agent_discount
+                                                        .total_agent_discount
                                                         .toString(),
                                                     textAlign: TextAlign.left,
                                                     style: TextStyle(
@@ -596,7 +616,7 @@ class _AdminReportListState extends State<AdminReportList> {
                                                         .teststatus ==
                                                     5
                                                 ? Text(
-                                                    "${((((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100).toInt() - _newTestRequestList[index].agent_discount).toString()}",
+                                                    "${((((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100).toInt() - _newTestRequestList[index].total_agent_discount).toString()}",
 
                                                     // "${((int.parse(((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100)) - int.parse(_newTestRequestList[index].agent_discount)).toString()}",
                                                     textAlign: TextAlign.left,

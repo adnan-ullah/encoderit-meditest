@@ -41,11 +41,12 @@ class _LoginScreenState extends State<LoginScreen> {
   var type = "1";
   var commission = "0";
   var referrer_code = "0";
-  var admin_password ;
+  var admin_password;
 
   Future<void> getAdminUserList() async {
     late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/admin_user/");
+    DbrefTestModel =
+        FirebaseDatabase.instance.ref("$database_name/admin_user/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     DbrefTestModel.keepSynced(true);
 
@@ -64,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (e.phone.toString() == (phone.toString()) &&
           e.active.toString() == "1") {
         type = e.type;
-        commission = e.commission;
+        commission = e.pathology_commission;
         referrer_code = e.referrer_code;
         admin_password = e.password;
         returnType = true;
@@ -350,8 +351,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                       keyboardType: TextInputType.name,
                                       controller: password,
                                       obscureText: true,
-                                    
-                                     
                                       decoration: InputDecoration(
                                           errorStyle:
                                               TextStyle(fontSize: DM.p9),
@@ -408,47 +407,48 @@ class _LoginScreenState extends State<LoginScreen> {
                                     // Get.to(HomeScreen());
 
                                     //admin-app
-                                    if( phone.text == "111000222999"  || (checkUser(phone.text) == true && password.text == admin_password ))
-                                    {
-
-                                    if(phone.text == "111000222999")
-                                    {
-                                         savePhone(phone.text);
-                                            Get.to(AdminHome(check_type: phone.text ,check_number: phone.text, ));
-                                    }
-                                       
-                                    else if (checkUser(phone.text) == true &&
-                                        type == '2') {
-                                          
+                                    if (phone.text == "111000222999" ||
+                                        (checkUser(phone.text) == true &&
+                                            password.text == admin_password)) {
+                                      if (phone.text == "111000222999") {
+                                        savePhone(phone.text);
+                                        Get.to(AdminHome(
+                                          check_type: phone.text,
+                                          check_number: phone.text,
+                                        ));
+                                      } else if (checkUser(phone.text) ==
+                                              true &&
+                                          type == '2') {
+                                        savePhone(phone.text);
+                                        Get.to(AdminHome(
+                                          check_type: 2,
+                                          check_number: phone.text,
+                                        ));
+                                      }
+                                      // else if (phone.text == "111000222999" ||
+                                      //     checkUser(phone.text) == true) {
+                                      //   savePhone(phone.text);
+                                      //   Get.to(AdminHome(check_type: 1 , check_number: phone.text));
+                                      // }
+                                      else if (checkUser(phone.text) == true &&
+                                          type == '1') {
+                                        savePhone(phone.text);
+                                        Get.to(AdminHome(
+                                            check_type: 1,
+                                            check_number: phone.text));
+                                      } else if (checkUser(phone.text) ==
+                                              true &&
+                                          type == '7') {
+                                        savePhone(phone.text);
+                                        Get.to(AdminHome(
+                                            check_type: 7,
+                                            check_number: phone.text));
+                                      } else {
+                                        savePhone(phone.text);
+                                        Get.to(HomeScreen());
+                                      }
+                                    } else {
                                       savePhone(phone.text);
-                                      Get.to(AdminHome(check_type: 2 , check_number: phone.text,));
-                                    } 
-                                    // else if (phone.text == "111000222999" ||
-                                    //     checkUser(phone.text) == true) {
-                                    //   savePhone(phone.text);
-                                    //   Get.to(AdminHome(check_type: 1 , check_number: phone.text));
-                                    // } 
-                                    else if (checkUser(phone.text) == true &&
-                                        type == '1')
-                                        {
-                                          savePhone(phone.text);
-                                      Get.to(AdminHome(check_type: 1 , check_number: phone.text));
-                                        }
-
-                                     else if (checkUser(phone.text) == true &&
-                                        type == '7')
-                                        {
-                                          savePhone(phone.text);
-                                      Get.to(AdminHome(check_type: 7 , check_number: phone.text));
-                                        }
-
-                                    else {
-                                       savePhone(phone.text);
-                                      Get.to(HomeScreen());
-                                    }
-                                    }
-                                     else {
-                                       savePhone(phone.text);
                                       Get.to(HomeScreen());
                                     }
                                   }

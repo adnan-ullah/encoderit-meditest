@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:ffi';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
@@ -12,6 +14,7 @@ import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestListDialogueAdmin.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
@@ -87,7 +90,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
   var agent_discount = new TextEditingController();
   var total_discount = new TextEditingController();
-  var commission = new TextEditingController();
+  var agent_commission = new TextEditingController();
+
+  var admin_pathology_discount = new TextEditingController();
+  var admin_radiology_discount = new TextEditingController();
+  var agent_pathology_discount = new TextEditingController();
+  var agent_radiology_discount = new TextEditingController();
 
   List<TestData> testItemList = [];
   List<AdminUserModel> adminUserList = [];
@@ -104,7 +112,24 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   var test_item_cost = 0;
   var test_item_discount = 0;
 
+  var total_payable_pathology = 0;
+  var total_payable_imaging = 0;
+  var total_unpayable_pathology = 0;
+  var total_unpayable_imaging = 0;
+
+  var total_payable_item = 0;
+  var total_unpayable_item = 0;
+
+  var urlDownload1;
+  var urlDownload2;
+
   var newRequestData;
+
+  bool isFromNetwork1 = false;
+  bool isFromNetwork2 = false;
+
+  File? imageFile1, imageFile2;
+  UploadTask? uploadTask1, uploadTask2;
 
   bool init = false;
   Future<void> _getTestItemList() async {
@@ -134,7 +159,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
   Future<void> getAdminUserList() async {
     late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/admin_user/");
+    DbrefTestModel =
+        FirebaseDatabase.instance.ref("$database_name/admin_user/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     DbrefTestModel.keepSynced(true);
 
@@ -186,7 +212,6 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
           .format(DateTime.fromMillisecondsSinceEpoch(currentTime + 86400000)));
     }
 
-   
     if (teststatus.text.contains("2")) {
       dateTime_delivery = DateTime(DateTime.now().year, DateTime.now().month,
               DateTime.now().day + 1, 20, 0, 0)
@@ -196,25 +221,25 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
           .format(DateTime.fromMillisecondsSinceEpoch(dateTime_delivery)));
     }
 
-    
-
     if (widget.testEachRequest!.comments != null)
       comments.text = widget.testEachRequest!.comments;
     else
       comments.text = "";
 
     if (widget.testEachRequest!.advanced != null)
-      advanced.text = widget.testEachRequest!.advanced;
+      advanced.text = widget.testEachRequest!.advanced.toString();
     else
       advanced.text = "0";
 
-    if (widget.testEachRequest!.admin_discount != null)
-      admin_discount.text = widget.testEachRequest!.admin_discount.toString();
+    if (widget.testEachRequest!.total_admin_discount != null)
+      admin_discount.text =
+          widget.testEachRequest!.total_admin_discount.toString();
     else
       admin_discount.text = "0";
 
-    if (widget.testEachRequest!.agent_discount != null)
-      agent_discount.text = widget.testEachRequest!.agent_discount.toString();
+    if (widget.testEachRequest!.total_agent_discount != null)
+      agent_discount.text =
+          widget.testEachRequest!.total_agent_discount.toString();
     else
       agent_discount.text = "0";
 
@@ -235,15 +260,26 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       }).toList();
     }
 
+    print(widget.testEachRequest!.image_one.toString() + "avvv");
+
     if (widget.testEachRequest!.image_one == null)
       image_one.text = "empty";
-    else
+    else {
+      setState(() {
+        isFromNetwork1 = true;
+      });
+
       image_one.text = widget.testEachRequest!.image_one.toString();
+    }
 
     if (widget.testEachRequest!.image_two == null)
       image_two.text = "empty";
-    else
+    else {
       image_two.text = widget.testEachRequest!.image_two.toString();
+      setState(() {
+        isFromNetwork2 = true;
+      });
+    }
 
     setState(() {
       gender = widget.testEachRequest!.gender;
@@ -271,28 +307,98 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     else
       test_item_discount = 0;
 
-    commission.text = "0";
+    if (widget.testEachRequest!.admin_pathology_discount != null)
+      admin_pathology_discount.text =
+          widget.testEachRequest!.admin_pathology_discount.toString();
+    else
+      admin_pathology_discount.text = "0";
 
-//for agent commission
-    late DatabaseReference _DbrefTestModel;
-    _DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/admin_user/");
-    FirebaseDatabase.instance.setPersistenceEnabled(true);
-    _DbrefTestModel.keepSynced(true);
-    _DbrefTestModel.onValue.listen((event) async {
-      for (DataSnapshot ds in event.snapshot.children) {
-        AdminUserModel testData =
-            AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
+    if (widget.testEachRequest!.admin_radiology_discount != null)
+      admin_radiology_discount.text =
+          widget.testEachRequest!.admin_radiology_discount.toString();
+    else
+      admin_radiology_discount.text = "0";
 
-        if (testData.referrer_code.contains(referrer.text.toString())) {
-          commission.text = (((widget.testEachRequest!.test_item_cost -
-                          widget.testEachRequest!.test_item_discount) *
-                      int.parse(testData.commission)) /
-                  100)
-              .toInt()
-              .toString();
-        }
-      }
-    });
+    if (widget.testEachRequest!.agent_pathology_discount != null)
+      agent_pathology_discount.text =
+          widget.testEachRequest!.agent_pathology_discount.toString();
+    else
+      agent_pathology_discount.text = "0";
+
+    if (widget.testEachRequest!.agent_radiology_discount != null)
+      agent_radiology_discount.text =
+          widget.testEachRequest!.agent_radiology_discount.toString();
+    else
+      agent_radiology_discount.text = "0";
+
+    agent_commission.text = "0";
+
+    agent_commission.text =
+        widget.testEachRequest!.agent_commission!.toString();
+  }
+
+  void _onLoading(isClosed) {
+    if (isClosed) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: Container(
+              height: DM.p80,
+              padding: EdgeInsets.all(DM.p16),
+              child: new Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  new CircularProgressIndicator(
+                    color: orangeColor,
+                  ),
+                  SizedBox(
+                    width: DM.p10,
+                  ),
+                  new Text(
+                    "Submitting, please wait...",
+                    style: TextStyle(color: orangeColor),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    if (!isClosed) Navigator.pop(context);
+    //pop dialog
+  }
+
+  Future<void> uploadImage() async {
+    _onLoading(true);
+
+    final SharedPreferences pref = await SharedPreferences.getInstance();
+
+    final path1 = "files/${phone.text}/${imageFile1}";
+    final path2 = "files/${phone.text}/${imageFile2}";
+
+    final ref1 = FirebaseStorage.instance.ref().child(path1);
+    final ref2 = FirebaseStorage.instance.ref().child(path2);
+
+    if (imageFile1 != null) {
+      uploadTask1 = ref1.putFile(imageFile1!);
+      final snapshot1 = await uploadTask1!.whenComplete(() {});
+      urlDownload1 = await snapshot1.ref.getDownloadURL();
+    }
+
+    if (imageFile2 != null) {
+      uploadTask2 = ref2.putFile(imageFile2!);
+      final snapshot2 = await uploadTask2!.whenComplete(() {});
+      urlDownload2 = await snapshot2.ref.getDownloadURL();
+    }
+
+    //addImages(urlDownload1, urlDownload2);
+
+    _updateRequest();
+    _onLoading(false);
   }
 
   Future<void> _updateRequest() async {
@@ -308,40 +414,69 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       agent_discount.text = "0";
     }
 
+    //uploadImage();
+
+    if (urlDownload1 != null) {
+      image_one.text = urlDownload1.toString();
+    }
+    if (urlDownload2 != null) {
+      image_two.text = urlDownload2.toString();
+    }
+
     updateTestRequestItem = TestDataRequest(
-        id: widget.testEachRequest!.id.toString(),
-        name: name.text.toString(),
-        gender: gender.toString(),
-        mobile: phone.text.toString(),
-        age: int.parse(age.text),
-        testlist: testData_updated,
-        totalprice: totalCost,
-        servicecharge: serviceCost,
-        address: address.text.toString(),
-        referrer: referrer.text.toString(),
-        lastupdate: currentTime,
-        dateofcreated: widget.testEachRequest!.dateofcreated,
-        softdelete: 0,
-        latitude: widget.testEachRequest!.latitude,
-        longitude: widget.testEachRequest!.longitude,
-        teststatus: int.parse(teststatus.text),
-        invoice_call: invoice_call.text.toString(),
-        type: createReqController.toType[type.text.toString()],
-        image_one: image_one.text.toString() == "empty"
-            ? null
-            : image_one.text.toString(),
-        image_two: image_two.text.toString() == "empty"
-            ? null
-            : image_two.text.toString(),
-        delivery_date: dateTime_delivery,
-        comments: comments.text.toString(),
-        advanced: advanced.text.toString(),
-        due_amount: due_amount.text.toString(),
-        admin_discount: int.parse(admin_discount.text.toString()),
-        agent_discount: int.parse(agent_discount.text.toString()),
-        test_item_cost: test_item_cost,
-        test_item_discount: test_item_discount,
-        total_discount: totalDiscount);
+      id: widget.testEachRequest!.id.toString(),
+      name: name.text.toString(),
+      gender: gender.toString(),
+      mobile: phone.text.toString(),
+      age: age.text,
+      testlist: testData_updated,
+      totalprice: totalCost,
+      servicecharge: serviceCost,
+      address: address.text.toString(),
+      referrer: referrer.text.toString(),
+      lastupdate: currentTime,
+      dateofcreated: widget.testEachRequest!.dateofcreated,
+      softdelete: 0,
+      latitude: widget.testEachRequest!.latitude,
+      longitude: widget.testEachRequest!.longitude,
+      teststatus: int.parse(teststatus.text),
+      invoice_call: invoice_call.text.toString(),
+      type: createReqController.toType[type.text.toString()],
+      image_one: image_one.text.toString() == "empty"
+          ? null
+          : image_one.text.toString(),
+      image_two: image_two.text.toString() == "empty"
+          ? null
+          : image_two.text.toString(),
+      delivery_date: dateTime_delivery,
+      comments: comments.text.toString(),
+      advanced: int.parse(advanced.text.toString()),
+      due_amount: int.parse(due_amount.text.toString()),
+      total_admin_discount: int.parse(admin_discount.text.toString()),
+      total_agent_discount: int.parse(agent_discount.text.toString()),
+      test_item_cost: test_item_cost,
+      test_item_discount: test_item_discount,
+      total_discount: totalDiscount,
+      total_payable_imagine_cost: total_payable_imaging,
+      total_payable_pathology_cost: total_payable_pathology,
+      total_payable: total_payable_item,
+      total_unpayable: total_unpayable_item,
+      admin_pathology_discount:
+          int.parse(admin_pathology_discount.text.toString()),
+      admin_radiology_discount:
+          int.parse(admin_radiology_discount.text.toString()),
+      agent_commission: int.parse(agent_commission.text.toString()),
+      agent_pathology_discount:
+          int.parse(agent_pathology_discount.text.toString()),
+      agent_radiology_discount:
+          int.parse(agent_radiology_discount.text.toString()),
+      area: "",
+      assigning: "",
+      assigning_commission: 0,
+      is_paid: false,
+      total_unpayable_imagine: total_unpayable_imaging,
+      total_unpayable_pathology: total_unpayable_pathology,
+    );
 
     if (updateTestRequestItem != null) {
       await DbrefTestReqModel.child("testRequest")
@@ -360,17 +495,55 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     tubeCost = 0;
     totalDiscount = 0;
     test_item_discount = 0;
+    total_payable_pathology = 0;
+    total_payable_imaging = 0;
+    total_unpayable_pathology = 0;
+    total_unpayable_imaging = 0;
+
+    total_payable_item = 0;
+    total_unpayable_item = 0;
 
     if (admin_discount.text == null || admin_discount.text.isEmpty) {
       admin_discount.text = "0";
     }
+    if (admin_pathology_discount.text == null ||
+        admin_pathology_discount.text.isEmpty) {
+      admin_pathology_discount.text = "0";
+    }
+    if (admin_radiology_discount.text == null ||
+        admin_radiology_discount.text.isEmpty) {
+      admin_radiology_discount.text = "0";
+    }
+
+    admin_discount.text = (int.parse(admin_pathology_discount.text) +
+            int.parse(admin_radiology_discount.text))
+        .toString();
+
     totalDiscount = totalDiscount + int.parse(admin_discount.text.toString());
+
+    //agent
 
     if (agent_discount.text == null || agent_discount.text.isEmpty) {
       agent_discount.text = "0";
     }
+    if (agent_pathology_discount.text == null ||
+        agent_pathology_discount.text.isEmpty) {
+      agent_pathology_discount.text = "0";
+    }
+    if (agent_radiology_discount.text == null ||
+        agent_radiology_discount.text.isEmpty) {
+      agent_radiology_discount.text = "0";
+    }
+
+    agent_discount.text = (int.parse(agent_pathology_discount.text) +
+            int.parse(agent_radiology_discount.text))
+        .toString();
 
     totalDiscount = totalDiscount + int.parse(agent_discount.text.toString());
+
+    //new_start
+
+    //new_end
 
     testData_updated.map((testItem) {
       totalTestCost = totalTestCost + int.parse(testItem.testprice.toString());
@@ -382,14 +555,39 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
           test_item_discount + int.parse(testItem.discount.toString());
       tubeCost = tubeCost + int.parse(testItem.testkitprice.toString());
       totalDiscount = totalDiscount + int.parse(testItem.discount.toString());
+
+      if (testItem.is_payable) {
+        if (testItem.category == 1) {
+          total_payable_pathology = total_payable_pathology +
+              int.parse(testItem.testprice.toString()) -
+              int.parse(testItem.discount.toString());
+        } else {
+          total_payable_imaging = total_payable_imaging +
+              int.parse(testItem.testprice.toString()) -
+              int.parse(testItem.discount.toString());
+        }
+      } else {
+        if (testItem.category == 1) {
+          total_unpayable_pathology = total_unpayable_pathology +
+              int.parse(testItem.testprice.toString()) -
+              int.parse(testItem.discount.toString());
+        } else {
+          total_unpayable_imaging = total_unpayable_imaging +
+              int.parse(testItem.testprice.toString()) -
+              int.parse(testItem.discount.toString());
+        }
+      }
     }).toList();
 
     totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
+
     //totalCost = totalTestCost  + serviceCost - totalDiscount;
 
     totalprice.text = totalCost.toString();
     servicecharge.text = serviceCost.toString();
     test_item_cost = totalTestCost;
+    total_payable_item = total_payable_pathology + total_payable_imaging;
+    total_unpayable_item = total_unpayable_pathology + total_unpayable_imaging;
 
     if (advanced.text != null && advanced.text.isNotEmpty) {
       due_amount.text =
@@ -405,11 +603,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
     adminUserList.map((e) {
       if (e.referrer_code.contains(referrer.text.toString())) {
-        commission.text =
-            (((test_item_cost - test_item_discount) * int.parse(e.commission)) /
-                    100)
-                .toInt()
-                .toString();
+        agent_commission.text = ((((total_payable_pathology) *
+                        int.parse(e.pathology_commission)) /
+                    100) +
+                (((total_payable_imaging) * int.parse(e.imagine_commission)) /
+                    100))
+            .toInt()
+            .toString();
 
         return;
       }
@@ -462,8 +662,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
       adminUserList.map((e) {
         if (e.referrer_code.contains(referrer.text.toString())) {
-          commission.text = (((test_item_cost - test_item_discount) *
-                      int.parse(e.commission)) /
+          agent_commission.text = (((test_item_cost - test_item_discount) *
+                      int.parse(e.pathology_commission)) /
                   100)
               .toInt()
               .toString();
@@ -820,60 +1020,373 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                             MainAxisAlignment.center,
                                         children: [
                                           Container(
-                                            height: DM.p60,
-                                            width: DM.p160,
-                                            margin: EdgeInsets.symmetric(
-                                              vertical: DM.p25,
-                                            ),
-                                            child: ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                  padding: EdgeInsets.symmetric(
-                                                      vertical: DM.p20),
-                                                  shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              DM.p10)),
-                                                  primary: orangeColor),
-                                              onPressed: () {},
-                                              child: Text(
-                                                "Image 1",
-                                                style: TextStyle(
-                                                    color: fullWhiteColor,
-                                                    fontSize: DM.p15,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
+                                            margin:
+                                                EdgeInsets.only(top: DM.p24),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: <Widget>[
+                                                image_one.text != "empty" ||
+                                                        imageFile1 != null
+                                                    ? Column(
+                                                        children: [
+                                                          Container(
+                                                            height: DM.p180,
+                                                            width: DM.p150,
+                                                            child: isFromNetwork1
+                                                                ? Image.network(
+                                                                    widget
+                                                                        .testEachRequest!
+                                                                        .image_one
+                                                                        .toString()!,
+                                                                    fit: BoxFit
+                                                                        .cover,
+                                                                  )
+                                                                : Image.file(
+                                                                    imageFile1!,
+                                                                    fit: BoxFit
+                                                                        .cover,
+                                                                  ),
+                                                          ),
+                                                          IconButton(
+                                                            color: orangeColor,
+                                                            icon: Icon(
+                                                              CupertinoIcons
+                                                                  .xmark_circle_fill,
+                                                              size: DM.p30,
+                                                            ),
+                                                            onPressed: () {
+                                                              setState(() {
+                                                                imageFile1 =
+                                                                    null;
+                                                                image_one.text =
+                                                                    "empty";
+                                                              });
+                                                            },
+                                                          ),
+                                                        ],
+                                                      )
+                                                    : Container(
+                                                        height: DM.p60,
+                                                        width: DM.p160,
+                                                        margin: EdgeInsets
+                                                            .symmetric(
+                                                                horizontal:
+                                                                    DM.p5),
+                                                        child: ElevatedButton(
+                                                          style: ElevatedButton.styleFrom(
+                                                              shape: RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(DM
+                                                                              .p10)),
+                                                              padding: EdgeInsets
+                                                                  .symmetric(
+                                                                      vertical: DM
+                                                                          .p20),
+                                                              primary:
+                                                                  orangeColor),
+                                                          onPressed: () async {
+                                                            showDialog(
+                                                                context:
+                                                                    context,
+                                                                builder:
+                                                                    (context) {
+                                                                  return Center(
+                                                                    child:
+                                                                        Container(
+                                                                      color:
+                                                                          whiteColor,
+                                                                      child:
+                                                                          Row(
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment.center,
+                                                                        children: [
+                                                                          Container(
+                                                                            margin:
+                                                                                EdgeInsets.all(DM.p16),
+                                                                            height:
+                                                                                DM.p130,
+                                                                            width:
+                                                                                DM.p120,
+                                                                            child: ElevatedButton(
+                                                                                style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                                onPressed: () async {
+                                                                                  PickedFile? pickedFile = await ImagePicker().getImage(
+                                                                                    source: ImageSource.gallery,
+                                                                                    maxWidth: 800,
+                                                                                    maxHeight: 1200,
+                                                                                  );
+                                                                                  setState(() {
+                                                                                    if (pickedFile != null) {
+                                                                                      imageFile1 = File(pickedFile!.path);
+                                                                                      isFromNetwork1 = false;
+                                                                                    }
+                                                                                  });
+
+                                                                                  Navigator.pop(context);
+                                                                                },
+                                                                                child: Text(
+                                                                                  "Gallery",
+                                                                                  style: TextStyle(fontSize: DM.p18),
+                                                                                )),
+                                                                          ),
+                                                                          Container(
+                                                                            margin:
+                                                                                EdgeInsets.all(DM.p16),
+                                                                            decoration:
+                                                                                BoxDecoration(borderRadius: BorderRadius.circular(25)),
+                                                                            height:
+                                                                                DM.p130,
+                                                                            width:
+                                                                                DM.p120,
+                                                                            child: ElevatedButton(
+                                                                                style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                                onPressed: () async {
+                                                                                  PickedFile? pickedFile = await ImagePicker().getImage(
+                                                                                    source: ImageSource.camera,
+                                                                                    maxWidth: 800,
+                                                                                    maxHeight: 1200,
+                                                                                  );
+                                                                                  setState(() {
+                                                                                    if (pickedFile != null) {
+                                                                                      isFromNetwork1 = false;
+                                                                                      imageFile1 = File(pickedFile!.path);
+                                                                                    }
+                                                                                  });
+                                                                                  Navigator.pop(context);
+                                                                                },
+                                                                                child: Text("Camera", style: TextStyle(fontSize: DM.p18))),
+                                                                          )
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                });
+                                                          },
+                                                          child: Text(
+                                                            "Image 1",
+                                                            textAlign:
+                                                                TextAlign.start,
+                                                            style: TextStyle(
+                                                                color:
+                                                                    fullWhiteColor,
+                                                                fontSize:
+                                                                    DM.p15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                Container(
+                                                  height: DM.p40,
+                                                ),
+                                                image_two.text != "empty" ||
+                                                        imageFile2 != null
+                                                    ? Column(
+                                                        children: [
+                                                          Container(
+                                                              height: DM.p180,
+                                                              width: DM.p150,
+                                                              child:
+                                                                  isFromNetwork2
+                                                                      ? Image
+                                                                          .network(
+                                                                          widget
+                                                                              .testEachRequest!
+                                                                              .image_two
+                                                                              .toString()!,
+                                                                          fit: BoxFit
+                                                                              .cover,
+                                                                        )
+                                                                      : Image
+                                                                          .file(
+                                                                          imageFile2!,
+                                                                          fit: BoxFit
+                                                                              .cover,
+                                                                        )),
+                                                          IconButton(
+                                                            color: orangeColor,
+                                                            icon: Icon(
+                                                              CupertinoIcons
+                                                                  .xmark_circle_fill,
+                                                              size: DM.p30,
+                                                            ),
+                                                            onPressed: () {
+                                                              setState(() {
+                                                                imageFile2 =
+                                                                    null;
+                                                                image_two.text =
+                                                                    "empty";
+                                                              });
+                                                            },
+                                                          ),
+                                                        ],
+                                                      )
+                                                    : Container(
+                                                        height: DM.p60,
+                                                        width: DM.p160,
+                                                        margin: EdgeInsets
+                                                            .symmetric(
+                                                                horizontal:
+                                                                    DM.p5),
+                                                        child: ElevatedButton(
+                                                          style: ElevatedButton.styleFrom(
+                                                              shape: RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(DM
+                                                                              .p10)),
+                                                              padding: EdgeInsets
+                                                                  .symmetric(
+                                                                      vertical: DM
+                                                                          .p20),
+                                                              primary:
+                                                                  orangeColor),
+                                                          onPressed: () async {
+                                                            showDialog(
+                                                                context:
+                                                                    context,
+                                                                builder:
+                                                                    (context) {
+                                                                  return Center(
+                                                                    child:
+                                                                        Container(
+                                                                      color:
+                                                                          whiteColor,
+                                                                      child:
+                                                                          Row(
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment.center,
+                                                                        children: [
+                                                                          Container(
+                                                                            margin:
+                                                                                EdgeInsets.all(DM.p16),
+                                                                            height:
+                                                                                DM.p130,
+                                                                            width:
+                                                                                DM.p120,
+                                                                            child: ElevatedButton(
+                                                                                style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                                onPressed: () async {
+                                                                                  PickedFile? pickedFile = await ImagePicker().getImage(
+                                                                                    source: ImageSource.gallery,
+                                                                                    maxWidth: 800,
+                                                                                    maxHeight: 1200,
+                                                                                  );
+                                                                                  setState(() {
+                                                                                    if (pickedFile != null) {
+                                                                                      imageFile2 = File(pickedFile!.path);
+                                                                                      isFromNetwork2 = false;
+                                                                                    }
+                                                                                  });
+                                                                                  Navigator.pop(context);
+                                                                                },
+                                                                                child: Text(
+                                                                                  "Gallery",
+                                                                                  style: TextStyle(fontSize: DM.p18),
+                                                                                )),
+                                                                          ),
+                                                                          Container(
+                                                                            margin:
+                                                                                EdgeInsets.all(DM.p16),
+                                                                            height:
+                                                                                DM.p130,
+                                                                            width:
+                                                                                DM.p120,
+                                                                            child: ElevatedButton(
+                                                                                style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                                onPressed: () async {
+                                                                                  PickedFile? pickedFile = await ImagePicker().getImage(
+                                                                                    source: ImageSource.camera,
+                                                                                    maxWidth: 800,
+                                                                                    maxHeight: 1200,
+                                                                                  );
+                                                                                  setState(() {
+                                                                                    if (pickedFile != null) {
+                                                                                      isFromNetwork2 = false;
+                                                                                      imageFile2 = File(pickedFile!.path);
+                                                                                    }
+                                                                                  });
+                                                                                  Navigator.pop(context);
+                                                                                },
+                                                                                child: Text("Camera", style: TextStyle(fontSize: DM.p18))),
+                                                                          )
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                });
+                                                          },
+                                                          child: Text(
+                                                            "Image 2",
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style: TextStyle(
+                                                                color:
+                                                                    fullWhiteColor,
+                                                                fontSize:
+                                                                    DM.p15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                        ),
+                                                      ),
+                                              ],
                                             ),
                                           ),
-                                          SizedBox(
-                                            width: DM.p10,
-                                          ),
-                                          Container(
-                                            height: DM.p60,
-                                            width: DM.p160,
-                                            margin: EdgeInsets.symmetric(
-                                              vertical: DM.p25,
-                                            ),
-                                            child: ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                  padding: EdgeInsets.symmetric(
-                                                      vertical: DM.p20),
-                                                  shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              DM.p10)),
-                                                  primary: orangeColor),
-                                              onPressed: () {},
-                                              child: Text(
-                                                "Image 2",
-                                                style: TextStyle(
-                                                    color: fullWhiteColor,
-                                                    fontSize: DM.p15,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                            ),
-                                          ),
+                                          // Container(
+                                          //   margin: EdgeInsets.symmetric(
+                                          //       horizontal: DM.p20,
+                                          //       vertical: DM.p32),
+                                          //   child: Center(
+                                          //     child: SizedBox(
+                                          //       width: DM.p150,
+                                          //       child: MaterialButton(
+                                          //         onPressed: () async {
+                                          //           if (await chechkingInternet()) {
+                                          //             if (imageFile1 != null ||
+                                          //                 imageFile2 != null) {
+                                          //               uploadImage();
+                                          //             } else {
+                                          //               Get.snackbar(
+                                          //                   margin: EdgeInsets
+                                          //                       .symmetric(
+                                          //                           horizontal:
+                                          //                               DM.p70,
+                                          //                           vertical:
+                                          //                               DM.p60),
+                                          //                   duration: Duration(
+                                          //                       milliseconds:
+                                          //                           3000),
+                                          //                   backgroundColor:
+                                          //                       redColor,
+                                          //                   colorText:
+                                          //                       whiteColor,
+                                          //                   "Need prescriptions",
+                                          //                   "Failed to submit , add image!");
+                                          //             }
+                                          //           }
+                                          //         },
+                                          //         height: DM.p50,
+                                          //         shape: const StadiumBorder(),
+                                          //         color: orangeColor,
+                                          //         child: Text(
+                                          //           // "Submit",
+                                          //           "সাবমিট",
+                                          //           textAlign: TextAlign.center,
+                                          //           style: TextStyle(
+                                          //               color: fullWhiteColor,
+                                          //               fontSize: DM.p15,
+                                          //               fontWeight:
+                                          //                   FontWeight.bold),
+                                          //         ),
+                                          //       ),
+                                          //     ),
+                                          //   ),
+                                          // ),
                                         ],
                                       ),
                                     )
@@ -1162,7 +1675,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "(Test + Tube + Collection) = (${totalTestCost}+${tubeCost}+${serviceCost} ) =  ${totalTestCost + tubeCost + serviceCost} /-",
+                                    "(Test + Tube + Collection) = (${totalTestCost}+${tubeCost}+${serviceCost}) =  ${totalTestCost + tubeCost + serviceCost} /-",
                                     style: TextStyle(
                                         fontWeight: FontWeight.w800,
                                         fontSize: DM.p12,
@@ -1192,6 +1705,17 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                 Color.fromARGB(255, 26, 1, 1)),
                                       ),
                                     ],
+                                  ),
+                                  Divider(
+                                    thickness: DM.p1,
+                                    color: blackFontColor,
+                                  ),
+                                  Text(
+                                    "(Payable Pathology + Payable Radiology) = (${total_payable_pathology}+${total_payable_imaging}) =  ${total_payable_pathology + total_payable_imaging} /-",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: DM.p12,
+                                        color: Color.fromARGB(255, 26, 1, 1)),
                                   ),
                                 ],
                               ),
@@ -1243,6 +1767,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           value: "20",
                           activate: false,
                         ),
+
                         // FormUserInfo(
                         //   formKey: _formKey,
                         //   validatorField: validateString,
@@ -1262,6 +1787,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           value: "0",
                           activate: false,
                         ),
+
                         Padding(
                           padding: EdgeInsets.all(DM.p5),
                           child: Row(
@@ -1271,7 +1797,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                               SizedBox(
                                 width: DM.p100,
                                 child: Text(
-                                  "Admin Discount",
+                                  "Admin Pathology Discount",
                                   style: TextStyle(
                                       fontWeight: FontWeight.w500,
                                       fontSize: DM.p14,
@@ -1289,6 +1815,137 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 child: Container(
                                   height: DM.p42,
                                   child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      if (value.length != 0) {
+                                        setState(() {
+                                          calculationProcess();
+                                        });
+                                      }
+                                    },
+                                    controller: admin_pathology_discount,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Admin Radiology Discount",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      if (value.length != 0) {
+                                        setState(() {
+                                          calculationProcess();
+                                        });
+                                      }
+                                    },
+                                    controller: admin_radiology_discount,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Total Admin Discount",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    readOnly: true,
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
                                       if (value.length != 0) {
@@ -1336,7 +1993,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                               SizedBox(
                                 width: DM.p100,
                                 child: Text(
-                                  "Agent Discount",
+                                  "Agent Pathology Discount",
                                   style: TextStyle(
                                       fontWeight: FontWeight.w500,
                                       fontSize: DM.p14,
@@ -1354,6 +2011,137 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 child: Container(
                                   height: DM.p42,
                                   child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      if (value.length != 0) {
+                                        setState(() {
+                                          calculationProcess();
+                                        });
+                                      }
+                                    },
+                                    controller: agent_pathology_discount,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Agent Radiology Discount",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      if (value.length != 0) {
+                                        setState(() {
+                                          calculationProcess();
+                                        });
+                                      }
+                                    },
+                                    controller: agent_radiology_discount,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Total Agent Discount",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    readOnly: true,
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
                                       if (value.length != 0) {
@@ -1395,7 +2183,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         FormUserInfo(
                           formKey: _formKey,
                           textInputType: TextInputType.number,
-                          controller: commission,
+                          controller: agent_commission,
                           title: "Agent Commission",
                           value: "0",
                           activate: true,
@@ -1430,6 +2218,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                   "RECIEVED",
                                   "COLLECTED",
                                   "READY",
+                                  "R.RECIEVED",
                                   "DELIVERED",
                                   "CANCEL"
                                 ].map((String value) {
@@ -1922,7 +2711,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                       MaterialButton(
                                                         onPressed: () async {
                                                           if (await chechkingInternet()) {
-                                                            _updateRequest();
+                                                            uploadImage();
 
                                                             InvoicePrint(
                                                                 updateTestRequestItem,
@@ -2039,11 +2828,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                 ?.validate() ==
                                                             true) {
                                                           if (await chechkingInternet()) {
-                                                            print("ADNANAAAA");
-                                                            _updateRequest();
+                                                            Get.back();
+                                                            uploadImage();
 
                                                             //cr_controller.filter_testItemList.removeAt(index);
-                                                            Get.back();
+
                                                           }
                                                         }
                                                       },

@@ -32,7 +32,8 @@ class _AdminUserState extends State<AdminUser> {
   Future<void> getTestItemList() async {
     _onLoading(true);
     late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/admin_user/");
+    DbrefTestModel =
+        FirebaseDatabase.instance.ref("$database_name/admin_user/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     DbrefTestModel.keepSynced(true);
 
@@ -139,7 +140,6 @@ class _AdminUserState extends State<AdminUser> {
   Future<void> removeFromFirebase(phoneNumber) async {
     DatabaseReference DbrefTestReqModel;
     DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
-    
 
     if (phoneNumber != null) {
       await DbrefTestReqModel.child("admin_user").child(phoneNumber).remove();
@@ -258,8 +258,7 @@ class _AdminUserState extends State<AdminUser> {
                                         SizedBox(
                                           width: DM.p130,
                                           child: Text(
-                                            _filterTestItemsList[index].phone 
-                                                ,
+                                            " ${_filterTestItemsList[index].surname}_${_filterTestItemsList[index].phone.substring(8)}_${_filterTestItemsList[index].short_address}",
                                             overflow: TextOverflow.visible,
                                             style: TextStyle(
                                                 fontWeight: FontWeight.w900,
@@ -291,8 +290,7 @@ class _AdminUserState extends State<AdminUser> {
                                                   width: DM.p80,
                                                   child: MaterialButton(
                                                       onPressed: () {
-                                                        Get.to(
-                                                          AdminUserData(
+                                                        Get.to(AdminUserData(
                                                                 testItem:
                                                                     _filterTestItemsList[
                                                                         index]))!
@@ -355,7 +353,7 @@ class _AdminUserState extends State<AdminUser> {
                                                                               16),
                                                                       child:
                                                                           Text(
-                                                                        "Do you want to delete test item \"${_filterTestItemsList[index].phone }?",
+                                                                        "Do you want to delete test item \"${_filterTestItemsList[index].phone}?",
                                                                         style: TextStyle(
                                                                             fontWeight: FontWeight
                                                                                 .w400,
@@ -470,7 +468,7 @@ class _AdminUserState extends State<AdminUser> {
                           shape: const StadiumBorder(),
                           color: orangeColor,
                           child: Text(
-                            "Add Item",
+                            "Create User",
                             style: TextStyle(
                                 color: fullWhiteColor,
                                 fontSize: DM.p15,

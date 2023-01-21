@@ -135,7 +135,7 @@ class _AdminUserReportState extends State<AdminUserReport> {
                       int.parse(commission) /
                       100)
                   .toInt() -
-              e.agent_discount;
+              e.total_agent_discount;
         }
       }).toList();
 
@@ -152,7 +152,9 @@ class _AdminUserReportState extends State<AdminUserReport> {
     if (referrer_input.text.isNotEmpty) {
       _newTestRequestList = _allRequestListAdmin
           .where((element) =>
-              element.referrer.toString().contains( referrer_input.text.toString()) &&
+              element.referrer
+                  .toString()
+                  .contains(referrer_input.text.toString()) &&
               (start_datetime <= element.dateofcreated &&
                   element.dateofcreated <= end_datetime))
           .toList();
@@ -170,7 +172,7 @@ class _AdminUserReportState extends State<AdminUserReport> {
             ((e.test_item_cost - e.test_item_discount) *
                 int.parse(commission) /
                 100) -
-            e.agent_discount;
+            e.total_agent_discount;
       }
     }).toList();
 
@@ -544,10 +546,10 @@ class _AdminUserReportState extends State<AdminUserReport> {
                                                                     null) ||
                                                                 (_newTestRequestList[
                                                                             index]
-                                                                        .admin_discount ==
+                                                                        .total_admin_discount ==
                                                                     null)) !=
                                                             true
-                                                        ? "${(_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount - _newTestRequestList[index].admin_discount).toString()}"
+                                                        ? "${(_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount - _newTestRequestList[index].total_admin_discount).toString()}"
                                                         : "0",
                                                     textAlign: TextAlign.left,
                                                     style: TextStyle(
@@ -587,7 +589,7 @@ class _AdminUserReportState extends State<AdminUserReport> {
                                                                     null) ||
                                                                 (_newTestRequestList[
                                                                             index]
-                                                                        .admin_discount ==
+                                                                        .total_admin_discount ==
                                                                     null)) !=
                                                             true
                                                         ? "${(((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100).toInt().toString()}"
@@ -621,12 +623,12 @@ class _AdminUserReportState extends State<AdminUserReport> {
                                                   width: DM.p70,
                                                   child: Text(
                                                     ((_newTestRequestList[index]
-                                                                    .agent_discount ==
+                                                                    .total_agent_discount ==
                                                                 null) !=
                                                             true)
                                                         ? _newTestRequestList[
                                                                 index]
-                                                            .agent_discount
+                                                            .total_agent_discount
                                                             .toString()
                                                         : "0",
                                                     textAlign: TextAlign.left,
@@ -667,10 +669,10 @@ class _AdminUserReportState extends State<AdminUserReport> {
                                                                     null) ||
                                                                 (_newTestRequestList[
                                                                             index]
-                                                                        .agent_discount ==
+                                                                        .total_agent_discount ==
                                                                     null)) !=
                                                             true
-                                                        ? "${((((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100).toInt() - _newTestRequestList[index].agent_discount).toString()}"
+                                                        ? "${((((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100).toInt() - _newTestRequestList[index].total_agent_discount).toString()}"
                                                         : "0",
 
                                                     // "${((int.parse(((_newTestRequestList[index].test_item_cost - _newTestRequestList[index].test_item_discount) * int.parse(commission)) / 100)) - int.parse(_newTestRequestList[index].agent_discount)).toString()}",

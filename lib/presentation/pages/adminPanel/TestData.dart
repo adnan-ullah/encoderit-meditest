@@ -40,7 +40,7 @@ class TestDataCreate extends StatefulWidget {
 class _TestDataCreateState extends State<TestDataCreate> {
   var updatedTestItemData;
   var inserNewTestItem;
-  var category = 1;
+  var category = "PATHOLOGY";
 
   Future<void> updateTestItem() async {
     name.text = widget.testItem!.name;
@@ -54,7 +54,9 @@ class _TestDataCreateState extends State<TestDataCreate> {
     transport_cost.text = widget.testItem!.transport_cost.toString();
     b2b_cost.text = widget.testItem!.b2b_cost.toString();
     is_payable = widget.testItem!.is_payable;
-    category = widget.testItem!.category;
+
+    category =  createReqController.categoryName[widget.testItem!.category]!;
+ 
   }
 
   Future<void> updateToFirebase() async {
@@ -76,7 +78,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
         transport_cost: transport_cost.text.toString(),
         b2b_cost: b2b_cost.text,
         is_payable: is_payable,
-        category: category);
+        category: createReqController.toCategory[category]!);
 
     if (updatedTestItemData != null) {
       await dbrefTestReqModel
@@ -105,7 +107,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
         transport_cost: transport_cost.text,
         b2b_cost: b2b_cost.text,
         is_payable: is_payable,
-        category: category);
+        category: createReqController.toCategory[category]);
     if (inserNewTestItem != null) {
       await _dbref_testReqModel
           .child("testModel")
@@ -133,14 +135,14 @@ class _TestDataCreateState extends State<TestDataCreate> {
 
   var name = new TextEditingController();
   var diagnostic_center = new TextEditingController();
-  var testkitprice = TextEditingController();
-  var softdelete = TextEditingController();
-  var transport_cost = TextEditingController();
-  var niddle_cost = new TextEditingController();
-  var servicecharge = TextEditingController();
-  var discount = TextEditingController();
-  var testprice = TextEditingController();
-  var b2b_cost = TextEditingController();
+  var testkitprice = TextEditingController(text: "0");
+  var softdelete = TextEditingController(text: "0");
+  var transport_cost = TextEditingController(text: "0");
+  var niddle_cost = new TextEditingController(text: "0");
+  var servicecharge = TextEditingController(text: "0");
+  var discount = TextEditingController(text: "0");
+  var testprice = TextEditingController(text: "0");
+  var b2b_cost = TextEditingController(text: "0");
 
   var is_payable = true;
   //form variables:
@@ -264,12 +266,12 @@ class _TestDataCreateState extends State<TestDataCreate> {
                               ),
                               DropdownButton<String>(
                                 hint: Text(
-                                  "${createReqController.categoryName[category]}",
+                                  category,
                                   style: TextStyle(color: blackFontColor),
                                 ),
                                 items: <String>[
-                                  'Pathology',
-                                  'Radio/Image',
+                                  'PATHOLOGY',
+                                  'RADIO/IMAGE',
                                 ].map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
@@ -281,8 +283,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                                 }).toList(),
                                 onChanged: (newValue) {
                                   setState(() {
-                                    category = createReqController
-                                        .toCategory[newValue]!;
+                                    category = newValue!;
                                   });
                                 },
                               ),
@@ -428,6 +429,98 @@ class FormUserInfo extends StatelessWidget {
   var controller = new TextEditingController();
   var textInputType;
   FormUserInfo(
+      {Key? key,
+      required this.formKey,
+      required this.title,
+      required this.value,
+      required this.activate,
+      required this.controller,
+      required this.textInputType,
+      required this.validatorField})
+      : super(
+          key: key,
+        );
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(DM.p5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: DM.p100,
+            child: Text(
+              title,
+              style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: DM.p14,
+                  color: Color.fromARGB(255, 26, 1, 1)),
+            ),
+          ),
+          SizedBox(
+            width: DM.p5,
+          ),
+          Text(":"),
+          SizedBox(
+            width: DM.p10,
+          ),
+          Flexible(
+            child: Container(
+              child: TextFormField(
+                autofocus: true,
+                keyboardType: textInputType,
+                maxLines: null,
+                validator: validatorField,
+                onEditingComplete: (() {
+                  if (!formKey.currentState?.validate())
+                    formKey.currentState?.validate();
+                }),
+                controller: controller,
+                readOnly: activate,
+                decoration: InputDecoration(
+                    errorStyle: TextStyle(fontSize: DM.p9),
+                    disabledBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(width: DM.p1, color: orangeColor)),
+                    // focusedErrorBorder: OutlineInputBorder(
+                    //     borderSide:
+                    //         BorderSide(width: DM.p1, color: orangeColor)),
+                    focusedBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(width: DM.p1, color: orangeColor)),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          width: DM.p1, color: orangeColor), //<-- SEE HERE
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: EdgeInsets.symmetric(horizontal: DM.p10),
+                    border: InputBorder.none,
+                    hintText: value,
+                    hintStyle: TextStyle(
+                      color: Colors.grey,
+                      fontSize: DM.p14,
+                    )),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class FormInitialUserInfo extends StatelessWidget {
+  dynamic title;
+  dynamic value;
+  dynamic activate;
+  dynamic formKey;
+  dynamic validatorField;
+  var controller = new TextEditingController();
+  var textInputType;
+  FormInitialUserInfo(
       {Key? key,
       required this.formKey,
       required this.title,

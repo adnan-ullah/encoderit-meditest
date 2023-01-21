@@ -216,6 +216,15 @@ class _StatusRequestListState extends State<StatusRequestList>
                             fontWeight: FontWeight.bold),
                       ),
                     ),
+                    Tab(
+                      child: Text(
+                        "${cr_controller.status[7]}",
+                        style: TextStyle(
+                            color: blackFontColor,
+                            fontSize: DM.p11,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -232,13 +241,11 @@ class _StatusRequestListState extends State<StatusRequestList>
                     RequestListTabView(
                         statusKey: cr_controller.status[4], isButton: true),
                     RequestListTabView(
-                      statusKey: cr_controller.status[5],
-                      isButton: false,
-                    ),
+                        statusKey: cr_controller.status[5], isButton: true),
                     RequestListTabView(
-                      statusKey: cr_controller.status[6],
-                      isButton: false,
-                    ),
+                        statusKey: cr_controller.status[6], isButton: false),
+                    RequestListTabView(
+                        statusKey: cr_controller.status[7], isButton: false),
                   ],
                 ),
               ),
@@ -254,7 +261,8 @@ Future<void> populateAllRequest() async {
   CreateRequest_controller createRequestController =
       Get.put(CreateRequest_controller());
   late DatabaseReference dbrefTestRequest;
-  dbrefTestRequest = FirebaseDatabase.instance.ref("$database_name/testRequest/");
+  dbrefTestRequest =
+      FirebaseDatabase.instance.ref("$database_name/testRequest/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);
   dbrefTestRequest.keepSynced(true);
 
@@ -289,7 +297,6 @@ Future<void> populateAllRequest() async {
 
 Future<void> getAdminNotification(phone, type, context) async {
   if (type == "1" || type == "7" || phone == "111000222999") {
-
     createPlantFoodNotification();
     showNotification(context);
   }

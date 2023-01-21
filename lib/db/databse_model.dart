@@ -1,23 +1,22 @@
 import 'package:json_annotation/json_annotation.dart';
 
 class TestData {
-  TestData(
-      {this.id,
-      required this.name,
-      required this.testprice,
-      required this.discount,
-      required this.diagnostic_center,
-      required this.testkitprice,
-      required this.lastupdate,
-      required this.softdelete,
-      required this.transport_cost,
-      required this.niddle_cost,
-      required this.servicecharge,
-      required this.b2b_cost,
-      required this.is_payable,
-      required this.category,
-      
-      });
+  TestData({
+    this.id,
+    required this.name,
+    required this.testprice,
+    required this.discount,
+    required this.diagnostic_center,
+    required this.testkitprice,
+    required this.lastupdate,
+    required this.softdelete,
+    required this.transport_cost,
+    required this.niddle_cost,
+    required this.servicecharge,
+    required this.b2b_cost,
+    required this.is_payable,
+    required this.category,
+  });
 
   final dynamic id;
   final dynamic name;
@@ -30,7 +29,7 @@ class TestData {
   final dynamic transport_cost;
   final dynamic niddle_cost;
   final dynamic servicecharge;
-   final dynamic b2b_cost;
+  final dynamic b2b_cost;
   final dynamic is_payable;
   final dynamic category;
 
@@ -49,7 +48,6 @@ class TestData {
         'b2b_cost': b2b_cost,
         'is_payable': is_payable,
         'category': category,
-        
       };
 
   factory TestData.fromJson(Map<String, dynamic> parsedJson) {
@@ -65,43 +63,59 @@ class TestData {
         transport_cost: parsedJson['transport_cost'],
         niddle_cost: parsedJson['niddle_cost'],
         servicecharge: parsedJson['servicecharge'],
-         b2b_cost: parsedJson['b2b_cost'],
+        b2b_cost: parsedJson['b2b_cost'],
         is_payable: parsedJson['is_payable'],
         category: parsedJson['category']);
   }
 }
 
 class TestDataRequest {
-  TestDataRequest(
-      {required this.id,
-      required this.name,
-      required this.gender,
-      required this.mobile,
-      required this.age,
-      required this.testlist,
-      required this.totalprice,
-      required this.servicecharge,
-      required this.address,
-      required this.referrer,
-      required this.lastupdate,
-      required this.dateofcreated,
-      required this.softdelete,
-      required this.latitude,
-      required this.longitude,
-      required this.teststatus,
-      required this.invoice_call,
-      required this.type,
-      required this.image_one,
-      required this.image_two,
-      this.comments,
-      this.delivery_date,
-      this.advanced,
-      this.due_amount,
-      this.admin_discount,
-      this.agent_discount,
-      this.total_discount,
-      this.test_item_cost,
-      this.test_item_discount});
+  TestDataRequest({
+    required this.id,
+    required this.name,
+    required this.gender,
+    required this.mobile,
+    required this.age,
+    required this.testlist,
+    required this.totalprice,
+    required this.servicecharge,
+    required this.address,
+    required this.referrer,
+    required this.lastupdate,
+    required this.dateofcreated,
+    required this.softdelete,
+    required this.latitude,
+    required this.longitude,
+    required this.teststatus,
+    required this.invoice_call,
+    required this.type,
+    required this.image_one,
+    required this.image_two,
+    required this.comments,
+    required this.delivery_date,
+    required this.advanced,
+    required this.due_amount,
+    required this.total_admin_discount,
+    required this.total_agent_discount,
+    required this.total_discount,
+    required this.test_item_cost,
+    required this.test_item_discount,
+    required this.total_payable_pathology_cost,
+    required this.total_payable_imagine_cost,
+    required this.total_payable,
+    required this.total_unpayable,
+    required this.admin_pathology_discount,
+    required this.admin_radiology_discount,
+    required this.agent_pathology_discount,
+    required this.agent_radiology_discount,
+    required this.assigning,
+    required this.area,
+    required this.assigning_commission,
+    required this.agent_commission,
+    required this.is_paid,
+    required this.total_unpayable_pathology,
+    required this.total_unpayable_imagine,
+  });
 
   final dynamic id;
   final dynamic name;
@@ -109,8 +123,8 @@ class TestDataRequest {
   final dynamic mobile;
   final dynamic age;
   final List<TestData>? testlist;
-  final dynamic totalprice;
-  final dynamic servicecharge;
+  final int totalprice;
+  final int servicecharge;
   final dynamic address;
   final dynamic referrer;
   final dynamic lastupdate;
@@ -125,14 +139,29 @@ class TestDataRequest {
   final dynamic image_two;
   final dynamic comments;
   final dynamic delivery_date;
-  final dynamic advanced;
-  final dynamic due_amount;
-  final dynamic admin_discount;
-  final dynamic agent_discount;
+  final int advanced;
+  final int due_amount;
+  final int total_admin_discount;
+  final int total_agent_discount;
+  final int total_discount;
+  final int test_item_cost;
+  final int test_item_discount;
 
-  final dynamic total_discount;
-  final dynamic test_item_cost;
-  final dynamic test_item_discount;
+  final int total_payable_pathology_cost;
+  final int total_payable_imagine_cost;
+  final int total_payable;
+  final int total_unpayable;
+  final int admin_pathology_discount;
+  final int admin_radiology_discount;
+  final int agent_pathology_discount;
+  final int agent_radiology_discount;
+  final dynamic assigning;
+  final dynamic area;
+  final int assigning_commission;
+  final int agent_commission;
+  final bool is_paid;
+  final int total_unpayable_pathology;
+  final int total_unpayable_imagine;
 
   Map toJson() => {
         'id': id,
@@ -159,11 +188,26 @@ class TestDataRequest {
         'delivery_date': delivery_date,
         'advanced': advanced,
         'due_amount': due_amount,
-        'admin_discount': admin_discount,
-        'agent_discount': agent_discount,
+        'total_admin_discount': total_admin_discount,
+        'total_agent_discount': total_agent_discount,
         'total_discount': total_discount,
         'test_item_cost': test_item_cost,
-         'test_item_discount': test_item_discount,
+        'test_item_discount': test_item_discount,
+        'total_payable_pathology_cost': total_payable_pathology_cost,
+        'total_payable_imagine_cost': total_payable_imagine_cost,
+        'total_payable': total_payable,
+        'total_unpayable': total_unpayable,
+        'admin_pathology_discount': admin_pathology_discount,
+        'admin_radiology_discount': admin_radiology_discount,
+        'agent_pathology_discount': agent_pathology_discount,
+        'agent_radiology_discount': agent_radiology_discount,
+        'assigning': assigning,
+        'area': area,
+        'assigning_commission': assigning_commission,
+        'agent_commission': agent_commission,
+        'is_paid': is_paid,
+        'total_unpayable_pathology': total_unpayable_pathology,
+        'total_unpayable_imagine': total_unpayable_imagine,
       };
 
   factory TestDataRequest.fromJson(Map<String, dynamic> parsedJson) {
@@ -196,26 +240,43 @@ class TestDataRequest {
       delivery_date: parsedJson['delivery_date'],
       advanced: parsedJson['advanced'],
       due_amount: parsedJson['due_amount'],
-      admin_discount: parsedJson['admin_discount'],
-      agent_discount: parsedJson['agent_discount'],
+      total_admin_discount: parsedJson['total_admin_discount'],
+      total_agent_discount: parsedJson['total_agent_discount'],
       total_discount: parsedJson['total_discount'],
       test_item_cost: parsedJson['test_item_cost'],
-        test_item_discount: parsedJson['test_item_discount'],
+      test_item_discount: parsedJson['test_item_discount'],
+      total_payable_pathology_cost: parsedJson['total_payable_pathology_cost'],
+      total_payable_imagine_cost: parsedJson['total_payable_imagine_cost'],
+      total_payable: parsedJson['total_payable'],
+      total_unpayable: parsedJson['total_unpayable'],
+      admin_pathology_discount: parsedJson['admin_pathology_discount'],
+      admin_radiology_discount: parsedJson['admin_radiology_discount'],
+      agent_pathology_discount: parsedJson['agent_pathology_discount'],
+      agent_radiology_discount: parsedJson['agent_radiology_discount'],
+      assigning: parsedJson['assigning'],
+      area: parsedJson['area'],
+      assigning_commission: parsedJson['assigning_commission'],
+      agent_commission: parsedJson['agent_commission'],
+      is_paid: parsedJson['is_paid'],
+      total_unpayable_pathology: parsedJson['total_unpayable_pathology'],
+      total_unpayable_imagine: parsedJson['total_unpayable_imagine'],
     );
   }
 }
 
 class AdminUserModel {
-  AdminUserModel({
-    required this.name,
-    required this.phone,
-    required this.password,
-    required this.active,
-    required this.type,
-    required this.referrer_code,
-    required this.commission,
-    required this.address,
-  });
+  AdminUserModel(
+      {required this.name,
+      required this.phone,
+      required this.password,
+      required this.active,
+      required this.type,
+      required this.referrer_code,
+      required this.pathology_commission,
+      required this.address,
+      required this.surname,
+      required this.short_address,
+      required this.imagine_commission});
 
   final dynamic name;
   final dynamic phone;
@@ -224,7 +285,10 @@ class AdminUserModel {
   final dynamic type;
   final dynamic address;
   final dynamic referrer_code;
-  final dynamic commission;
+  final dynamic pathology_commission;
+  final dynamic surname;
+  final dynamic short_address;
+  final dynamic imagine_commission;
 
   Map toJson() => {
         'name': name,
@@ -233,8 +297,11 @@ class AdminUserModel {
         'active': active,
         'type': type,
         'referrer_code': referrer_code,
-        'commision': commission,
+        'pathology_commission': pathology_commission,
         'address': address,
+        'surname': surname,
+        'short_address': short_address,
+        'imagine_commission': imagine_commission,
       };
 
   factory AdminUserModel.fromJson(Map<String, dynamic> parsedJson) {
@@ -245,7 +312,10 @@ class AdminUserModel {
         active: parsedJson['active'],
         type: parsedJson['type'],
         referrer_code: parsedJson['referrer_code'],
-        commission: parsedJson['commision'],
-        address: parsedJson['address']);
+        pathology_commission: parsedJson['pathology_commission'],
+        address: parsedJson['address'],
+        surname: parsedJson['surname'],
+        short_address: parsedJson['short_address'],
+        imagine_commission: parsedJson['imagine_commission']);
   }
 }

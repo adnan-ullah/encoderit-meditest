@@ -50,9 +50,13 @@ class _AdminUserDataState extends State<AdminUserData> {
     phone.text = widget.testItem!.phone.toString();
     type.text = widget.testItem!.type.toString();
 
-    commission.text = widget.testItem!.commission.toString();
+    pathology_commission.text =
+        widget.testItem!.pathology_commission.toString();
+    imagine_commission.text = widget.testItem!.imagine_commission.toString();
     referrer_code.text = widget.testItem!.referrer_code.toString();
     address.text = widget.testItem!.address.toString();
+    surname.text = widget.testItem!.surname.toString();
+    short_address.text = widget.testItem!.short_address.toString();
   }
 
   Future<void> updateToFirebase() async {
@@ -61,15 +65,18 @@ class _AdminUserDataState extends State<AdminUserData> {
     dbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
 
     updatedTestItemData = AdminUserModel(
-      name: name.text.toString(),
-      active: active.text.toString(),
-      password: password.text.toString(),
-      phone: phone.text.toString(),
-      type: type.text.toString(),
-      commission: commission.text.toString(),
-      referrer_code: referrer_code.text.toString(),
-      address: address.text.toString(),
-    );
+        name: name.text.toString(),
+        active: active.text.toString(),
+        password: password.text.toString(),
+        phone: phone.text.toString(),
+        type: type.text.toString(),
+        pathology_commission: pathology_commission.text.toString(),
+        referrer_code: referrer_code.text.toString(),
+        address: address.text.toString(),
+        surname: surname.text.toString(),
+        short_address: short_address.text.toString(),
+        imagine_commission: imagine_commission.text.toString()
+        );
 
     if (updatedTestItemData != null) {
       await dbrefTestReqModel
@@ -85,15 +92,17 @@ class _AdminUserDataState extends State<AdminUserData> {
     _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
 
     inserNewTestItem = AdminUserModel(
-      name: name.text.toString(),
-      active: active.text.toString(),
-      password: password.text.toString(),
-      phone: phone.text.toString(),
-      type: type.text.toString(),
-      commission: commission.text.toString(),
-      referrer_code: referrer_code.text.toString(),
-      address: address.text.toString(),
-    );
+        name: name.text.toString(),
+        active: active.text.toString(),
+        password: password.text.toString(),
+        phone: phone.text.toString(),
+        type: type.text.toString(),
+        pathology_commission: pathology_commission.text.toString(),
+        referrer_code: referrer_code.text.toString(),
+        address: address.text.toString(),
+        surname: surname.text.toString(),
+        short_address: short_address.text.toString(),
+         imagine_commission: imagine_commission.text.toString());
     if (inserNewTestItem != null) {
       await _dbref_testReqModel
           .child("admin_user")
@@ -123,8 +132,12 @@ class _AdminUserDataState extends State<AdminUserData> {
   var phone = TextEditingController();
   var type = TextEditingController();
   var referrer_code = TextEditingController();
-  var commission = TextEditingController();
+  var pathology_commission = TextEditingController();
+  var imagine_commission = TextEditingController();
   var address = TextEditingController();
+  var surname = TextEditingController();
+  var short_address = TextEditingController();
+
   //form variables:
 
   var newTestListData;
@@ -183,8 +196,17 @@ class _AdminUserDataState extends State<AdminUserData> {
                           value: "Write user name",
                           activate: false,
                         ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          validatorField: validateName,
+                          textInputType: TextInputType.name,
+                          controller: surname,
+                          title: "Surname",
+                          value: "Write surname",
+                          activate: false,
+                        ),
                         Padding(
-                          padding: EdgeInsets.all(DM.p1),
+                          padding: EdgeInsets.all(DM.p5),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -215,6 +237,7 @@ class _AdminUserDataState extends State<AdminUserData> {
                                       FilteringTextInputFormatter.digitsOnly
                                     ],
                                     maxLines: null,
+                                    validator: validateMobile,
                                     onChanged: (value) {
                                       if (phone.text.length > 10 &&
                                           phone.text.length < 13) {
@@ -292,7 +315,7 @@ class _AdminUserDataState extends State<AdminUserData> {
                           activate: false,
                         ),
                         Padding(
-                          padding: EdgeInsets.all(DM.p1),
+                          padding: EdgeInsets.all(DM.p5),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -300,7 +323,7 @@ class _AdminUserDataState extends State<AdminUserData> {
                               SizedBox(
                                 width: DM.p100,
                                 child: Text(
-                                  "Commission",
+                                  "Pathology Commission",
                                   style: TextStyle(
                                       fontWeight: FontWeight.w500,
                                       fontSize: DM.p14,
@@ -317,7 +340,68 @@ class _AdminUserDataState extends State<AdminUserData> {
                               Flexible(
                                 child: Container(
                                   child: TextFormField(
-                                    controller: commission,
+                                    controller: pathology_commission,
+                                    keyboardType: TextInputType.phone,
+                                    inputFormatters: <TextInputFormatter>[
+                                      FilteringTextInputFormatter.digitsOnly
+                                    ],
+                                    maxLines: null,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                         Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Imagine Commission",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  child: TextFormField(
+                                    controller: imagine_commission,
                                     keyboardType: TextInputType.phone,
                                     inputFormatters: <TextInputFormatter>[
                                       FilteringTextInputFormatter.digitsOnly
@@ -352,7 +436,7 @@ class _AdminUserDataState extends State<AdminUserData> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.all(DM.p1),
+                          padding: EdgeInsets.all(DM.p5),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -398,6 +482,63 @@ class _AdminUserDataState extends State<AdminUserData> {
                                             horizontal: DM.p10),
                                         border: InputBorder.none,
                                         hintText: "Your Address",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Short Address",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  child: TextFormField(
+                                    controller: short_address,
+                                    keyboardType: TextInputType.multiline,
+                                    maxLines: null,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "Short Address",
                                         hintStyle: TextStyle(
                                           color: Colors.grey,
                                           fontSize: DM.p14,
@@ -519,7 +660,7 @@ class FormUserInfo extends StatelessWidget {
                 keyboardType: textInputType,
                 maxLines: null,
                 validator: validatorField,
-                onChanged: ((value) {
+                onEditingComplete: (() {
                   if (!formKey.currentState?.validate())
                     formKey.currentState?.validate();
                 }),

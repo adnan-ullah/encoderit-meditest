@@ -129,7 +129,7 @@ class _CreateRequestState extends State<CreateRequest> {
   Future<void> getSharedData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     phone.text = prefs.getString("phoneNumber").toString();
-    referredAddressText.text =  prefs.getString("referrer_code").toString();
+    referredAddressText.text = prefs.getString("referrer_code").toString();
   }
 
   @override
@@ -176,7 +176,7 @@ class _CreateRequestState extends State<CreateRequest> {
             name: name.text!,
             gender: gender,
             mobile: phone.text,
-            age: double.parse(age.text),
+            age: age.text,
             testlist: createReqController.testData,
             totalprice: createReqController.totalCost.value,
             servicecharge: createReqController.serviceCost.value,
@@ -195,7 +195,29 @@ class _CreateRequestState extends State<CreateRequest> {
             image_one: null,
             image_two: null,
             comments: null,
-            delivery_date: null);
+            delivery_date: null,
+            total_payable_imagine_cost: 0,
+            total_payable_pathology_cost: 0,
+            total_payable: 0,
+            total_unpayable: 0,
+            admin_pathology_discount: 0,
+            admin_radiology_discount: 0,
+            agent_commission: 0,
+            agent_pathology_discount: 0,
+            agent_radiology_discount: 0,
+            area: "",
+            assigning: "",
+            assigning_commission: 0,
+            advanced: 0,
+            due_amount: 0,
+            test_item_cost: createReqController.totalTestCost.value,
+            test_item_discount: 0,
+            total_admin_discount: 0,
+            total_agent_discount: 0,
+            total_discount: createReqController.totalDiscount.value,
+            is_paid: false,
+            total_unpayable_imagine: 0,
+            total_unpayable_pathology: 0);
       });
     }
 
@@ -212,7 +234,7 @@ class _CreateRequestState extends State<CreateRequest> {
           name: name.text,
           gender: gender,
           mobile: phone.text,
-          age: double.parse(age.text),
+          age: age.text,
           testlist: createReqController.testData,
           totalprice: createReqController.totalCost.value,
           servicecharge: createReqController.serviceCost.value,
@@ -229,7 +251,31 @@ class _CreateRequestState extends State<CreateRequest> {
               (Random().nextInt(900000) + 100000).toString(),
           type: 1,
           image_one: null,
-          image_two: null);
+          image_two: null,
+          total_payable_imagine_cost: 0,
+          total_payable_pathology_cost: 0,
+          total_payable: 0,
+          total_unpayable: 0,
+          admin_pathology_discount: 0,
+          admin_radiology_discount: 0,
+          agent_commission: 0,
+          agent_pathology_discount: 0,
+          agent_radiology_discount: 0,
+          area: "",
+          assigning: "",
+          assigning_commission: 0,
+          advanced: 0,
+          comments: "",
+          delivery_date: null,
+          due_amount: 0,
+          test_item_cost: createReqController.totalTestCost.value,
+          test_item_discount: 0,
+          total_admin_discount: 0,
+          total_agent_discount: 0,
+          total_discount: createReqController.totalDiscount.value,
+          is_paid: false,
+          total_unpayable_imagine: 0,
+          total_unpayable_pathology: 0);
 
       if (newRequestData != null) {
         await _dbref_testReqModel
@@ -259,6 +305,8 @@ class _CreateRequestState extends State<CreateRequest> {
       // DateTime currentTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
       // String currentTime = DateFormat('dd-MMM-yyy').format(tsdate);
 
+      
+
       late DatabaseReference _dbref_testReqModel;
       _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
 
@@ -267,7 +315,7 @@ class _CreateRequestState extends State<CreateRequest> {
         name: name.text,
         gender: gender,
         mobile: phone.text,
-        age: double.parse(age.text),
+        age: age.text,
         testlist: createReqController.testData,
         totalprice: createReqController.totalCost.value,
         servicecharge: createReqController.serviceCost.value,
@@ -285,8 +333,30 @@ class _CreateRequestState extends State<CreateRequest> {
         type: 1,
         image_one: null,
         image_two: null,
-        comments: null,
+        comments: "",
         delivery_date: null,
+        admin_pathology_discount: 0,
+        admin_radiology_discount: 0,
+        advanced: 0,
+        agent_commission: 0,
+        agent_pathology_discount: 0,
+        agent_radiology_discount: 0,
+        area: "",
+        assigning: "",
+        assigning_commission: 0,
+        due_amount: 0,
+        total_payable_imagine_cost: 0,
+        total_payable_pathology_cost: 0,
+        test_item_cost: createReqController.totalTestCost.value,
+        test_item_discount:0 ,
+        total_admin_discount: 0,
+        total_agent_discount: 0,
+        total_discount: createReqController.totalDiscount.value,
+        total_payable: 0,
+        total_unpayable: 0,
+        is_paid: false,
+        total_unpayable_pathology: 0,
+        total_unpayable_imagine: 0,
       );
 
       // DatabaseEvent ds = await _dbref_testReqModel
@@ -408,12 +478,12 @@ class _CreateRequestState extends State<CreateRequest> {
                                         child: Container(
                                           child: TextFormField(
                                             controller: age,
-                                            keyboardType: TextInputType.phone,
-                                            inputFormatters: <
-                                                TextInputFormatter>[
-                                              FilteringTextInputFormatter
-                                                  .digitsOnly
-                                            ],
+                                            keyboardType: TextInputType.name,
+                                            // inputFormatters: <
+                                            //     TextInputFormatter>[
+                                            //   FilteringTextInputFormatter
+                                            //       .digitsOnly
+                                            // ],
                                             maxLines: null,
                                             // onTap: (() {
                                             //   showDialog(
@@ -1134,7 +1204,7 @@ Future<void> getTestItemList() async {
   });
 }
 
-Future<void> getAdminNotification(phone,type, context) async {
+Future<void> getAdminNotification(phone, type, context) async {
   late DatabaseReference DbrefTestModel;
   DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/admin_user/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);
@@ -1146,18 +1216,11 @@ Future<void> getAdminNotification(phone,type, context) async {
           AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
 
       if (testData.phone == phone) {
-    
-          if (type == "1" ||
-             type == "7" ||
-            phone == "111000222999") {
-                final SharedPreferences prefs = await SharedPreferences.getInstance();
-              createPlantFoodNotification();
-               showNotification(context);
-
-          
-        
+        if (type == "1" || type == "7" || phone == "111000222999") {
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          createPlantFoodNotification();
+          showNotification(context);
         }
-      
       }
     }
   });

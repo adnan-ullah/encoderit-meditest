@@ -47,7 +47,7 @@ class _PrescriptionState extends State<Prescription> {
   Future<void> getPhoneNumber() async {
     final SharedPreferences pref = await SharedPreferences.getInstance();
     phone.text = pref.getString("phoneNumber").toString();
-    referrer.text =  pref.getString("referrer_code").toString();
+    referrer.text = pref.getString("referrer_code").toString();
   }
 
   UploadTask? uploadTask1, uploadTask2;
@@ -64,8 +64,8 @@ class _PrescriptionState extends State<Prescription> {
         mobile: phone.text,
         age: "",
         testlist: [],
-        totalprice: "",
-        servicecharge: "",
+        totalprice: 0,
+        servicecharge: 0,
         address: "",
         referrer: referrer.text,
         lastupdate: currentTime,
@@ -79,7 +79,29 @@ class _PrescriptionState extends State<Prescription> {
             (Random().nextInt(900000) + 100000).toString(),
         type: 2,
         image_one: urlDownload1,
-        image_two: urlDownload2)!;
+        image_two: urlDownload2,
+        total_payable_imagine_cost: 0,
+        total_payable_pathology_cost: 0,
+        total_payable: 0,
+        total_unpayable: 0,
+        admin_pathology_discount: 0,
+        admin_radiology_discount: 0,
+        agent_commission: 0,
+        agent_pathology_discount: 0,
+        agent_radiology_discount: 0,
+        area: "",
+        assigning: "",
+        assigning_commission: 0,
+        advanced: 0,
+        comments: "",
+        delivery_date: null,
+        due_amount: 0,
+        test_item_cost: 0,
+        test_item_discount: 0,
+        total_admin_discount: 0,
+        total_agent_discount: 0,
+        total_discount: 0,
+        is_paid: false, total_unpayable_imagine: 0, total_unpayable_pathology: 0)!;
 
     late DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
@@ -210,7 +232,6 @@ class _PrescriptionState extends State<Prescription> {
 
   @override
   void initState() {
-    
     getLocation_Camera();
     getPhoneNumber();
     // TODO: implement initState
@@ -367,7 +388,6 @@ class _PrescriptionState extends State<Prescription> {
                                       child: TextFormField(
                                         keyboardType: TextInputType.phone,
                                         controller: referrer,
-                              
                                         decoration: InputDecoration(
                                             errorStyle:
                                                 TextStyle(fontSize: DM.p9),

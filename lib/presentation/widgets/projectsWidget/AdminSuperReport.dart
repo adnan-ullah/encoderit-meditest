@@ -147,7 +147,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
         if (e.test_item_cost != null &&
             !e.test_item_cost.toString().contains("null") &&
             e.test_item_cost.toString().isNotEmpty) {
-            totalTestCost = totalTestCost + e.test_item_cost;
+          totalTestCost = totalTestCost + e.test_item_cost;
         }
         if (e.total_discount != null &&
             !e.total_discount.toString().contains("null") &&
@@ -242,6 +242,31 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
           .child(testReq.mobile)
           .child(testReq.id)
           .remove();
+
+      setState(() {
+        totalCost = 0;
+        totalTestCost = 0;
+        totalDiscount = 0;
+
+        _newTestRequestList.map((e) {
+          if (e.totalprice != null &&
+              !e.totalprice.toString().contains("null") &&
+              e.totalprice.toString().isNotEmpty) {
+            totalCost = totalCost + e.totalprice;
+          }
+
+          if (e.test_item_cost != null &&
+              !e.test_item_cost.toString().contains("null") &&
+              e.test_item_cost.toString().isNotEmpty) {
+            totalTestCost = totalTestCost + e.test_item_cost;
+          }
+          if (e.total_discount != null &&
+              !e.total_discount.toString().contains("null") &&
+              e.total_discount.toString().isNotEmpty) {
+            totalDiscount = totalDiscount + e.total_discount;
+          }
+        }).toList();
+      });
 
       Get.back();
     }
@@ -562,104 +587,44 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
                                                       255, 26, 1, 1)),
                                             ),
                                           ),
-                                          _newTestRequestList[index]
-                                                      .teststatus !=
-                                                  1
-                                              ? SizedBox(
-                                                  width: DM.p55,
-                                                  child: Text(
-                                                    "${(_newTestRequestList[index].totalprice).toString()}",
-                                                    textAlign: TextAlign.left,
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p8,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                )
-                                              : SizedBox(
-                                                  width: DM.p55,
-                                                  child: Text(
-                                                    "Processing",
-                                                    textAlign: TextAlign.left,
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p8,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                ),
-                                          _newTestRequestList[index]
-                                                      .teststatus !=
-                                                  1
-                                              ? SizedBox(
-                                                  width: DM.p55,
-                                                  child: Text(
-                                                    _newTestRequestList[index]
-                                                                .test_item_cost !=
-                                                            null
-                                                        ? "${(_newTestRequestList[index].test_item_cost).toString()}"
-                                                        : "0",
-                                                    textAlign: TextAlign.left,
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p8,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                )
-                                              : SizedBox(
-                                                  width: DM.p55,
-                                                  child: Text(
-                                                    "Processing",
-                                                    textAlign: TextAlign.left,
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p8,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                ),
-                                          _newTestRequestList[index]
-                                                      .teststatus !=
-                                                  1
-                                              ? SizedBox(
-                                                  width: DM.p70,
-                                                  child: Text(
-                                                    _newTestRequestList[index]
-                                                                .total_discount !=
-                                                            null
-                                                        ? _newTestRequestList[
-                                                                index]
-                                                            .total_discount
-                                                            .toString()
-                                                        : "0",
-                                                    textAlign: TextAlign.left,
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p8,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                )
-                                              : SizedBox(
-                                                  width: DM.p70,
-                                                  child: Text(
-                                                    "Processing",
-                                                    textAlign: TextAlign.left,
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p8,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                ),
+                                          SizedBox(
+                                            width: DM.p55,
+                                            child: Text(
+                                              "${(_newTestRequestList[index].totalprice).toString()}",
+                                              textAlign: TextAlign.left,
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: DM.p8,
+                                                  color: Color.fromARGB(
+                                                      255, 26, 1, 1)),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: DM.p55,
+                                            child: Text(
+                                              "${(_newTestRequestList[index].test_item_cost).toString()}",
+                                              textAlign: TextAlign.left,
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: DM.p8,
+                                                  color: Color.fromARGB(
+                                                      255, 26, 1, 1)),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: DM.p70,
+                                            child: Text(
+                                              _newTestRequestList[index]
+                                                  .total_discount
+                                                  .toString(),
+                                              textAlign: TextAlign.left,
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: DM.p8,
+                                                  color: Color.fromARGB(
+                                                      255, 26, 1, 1)),
+                                            ),
+                                          ),
                                           SizedBox(
                                             width: DM.p55,
                                             child: Text(
@@ -769,11 +734,10 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
                                                                                 () async {
                                                                               if (await chechkingInternet()) {
                                                                                 removeRequestFromFirebase(_newTestRequestList[index]);
-                                                                                
+
                                                                                 setState(() {
-                                                                                    _newTestRequestList.removeAt(index);
+                                                                                  _newTestRequestList.removeAt(index);
                                                                                 });
-                                                                              
                                                                               }
                                                                             },
                                                                             height:

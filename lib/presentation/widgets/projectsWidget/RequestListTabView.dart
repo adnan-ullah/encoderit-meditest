@@ -35,6 +35,9 @@ class RequestListTabView extends StatefulWidget {
 var testStatusRequestList = <TestDataRequest>[];
 var isLoading = false;
 
+var type;
+var phone;
+
 class _RequestListTabViewState extends State<RequestListTabView> {
   CreateRequest_controller createRequest_controller =
       Get.put(CreateRequest_controller());
@@ -85,35 +88,48 @@ class _RequestListTabViewState extends State<RequestListTabView> {
     DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
     TestDataRequest updateTestRequestItem;
     updateTestRequestItem = TestDataRequest(
-      id: requestItem.id,
-      name: requestItem.name,
-      gender: requestItem.gender,
-      mobile: requestItem.mobile,
-      age: requestItem.age,
-      testlist: requestItem.testlist,
-      totalprice: requestItem.totalprice,
-      servicecharge: requestItem.servicecharge,
-      address: requestItem.address,
-      referrer: requestItem.referrer,
-      lastupdate: currentTime,
-      dateofcreated: requestItem.dateofcreated,
-      softdelete: 0,
-      latitude: requestItem.latitude,
-      longitude: requestItem.longitude,
-      teststatus: requestItem.teststatus + 1,
-      invoice_call: requestItem.invoice_call,
-      type: requestItem.type,
-      image_one: requestItem.image_one,
-      image_two: requestItem.image_two,
-      comments: requestItem.comments,
-      advanced: requestItem.advanced,
-      due_amount: requestItem.due_amount,
-      admin_discount: requestItem.admin_discount,
-      agent_discount: requestItem.agent_discount,
-      test_item_cost: requestItem.test_item_cost,
-      test_item_discount: requestItem.test_item_discount,
-      total_discount: requestItem.total_discount,
-    );
+        id: requestItem.id,
+        name: requestItem.name,
+        gender: requestItem.gender,
+        mobile: requestItem.mobile,
+        age: requestItem.age,
+        testlist: requestItem.testlist,
+        totalprice: requestItem.totalprice,
+        servicecharge: requestItem.servicecharge,
+        address: requestItem.address,
+        referrer: requestItem.referrer,
+        lastupdate: currentTime,
+        dateofcreated: requestItem.dateofcreated,
+        softdelete: 0,
+        latitude: requestItem.latitude,
+        longitude: requestItem.longitude,
+        teststatus: requestItem.teststatus + 1,
+        invoice_call: requestItem.invoice_call,
+        type: requestItem.type,
+        image_one: requestItem.image_one,
+        image_two: requestItem.image_two,
+        comments: requestItem.comments,
+        advanced: requestItem.advanced,
+        due_amount: requestItem.due_amount,
+        total_admin_discount: requestItem.total_admin_discount,
+        total_agent_discount: requestItem.total_agent_discount,
+        test_item_cost: requestItem.test_item_cost,
+        test_item_discount: requestItem.test_item_discount,
+        total_discount: requestItem.total_discount,
+        total_payable_imagine_cost: 0,
+        total_payable_pathology_cost: 0,
+        total_payable: 0,
+        total_unpayable: 0,
+        admin_pathology_discount: 0,
+        admin_radiology_discount: 0,
+        agent_commission: 0,
+        agent_pathology_discount: 0,
+        agent_radiology_discount: 0,
+        area: "",
+        assigning: "",
+        assigning_commission: 0,
+        delivery_date: null,
+        is_paid: false, total_unpayable_imagine: 0, total_unpayable_pathology: 0);
 
     if (updateTestRequestItem != null) {
       await DbrefTestReqModel.child("testRequest")
@@ -125,11 +141,14 @@ class _RequestListTabViewState extends State<RequestListTabView> {
 
   Future<void> getStatusData(context) async {
     _onLoading(true);
+
+    SharedPreferences ref = await SharedPreferences.getInstance();
+    type = ref.getString("type");
+    phone = ref.getString("phoneNumber");
+
     late DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel =
         await FirebaseDatabase.instance.ref("$database_name/testRequest/");
-
-  
 
     _dbref_testReqModel.onValue.listen((event) async {
       _newTestRequestList.clear();
@@ -215,7 +234,6 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                 children: [
                                   SizedBox(
                                     width: DM.p100,
-                                    
                                     child: Text(
                                       "Type",
                                       style: TextStyle(
@@ -257,10 +275,37 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                 itemCount: _newTestRequestList.length,
                                 itemBuilder: (context, index) {
                                   return InkWell(
-                                    onTap: () {
-                                      Get.to(TestRequestCreate(
-                                          testEachRequest:
-                                              _newTestRequestList[index]));
+                                    onTap: () async {
+                                      if (createRequest_controller
+                                              .toStatus[widget.statusKey]! <
+                                          5) {
+                                        Get.to(TestRequestCreate(
+                                            testEachRequest:
+                                                _newTestRequestList[index]));
+                                      } else if (createRequest_controller
+                                              .toStatus[widget.statusKey]! <
+                                          7) {
+                                        if (type == "7" ||
+                                            phone == "111000222999") {
+                                          Get.to(TestRequestCreate(
+                                              testEachRequest:
+                                                  _newTestRequestList[index]));
+                                        }
+                                      } else if (createRequest_controller
+                                              .toStatus[widget.statusKey]! ==
+                                          7) {
+                                        SharedPreferences ref =
+                                            await SharedPreferences
+                                                .getInstance();
+                                        var type = ref.getString("type");
+                                        var phone =
+                                            ref.getString("phoneNumber");
+                                        if (phone == "111000222999") {
+                                          Get.to(TestRequestCreate(
+                                              testEachRequest:
+                                                  _newTestRequestList[index]));
+                                        }
+                                      }
                                     },
                                     child: Container(
                                       decoration: BoxDecoration(
@@ -298,13 +343,14 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                             ),
                                           ),
                                           SizedBox(
-                                            width: DM.p85,
+                                            width: DM.p100,
                                             child: Text(
-                                              (DateFormat('dd-MMM-yyy').format(DateTime
-                                                      .fromMillisecondsSinceEpoch(
-                                                          _newTestRequestList[
-                                                                  index]
-                                                              .dateofcreated)))
+                                              (DateFormat('dd-MMM hh:mm a')
+                                                      .format(DateTime
+                                                          .fromMillisecondsSinceEpoch(
+                                                              _newTestRequestList[
+                                                                      index]
+                                                                  .dateofcreated)))
                                                   .toString(),
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w900,
@@ -313,7 +359,11 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                                       255, 26, 1, 1)),
                                             ),
                                           ),
-                                          widget.isButton == true
+                                          widget.isButton &&
+                                                  (createRequest_controller
+                                                              .toStatus[
+                                                          widget.statusKey]! <
+                                                      5)
                                               ? Container(
                                                   width: DM.p65,
                                                   child: MaterialButton(
@@ -338,7 +388,37 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                                     ),
                                                   ),
                                                 )
-                                              : Container()
+                                              : widget.isButton &&
+                                                      (type == "7" ||
+                                                          phone ==
+                                                              "111000222999")
+                                                  ? Container(
+                                                      width: DM.p65,
+                                                      child: MaterialButton(
+                                                        onPressed: () async {
+                                                          _updateStatus(
+                                                              _newTestRequestList[
+                                                                  index]);
+                                                        },
+                                                        height: DM.p40,
+                                                        shape:
+                                                            const StadiumBorder(),
+                                                        color: orangeColor,
+                                                        child: Text(
+                                                          "Done",
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                              color:
+                                                                  fullWhiteColor,
+                                                              fontSize: DM.p13,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : Container()
                                         ],
                                       ),
                                     ),
