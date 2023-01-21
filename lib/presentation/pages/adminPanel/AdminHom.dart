@@ -19,6 +19,8 @@ import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminReportList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminSuperReport.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminUserReport.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AgentReportList.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/RequestListTabView.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -46,6 +48,16 @@ class _AdminHomeState extends State<AdminHome> {
   CreateRequest_controller cr_controller = Get.put(CreateRequest_controller());
 
   var isLoading = true;
+
+  var type;
+  var phone;
+
+  Future<void> getTypeData() async {
+    SharedPreferences ref = await SharedPreferences.getInstance();
+    type = ref.getString("type");
+
+    phone = ref.getString("phoneNumber");
+  }
 
   void _onLoading(isClosed) {
     if (isClosed) {
@@ -96,7 +108,7 @@ class _AdminHomeState extends State<AdminHome> {
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
           width: DM.screenWidth,
           child: Text(
-            "Admin",
+            type == "7" || phone == "$superUser" ? "Admin" : "Agent",
             textAlign: TextAlign.left,
             style: TextStyle(color: creamColor, fontSize: DM.p30),
           ),
@@ -104,23 +116,278 @@ class _AdminHomeState extends State<AdminHome> {
       ]),
       body: Padding(
         padding: EdgeInsets.all(DM.p8),
-        child: Column(
-          children: [
-            widget.check_number == "111000222999" ||
-                    widget.check_type == 7 ||
-                    widget.check_type == 1
-                ? Container(
-                    color: creamColor,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              widget.check_number == "$superUser" ||
+                      widget.check_type == 7 ||
+                      widget.check_type == 1
+                  ? Container(
+                      color: creamColor,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                widget.check_type == 7 ||
+                                        widget.check_number == "$superUser"
+                                    ? Container(
+                                        height: DM.p180,
+                                        width: DM.screenWidth * 0.4,
+                                        margin: EdgeInsets.symmetric(
+                                            vertical: DM.p25,
+                                            horizontal: DM.p10),
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: DM.p30,
+                                                  vertical: DM.p20),
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          DM.p10)),
+                                              primary: orangeColor),
+                                          onPressed: () async {
+                                            SharedPreferences ref =
+                                                await SharedPreferences
+                                                    .getInstance();
+                                            var type = ref.getString("type");
+
+                                            var phone =
+                                                ref.getString("phoneNumber");
+                                            if (phone!
+                                                    .contains("@superUser") ||
+                                                (type != null &&
+                                                    type!.contains("7"))) {
+                                              Get.to(TestItemList());
+                                            }
+                                          },
+                                          child: Text(
+                                            "Test Item",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                color: fullWhiteColor,
+                                                fontSize: DM.p15,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      )
+                                    : SizedBox(),
+                                Container(
+                                  height: DM.p180,
+                                  width: DM.screenWidth * 0.4,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: DM.p25, horizontal: DM.p10),
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: DM.p30,
+                                            vertical: DM.p20),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(DM.p10)),
+                                        primary: orangeColor),
+                                    onPressed: () {
+                                      Get.to(StatusRequestList());
+                                    },
+                                    child: Text(
+                                      "Test Request",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          color: fullWhiteColor,
+                                          fontSize: DM.p15,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                widget.check_number == "$superUser"
+                                    ? Container(
+                                        height: DM.p180,
+                                        width: DM.screenWidth * 0.4,
+                                        margin: EdgeInsets.symmetric(
+                                            vertical: DM.p25,
+                                            horizontal: DM.p10),
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: DM.p30,
+                                                  vertical: DM.p20),
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          DM.p10)),
+                                              primary: orangeColor),
+                                          onPressed: () async {
+                                            SharedPreferences ref =
+                                                await SharedPreferences
+                                                    .getInstance();
+
+                                            var phone =
+                                                ref.getString("phoneNumber");
+                                            if (phone!
+                                                .contains("$superUser")) {
+                                              Get.to(AdminUser());
+                                            }
+                                          },
+                                          child: Text(
+                                            "Admin User",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                color: fullWhiteColor,
+                                                fontSize: DM.p15,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      )
+                                    : SizedBox(),
+                                Container(
+                                    color: creamColor,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        widget.check_number == "$superUser" ||
+                                                widget.check_type == 7
+                                            ? Container(
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Container(
+                                                      height: DM.p180,
+                                                      width:
+                                                          DM.screenWidth * 0.4,
+                                                      margin:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: DM.p25,
+                                                              horizontal:
+                                                                  DM.p10),
+                                                      child: ElevatedButton(
+                                                        style: ElevatedButton.styleFrom(
+                                                            padding: EdgeInsets
+                                                                .symmetric(
+                                                                    horizontal:
+                                                                        DM.p30,
+                                                                    vertical:
+                                                                        DM.p20),
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(DM
+                                                                            .p10)),
+                                                            primary:
+                                                                orangeColor),
+                                                        onPressed: () async {
+                                                          SharedPreferences
+                                                              ref =
+                                                              await SharedPreferences
+                                                                  .getInstance();
+
+                                                          var phone =
+                                                              ref.getString(
+                                                                  "phoneNumber");
+                                                          var type =
+                                                              ref.getString(
+                                                                  "type");
+                                                          if (phone!.contains(
+                                                              "$superUser")) {
+                                                            Get.to(
+                                                                AdminSuperReport());
+                                                          } else if (type ==
+                                                                  "1" ||
+                                                              type == "7") {
+                                                            Get.to(
+                                                                AdminUserReport());
+                                                          }
+                                                        },
+                                                        child: Text(
+                                                          "Report",
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                              color:
+                                                                  fullWhiteColor,
+                                                              fontSize: DM.p15,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
+                                            : SizedBox(),
+                                      ],
+                                    )),
+                              ],
+                            ),
+                          ),
+                          widget.check_number == "$superUser" ||
+                                  widget.check_type == 7
+                              ? Container(
+                                  height: DM.p180,
+                                  width: DM.screenWidth * 0.4,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: DM.p25, horizontal: DM.p10),
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: DM.p30,
+                                            vertical: DM.p20),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(DM.p10)),
+                                        primary: orangeColor),
+                                    onPressed: () async {
+                                      SharedPreferences ref =
+                                          await SharedPreferences.getInstance();
+
+                                      var phone = ref.getString("phoneNumber");
+                                      var type = ref.getString("type");
+                                      if (phone!.contains("$superUser")) {
+                                        Get.to(AgentReportList());
+                                      } else if (type == "1" || type == "7") {
+                                        Get.to(AgentReportList());
+                                      }
+                                    },
+                                    child: Text(
+                                      "Agent Report",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          color: fullWhiteColor,
+                                          fontSize: DM.p15,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                )
+                              : SizedBox(),
+                        ],
+                      ))
+                  : widget.check_type == 2
+                      ?
+                      //report section
+                      Container(
+                          color: creamColor,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              widget.check_type == 7 ||
-                                      widget.check_number == "111000222999"
-                                  ? Container(
+                              Container(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
                                       height: DM.p180,
                                       width: DM.screenWidth * 0.4,
                                       margin: EdgeInsets.symmetric(
@@ -136,21 +403,10 @@ class _AdminHomeState extends State<AdminHome> {
                                                         DM.p10)),
                                             primary: orangeColor),
                                         onPressed: () async {
-                                          SharedPreferences ref =
-                                              await SharedPreferences
-                                                  .getInstance();
-                                          var type = ref.getString("type");
-
-                                          var phone =
-                                              ref.getString("phoneNumber");
-                                          if (phone!.contains("111000222999") ||
-                                              (type != null &&
-                                                  type!.contains("7"))) {
-                                            Get.to(TestItemList());
-                                          }
+                                          Get.to(AgentReportList());
                                         },
                                         child: Text(
-                                          "Test Item",
+                                          "Daily Report",
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                               color: fullWhiteColor,
@@ -158,206 +414,15 @@ class _AdminHomeState extends State<AdminHome> {
                                               fontWeight: FontWeight.bold),
                                         ),
                                       ),
-                                    )
-                                  : SizedBox(),
-                              Container(
-                                height: DM.p180,
-                                width: DM.screenWidth * 0.4,
-                                margin: EdgeInsets.symmetric(
-                                    vertical: DM.p25, horizontal: DM.p10),
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: DM.p30, vertical: DM.p20),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(DM.p10)),
-                                      primary: orangeColor),
-                                  onPressed: () {
-                                    Get.to(StatusRequestList());
-                                  },
-                                  child: Text(
-                                    "Test Request",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        color: fullWhiteColor,
-                                        fontSize: DM.p15,
-                                        fontWeight: FontWeight.bold),
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                        Container(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              widget.check_number == "111000222999"
-                                  ? Container(
-                                      height: DM.p180,
-                                      width: DM.screenWidth * 0.4,
-                                      margin: EdgeInsets.symmetric(
-                                          vertical: DM.p25, horizontal: DM.p10),
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: DM.p30,
-                                                vertical: DM.p20),
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        DM.p10)),
-                                            primary: orangeColor),
-                                        onPressed: () async {
-                                          SharedPreferences ref =
-                                              await SharedPreferences
-                                                  .getInstance();
-
-                                          var phone =
-                                              ref.getString("phoneNumber");
-                                          if (phone!.contains("111000222999")) {
-                                            Get.to(AdminUser());
-                                          }
-                                        },
-                                        child: Text(
-                                          "Admin User",
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              color: fullWhiteColor,
-                                              fontSize: DM.p15,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    )
-                                  : SizedBox(),
-                              Container(
-                                  color: creamColor,
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      widget.check_number == "111000222999" ||
-                                              widget.check_type == 7
-                                          ? Container(
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Container(
-                                                    height: DM.p180,
-                                                    width: DM.screenWidth * 0.4,
-                                                    margin:
-                                                        EdgeInsets.symmetric(
-                                                            vertical: DM.p25,
-                                                            horizontal: DM.p10),
-                                                    child: ElevatedButton(
-                                                      style: ElevatedButton.styleFrom(
-                                                          padding: EdgeInsets
-                                                              .symmetric(
-                                                                  horizontal:
-                                                                      DM.p30,
-                                                                  vertical:
-                                                                      DM.p20),
-                                                          shape: RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          DM.p10)),
-                                                          primary: orangeColor),
-                                                      onPressed: () async {
-                                                        SharedPreferences ref =
-                                                            await SharedPreferences
-                                                                .getInstance();
-
-                                                        var phone =
-                                                            ref.getString(
-                                                                "phoneNumber");
-                                                        var type = ref
-                                                            .getString("type");
-                                                        if (phone!.contains(
-                                                            "111000222999")) {
-                                                          Get.to(
-                                                              AdminSuperReport());
-                                                        } else if (type ==
-                                                                "1" ||
-                                                            type == "7") {
-                                                          Get.to(
-                                                              AdminUserReport());
-                                                        }
-                                                      },
-                                                      child: Text(
-                                                        "Report",
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        style: TextStyle(
-                                                            color:
-                                                                fullWhiteColor,
-                                                            fontSize: DM.p15,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            )
-                                          : SizedBox(),
-                                    ],
-                                  )),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ))
-                : widget.check_type == 2
-                    ?
-                    //report section
-                    Container(
-                        color: creamColor,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    height: DM.p180,
-                                    width: DM.screenWidth * 0.4,
-                                    margin: EdgeInsets.symmetric(
-                                        vertical: DM.p25, horizontal: DM.p10),
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: DM.p30,
-                                              vertical: DM.p20),
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      DM.p10)),
-                                          primary: orangeColor),
-                                      onPressed: () async {
-                                        Get.to(AdminReportList());
-                                      },
-                                      child: Text(
-                                        "Daily Report",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            color: fullWhiteColor,
-                                            fontSize: DM.p15,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ))
-                    : Container(),
-          ],
+                          ))
+                      : Container(),
+            ],
+          ),
         ),
       ),
     );

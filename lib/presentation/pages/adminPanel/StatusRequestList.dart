@@ -296,7 +296,7 @@ Future<void> populateAllRequest() async {
 }
 
 Future<void> getAdminNotification(phone, type, context) async {
-  if (type == "1" || type == "7" || phone == "111000222999") {
+  if (type == "1" || type == "7" || phone == "$superUser") {
     createPlantFoodNotification();
     showNotification(context);
   }

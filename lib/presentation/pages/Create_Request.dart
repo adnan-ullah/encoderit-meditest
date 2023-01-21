@@ -217,7 +217,7 @@ class _CreateRequestState extends State<CreateRequest> {
             total_discount: createReqController.totalDiscount.value,
             is_paid: false,
             total_unpayable_imagine: 0,
-            total_unpayable_pathology: 0);
+            total_unpayable_pathology: 0, payment_date: 0);
       });
     }
 
@@ -275,7 +275,7 @@ class _CreateRequestState extends State<CreateRequest> {
           total_discount: createReqController.totalDiscount.value,
           is_paid: false,
           total_unpayable_imagine: 0,
-          total_unpayable_pathology: 0);
+          total_unpayable_pathology: 0, payment_date: 0);
 
       if (newRequestData != null) {
         await _dbref_testReqModel
@@ -356,7 +356,7 @@ class _CreateRequestState extends State<CreateRequest> {
         total_unpayable: 0,
         is_paid: false,
         total_unpayable_pathology: 0,
-        total_unpayable_imagine: 0,
+        total_unpayable_imagine: 0, payment_date: 0,
       );
 
       // DatabaseEvent ds = await _dbref_testReqModel
@@ -1216,7 +1216,7 @@ Future<void> getAdminNotification(phone, type, context) async {
           AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
 
       if (testData.phone == phone) {
-        if (type == "1" || type == "7" || phone == "111000222999") {
+        if (type == "1" || type == "7" || phone == "$superUser") {
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           createPlantFoodNotification();
           showNotification(context);

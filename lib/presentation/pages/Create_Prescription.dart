@@ -101,7 +101,7 @@ class _PrescriptionState extends State<Prescription> {
         total_admin_discount: 0,
         total_agent_discount: 0,
         total_discount: 0,
-        is_paid: false, total_unpayable_imagine: 0, total_unpayable_pathology: 0)!;
+        is_paid: false, total_unpayable_imagine: 0, total_unpayable_pathology: 0, payment_date: 0)!;
 
     late DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");

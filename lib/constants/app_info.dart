@@ -5,3 +5,4 @@ final app_name = "Health Care Homelab";
 final meditest = "meditest";
 final meditest_stage = "meditest_stage";
 final database_name = meditest_stage;
+late final superUser;

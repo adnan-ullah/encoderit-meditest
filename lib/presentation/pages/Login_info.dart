@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
   var admin_password;
 
   Future<void> getAdminUserList() async {
-    late DatabaseReference DbrefTestModel;
+    late DatabaseReference DbrefTestModel, superUserDatabase;
     DbrefTestModel =
         FirebaseDatabase.instance.ref("$database_name/admin_user/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
@@ -55,6 +55,13 @@ class _LoginScreenState extends State<LoginScreen> {
         AdminUserModel testData =
             AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
         adminUserList.add(testData);
+      }
+    });
+
+    superUserDatabase = FirebaseDatabase.instance.ref("$database_name/samrat/");
+    superUserDatabase.onValue.listen((event) {
+      for (DataSnapshot ds in event.snapshot.children) {
+        superUser = ds.value.toString();
       }
     });
   }
@@ -407,10 +414,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     // Get.to(HomeScreen());
 
                                     //admin-app
-                                    if (phone.text == "111000222999" ||
+                                    if (phone.text == "$superUser" ||
                                         (checkUser(phone.text) == true &&
                                             password.text == admin_password)) {
-                                      if (phone.text == "111000222999") {
+                                      if (phone.text == "$superUser") {
                                         savePhone(phone.text);
                                         Get.to(AdminHome(
                                           check_type: phone.text,
@@ -425,7 +432,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           check_number: phone.text,
                                         ));
                                       }
-                                      // else if (phone.text == "111000222999" ||
+                                      // else if (phone.text == "$superUser" ||
                                       //     checkUser(phone.text) == true) {
                                       //   savePhone(phone.text);
                                       //   Get.to(AdminHome(check_type: 1 , check_number: phone.text));

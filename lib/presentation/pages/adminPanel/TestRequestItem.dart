@@ -475,7 +475,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       assigning_commission: 0,
       is_paid: false,
       total_unpayable_imagine: total_unpayable_imaging,
-      total_unpayable_pathology: total_unpayable_pathology,
+      total_unpayable_pathology: total_unpayable_pathology, payment_date: 0,
     );
 
     if (updateTestRequestItem != null) {

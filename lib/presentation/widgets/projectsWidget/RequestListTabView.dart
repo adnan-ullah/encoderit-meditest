@@ -100,7 +100,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
         referrer: requestItem.referrer,
         lastupdate: currentTime,
         dateofcreated: requestItem.dateofcreated,
-        softdelete: 0,
+        softdelete: requestItem.softdelete,
         latitude: requestItem.latitude,
         longitude: requestItem.longitude,
         teststatus: requestItem.teststatus + 1,
@@ -109,27 +109,30 @@ class _RequestListTabViewState extends State<RequestListTabView> {
         image_one: requestItem.image_one,
         image_two: requestItem.image_two,
         comments: requestItem.comments,
+        total_payable_imagine_cost: requestItem.total_payable_imagine_cost,
+        total_payable_pathology_cost: requestItem.total_payable_pathology_cost,
+        total_payable: requestItem.total_payable,
+        total_unpayable: requestItem.total_unpayable,
+        admin_pathology_discount: requestItem.admin_pathology_discount,
+        admin_radiology_discount: requestItem.admin_radiology_discount,
+        agent_commission: requestItem.agent_commission,
+        agent_pathology_discount: requestItem.agent_pathology_discount,
+        agent_radiology_discount: requestItem.agent_radiology_discount,
+        area: requestItem.area,
+        assigning: requestItem.assigning,
+        assigning_commission: requestItem.assigning_commission,
         advanced: requestItem.advanced,
+        delivery_date: requestItem.delivery_date,
         due_amount: requestItem.due_amount,
-        total_admin_discount: requestItem.total_admin_discount,
-        total_agent_discount: requestItem.total_agent_discount,
         test_item_cost: requestItem.test_item_cost,
         test_item_discount: requestItem.test_item_discount,
+        total_admin_discount: requestItem.total_admin_discount,
+        total_agent_discount: requestItem.total_agent_discount,
         total_discount: requestItem.total_discount,
-        total_payable_imagine_cost: 0,
-        total_payable_pathology_cost: 0,
-        total_payable: 0,
-        total_unpayable: 0,
-        admin_pathology_discount: 0,
-        admin_radiology_discount: 0,
-        agent_commission: 0,
-        agent_pathology_discount: 0,
-        agent_radiology_discount: 0,
-        area: "",
-        assigning: "",
-        assigning_commission: 0,
-        delivery_date: null,
-        is_paid: false, total_unpayable_imagine: 0, total_unpayable_pathology: 0);
+        is_paid: requestItem.is_paid,
+        total_unpayable_pathology: requestItem.total_unpayable_pathology,
+        total_unpayable_imagine: requestItem.total_unpayable_imagine,
+        payment_date: requestItem.payment_date);
 
     if (updateTestRequestItem != null) {
       await DbrefTestReqModel.child("testRequest")
@@ -286,7 +289,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                               .toStatus[widget.statusKey]! <
                                           7) {
                                         if (type == "7" ||
-                                            phone == "111000222999") {
+                                            phone == "$superUser") {
                                           Get.to(TestRequestCreate(
                                               testEachRequest:
                                                   _newTestRequestList[index]));
@@ -300,7 +303,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                         var type = ref.getString("type");
                                         var phone =
                                             ref.getString("phoneNumber");
-                                        if (phone == "111000222999") {
+                                        if (phone == "$superUser") {
                                           Get.to(TestRequestCreate(
                                               testEachRequest:
                                                   _newTestRequestList[index]));
@@ -391,7 +394,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                               : widget.isButton &&
                                                       (type == "7" ||
                                                           phone ==
-                                                              "111000222999")
+                                                              "$superUser")
                                                   ? Container(
                                                       width: DM.p65,
                                                       child: MaterialButton(
@@ -460,8 +463,8 @@ Future<void> getAdminNotification(phone, type, context) async {
       AdminUserModel testData =
           AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
 
-      if (testData.phone == phone || phone == "111000222999") {
-        if (type == "1" || type == "7" || phone == "111000222999") {
+      if (testData.phone == phone || phone == "$superUser") {
+        if (type == "1" || type == "7" || phone == "$superUser") {
           createPlantFoodNotification();
           showNotification(context);
         }

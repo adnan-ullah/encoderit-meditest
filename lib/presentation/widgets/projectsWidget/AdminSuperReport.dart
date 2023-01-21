@@ -484,334 +484,371 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
               Container(
                   child: _newTestRequestList.isEmpty == false
                       ? Container(
-                          child: Column(
+                          height: DM.screenHeight * 0.62,
+                          margin: EdgeInsets.symmetric(horizontal: DM.p5),
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
                             children: [
-                              Padding(
-                                padding: EdgeInsets.all(DM.p8),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: DM.p75,
-                                      child: Text(
-                                        "Invoice Call",
-                                        textAlign: TextAlign.left,
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: DM.p8,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    height: DM.p50,
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: DM.p80,
+                                          child: Text(
+                                            "Invoice Call",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: DM.p60,
+                                          child: Text(
+                                            "Total Cost",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: DM.p60,
+                                          child: Text(
+                                            "Test Cost",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: DM.p70,
+                                          child: Text(
+                                            "Total Discount",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: DM.p60,
+                                          child: Text(
+                                            "Status",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: DM.p80,
+                                        ),
+                                      ],
                                     ),
-                                    Container(
-                                      width: DM.p55,
-                                      child: Text(
-                                        "Total Cost",
-                                        textAlign: TextAlign.left,
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: DM.p8,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
-                                    ),
-                                    Container(
-                                      width: DM.p55,
-                                      child: Text(
-                                        "Test Cost",
-                                        textAlign: TextAlign.left,
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: DM.p8,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
-                                    ),
-                                    Container(
-                                      width: DM.p80,
-                                      child: Text(
-                                        "Total Discount",
-                                        textAlign: TextAlign.left,
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: DM.p8,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
-                                    ),
-                                    Container(
-                                      width: DM.p50,
-                                      child: Text(
-                                        "Status",
-                                        textAlign: TextAlign.left,
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: DM.p8,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                              Divider(
-                                thickness: DM.p2,
-                                color: Colors.black,
-                              ),
-                              Container(
-                                height: DM.screenHeight * 0.55,
-                                child: ListView.builder(
-                                  itemCount: _newTestRequestList.length,
-                                  itemBuilder: (context, index) {
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        color: whiteColor,
-                                        borderRadius:
-                                            BorderRadius.circular(DM.p10),
-                                      ),
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: DM.p10, vertical: DM.p5),
-                                      margin:
-                                          EdgeInsets.symmetric(vertical: DM.p5),
-                                      height: DM.p60,
-                                      child: Row(
-                                        children: [
-                                          SizedBox(
-                                            width: DM.p75,
-                                            child: Text(
-                                              "#${_newTestRequestList[index].invoice_call.toString()}",
-                                              textAlign: TextAlign.left,
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: DM.p8,
-                                                  color: Color.fromARGB(
-                                                      255, 26, 1, 1)),
+                                  ),
+                                  Divider(
+                                    thickness: DM.p2,
+                                    color: Colors.black,
+                                  ),
+                                  Expanded(
+                                    child: Container(
+                                      height: DM.screenHeight * 0.50,
+                                      width: DM.screenWidth * 1.3,
+                                      child: ListView.builder(
+                                        itemCount: _newTestRequestList.length,
+                                        itemBuilder: (context, index) {
+                                          return Container(
+                                            decoration: BoxDecoration(
+                                              color: whiteColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(DM.p10),
                                             ),
-                                          ),
-                                          SizedBox(
-                                            width: DM.p55,
-                                            child: Text(
-                                              "${(_newTestRequestList[index].totalprice).toString()}",
-                                              textAlign: TextAlign.left,
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: DM.p8,
-                                                  color: Color.fromARGB(
-                                                      255, 26, 1, 1)),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: DM.p55,
-                                            child: Text(
-                                              "${(_newTestRequestList[index].test_item_cost).toString()}",
-                                              textAlign: TextAlign.left,
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: DM.p8,
-                                                  color: Color.fromARGB(
-                                                      255, 26, 1, 1)),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: DM.p70,
-                                            child: Text(
-                                              _newTestRequestList[index]
-                                                  .total_discount
-                                                  .toString(),
-                                              textAlign: TextAlign.left,
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: DM.p8,
-                                                  color: Color.fromARGB(
-                                                      255, 26, 1, 1)),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: DM.p55,
-                                            child: Text(
-                                              createRequest_controller.status[
-                                                      _newTestRequestList[index]
-                                                          .teststatus]
-                                                  .toString(),
-                                              textAlign: TextAlign.left,
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: DM.p8,
-                                                  color: Color.fromARGB(
-                                                      255, 26, 1, 1)),
-                                            ),
-                                          ),
-                                          Container(
-                                            margin:
-                                                EdgeInsets.only(right: DM.p5),
-                                            child: IconButton(
-                                              color: orangeColor,
-                                              icon: Icon(
-                                                CupertinoIcons
-                                                    .xmark_circle_fill,
-                                                size: DM.p20,
-                                              ),
-                                              onPressed: () {
-                                                setState(() {
-                                                  showDialog(
-                                                      context: context,
-                                                      builder: (context) {
-                                                        return Scaffold(
-                                                          backgroundColor:
-                                                              Colors
-                                                                  .transparent,
-                                                          body: Center(
-                                                            child: Container(
-                                                                margin: EdgeInsets
-                                                                    .all(
-                                                                        DM.p10),
-                                                                height: DM.p200,
-                                                                color:
-                                                                    creamColor,
-                                                                child: Column(
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .center,
-                                                                  children: [
-                                                                    Container(
-                                                                      padding:
-                                                                          EdgeInsets.all(
-                                                                              16),
-                                                                      margin: EdgeInsets
-                                                                          .all(
-                                                                              16),
-                                                                      child:
-                                                                          Text(
-                                                                        "Are you want to submit to ${_newTestRequestList[index].invoice_call}?",
-                                                                        style: TextStyle(
-                                                                            fontWeight: FontWeight
-                                                                                .w400,
-                                                                            fontSize: DM
-                                                                                .p20,
-                                                                            color: Color.fromARGB(
-                                                                                255,
-                                                                                26,
-                                                                                1,
-                                                                                1)),
-                                                                      ),
-                                                                    ),
-                                                                    Row(
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .center,
-                                                                      children: [
-                                                                        Container(
-                                                                          margin: EdgeInsets.symmetric(
-                                                                              horizontal: DM.p20,
-                                                                              vertical: DM.p10),
-                                                                          child:
-                                                                              MaterialButton(
-                                                                            onPressed:
-                                                                                () {
-                                                                              Get.back();
-                                                                            },
-                                                                            height:
-                                                                                DM.p40,
-                                                                            minWidth:
-                                                                                DM.p120,
-                                                                            shape:
-                                                                                const StadiumBorder(),
-                                                                            color:
-                                                                                orangeColor,
+                                            margin: EdgeInsets.symmetric(
+                                                vertical: DM.p5),
+                                            height: DM.p60,
+                                            child: Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: DM.p80,
+                                                  child: Text(
+                                                    "#${_newTestRequestList[index].invoice_call.toString()}",
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p10,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                ),
+                                                _newTestRequestList[index]
+                                                            .teststatus !=
+                                                        1
+                                                    ? SizedBox(
+                                                        width: DM.p60,
+                                                        child: Text(
+                                                          "${(_newTestRequestList[index].totalprice).toString()}",
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w900,
+                                                              fontSize: DM.p10,
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      26,
+                                                                      1,
+                                                                      1)),
+                                                        ),
+                                                      )
+                                                    : SizedBox(
+                                                        width: DM.p60,
+                                                        child: Text(
+                                                          "Processing",
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w900,
+                                                              fontSize: DM.p10,
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      26,
+                                                                      1,
+                                                                      1)),
+                                                        ),
+                                                      ),
+                                                _newTestRequestList[index]
+                                                            .teststatus !=
+                                                        1
+                                                    ? SizedBox(
+                                                        width: DM.p60,
+                                                        child: Text(
+                                                          "${(_newTestRequestList[index].test_item_cost).toString()}",
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w900,
+                                                              fontSize: DM.p10,
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      26,
+                                                                      1,
+                                                                      1)),
+                                                        ),
+                                                      )
+                                                    : SizedBox(
+                                                        width: DM.p60,
+                                                        child: Text(
+                                                          "Processing",
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w900,
+                                                              fontSize: DM.p10,
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      26,
+                                                                      1,
+                                                                      1)),
+                                                        ),
+                                                      ),
+                                                _newTestRequestList[index]
+                                                            .teststatus !=
+                                                        1
+                                                    ? SizedBox(
+                                                        width: DM.p70,
+                                                        child: Text(
+                                                          _newTestRequestList[
+                                                                  index]
+                                                              .total_discount
+                                                              .toString(),
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w900,
+                                                              fontSize: DM.p10,
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      26,
+                                                                      1,
+                                                                      1)),
+                                                        ),
+                                                      )
+                                                    : SizedBox(
+                                                        width: DM.p70,
+                                                        child: Text(
+                                                          "Processing",
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w900,
+                                                              fontSize: DM.p10,
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      26,
+                                                                      1,
+                                                                      1)),
+                                                        ),
+                                                      ),
+                                                SizedBox(
+                                                  width: DM.p60,
+                                                  child: Text(
+                                                    createRequest_controller
+                                                        .status[
+                                                            _newTestRequestList[
+                                                                    index]
+                                                                .teststatus]
+                                                        .toString(),
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p10,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  width: DM.p60,
+                                                  margin: EdgeInsets.only(
+                                                      right: DM.p5),
+                                                  child: IconButton(
+                                                    color: orangeColor,
+                                                    icon: Icon(
+                                                      CupertinoIcons
+                                                          .xmark_circle_fill,
+                                                      size: DM.p20,
+                                                    ),
+                                                    onPressed: () {
+                                                      setState(() {
+                                                        showDialog(
+                                                            context: context,
+                                                            builder: (context) {
+                                                              return Scaffold(
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .transparent,
+                                                                body: Center(
+                                                                  child: Container(
+                                                                      margin: EdgeInsets.all(DM.p10),
+                                                                      height: DM.p200,
+                                                                      color: creamColor,
+                                                                      child: Column(
+                                                                        crossAxisAlignment:
+                                                                            CrossAxisAlignment.center,
+                                                                        children: [
+                                                                          Container(
+                                                                            padding:
+                                                                                EdgeInsets.all(16),
+                                                                            margin:
+                                                                                EdgeInsets.all(16),
                                                                             child:
                                                                                 Text(
-                                                                              "Cancel",
-                                                                              style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
+                                                                              "Are you want to submit to ${_newTestRequestList[index].invoice_call}?",
+                                                                              style: TextStyle(fontWeight: FontWeight.w400, fontSize: DM.p20, color: Color.fromARGB(255, 26, 1, 1)),
                                                                             ),
                                                                           ),
-                                                                        ),
-                                                                        Container(
-                                                                          margin: EdgeInsets.symmetric(
-                                                                              horizontal: DM.p20,
-                                                                              vertical: DM.p10),
-                                                                          child:
-                                                                              MaterialButton(
-                                                                            onPressed:
-                                                                                () async {
-                                                                              if (await chechkingInternet()) {
-                                                                                removeRequestFromFirebase(_newTestRequestList[index]);
+                                                                          Row(
+                                                                            mainAxisAlignment:
+                                                                                MainAxisAlignment.center,
+                                                                            children: [
+                                                                              Container(
+                                                                                margin: EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p10),
+                                                                                child: MaterialButton(
+                                                                                  onPressed: () {
+                                                                                    Get.back();
+                                                                                  },
+                                                                                  height: DM.p40,
+                                                                                  minWidth: DM.p120,
+                                                                                  shape: const StadiumBorder(),
+                                                                                  color: orangeColor,
+                                                                                  child: Text(
+                                                                                    "Cancel",
+                                                                                    style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                              Container(
+                                                                                margin: EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p10),
+                                                                                child: MaterialButton(
+                                                                                  onPressed: () async {
+                                                                                    if (await chechkingInternet()) {
+                                                                                      removeRequestFromFirebase(_newTestRequestList[index]);
 
-                                                                                setState(() {
-                                                                                  _newTestRequestList.removeAt(index);
-                                                                                });
-                                                                              }
-                                                                            },
-                                                                            height:
-                                                                                DM.p40,
-                                                                            minWidth:
-                                                                                DM.p120,
-                                                                            shape:
-                                                                                const StadiumBorder(),
-                                                                            color:
-                                                                                orangeColor,
-                                                                            child:
-                                                                                Text(
-                                                                              "Yes",
-                                                                              style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
-                                                                            ),
+                                                                                      setState(() {
+                                                                                        _newTestRequestList.removeAt(index);
+                                                                                      });
+                                                                                    }
+                                                                                  },
+                                                                                  height: DM.p40,
+                                                                                  minWidth: DM.p120,
+                                                                                  shape: const StadiumBorder(),
+                                                                                  color: orangeColor,
+                                                                                  child: Text(
+                                                                                    "Yes",
+                                                                                    style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
+                                                                                  ),
+                                                                                ),
+                                                                              )
+                                                                            ],
                                                                           ),
-                                                                        )
-                                                                      ],
-                                                                    ),
-                                                                  ],
-                                                                )),
-                                                          ),
-                                                        );
+                                                                        ],
+                                                                      )),
+                                                                ),
+                                                              );
+                                                            });
                                                       });
-                                                });
-                                              },
+                                                    },
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                          ),
-                                        ],
+                                          );
+                                        },
                                       ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              Container(
-                                margin: EdgeInsets.only(right: DM.p10),
-                                child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Divider(
-                                        thickness: DM.p1,
-                                        color: blackFontColor,
-                                      ),
-                                      Text(
-                                        "Total Cost =  ${totalCost}",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: DM.p15,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
-                                      Text(
-                                        "Total Test Cost =  ${totalTestCost}",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: DM.p15,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
-                                      Text(
-                                        "Total Discount =  ${totalDiscount}",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: DM.p15,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
-                                    ]),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         )
                       : Container(
-                          height: DM.screenHeight * 0.65,
+                          height: DM.screenHeight * 0.50,
                           margin: EdgeInsets.symmetric(vertical: DM.p16),
                           child: Center(
                             child: Text(
@@ -822,6 +859,39 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
                                   color: orangeColor),
                             ),
                           ))),
+
+              Container(
+                margin: EdgeInsets.only(right: DM.p10),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Divider(
+                        thickness: DM.p1,
+                        color: blackFontColor,
+                      ),
+                      Text(
+                        "Total Cost =  ${totalCost}",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: DM.p15,
+                            color: Color.fromARGB(255, 26, 1, 1)),
+                      ),
+                      Text(
+                        "Total Test Cost =  ${totalTestCost}",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: DM.p15,
+                            color: Color.fromARGB(255, 26, 1, 1)),
+                      ),
+                      Text(
+                        "Total Discount =  ${totalDiscount}",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: DM.p15,
+                            color: Color.fromARGB(255, 26, 1, 1)),
+                      ),
+                    ]),
+              ),
             ],
           )),
     );

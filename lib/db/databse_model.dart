@@ -115,6 +115,7 @@ class TestDataRequest {
     required this.is_paid,
     required this.total_unpayable_pathology,
     required this.total_unpayable_imagine,
+    required this.payment_date
   });
 
   final dynamic id;
@@ -163,6 +164,8 @@ class TestDataRequest {
   final int total_unpayable_pathology;
   final int total_unpayable_imagine;
 
+    final int payment_date;
+
   Map toJson() => {
         'id': id,
         'name': name,
@@ -208,6 +211,7 @@ class TestDataRequest {
         'is_paid': is_paid,
         'total_unpayable_pathology': total_unpayable_pathology,
         'total_unpayable_imagine': total_unpayable_imagine,
+         'payment_date': payment_date,
       };
 
   factory TestDataRequest.fromJson(Map<String, dynamic> parsedJson) {
@@ -260,6 +264,7 @@ class TestDataRequest {
       is_paid: parsedJson['is_paid'],
       total_unpayable_pathology: parsedJson['total_unpayable_pathology'],
       total_unpayable_imagine: parsedJson['total_unpayable_imagine'],
+        payment_date: parsedJson['payment_date'],
     );
   }
 }
