@@ -332,9 +332,14 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       agent_radiology_discount.text = "0";
 
     agent_commission.text = "0";
-
+    if( widget.testEachRequest!.agent_commission==null)
+    {
+     agent_commission.text = "0";
+    }
+    else{
     agent_commission.text =
         widget.testEachRequest!.agent_commission!.toString();
+  }
   }
 
   void _onLoading(isClosed) {
@@ -475,7 +480,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       assigning_commission: 0,
       is_paid: false,
       total_unpayable_imagine: total_unpayable_imaging,
-      total_unpayable_pathology: total_unpayable_pathology, payment_date: 0,
+      total_unpayable_pathology: total_unpayable_pathology,
+      payment_date: 0,
     );
 
     if (updateTestRequestItem != null) {
@@ -555,6 +561,10 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
           test_item_discount + int.parse(testItem.discount.toString());
       tubeCost = tubeCost + int.parse(testItem.testkitprice.toString());
       totalDiscount = totalDiscount + int.parse(testItem.discount.toString());
+
+      if (testItem.is_payable == null) {
+        testItem.is_payable = true;
+      }
 
       if (testItem.is_payable) {
         if (testItem.category == 1) {

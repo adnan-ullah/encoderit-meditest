@@ -35,7 +35,8 @@ var isLoading = false;
 var referrer_code;
 var commission;
 
-var end_datetime = DateTime.now().millisecondsSinceEpoch;
+var end_datetime = DateTime(DateTime.now().year, DateTime.now().month,  DateTime.now().day ,23 , 59, 00)
+    .millisecondsSinceEpoch;
 
 var start_datetime = DateTime(DateTime.now().year, DateTime.now().month, 1)
     .millisecondsSinceEpoch;

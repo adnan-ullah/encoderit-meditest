@@ -34,7 +34,7 @@ class CreateRequest_controller extends GetxController {
     2: "RECIEVED",
     3: "COLLECTED",
     4: "READY",
-        5: "R.RECIEVED",
+    5: "R.RECIEVED",
     6: "DELIVERED",
     7: "CANCEL",
     // 8:"CONFIRM"

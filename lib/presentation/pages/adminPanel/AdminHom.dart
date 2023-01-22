@@ -158,7 +158,7 @@ class _AdminHomeState extends State<AdminHome> {
                                             var phone =
                                                 ref.getString("phoneNumber");
                                             if (phone!
-                                                    .contains("@superUser") ||
+                                                    .contains("$superUser") ||
                                                 (type != null &&
                                                     type!.contains("7"))) {
                                               Get.to(TestItemList());

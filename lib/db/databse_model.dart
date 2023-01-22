@@ -14,7 +14,7 @@ class TestData {
     required this.niddle_cost,
     required this.servicecharge,
     required this.b2b_cost,
-    required this.is_payable,
+     this.is_payable,
     required this.category,
   });
 
@@ -30,7 +30,7 @@ class TestData {
   final dynamic niddle_cost;
   final dynamic servicecharge;
   final dynamic b2b_cost;
-  final dynamic is_payable;
+   dynamic is_payable;
   final dynamic category;
 
   Map toJson() => {
@@ -93,29 +93,29 @@ class TestDataRequest {
     required this.image_two,
     required this.comments,
     required this.delivery_date,
-    required this.advanced,
-    required this.due_amount,
-    required this.total_admin_discount,
-    required this.total_agent_discount,
-    required this.total_discount,
-    required this.test_item_cost,
-    required this.test_item_discount,
-    required this.total_payable_pathology_cost,
-    required this.total_payable_imagine_cost,
-    required this.total_payable,
-    required this.total_unpayable,
-    required this.admin_pathology_discount,
-    required this.admin_radiology_discount,
-    required this.agent_pathology_discount,
-    required this.agent_radiology_discount,
-    required this.assigning,
-    required this.area,
-    required this.assigning_commission,
-    required this.agent_commission,
-    required this.is_paid,
-    required this.total_unpayable_pathology,
-    required this.total_unpayable_imagine,
-    required this.payment_date
+     this.advanced,
+     this.due_amount,
+     this.total_admin_discount,
+     this.total_agent_discount,
+     this.total_discount,
+     this.test_item_cost,
+     this.test_item_discount,
+     this.total_payable_pathology_cost,
+     this.total_payable_imagine_cost,
+     this.total_payable,
+     this.total_unpayable,
+     this.admin_pathology_discount,
+     this.admin_radiology_discount,
+     this.agent_pathology_discount,
+     this.agent_radiology_discount,
+     this.assigning,
+     this.area,
+     this.assigning_commission,
+     this.agent_commission,
+     this.is_paid,
+     this.total_unpayable_pathology,
+     this.total_unpayable_imagine,
+     this.payment_date
   });
 
   final dynamic id;
@@ -124,8 +124,8 @@ class TestDataRequest {
   final dynamic mobile;
   final dynamic age;
   final List<TestData>? testlist;
-  final int totalprice;
-  final int servicecharge;
+  final dynamic totalprice;
+  final dynamic servicecharge;
   final dynamic address;
   final dynamic referrer;
   final dynamic lastupdate;
@@ -140,31 +140,33 @@ class TestDataRequest {
   final dynamic image_two;
   final dynamic comments;
   final dynamic delivery_date;
-  final int advanced;
-  final int due_amount;
-  final int total_admin_discount;
-  final int total_agent_discount;
-  final int total_discount;
-  final int test_item_cost;
-  final int test_item_discount;
 
-  final int total_payable_pathology_cost;
-  final int total_payable_imagine_cost;
-  final int total_payable;
-  final int total_unpayable;
-  final int admin_pathology_discount;
-  final int admin_radiology_discount;
-  final int agent_pathology_discount;
-  final int agent_radiology_discount;
-  final dynamic assigning;
-  final dynamic area;
-  final int assigning_commission;
-  final int agent_commission;
-  final bool is_paid;
-  final int total_unpayable_pathology;
-  final int total_unpayable_imagine;
 
-    final int payment_date;
+  dynamic advanced;
+  dynamic due_amount;
+  dynamic total_admin_discount;
+  dynamic total_agent_discount;
+ dynamic total_discount;
+ dynamic test_item_cost;
+ dynamic test_item_discount;
+
+dynamic total_payable_pathology_cost;
+  dynamic total_payable_imagine_cost;
+  dynamic total_payable;
+dynamic total_unpayable;
+ dynamic admin_pathology_discount;
+ dynamic admin_radiology_discount;
+ dynamic agent_pathology_discount;
+  dynamic agent_radiology_discount;
+dynamic assigning;
+   dynamic area;
+ dynamic assigning_commission;
+  dynamic agent_commission;
+   dynamic is_paid;
+  dynamic  total_unpayable_pathology;
+  dynamic  total_unpayable_imagine;
+
+     dynamic payment_date;
 
   Map toJson() => {
         'id': id,

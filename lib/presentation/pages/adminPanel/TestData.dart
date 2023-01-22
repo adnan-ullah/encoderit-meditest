@@ -53,10 +53,14 @@ class _TestDataCreateState extends State<TestDataCreate> {
     testprice.text = widget.testItem!.testprice.toString();
     transport_cost.text = widget.testItem!.transport_cost.toString();
     b2b_cost.text = widget.testItem!.b2b_cost.toString();
+
     is_payable = widget.testItem!.is_payable;
 
-    category =  createReqController.categoryName[widget.testItem!.category]!;
- 
+    if (is_payable == null) {
+      is_payable = true;
+    }
+
+    category = createReqController.categoryName[widget.testItem!.category]!;
   }
 
   Future<void> updateToFirebase() async {

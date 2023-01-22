@@ -33,12 +33,15 @@ var isLoading = false;
 var referrer_code;
 var commission;
 
-var end_datetime = DateTime.now().millisecondsSinceEpoch;
+var end_datetime = DateTime(DateTime.now().year, DateTime.now().month,
+        DateTime.now().day, 23, 59, 59)
+    .millisecondsSinceEpoch;
 
 var start_datetime = DateTime(DateTime.now().year, DateTime.now().month, 1)
     .millisecondsSinceEpoch;
 double totalEarning = 0;
 double totalTestCost = 0;
+double totalPaidAmount = 0;
 List<TestDataRequest> _newTestRequestList = [];
 List<TestDataRequest> _allRequestListAdmin = [];
 
@@ -155,18 +158,7 @@ class _AgentReportListState extends State<AgentReportList>
     }
 
     setState(() {
-      _newTestRequestList.map((e) {
-        if (e.teststatus == 5) {
-          totalEarning = totalEarning +
-              ((e.test_item_cost - e.test_item_discount) *
-                      int.parse(commission) /
-                      100)
-                  .toInt() -
-              e.total_agent_discount;
-
-          totalTestCost = totalTestCost + e.total_payable;
-        }
-      }).toList();
+      filterStatusDateTime(referrer_input.text);
     });
   }
 
@@ -196,25 +188,28 @@ class _AgentReportListState extends State<AgentReportList>
       }
 
       setState(() {
-        _newTestRequestList = _allRequestListAdmin
-            .where((element) =>
-                element.referrer.toString() == referrer_code.toString())
-            .toList();
+        if (type == "2") {
+          _newTestRequestList = _allRequestListAdmin
+              .where((element) =>
+                  element.referrer.toString() == referrer_code.toString())
+              .toList();
+        }
       });
 
-      print(_newTestRequestList.length);
       totalEarning = 0;
       totalTestCost = 0;
+      totalPaidAmount = 0;
+
       _newTestRequestList.map((e) {
-        if (e.teststatus == 5) {
-          totalEarning = totalEarning +
-              ((e.test_item_cost - e.test_item_discount) *
-                      int.parse(commission) /
-                      100)
-                  .toInt() -
-              e.total_agent_discount;
+        if (e.teststatus == 6) {
+          totalEarning =
+              totalEarning + e.agent_commission - e.total_agent_discount;
 
           totalTestCost = totalTestCost + e.total_payable;
+
+          if (e.is_paid) {
+            totalPaidAmount = totalPaidAmount + totalEarning;
+          }
         }
       }).toList();
     });
@@ -225,8 +220,8 @@ class _AgentReportListState extends State<AgentReportList>
   }
 
   Future<void> filterStatusDateTime(var referrer) async {
-    _newTestRequestList.clear();
-    _newTestRequestList.addAll(_allRequestListAdmin);
+    // _newTestRequestList.clear();
+    // _newTestRequestList.addAll(_allRequestListAdmin);
 
     if (type == "2") {
       referrer = referrer_code;
@@ -239,24 +234,22 @@ class _AgentReportListState extends State<AgentReportList>
                   element.dateofcreated <= end_datetime))
           .toList();
 
-      print("Type" + type);
-      print("referrer_code" + referrer_code);
-
       totalEarning = 0;
       totalTestCost = 0;
+      totalPaidAmount = 0;
+
       _newTestRequestList.map((e) {
-        if (e.teststatus == 5) {
-          totalEarning = totalEarning +
-              ((e.test_item_cost - e.test_item_discount) *
-                  int.parse(commission) /
-                  100) -
-              e.total_agent_discount;
+        if (e.teststatus == 6) {
+          totalEarning =
+              totalEarning + e.agent_commission - e.total_agent_discount;
 
           totalTestCost = totalTestCost + e.total_payable;
+
+          if (e.is_paid) {
+            totalPaidAmount = totalPaidAmount + totalEarning;
+          }
         }
       }).toList();
-    } else {
-      print("Type" + type);
     }
   }
 
@@ -341,7 +334,7 @@ class _AgentReportListState extends State<AgentReportList>
                               //   FilteringTextInputFormatter.digitsOnly
                               // ],
                               // validator: validateMobile,
-                              onChanged: ((value) {
+                              onEditingComplete: (() {
                                 setState(() {
                                   filterStatusDateTime(
                                       referrer_input.text.toString());
@@ -853,7 +846,7 @@ class _AgentReportListState extends State<AgentReportList>
                                                                 child: Text(
                                                                   _newTestRequestList[
                                                                           index]
-                                                                      .total_discount
+                                                                      .total_agent_discount
                                                                       .toString(),
                                                                   textAlign:
                                                                       TextAlign
@@ -896,7 +889,7 @@ class _AgentReportListState extends State<AgentReportList>
                                                         _newTestRequestList[
                                                                         index]
                                                                     .teststatus ==
-                                                                5
+                                                                6
                                                             ? SizedBox(
                                                                 width: DM.p80,
                                                                 child: Text(
@@ -1062,7 +1055,7 @@ class _AgentReportListState extends State<AgentReportList>
                                                                         ),
                                                                       )
                                                                     : Text(
-                                                                        "NA",
+                                                                        "Not Paid",
                                                                         textAlign:
                                                                             TextAlign.center,
                                                                         style: TextStyle(
@@ -1114,7 +1107,7 @@ class _AgentReportListState extends State<AgentReportList>
                       color: blackFontColor,
                     ),
                     Text(
-                      "Total Earning =  ${totalEarning}",
+                      "Total Test Cost =  ${totalTestCost}",
                       style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: DM.p15,
@@ -1132,7 +1125,7 @@ class _AgentReportListState extends State<AgentReportList>
                       color: blackFontColor,
                     ),
                     Text(
-                      "Total Test Cost =  ${totalTestCost}",
+                      "Total Earning =  ${totalEarning}/- Total Paid = ${totalPaidAmount}",
                       style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: DM.p15,
