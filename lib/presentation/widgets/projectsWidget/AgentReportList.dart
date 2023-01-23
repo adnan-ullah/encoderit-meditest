@@ -30,7 +30,7 @@ class AgentReportList extends StatefulWidget {
 }
 
 var isLoading = false;
-var referrer_code;
+var referrer_code = "0";
 var commission;
 
 var end_datetime = DateTime(DateTime.now().year, DateTime.now().month,
@@ -47,9 +47,9 @@ List<TestDataRequest> _allRequestListAdmin = [];
 
 late TabController tabController;
 
-var type;
-var phone;
-var referrer_input = new TextEditingController();
+var type = "0";
+var phone = "0";
+var referrer_input = new TextEditingController(text: "0");
 
 class _AgentReportListState extends State<AgentReportList>
     with TickerProviderStateMixin {
@@ -166,10 +166,19 @@ class _AgentReportListState extends State<AgentReportList>
     _onLoading(true);
 
     SharedPreferences ref = await SharedPreferences.getInstance();
-    commission = ref.getString("commission");
-    referrer_code = ref.getString("referrer_code");
-    type = ref.getString("type");
-    phone = ref.getString('phoneNumber');
+      phone = ref.getString('phoneNumber')!;
+      type = ref.getString("type")!;
+if(phone!="$superUser" && type!="7" )
+{
+   commission = ref.getString("commission");
+    referrer_code = ref.getString("referrer_code")!;
+    
+}
+
+   
+  
+
+    
 
     late DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel =
@@ -191,7 +200,7 @@ class _AgentReportListState extends State<AgentReportList>
         if (type == "2") {
           _newTestRequestList = _allRequestListAdmin
               .where((element) =>
-                  element.referrer.toString() == referrer_code.toString())
+                  element.referrer.toString() == referrer_code.toString()) 
               .toList();
         }
       });
@@ -208,7 +217,8 @@ class _AgentReportListState extends State<AgentReportList>
           totalTestCost = totalTestCost + e.total_payable;
 
           if (e.is_paid) {
-            totalPaidAmount = totalPaidAmount + totalEarning;
+            totalPaidAmount =
+                totalPaidAmount + e.agent_commission - e.total_agent_discount;
           }
         }
       }).toList();
@@ -226,10 +236,10 @@ class _AgentReportListState extends State<AgentReportList>
     if (type == "2") {
       referrer = referrer_code;
     }
-    if (referrer.isNotEmpty) {
+    if (referrer.isNotEmpty && referrer!="0" ) {
       _newTestRequestList = _allRequestListAdmin
           .where((element) =>
-              element.referrer.toString().contains(referrer) &&
+              element.referrer.toString() == referrer &&
               (start_datetime <= element.dateofcreated &&
                   element.dateofcreated <= end_datetime))
           .toList();
@@ -246,7 +256,8 @@ class _AgentReportListState extends State<AgentReportList>
           totalTestCost = totalTestCost + e.total_payable;
 
           if (e.is_paid) {
-            totalPaidAmount = totalPaidAmount + totalEarning;
+            totalPaidAmount =
+                totalPaidAmount + e.agent_commission - e.total_agent_discount;
           }
         }
       }).toList();
@@ -269,6 +280,7 @@ class _AgentReportListState extends State<AgentReportList>
 
   @override
   void initState() {
+    referrer_input.text = "0";
     tabController = TabController(length: 0, vsync: this, initialIndex: 0);
 
     _selectedIndex = tabController.index;
@@ -475,7 +487,7 @@ class _AgentReportListState extends State<AgentReportList>
                     children: [
                       Container(
                         height: DM.p50,
-                        width: DM.screenHeight * 1,
+                        width: DM.screenWidth * 2.5,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -596,7 +608,7 @@ class _AgentReportListState extends State<AgentReportList>
                         child: isLoading == false
                             ? Container(
                                 height: DM.screenHeight * 0.50,
-                                width: DM.screenHeight * 1,
+                                width: DM.screenWidth * 2.5,
                                 child: _newTestRequestList.isNotEmpty
                                     ? Container(
                                         height: DM.p100,
@@ -608,7 +620,7 @@ class _AgentReportListState extends State<AgentReportList>
                                             ),
                                             Container(
                                               height: DM.screenHeight * 0.50,
-                                              width: DM.screenHeight * 1,
+                                              width: DM.screenWidth * 2.5,
                                               child: ListView.builder(
                                                 shrinkWrap: true,
                                                 itemCount:

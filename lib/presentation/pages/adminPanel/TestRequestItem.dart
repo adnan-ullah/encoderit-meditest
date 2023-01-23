@@ -332,14 +332,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       agent_radiology_discount.text = "0";
 
     agent_commission.text = "0";
-    if( widget.testEachRequest!.agent_commission==null)
-    {
-     agent_commission.text = "0";
+    if (widget.testEachRequest!.agent_commission == null) {
+      agent_commission.text = "0";
+    } else {
+      agent_commission.text =
+          widget.testEachRequest!.agent_commission!.toString();
     }
-    else{
-    agent_commission.text =
-        widget.testEachRequest!.agent_commission!.toString();
-  }
   }
 
   void _onLoading(isClosed) {
@@ -404,6 +402,10 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
     _updateRequest();
     _onLoading(false);
+
+     
+
+   
   }
 
   Future<void> _updateRequest() async {
@@ -489,6 +491,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
           .child(updateTestRequestItem.mobile)
           .child(updateTestRequestItem.id)
           .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
+
+            if (widget.testEachRequest!.teststatus == 2) {
+              
+          InvoicePrint(updateTestRequestItem, totalDiscount, due_amount, advanced,
+            tubeCost);
+    }
     }
 
     Get.back();
@@ -2722,13 +2730,6 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                         onPressed: () async {
                                                           if (await chechkingInternet()) {
                                                             uploadImage();
-
-                                                            InvoicePrint(
-                                                                updateTestRequestItem,
-                                                                totalDiscount,
-                                                                due_amount,
-                                                                advanced,
-                                                                tubeCost);
 
                                                             Get.back();
                                                           }

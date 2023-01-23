@@ -157,8 +157,7 @@ class _AdminHomeState extends State<AdminHome> {
 
                                             var phone =
                                                 ref.getString("phoneNumber");
-                                            if (phone!
-                                                    .contains("$superUser") ||
+                                            if (phone!.contains("$superUser") ||
                                                 (type != null &&
                                                     type!.contains("7"))) {
                                               Get.to(TestItemList());
@@ -233,8 +232,7 @@ class _AdminHomeState extends State<AdminHome> {
 
                                             var phone =
                                                 ref.getString("phoneNumber");
-                                            if (phone!
-                                                .contains("$superUser")) {
+                                            if (phone!.contains("$superUser")) {
                                               Get.to(AdminUser());
                                             }
                                           },
@@ -255,8 +253,7 @@ class _AdminHomeState extends State<AdminHome> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        widget.check_number == "$superUser" ||
-                                                widget.check_type == 7
+                                        widget.check_number == "$superUser"
                                             ? Container(
                                                 child: Row(
                                                   mainAxisAlignment:
@@ -304,11 +301,6 @@ class _AdminHomeState extends State<AdminHome> {
                                                               "$superUser")) {
                                                             Get.to(
                                                                 AdminSuperReport());
-                                                          } else if (type ==
-                                                                  "1" ||
-                                                              type == "7") {
-                                                            Get.to(
-                                                                AdminUserReport());
                                                           }
                                                         },
                                                         child: Text(

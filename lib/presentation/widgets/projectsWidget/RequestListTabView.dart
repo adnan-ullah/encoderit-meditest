@@ -346,14 +346,13 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                             ),
                                           ),
                                           SizedBox(
-                                            width: DM.p100,
+                                            width: DM.p80,
                                             child: Text(
-                                              (DateFormat('dd-MMM hh:mm a')
-                                                      .format(DateTime
-                                                          .fromMillisecondsSinceEpoch(
-                                                              _newTestRequestList[
-                                                                      index]
-                                                                  .dateofcreated)))
+                                              (DateFormat('dd-MMM HH:mm').format(
+                                                      DateTime.fromMillisecondsSinceEpoch(
+                                                          _newTestRequestList[
+                                                                  index]
+                                                              .dateofcreated)))
                                                   .toString(),
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w900,
@@ -393,8 +392,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                                 )
                                               : widget.isButton &&
                                                       (type == "7" ||
-                                                          phone ==
-                                                              "$superUser")
+                                                          phone == "$superUser")
                                                   ? Container(
                                                       width: DM.p65,
                                                       child: MaterialButton(
