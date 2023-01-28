@@ -13,6 +13,7 @@ import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminUser.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/StatusRequestList.dart';
+import 'package:healthcare_homelab/presentation/pages/adminPanel/StatusRequestListTypeThree.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem.dart';
@@ -121,7 +122,8 @@ class _AdminHomeState extends State<AdminHome> {
             children: [
               widget.check_number == "$superUser" ||
                       widget.check_type == 7 ||
-                      widget.check_type == 1
+                      widget.check_type == 1 ||
+                      widget.check_type == 3
                   ? Container(
                       color: creamColor,
                       child: Column(
@@ -189,7 +191,12 @@ class _AdminHomeState extends State<AdminHome> {
                                                 BorderRadius.circular(DM.p10)),
                                         primary: orangeColor),
                                     onPressed: () {
-                                      Get.to(StatusRequestList());
+                                      if (widget.check_type == 3) {
+                                        print("HERE Type three");
+                                        Get.to(StatusRequestListTypeThree());
+                                      } else {
+                                        Get.to(StatusRequestList());
+                                      }
                                     },
                                     child: Text(
                                       "Test Request",

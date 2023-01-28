@@ -450,7 +450,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                         Get.to(AdminHome(
                                             check_type: 7,
                                             check_number: phone.text));
-                                      } else {
+                                      } 
+                                       else if (checkUser(phone.text) == true &&
+                                          type == '3') {
+                                        savePhone(phone.text);
+                                        Get.to(AdminHome(
+                                            check_type: 3,
+                                            check_number: phone.text));
+                                      }
+                                      else {
                                         savePhone(phone.text);
                                         Get.to(HomeScreen());
                                       }

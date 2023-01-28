@@ -10,6 +10,7 @@ import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem.dart';
+import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItemTypeThree.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/NotificationServices.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
@@ -292,9 +293,18 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                       if (createRequest_controller
                                               .toStatus[widget.statusKey]! <
                                           5) {
-                                        Get.to(TestRequestCreate(
-                                            testEachRequest:
-                                                _newTestRequestList[index]));
+
+
+
+                              
+                                          Get.to(TestRequestCreate(
+                                              testEachRequest:
+                                                  _newTestRequestList[index]));
+                                        
+
+
+
+
                                       } else if (createRequest_controller
                                               .toStatus[widget.statusKey]! <
                                           7) {
@@ -347,7 +357,8 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                           SizedBox(
                                             width: DM.p80,
                                             child: Text(
-                                              "${_newTestRequestList[index].name.toString().split(' ').last}",
+                                              // "${_newTestRequestList[index].name.toString().split(' ').last}",
+                                              "${getFirstName(_newTestRequestList[index].name)}",
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w900,
                                                   fontSize: DM.p12,
@@ -490,4 +501,28 @@ Future<void> getAdminNotification(phone, type, context) async {
       }
     }
   });
+}
+
+String getFirstName(String name) {
+  String firstName;
+
+  List<String> test = name.split(" ");
+  String finalName;
+
+  if (test.first == "Mr." ||
+      test.first == "Mr" ||
+      test.first == "Mrs." ||
+      test.first == "Mrs" ||
+      test.first == "Md." ||
+      test.first == "Md" ||
+      test.first == "Ms." ||
+      test.first == "Ms") {
+
+    firstName = test[1];
+  } else {
+
+    firstName = test.first;
+  }
+
+  return firstName.toString();
 }

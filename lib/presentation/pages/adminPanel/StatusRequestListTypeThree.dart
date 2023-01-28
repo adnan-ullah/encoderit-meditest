@@ -23,24 +23,24 @@ import '../../../constants/app_info.dart';
 import '../../../responsives/dimensions.dart';
 import '../../widgets/projectsWidget/RequestListTabView.dart';
 
-class StatusRequestList extends StatefulWidget {
-  StatusRequestList({super.key});
+class StatusRequestListTypeThree extends StatefulWidget {
+  StatusRequestListTypeThree({super.key});
 
   @override
-  State<StatusRequestList> createState() => _StatusRequestListState();
+  State<StatusRequestListTypeThree> createState() =>
+      _StatusRequestListTypeThreeState();
 }
 
 FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-class _StatusRequestListState extends State<StatusRequestList>
+class _StatusRequestListTypeThreeState extends State<StatusRequestListTypeThree>
     with TickerProviderStateMixin {
   int _selectedIndex = 0;
   late TabController tabController;
 
   @override
   void initState() {
-    tabController = TabController(
-        length: cr_controller.status.length, vsync: this, initialIndex: 0);
+    tabController = TabController(length: 3, vsync: this, initialIndex: 0);
 
     setState(() {
       _selectedIndex = tabController.index;
@@ -153,9 +153,10 @@ class _StatusRequestListState extends State<StatusRequestList>
         padding: EdgeInsets.all(DM.p5),
         child: Container(
           child: Column(
+        
             children: [
               Container(
-                alignment: Alignment.center,
+                  
                 height: DM.p40,
                 child: TabBar(
                   isScrollable: true,
@@ -182,42 +183,6 @@ class _StatusRequestListState extends State<StatusRequestList>
                     ),
                     Tab(
                       child: Text(
-                        "${cr_controller.status[3]}",
-                        style: TextStyle(
-                            color: blackFontColor,
-                            fontSize: DM.p11,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Tab(
-                      child: Text(
-                        "${cr_controller.status[4]}",
-                        style: TextStyle(
-                            color: blackFontColor,
-                            fontSize: DM.p11,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Tab(
-                      child: Text(
-                        "${cr_controller.status[5]}",
-                        style: TextStyle(
-                            color: blackFontColor,
-                            fontSize: DM.p11,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Tab(
-                      child: Text(
-                        "${cr_controller.status[6]}",
-                        style: TextStyle(
-                            color: blackFontColor,
-                            fontSize: DM.p11,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Tab(
-                      child: Text(
                         "${cr_controller.status[7]}",
                         style: TextStyle(
                             color: blackFontColor,
@@ -236,14 +201,6 @@ class _StatusRequestListState extends State<StatusRequestList>
                         statusKey: cr_controller.status[1], isButton: false),
                     RequestListTabView(
                         statusKey: cr_controller.status[2], isButton: false),
-                    RequestListTabView(
-                        statusKey: cr_controller.status[3], isButton: true),
-                    RequestListTabView(
-                        statusKey: cr_controller.status[4], isButton: true),
-                    RequestListTabView(
-                        statusKey: cr_controller.status[5], isButton: true),
-                    RequestListTabView(
-                        statusKey: cr_controller.status[6], isButton: false),
                     RequestListTabView(
                         statusKey: cr_controller.status[7], isButton: false),
                   ],
@@ -301,4 +258,3 @@ Future<void> getAdminNotification(phone, type, context) async {
     showNotification(context);
   }
 }
-
