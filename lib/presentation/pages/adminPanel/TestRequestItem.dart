@@ -402,10 +402,6 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
     _updateRequest();
     _onLoading(false);
-
-     
-
-   
   }
 
   Future<void> _updateRequest() async {
@@ -492,11 +488,10 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
           .child(updateTestRequestItem.id)
           .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
 
-            if (widget.testEachRequest!.teststatus == 2) {
-              
-          InvoicePrint(updateTestRequestItem, totalDiscount, due_amount, advanced,
+      if (widget.testEachRequest!.teststatus == 2) {
+        InvoicePrint(updateTestRequestItem, totalDiscount, due_amount, advanced,
             tubeCost);
-    }
+      }
     }
 
     Get.back();
@@ -1048,23 +1043,45 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                         imageFile1 != null
                                                     ? Column(
                                                         children: [
-                                                          Container(
-                                                            height: DM.p180,
-                                                            width: DM.p150,
-                                                            child: isFromNetwork1
-                                                                ? Image.network(
-                                                                    widget
-                                                                        .testEachRequest!
-                                                                        .image_one
-                                                                        .toString()!,
-                                                                    fit: BoxFit
-                                                                        .cover,
-                                                                  )
-                                                                : Image.file(
-                                                                    imageFile1!,
-                                                                    fit: BoxFit
-                                                                        .cover,
-                                                                  ),
+                                                          //MyphotoView for Form
+                                                          InkWell(
+                                                            onTap: () {
+                                                              showDialog(
+                                                                  context:
+                                                                      context,
+                                                                  builder:
+                                                                      (context) {
+                                                                    return MyDialogView(
+                                                                        myChild:
+                                                                            MyPhotoView(
+                                                                      image:
+                                                                          imageFile1,
+                                                                      imageType:
+                                                                          "File",
+                                                                    ));
+                                                                  });
+                                                            },
+                                                            child: Container(
+                                                              height: DM.p180,
+                                                              width: DM.p150,
+                                                              child:
+                                                                  isFromNetwork1
+                                                                      ? Image
+                                                                          .network(
+                                                                          widget
+                                                                              .testEachRequest!
+                                                                              .image_one
+                                                                              .toString()!,
+                                                                          fit: BoxFit
+                                                                              .cover,
+                                                                        )
+                                                                      : Image
+                                                                          .file(
+                                                                          imageFile1!,
+                                                                          fit: BoxFit
+                                                                              .cover,
+                                                                        ),
+                                                            ),
                                                           ),
                                                           IconButton(
                                                             color: orangeColor,
@@ -1204,26 +1221,41 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                         imageFile2 != null
                                                     ? Column(
                                                         children: [
-                                                          Container(
-                                                              height: DM.p180,
-                                                              width: DM.p150,
-                                                              child:
-                                                                  isFromNetwork2
-                                                                      ? Image
-                                                                          .network(
-                                                                          widget
-                                                                              .testEachRequest!
-                                                                              .image_two
-                                                                              .toString()!,
-                                                                          fit: BoxFit
-                                                                              .cover,
-                                                                        )
-                                                                      : Image
-                                                                          .file(
-                                                                          imageFile2!,
-                                                                          fit: BoxFit
-                                                                              .cover,
-                                                                        )),
+                                                          InkWell(
+                                                            onTap: () {
+                                                              showDialog(
+                                                                  context:
+                                                                      context,
+                                                                  builder:
+                                                                      (context) {
+                                                                    return MyDialogView(
+                                                                        myChild:
+                                                                            MyPhotoView(
+                                                                      image:
+                                                                          imageFile2,
+                                                                      imageType:
+                                                                          "File",
+                                                                    ));
+                                                                  });
+                                                            },
+                                                            child: Container(
+                                                                height: DM.p180,
+                                                                width: DM.p150,
+                                                                child:
+                                                                    isFromNetwork2
+                                                                        ? Image
+                                                                            .network(
+                                                                            widget.testEachRequest!.image_two.toString()!,
+                                                                            fit:
+                                                                                BoxFit.cover,
+                                                                          )
+                                                                        : Image
+                                                                            .file(
+                                                                            imageFile2!,
+                                                                            fit:
+                                                                                BoxFit.cover,
+                                                                          )),
+                                                          ),
                                                           IconButton(
                                                             color: orangeColor,
                                                             icon: Icon(
@@ -1420,9 +1452,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                         context: context,
                                                         builder: (context) {
                                                           return MyDialogView(
-                                                              myChild: MyPhotoView(
-                                                                  image: image_one
-                                                                      .text));
+                                                              myChild:
+                                                                  MyPhotoView(
+                                                            image:
+                                                                image_one.text,
+                                                            imageType:
+                                                                "Network",
+                                                          ));
                                                         }),
                                                     child: Container(
                                                       height: DM.p170,
@@ -1475,8 +1511,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                         builder: (context) {
                                                           return MyDialogView(
                                                               myChild: MyPhotoView(
-                                                                  image: image_two
-                                                                      .text));
+                                                                  image:
+                                                                      image_two
+                                                                          .text,
+                                                                  imageType:
+                                                                      "Network"));
                                                         }),
                                                     child: Container(
                                                       height: DM.p170,

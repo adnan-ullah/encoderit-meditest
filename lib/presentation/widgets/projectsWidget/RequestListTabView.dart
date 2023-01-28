@@ -236,9 +236,19 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                               child: Row(
                                 children: [
                                   SizedBox(
-                                    width: DM.p100,
+                                    width: DM.p30,
                                     child: Text(
-                                      "Type",
+                                      "T",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: DM.p14,
+                                          color: Color.fromARGB(255, 26, 1, 1)),
+                                    ),
+                                  ),
+                                  Container(
+                                    width: DM.p80,
+                                    child: Text(
+                                      "Name",
                                       style: TextStyle(
                                           fontWeight: FontWeight.w900,
                                           fontSize: DM.p14,
@@ -324,9 +334,20 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                       child: Row(
                                         children: [
                                           SizedBox(
-                                            width: DM.p100,
+                                            width: DM.p30,
                                             child: Text(
-                                              "${createRequest_controller.typeName[_newTestRequestList[index].type]}",
+                                              "${createRequest_controller.typeName[_newTestRequestList[index].type]![0]}",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: DM.p12,
+                                                  color: Color.fromARGB(
+                                                      255, 26, 1, 1)),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: DM.p80,
+                                            child: Text(
+                                              "${_newTestRequestList[index].name.toString().split(' ').last}",
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w900,
                                                   fontSize: DM.p12,
