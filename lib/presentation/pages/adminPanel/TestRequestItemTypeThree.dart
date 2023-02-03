@@ -1027,7 +1027,7 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
                               SizedBox(
                                 height: DM.p10,
                               ),
-                              widget.testEachRequest!.type == 1
+                             widget.testEachRequest!.type == 1
                                   ? Container(
                                       child: Row(
                                         mainAxisAlignment:
@@ -1045,44 +1045,57 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
                                                     ? Column(
                                                         children: [
                                                           //MyphotoView for Form
-                                                          InkWell(
-                                                            onTap: () {
-                                                              showDialog(
-                                                                  context:
-                                                                      context,
-                                                                  builder:
-                                                                      (context) {
-                                                                    return MyDialogView(
-                                                                        myChild:
-                                                                            MyPhotoView(
-                                                                      image:
-                                                                          imageFile1,
-                                                                      imageType:
-                                                                          "File",
-                                                                    ));
-                                                                  });
-                                                            },
-                                                            child: Container(
-                                                              height: DM.p180,
-                                                              width: DM.p150,
-                                                              child:
-                                                                  isFromNetwork1
-                                                                      ? Image
-                                                                          .network(
-                                                                          widget
-                                                                              .testEachRequest!
-                                                                              .image_one
-                                                                              .toString()!,
-                                                                          fit: BoxFit
-                                                                              .cover,
-                                                                        )
-                                                                      : Image
-                                                                          .file(
-                                                                          imageFile1!,
-                                                                          fit: BoxFit
-                                                                              .cover,
+                                                          Container(
+                                                            height: DM.p180,
+                                                            width: DM.p150,
+                                                            child:
+                                                                isFromNetwork1
+                                                                    ? InkWell(
+                                                                        onTap:
+                                                                            () {
+                                                                          showDialog(
+                                                                              context: context,
+                                                                              builder: (context) {
+                                                                                return MyDialogView(
+                                                                                    myChild: MyPhotoView(
+                                                                                  image: widget.testEachRequest!.image_one.toString(),
+                                                                                  imageType: "Network",
+                                                                                ));
+                                                                              });
+                                                                        },
+                                                                        child:
+                                                                            Container(
+                                                                          child:
+                                                                              Image.network(
+                                                                            widget.testEachRequest!.image_one.toString()!,
+                                                                            fit:
+                                                                                BoxFit.cover,
+                                                                          ),
                                                                         ),
-                                                            ),
+                                                                      )
+                                                                    : InkWell(
+                                                                        onTap:
+                                                                            () {
+                                                                          showDialog(
+                                                                              context: context,
+                                                                              builder: (context) {
+                                                                                return MyDialogView(
+                                                                                    myChild: MyPhotoView(
+                                                                                  image: imageFile1,
+                                                                                  imageType: "File",
+                                                                                ));
+                                                                              });
+                                                                        },
+                                                                        child:
+                                                                            Container(
+                                                                          child:
+                                                                              Image.file(
+                                                                            imageFile1!,
+                                                                            fit:
+                                                                                BoxFit.cover,
+                                                                          ),
+                                                                        ),
+                                                                      ),
                                                           ),
                                                           IconButton(
                                                             color: orangeColor,
@@ -1222,9 +1235,41 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
                                                         imageFile2 != null
                                                     ? Column(
                                                         children: [
-                                                          InkWell(
-                                                            onTap: () {
-                                                              showDialog(
+                                                          Container(
+                                                              height: DM.p180,
+                                                              width: DM.p150,
+                                                              child: isFromNetwork2
+                                                                  ? InkWell(
+                                                                      onTap:
+                                                                          () {
+                                                                             showDialog(
+                                                                  context:
+                                                                      context,
+                                                                  builder:
+                                                                      (context) {
+                                                                    return MyDialogView(
+                                                                        myChild:
+                                                                            MyPhotoView(
+                                                                      image:
+                                                                           widget.testEachRequest!.image_two.toString(),
+                                                                      imageType:
+                                                                          "Network",
+                                                                    ));
+                                                                  });
+                                                                          },
+                                                                      child:
+                                                                          Container(
+                                                                        child:
+                                                                            Image.network(
+                                                                          widget.testEachRequest!.image_two.toString()!,
+                                                                          fit:
+                                                                              BoxFit.cover,
+                                                                        ),
+                                                                      ),
+                                                                    )
+                                                                  : InkWell(
+                                                                    onTap: (){
+                                                                       showDialog(
                                                                   context:
                                                                       context,
                                                                   builder:
@@ -1238,25 +1283,17 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
                                                                           "File",
                                                                     ));
                                                                   });
-                                                            },
-                                                            child: Container(
-                                                                height: DM.p180,
-                                                                width: DM.p150,
-                                                                child:
-                                                                    isFromNetwork2
-                                                                        ? Image
-                                                                            .network(
-                                                                            widget.testEachRequest!.image_two.toString()!,
-                                                                            fit:
-                                                                                BoxFit.cover,
-                                                                          )
-                                                                        : Image
-                                                                            .file(
-                                                                            imageFile2!,
-                                                                            fit:
-                                                                                BoxFit.cover,
-                                                                          )),
-                                                          ),
+                                                                    },
+                                                                      child:
+                                                                          Container(
+                                                                        child:
+                                                                            Image.file(
+                                                                          imageFile2!,
+                                                                          fit:
+                                                                              BoxFit.cover,
+                                                                        ),
+                                                                      ),
+                                                                    )),
                                                           IconButton(
                                                             color: orangeColor,
                                                             icon: Icon(
@@ -1441,7 +1478,7 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
                                         ],
                                       ),
                                     )
-                                  : Row(
+                                 : Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [

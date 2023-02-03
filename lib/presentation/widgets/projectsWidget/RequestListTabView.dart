@@ -286,10 +286,26 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                             Container(
                               height: DM.screenHeight * 0.75,
                               child: ListView.builder(
+                                shrinkWrap: true,
+                                physics: BouncingScrollPhysics(),
                                 itemCount: _newTestRequestList.length,
                                 itemBuilder: (context, index) {
                                   return InkWell(
                                     onTap: () async {
+                                      
+
+                                      if(type=="3" && phone!="$superUser")
+                                      {
+                                           Get.to(TestRequestCreateTypeThree(
+                                              testEachRequest:
+                                                  _newTestRequestList[index]));
+                                      }
+                                      else
+                                      {
+
+                                  
+
+
                                       if (createRequest_controller
                                               .toStatus[widget.statusKey]! <
                                           5) {
@@ -329,7 +345,8 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                                   _newTestRequestList[index]));
                                         }
                                       }
-                                    },
+                                    }
+                                        },
                                     child: Container(
                                       decoration: BoxDecoration(
                                         color: whiteColor,
