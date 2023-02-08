@@ -239,209 +239,205 @@ class _AdminUserState extends State<AdminUser> {
                         ),
                       ),
                       _filterTestItemsList != null
-                          ? Card(
-                              child: Container(
+                          ? Container(
                               height: DM.screenHeight * 0.65,
-                              child: ListView.builder(
-                                itemCount: _filterTestItemsList.length,
-                                itemBuilder: (context, index) {
-                                  return Container(
-                                    color: whiteColor,
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: DM.p10, vertical: DM.p10),
-                                    margin:
-                                        EdgeInsets.symmetric(vertical: DM.p5),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        SizedBox(
-                                          width: DM.p130,
-                                          child: Text(
-                                            " ${_filterTestItemsList[index].surname}_${_filterTestItemsList[index].phone.substring(8)}_${_filterTestItemsList[index].short_address}",
-                                            overflow: TextOverflow.visible,
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: DM.p12,
-                                                color: Color.fromARGB(
-                                                    255, 26, 1, 1)),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: DM.p70,
-                                          child: Text(
-                                            "Active: " +
-                                                _filterTestItemsList[index]
-                                                    .active
-                                                    .toString(),
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: DM.p12,
-                                                color: Color.fromARGB(
-                                                    255, 26, 1, 1)),
-                                          ),
-                                        ),
-                                        Container(
-                                          margin: EdgeInsets.only(left: DM.p10),
-                                          child: Row(
-                                            children: [
-                                              SizedBox(
-                                                  height: DM.p45,
-                                                  width: DM.p80,
-                                                  child: MaterialButton(
-                                                      onPressed: () {
-                                                        Get.to(AdminUserData(
-                                                                testItem:
-                                                                    _filterTestItemsList[
-                                                                        index]))!
-                                                            .then((value) =>
-                                                                setState(
-                                                                    () {}));
-
-                                                        // deleteFromStore(snapshot.key);
-                                                      },
-                                                      shape:
-                                                          const StadiumBorder(),
-                                                      color: orangeColor,
-                                                      child: Text(
-                                                        "Update",
-                                                        style: TextStyle(
-                                                            color:
-                                                                fullWhiteColor,
-                                                            fontSize: DM.p10,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ))),
-                                              IconButton(
-                                                padding: EdgeInsets.zero,
-                                                color: orangeColor,
-                                                icon: Icon(
-                                                  CupertinoIcons.delete,
-                                                  size: DM.p25,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: [
+                                  Expanded(
+                                    child: Card(
+                                        child: Container(
+                                      height: DM.screenHeight * 0.65,
+                                      width: DM.screenWidth * 1.2,
+                                      child: ListView.builder(
+                                        itemCount: _filterTestItemsList.length,
+                                        itemBuilder: (context, index) {
+                                          return Container(
+                                            color: whiteColor,
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: DM.p10,
+                                                vertical: DM.p10),
+                                            margin: EdgeInsets.symmetric(
+                                                vertical: DM.p5),
+                                            child: Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: DM.p150,
+                                                  child: Text(
+                                                    " ${_filterTestItemsList[index].surname}_${_filterTestItemsList[index].phone.substring(8)}_${_filterTestItemsList[index].short_address}",
+                                                    overflow:
+                                                        TextOverflow.visible,
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p12,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
                                                 ),
-                                                onPressed: () {
-                                                  showDialog(
-                                                      context: context,
-                                                      builder: (context) {
-                                                        return Scaffold(
-                                                          backgroundColor:
-                                                              Colors
-                                                                  .transparent,
-                                                          body: Center(
-                                                            child: Container(
-                                                                margin: EdgeInsets
-                                                                    .all(
-                                                                        DM.p10),
-                                                                height: DM.p250,
-                                                                color:
-                                                                    creamColor,
-                                                                child: Column(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .spaceBetween,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .center,
-                                                                  children: [
-                                                                    Container(
-                                                                      padding:
-                                                                          EdgeInsets.all(
-                                                                              16),
-                                                                      margin: EdgeInsets
-                                                                          .all(
-                                                                              16),
-                                                                      child:
-                                                                          Text(
-                                                                        "Do you want to delete test item \"${_filterTestItemsList[index].phone}?",
-                                                                        style: TextStyle(
-                                                                            fontWeight: FontWeight
-                                                                                .w400,
-                                                                            fontSize: DM
-                                                                                .p20,
-                                                                            color: Color.fromARGB(
-                                                                                255,
-                                                                                26,
-                                                                                1,
-                                                                                1)),
-                                                                      ),
-                                                                    ),
-                                                                    Row(
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .center,
-                                                                      children: [
-                                                                        Container(
-                                                                          margin: EdgeInsets.symmetric(
-                                                                              horizontal: DM.p20,
-                                                                              vertical: DM.p10),
-                                                                          child:
-                                                                              MaterialButton(
-                                                                            onPressed:
-                                                                                () {
-                                                                              Get.back();
-                                                                            },
-                                                                            height:
-                                                                                DM.p40,
-                                                                            minWidth:
-                                                                                DM.p120,
-                                                                            shape:
-                                                                                const StadiumBorder(),
-                                                                            color:
-                                                                                orangeColor,
-                                                                            child:
-                                                                                Text(
-                                                                              "Cancel",
-                                                                              style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                        Container(
-                                                                          margin: EdgeInsets.symmetric(
-                                                                              horizontal: DM.p20,
-                                                                              vertical: DM.p10),
-                                                                          child:
-                                                                              MaterialButton(
-                                                                            onPressed:
-                                                                                () async {
-                                                                              removeFromFirebase(_filterTestItemsList[index].phone);
+                                                SizedBox(
+                                                  width: DM.p60,
+                                                  child: Text(
+                                                    "Active: " +
+                                                        _filterTestItemsList[
+                                                                index]
+                                                            .active
+                                                            .toString(),
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p12,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width: DM.p50,
+                                                  child: Text(
+                                                    "Type: " +
+                                                        _filterTestItemsList[
+                                                                index]
+                                                            .type
+                                                            .toString(),
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p12,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  margin: EdgeInsets.only(
+                                                      left: DM.p10),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                          height: DM.p45,
+                                                          width: DM.p70,
+                                                          child: MaterialButton(
+                                                              onPressed: () {
+                                                                Get.to(AdminUserData(
+                                                                        testItem:
+                                                                            _filterTestItemsList[
+                                                                                index]))!
+                                                                    .then((value) =>
+                                                                        setState(
+                                                                            () {}));
 
-                                                                              //cr_controller.filter_testItemList.removeAt(index);
-                                                                              Get.back();
-                                                                            },
-                                                                            height:
-                                                                                DM.p40,
-                                                                            minWidth:
-                                                                                DM.p120,
-                                                                            shape:
-                                                                                const StadiumBorder(),
-                                                                            color:
-                                                                                orangeColor,
-                                                                            child:
-                                                                                Text(
-                                                                              "Delete",
-                                                                              style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
+                                                                // deleteFromStore(snapshot.key);
+                                                              },
+                                                              shape:
+                                                                  const StadiumBorder(),
+                                                              color:
+                                                                  orangeColor,
+                                                              child: Text(
+                                                                "Update",
+                                                                style: TextStyle(
+                                                                    color:
+                                                                        fullWhiteColor,
+                                                                    fontSize:
+                                                                        DM.p10,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              ))),
+                                                      IconButton(
+                                                        padding:
+                                                            EdgeInsets.zero,
+                                                        color: orangeColor,
+                                                        icon: Icon(
+                                                          CupertinoIcons.delete,
+                                                          size: DM.p25,
+                                                        ),
+                                                        onPressed: () {
+                                                          showDialog(
+                                                              context: context,
+                                                              builder:
+                                                                  (context) {
+                                                                return Scaffold(
+                                                                  backgroundColor:
+                                                                      Colors
+                                                                          .transparent,
+                                                                  body: Center(
+                                                                    child: Container(
+                                                                        margin: EdgeInsets.all(DM.p10),
+                                                                        height: DM.p250,
+                                                                        color: creamColor,
+                                                                        child: Column(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.spaceBetween,
+                                                                          crossAxisAlignment:
+                                                                              CrossAxisAlignment.center,
+                                                                          children: [
+                                                                            Container(
+                                                                              padding: EdgeInsets.all(16),
+                                                                              margin: EdgeInsets.all(16),
+                                                                              child: Text(
+                                                                                "Do you want to delete test item \"${_filterTestItemsList[index].phone}?",
+                                                                                style: TextStyle(fontWeight: FontWeight.w400, fontSize: DM.p20, color: Color.fromARGB(255, 26, 1, 1)),
+                                                                              ),
                                                                             ),
-                                                                          ),
-                                                                        )
-                                                                      ],
-                                                                    ),
-                                                                  ],
-                                                                )),
-                                                          ),
-                                                        );
-                                                      });
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
+                                                                            Row(
+                                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                                              children: [
+                                                                                Container(
+                                                                                  margin: EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p10),
+                                                                                  child: MaterialButton(
+                                                                                    onPressed: () {
+                                                                                      Get.back();
+                                                                                    },
+                                                                                    height: DM.p40,
+                                                                                    minWidth: DM.p120,
+                                                                                    shape: const StadiumBorder(),
+                                                                                    color: orangeColor,
+                                                                                    child: Text(
+                                                                                      "Cancel",
+                                                                                      style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
+                                                                                    ),
+                                                                                  ),
+                                                                                ),
+                                                                                Container(
+                                                                                  margin: EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p10),
+                                                                                  child: MaterialButton(
+                                                                                    onPressed: () async {
+                                                                                      removeFromFirebase(_filterTestItemsList[index].phone);
+
+                                                                                      //cr_controller.filter_testItemList.removeAt(index);
+                                                                                      Get.back();
+                                                                                    },
+                                                                                    height: DM.p40,
+                                                                                    minWidth: DM.p120,
+                                                                                    shape: const StadiumBorder(),
+                                                                                    color: orangeColor,
+                                                                                    child: Text(
+                                                                                      "Delete",
+                                                                                      style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
+                                                                                    ),
+                                                                                  ),
+                                                                                )
+                                                                              ],
+                                                                            ),
+                                                                          ],
+                                                                        )),
+                                                                  ),
+                                                                );
+                                                              });
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    )),
+                                  ),
+                                ],
                               ),
-                            ))
+                            )
                           : Container(
                               height: DM.screenHeight * 0.60,
                               margin: EdgeInsets.symmetric(vertical: DM.p16),

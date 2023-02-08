@@ -14,7 +14,7 @@ class TestData {
     required this.niddle_cost,
     required this.servicecharge,
     required this.b2b_cost,
-     this.is_payable,
+    this.is_payable,
     required this.category,
   });
 
@@ -30,7 +30,7 @@ class TestData {
   final dynamic niddle_cost;
   final dynamic servicecharge;
   final dynamic b2b_cost;
-   dynamic is_payable;
+  dynamic is_payable;
   final dynamic category;
 
   Map toJson() => {
@@ -70,53 +70,60 @@ class TestData {
 }
 
 class TestDataRequest {
-  TestDataRequest({
-    required this.id,
-    required this.name,
-    required this.gender,
-    required this.mobile,
-    required this.age,
-    required this.testlist,
-    required this.totalprice,
-    required this.servicecharge,
-    required this.address,
-    required this.referrer,
-    required this.lastupdate,
-    required this.dateofcreated,
-    required this.softdelete,
-    required this.latitude,
-    required this.longitude,
-    required this.teststatus,
-    required this.invoice_call,
-    required this.type,
-    required this.image_one,
-    required this.image_two,
-    required this.comments,
-    required this.delivery_date,
-     this.advanced,
-     this.due_amount,
-     this.total_admin_discount,
-     this.total_agent_discount,
-     this.total_discount,
-     this.test_item_cost,
-     this.test_item_discount,
-     this.total_payable_pathology_cost,
-     this.total_payable_imagine_cost,
-     this.total_payable,
-     this.total_unpayable,
-     this.admin_pathology_discount,
-     this.admin_radiology_discount,
-     this.agent_pathology_discount,
-     this.agent_radiology_discount,
-     this.assigning,
-     this.area,
-     this.assigning_commission,
-     this.agent_commission,
-     this.is_paid,
-     this.total_unpayable_pathology,
-     this.total_unpayable_imagine,
-     this.payment_date
-  });
+  TestDataRequest(
+      {required this.id,
+      required this.name,
+      required this.gender,
+      required this.mobile,
+      required this.age,
+      required this.testlist,
+      required this.totalprice,
+      required this.servicecharge,
+      required this.address,
+      required this.referrer,
+      required this.lastupdate,
+      required this.dateofcreated,
+      required this.softdelete,
+      required this.latitude,
+      required this.longitude,
+      required this.teststatus,
+      required this.invoice_call,
+      required this.type,
+      required this.image_one,
+      required this.image_two,
+      required this.comments,
+      required this.delivery_date,
+      this.advanced,
+      this.due_amount,
+      this.total_admin_discount,
+      this.total_agent_discount,
+      this.total_discount,
+      this.test_item_cost,
+      this.test_item_discount,
+      this.total_payable_pathology_cost,
+      this.total_payable_imagine_cost,
+      this.total_payable,
+      this.total_unpayable,
+      this.admin_pathology_discount,
+      this.admin_radiology_discount,
+      this.agent_pathology_discount,
+      this.agent_radiology_discount,
+      this.assigning,
+      this.area,
+      this.assigning_commission,
+      this.agent_commission,
+      this.is_paid,
+      this.total_unpayable_pathology,
+      this.total_unpayable_imagine,
+      this.payment_date,
+      this.radiology_assigning,
+      this.radiology_assigning_commission,
+      this.pathology_done,
+      this.radiology_done
+
+      
+  
+      });
 
   final dynamic id;
   final dynamic name;
@@ -141,32 +148,37 @@ class TestDataRequest {
   final dynamic comments;
   final dynamic delivery_date;
 
-
   dynamic advanced;
   dynamic due_amount;
   dynamic total_admin_discount;
   dynamic total_agent_discount;
- dynamic total_discount;
- dynamic test_item_cost;
- dynamic test_item_discount;
+  dynamic total_discount;
+  dynamic test_item_cost;
+  dynamic test_item_discount;
 
-dynamic total_payable_pathology_cost;
+  dynamic total_payable_pathology_cost;
   dynamic total_payable_imagine_cost;
   dynamic total_payable;
-dynamic total_unpayable;
- dynamic admin_pathology_discount;
- dynamic admin_radiology_discount;
- dynamic agent_pathology_discount;
+  dynamic total_unpayable;
+  dynamic admin_pathology_discount;
+  dynamic admin_radiology_discount;
+  dynamic agent_pathology_discount;
   dynamic agent_radiology_discount;
-dynamic assigning;
-   dynamic area;
- dynamic assigning_commission;
-  dynamic agent_commission;
-   dynamic is_paid;
-  dynamic  total_unpayable_pathology;
-  dynamic  total_unpayable_imagine;
+ 
+  dynamic area;
 
-     dynamic payment_date;
+  dynamic agent_commission;
+  dynamic is_paid;
+  dynamic total_unpayable_pathology;
+  dynamic total_unpayable_imagine;
+  dynamic payment_date;
+
+  dynamic assigning;
+  dynamic radiology_assigning;
+  dynamic assigning_commission;
+  dynamic radiology_assigning_commission;
+  dynamic pathology_done;
+  dynamic radiology_done;
 
   Map toJson() => {
         'id': id,
@@ -213,7 +225,12 @@ dynamic assigning;
         'is_paid': is_paid,
         'total_unpayable_pathology': total_unpayable_pathology,
         'total_unpayable_imagine': total_unpayable_imagine,
-         'payment_date': payment_date,
+        'payment_date': payment_date,
+
+             'radiology_assigning': radiology_assigning,
+        'radiology_assigning_commission': radiology_assigning_commission,
+        'pathology_done': pathology_done,
+        'radiology_done': radiology_done,
       };
 
   factory TestDataRequest.fromJson(Map<String, dynamic> parsedJson) {
@@ -266,7 +283,15 @@ dynamic assigning;
       is_paid: parsedJson['is_paid'],
       total_unpayable_pathology: parsedJson['total_unpayable_pathology'],
       total_unpayable_imagine: parsedJson['total_unpayable_imagine'],
-        payment_date: parsedJson['payment_date'],
+      payment_date: parsedJson['payment_date'],
+
+
+      radiology_assigning: parsedJson['radiology_assigning'],
+      radiology_assigning_commission: parsedJson['radiology_assigning_commission'],
+      pathology_done: parsedJson['pathology_done'],
+      radiology_done: parsedJson['radiology_done'],
+
+           
     );
   }
 }

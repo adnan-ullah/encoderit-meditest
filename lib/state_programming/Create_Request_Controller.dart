@@ -67,7 +67,7 @@ class CreateRequest_controller extends GetxController {
 
   };
     Map<String, int> toCategory = {
-     "PATHOLOGY":1,
+    "PATHOLOGY":1,
    "RADIO/IMAGE":2,
 
   };

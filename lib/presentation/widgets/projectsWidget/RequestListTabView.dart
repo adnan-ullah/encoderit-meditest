@@ -11,6 +11,7 @@ import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItemTypeThree.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AgentReportList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/NotificationServices.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
@@ -34,6 +35,7 @@ class RequestListTabView extends StatefulWidget {
 }
 
 var testStatusRequestList = <TestDataRequest>[];
+var localTestStatusRequestList = <TestDataRequest>[];
 var isLoading = false;
 
 var type;
@@ -89,51 +91,57 @@ class _RequestListTabViewState extends State<RequestListTabView> {
     DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
     TestDataRequest updateTestRequestItem;
     updateTestRequestItem = TestDataRequest(
-        id: requestItem.id,
-        name: requestItem.name,
-        gender: requestItem.gender,
-        mobile: requestItem.mobile,
-        age: requestItem.age,
-        testlist: requestItem.testlist,
-        totalprice: requestItem.totalprice,
-        servicecharge: requestItem.servicecharge,
-        address: requestItem.address,
-        referrer: requestItem.referrer,
-        lastupdate: currentTime,
-        dateofcreated: requestItem.dateofcreated,
-        softdelete: requestItem.softdelete,
-        latitude: requestItem.latitude,
-        longitude: requestItem.longitude,
-        teststatus: requestItem.teststatus + 1,
-        invoice_call: requestItem.invoice_call,
-        type: requestItem.type,
-        image_one: requestItem.image_one,
-        image_two: requestItem.image_two,
-        comments: requestItem.comments,
-        total_payable_imagine_cost: requestItem.total_payable_imagine_cost,
-        total_payable_pathology_cost: requestItem.total_payable_pathology_cost,
-        total_payable: requestItem.total_payable,
-        total_unpayable: requestItem.total_unpayable,
-        admin_pathology_discount: requestItem.admin_pathology_discount,
-        admin_radiology_discount: requestItem.admin_radiology_discount,
-        agent_commission: requestItem.agent_commission,
-        agent_pathology_discount: requestItem.agent_pathology_discount,
-        agent_radiology_discount: requestItem.agent_radiology_discount,
-        area: requestItem.area,
-        assigning: requestItem.assigning,
-        assigning_commission: requestItem.assigning_commission,
-        advanced: requestItem.advanced,
-        delivery_date: requestItem.delivery_date,
-        due_amount: requestItem.due_amount,
-        test_item_cost: requestItem.test_item_cost,
-        test_item_discount: requestItem.test_item_discount,
-        total_admin_discount: requestItem.total_admin_discount,
-        total_agent_discount: requestItem.total_agent_discount,
-        total_discount: requestItem.total_discount,
-        is_paid: requestItem.is_paid,
-        total_unpayable_pathology: requestItem.total_unpayable_pathology,
-        total_unpayable_imagine: requestItem.total_unpayable_imagine,
-        payment_date: requestItem.payment_date);
+      id: requestItem.id,
+      name: requestItem.name,
+      gender: requestItem.gender,
+      mobile: requestItem.mobile,
+      age: requestItem.age,
+      testlist: requestItem.testlist,
+      totalprice: requestItem.totalprice,
+      servicecharge: requestItem.servicecharge,
+      address: requestItem.address,
+      referrer: requestItem.referrer,
+      lastupdate: currentTime,
+      dateofcreated: requestItem.dateofcreated,
+      softdelete: requestItem.softdelete,
+      latitude: requestItem.latitude,
+      longitude: requestItem.longitude,
+      teststatus: requestItem.teststatus + 1,
+      invoice_call: requestItem.invoice_call,
+      type: requestItem.type,
+      image_one: requestItem.image_one,
+      image_two: requestItem.image_two,
+      comments: requestItem.comments,
+      total_payable_imagine_cost: requestItem.total_payable_imagine_cost,
+      total_payable_pathology_cost: requestItem.total_payable_pathology_cost,
+      total_payable: requestItem.total_payable,
+      total_unpayable: requestItem.total_unpayable,
+      admin_pathology_discount: requestItem.admin_pathology_discount,
+      admin_radiology_discount: requestItem.admin_radiology_discount,
+      agent_commission: requestItem.agent_commission,
+      agent_pathology_discount: requestItem.agent_pathology_discount,
+      agent_radiology_discount: requestItem.agent_radiology_discount,
+      area: requestItem.area,
+      advanced: requestItem.advanced,
+      delivery_date: requestItem.delivery_date,
+      due_amount: requestItem.due_amount,
+      test_item_cost: requestItem.test_item_cost,
+      test_item_discount: requestItem.test_item_discount,
+      total_admin_discount: requestItem.total_admin_discount,
+      total_agent_discount: requestItem.total_agent_discount,
+      total_discount: requestItem.total_discount,
+      is_paid: requestItem.is_paid,
+      total_unpayable_pathology: requestItem.total_unpayable_pathology,
+      total_unpayable_imagine: requestItem.total_unpayable_imagine,
+      payment_date: requestItem.payment_date,
+      pathology_done: requestItem.pathology_done,
+      radiology_done: requestItem.radiology_done,
+      assigning: requestItem.assigning,
+      radiology_assigning: requestItem.radiology_assigning,
+      assigning_commission: requestItem.assigning_commission,
+      radiology_assigning_commission:
+          requestItem.radiology_assigning_commission,
+    );
 
     if (updateTestRequestItem != null) {
       await DbrefTestReqModel.child("testRequest")
@@ -157,6 +165,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
     _dbref_testReqModel.onValue.listen((event) async {
       _newTestRequestList.clear();
       testStatusRequestList.clear();
+      localTestStatusRequestList.clear();
 
       //  setState(() {
       //   _newTestRequestList.clear();
@@ -168,7 +177,46 @@ class _RequestListTabViewState extends State<RequestListTabView> {
           TestDataRequest testData =
               TestDataRequest.fromJson(json.decode(jsonEncode(dsLater.value)));
 
-          testStatusRequestList.add(testData);
+          if (type == "4" && phone != superUser) {
+            if (testData.assigning == phone ||
+                testData.radiology_assigning == phone) {
+              if (widget.statusKey.toString() == "PCollected") {
+                if ((testData.pathology_done == true &&
+                        testData.radiology_done == false) ||
+                    (testData.pathology_done == false &&
+                        testData.radiology_done == true)) {
+                  localTestStatusRequestList.add(testData);
+                }
+              } else {
+                if (widget.statusKey.toString() == "COLLECTED") {
+                  if (testData.pathology_done == true &&
+                      testData.radiology_done == true) {
+                    print("COLLECTED");
+                    testStatusRequestList.add(testData);
+                  }
+                } else {
+                  testStatusRequestList.add(testData);
+                }
+              }
+            }
+          } else if (type == "3" && phone != superUser) {
+            if (widget.statusKey.toString() == "PCollected") {
+              if ((testData.assigning != "" &&
+                      testData.assigning != null &&
+                      testData.assigning != "null") ||
+                  (testData.radiology_assigning != "" &&
+                      testData.radiology_assigning != null &&
+                      testData.radiology_assigning != "null")) {
+
+                      if(!(testData.pathology_done && testData.radiology_done))
+                      localTestStatusRequestList.add(testData);
+              }
+            } else {
+              testStatusRequestList.add(testData);
+            }
+          } else {
+            testStatusRequestList.add(testData);
+          }
 
           // setState(() {
           //   testStatusRequestList.add(testData);
@@ -213,11 +261,17 @@ class _RequestListTabViewState extends State<RequestListTabView> {
 
   void tabStatusList() async {
     setState(() {
-      _newTestRequestList.addAll(testStatusRequestList
-          .where((p0) =>
-              createRequest_controller.status[p0.teststatus].toString() ==
-              widget.statusKey.toString())
-          .toList());
+      if (widget.statusKey == "PCollected") {
+        _newTestRequestList.addAll(localTestStatusRequestList.toList());
+      } else if (widget.statusKey == "COLLECTED") {
+        _newTestRequestList.addAll(testStatusRequestList.toList());
+      } else {
+        _newTestRequestList.addAll(testStatusRequestList
+            .where((p0) =>
+                createRequest_controller.status[p0.teststatus].toString() ==
+                widget.statusKey.toString())
+            .toList());
+      }
     });
   }
 
@@ -283,199 +337,304 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                               thickness: DM.p2,
                               color: Colors.black,
                             ),
-                            Container(
-                              height: DM.screenHeight * 0.75,
-                              child: ListView.builder(
-                                shrinkWrap: true,
-                                physics: BouncingScrollPhysics(),
-                                itemCount: _newTestRequestList.length,
-                                itemBuilder: (context, index) {
-                                  return InkWell(
-                                    onTap: () async {
-                                      
-
-                                      if(type=="3" && phone!="$superUser")
-                                      {
-                                           Get.to(TestRequestCreateTypeThree(
-                                              testEachRequest:
-                                                  _newTestRequestList[index]));
-                                      }
-                                      else
-                                      {
-
-                                  
-
-
-                                      if (createRequest_controller
-                                              .toStatus[widget.statusKey]! <
-                                          5) {
-
-
-
-                              
-                                          Get.to(TestRequestCreate(
-                                              testEachRequest:
-                                                  _newTestRequestList[index]));
-                                        
-
-
-
-
-                                      } else if (createRequest_controller
-                                              .toStatus[widget.statusKey]! <
-                                          7) {
-                                        if (type == "7" ||
-                                            phone == "$superUser") {
-                                          Get.to(TestRequestCreate(
-                                              testEachRequest:
-                                                  _newTestRequestList[index]));
-                                        }
-                                      } else if (createRequest_controller
-                                              .toStatus[widget.statusKey]! ==
-                                          7) {
-                                        SharedPreferences ref =
-                                            await SharedPreferences
-                                                .getInstance();
-                                        var type = ref.getString("type");
-                                        var phone =
-                                            ref.getString("phoneNumber");
-                                        if (phone == "$superUser") {
-                                          Get.to(TestRequestCreate(
-                                              testEachRequest:
-                                                  _newTestRequestList[index]));
-                                        }
-                                      }
-                                    }
-                                        },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: whiteColor,
-                                        borderRadius:
-                                            BorderRadius.circular(DM.p10),
-                                      ),
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: DM.p10, vertical: DM.p5),
-                                      margin:
-                                          EdgeInsets.symmetric(vertical: DM.p5),
-                                      height: DM.p60,
-                                      child: Row(
-                                        children: [
-                                          SizedBox(
-                                            width: DM.p30,
-                                            child: Text(
-                                              "${createRequest_controller.typeName[_newTestRequestList[index].type]![0]}",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: DM.p12,
-                                                  color: Color.fromARGB(
-                                                      255, 26, 1, 1)),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: DM.p80,
-                                            child: Text(
-                                              // "${_newTestRequestList[index].name.toString().split(' ').last}",
-                                              "${getFirstName(_newTestRequestList[index].name)}",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: DM.p12,
-                                                  color: Color.fromARGB(
-                                                      255, 26, 1, 1)),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: DM.p100,
-                                            child: Text(
-                                              "#${_newTestRequestList[index].invoice_call.toString()}",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: DM.p12,
-                                                  color: Color.fromARGB(
-                                                      255, 26, 1, 1)),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: DM.p80,
-                                            child: Text(
-                                              (DateFormat('dd-MMM HH:mm').format(
-                                                      DateTime.fromMillisecondsSinceEpoch(
+                            widget.statusKey != "P.Collected"
+                                ? Container(
+                                    height: DM.screenHeight * 0.75,
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: BouncingScrollPhysics(),
+                                      itemCount: _newTestRequestList.length,
+                                      itemBuilder: (context, index) {
+                                        return InkWell(
+                                          onTap: () async {
+                                            if (type == "3" &&
+                                                phone != "$superUser" &&
+                                                createRequest_controller
+                                                            .toStatus[
+                                                        widget.statusKey] !=
+                                                    7) {
+                                              Get.to(TestRequestCreateTypeThree(
+                                                  testEachRequest:
+                                                      _newTestRequestList[
+                                                          index]));
+                                            } else {
+                                              if (createRequest_controller
+                                                          .toStatus[
+                                                      widget.statusKey]! <
+                                                  5) {
+                                                Get.to(TestRequestCreate(
+                                                    testEachRequest:
+                                                        _newTestRequestList[
+                                                            index]));
+                                              } else if (createRequest_controller
+                                                          .toStatus[
+                                                      widget.statusKey]! <
+                                                  7) {
+                                                if (type == "7" ||
+                                                    phone == "$superUser") {
+                                                  Get.to(TestRequestCreate(
+                                                      testEachRequest:
                                                           _newTestRequestList[
-                                                                  index]
-                                                              .dateofcreated)))
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: DM.p12,
-                                                  color: Color.fromARGB(
-                                                      255, 26, 1, 1)),
-                                            ),
-                                          ),
-                                          widget.isButton &&
-                                                  (createRequest_controller
-                                                              .toStatus[
-                                                          widget.statusKey]! <
-                                                      5)
-                                              ? Container(
-                                                  width: DM.p65,
-                                                  child: MaterialButton(
-                                                    onPressed: () async {
-                                                      _updateStatus(
+                                                              index]));
+                                                }
+                                              } else if (createRequest_controller
+                                                          .toStatus[
+                                                      widget.statusKey]! ==
+                                                  7) {
+                                                SharedPreferences ref =
+                                                    await SharedPreferences
+                                                        .getInstance();
+                                                var type =
+                                                    ref.getString("type");
+                                                var phone = ref
+                                                    .getString("phoneNumber");
+                                                if (phone == "$superUser") {
+                                                  Get.to(TestRequestCreate(
+                                                      testEachRequest:
                                                           _newTestRequestList[
-                                                              index]);
-                                                    },
-                                                    height: DM.p40,
-                                                    shape:
-                                                        const StadiumBorder(),
-                                                    color: orangeColor,
-                                                    child: Text(
-                                                      "Done",
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                          color: fullWhiteColor,
-                                                          fontSize: DM.p13,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
+                                                              index]));
+                                                }
+                                              }
+                                            }
+                                          },
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: whiteColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(DM.p10),
+                                            ),
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: DM.p10,
+                                                vertical: DM.p5),
+                                            margin: EdgeInsets.symmetric(
+                                                vertical: DM.p5),
+                                            height: DM.p60,
+                                            child: Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: DM.p30,
+                                                  child: Text(
+                                                    "${createRequest_controller.typeName[_newTestRequestList[index].type]![0]}",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p12,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
                                                   ),
-                                                )
-                                              : widget.isButton &&
-                                                      (type == "7" ||
-                                                          phone == "$superUser")
-                                                  ? Container(
-                                                      width: DM.p65,
-                                                      child: MaterialButton(
-                                                        onPressed: () async {
-                                                          _updateStatus(
-                                                              _newTestRequestList[
-                                                                  index]);
-                                                        },
-                                                        height: DM.p40,
-                                                        shape:
-                                                            const StadiumBorder(),
-                                                        color: orangeColor,
-                                                        child: Text(
-                                                          "Done",
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style: TextStyle(
-                                                              color:
-                                                                  fullWhiteColor,
-                                                              fontSize: DM.p13,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
+                                                ),
+                                                SizedBox(
+                                                  width: DM.p80,
+                                                  child: Text(
+                                                    // "${_newTestRequestList[index].name.toString().split(' ').last}",
+                                                    "${getFirstName(_newTestRequestList[index].name)}",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p12,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width: DM.p100,
+                                                  child: Text(
+                                                    "#${_newTestRequestList[index].invoice_call.toString()}",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p12,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width: DM.p80,
+                                                  child: Text(
+                                                    (DateFormat('dd-MMM HH:mm')
+                                                            .format(DateTime
+                                                                .fromMillisecondsSinceEpoch(
+                                                                    _newTestRequestList[
+                                                                            index]
+                                                                        .dateofcreated)))
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p12,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                ),
+                                                widget.isButton &&
+                                                        (createRequest_controller
+                                                                    .toStatus[
+                                                                widget
+                                                                    .statusKey]! <
+                                                            5)
+                                                    ? Container(
+                                                        width: DM.p65,
+                                                        child: MaterialButton(
+                                                          onPressed: () async {
+                                                            _updateStatus(
+                                                                _newTestRequestList[
+                                                                    index]);
+                                                          },
+                                                          height: DM.p40,
+                                                          shape:
+                                                              const StadiumBorder(),
+                                                          color: orangeColor,
+                                                          child: Text(
+                                                            "Done",
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style: TextStyle(
+                                                                color:
+                                                                    fullWhiteColor,
+                                                                fontSize:
+                                                                    DM.p13,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
                                                         ),
-                                                      ),
-                                                    )
-                                                  : Container()
-                                        ],
-                                      ),
+                                                      )
+                                                    : widget.isButton &&
+                                                            (type == "7" ||
+                                                                phone ==
+                                                                    "$superUser")
+                                                        ? Container(
+                                                            width: DM.p65,
+                                                            child:
+                                                                MaterialButton(
+                                                              onPressed:
+                                                                  () async {
+                                                                _updateStatus(
+                                                                    _newTestRequestList[
+                                                                        index]);
+                                                              },
+                                                              height: DM.p40,
+                                                              shape:
+                                                                  const StadiumBorder(),
+                                                              color:
+                                                                  orangeColor,
+                                                              child: Text(
+                                                                "Done",
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: TextStyle(
+                                                                    color:
+                                                                        fullWhiteColor,
+                                                                    fontSize:
+                                                                        DM.p13,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              ),
+                                                            ),
+                                                          )
+                                                        : Container()
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     ),
-                                  );
-                                },
-                              ),
-                            ),
+                                  )
+                                : Container(
+                                    height: DM.screenHeight * 0.75,
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: BouncingScrollPhysics(),
+                                      itemCount: _newTestRequestList.length,
+                                      itemBuilder: (context, index) {
+                                        return InkWell(
+                                          onTap: () {
+                                            if (type == "3" &&
+                                                phone != "$superUser" ) {
+                                              Get.to(TestRequestCreateTypeThree(
+                                                  testEachRequest:
+                                                      localTestStatusRequestList[
+                                                          index]));
+                                            }
+                                          },
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: whiteColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(DM.p10),
+                                            ),
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: DM.p10,
+                                                vertical: DM.p5),
+                                            margin: EdgeInsets.symmetric(
+                                                vertical: DM.p5),
+                                            height: DM.p60,
+                                            child: Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: DM.p30,
+                                                  child: Text(
+                                                    "${createRequest_controller.typeName[_newTestRequestList[index].type]![0]}",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p12,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width: DM.p80,
+                                                  child: Text(
+                                                    // "${_newTestRequestList[index].name.toString().split(' ').last}",
+                                                    "${getFirstName(_newTestRequestList[index].name)}",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p12,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width: DM.p100,
+                                                  child: Text(
+                                                    "#${_newTestRequestList[index].invoice_call.toString()}",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p12,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width: DM.p80,
+                                                  child: Text(
+                                                    (DateFormat('dd-MMM HH:mm')
+                                                            .format(DateTime
+                                                                .fromMillisecondsSinceEpoch(
+                                                                    _newTestRequestList[
+                                                                            index]
+                                                                        .dateofcreated)))
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: DM.p12,
+                                                        color: Color.fromARGB(
+                                                            255, 26, 1, 1)),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
                           ],
                         ),
                       )
@@ -534,10 +693,8 @@ String getFirstName(String name) {
       test.first == "Md" ||
       test.first == "Ms." ||
       test.first == "Ms") {
-
     firstName = test[1];
   } else {
-
     firstName = test.first;
   }
 

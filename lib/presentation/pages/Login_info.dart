@@ -458,6 +458,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                             check_type: 3,
                                             check_number: phone.text));
                                       }
+                                      else if (checkUser(phone.text) == true &&
+                                          type == '4') {
+                                        savePhone(phone.text);
+                                        Get.to(AdminHome(
+                                            check_type: 4,
+                                            check_number: phone.text));
+                                      }
                                       else {
                                         savePhone(phone.text);
                                         Get.to(HomeScreen());

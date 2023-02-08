@@ -49,13 +49,16 @@ import '../Login_info.dart';
 
 class TestRequestCreateTypeThree extends StatefulWidget {
   TestDataRequest? testEachRequest;
-  TestRequestCreateTypeThree({Key? key, this.testEachRequest}) : super(key: key);
+  TestRequestCreateTypeThree({Key? key, this.testEachRequest})
+      : super(key: key);
 
   @override
-  _TestRequestCreateTypeThreeState createState() => _TestRequestCreateTypeThreeState();
+  _TestRequestCreateTypeThreeState createState() =>
+      _TestRequestCreateTypeThreeState();
 }
 
-class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree> {
+class _TestRequestCreateTypeThreeState
+    extends State<TestRequestCreateTypeThree> {
   bool isTestlistOpen = false;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -97,6 +100,9 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
   var agent_pathology_discount = new TextEditingController();
   var agent_radiology_discount = new TextEditingController();
 
+  var assigning_commission = new TextEditingController();
+  var radiology_assigning_commission = new TextEditingController();
+
   List<TestData> testItemList = [];
   List<AdminUserModel> adminUserList = [];
   List<TestData> testData_updated = [];
@@ -132,6 +138,17 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
   UploadTask? uploadTask1, uploadTask2;
 
   bool init = false;
+
+  List<AdminUserModel> collectionUserList = [];
+  var pathologyAssigningPhone = "";
+  var radiologyAssigningPhone = "";
+  Map<String, String> assigningMapping = {"": ""};
+  bool pathologyDone = false;
+  bool radiologyDone = false;
+
+  var phoneNumber = "";
+  var typeUser = "";
+
   Future<void> _getTestItemList() async {
     late DatabaseReference DbrefTestModel;
     DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
@@ -169,6 +186,13 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
         AdminUserModel testData =
             AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
 
+        
+          if (testData.type == "4") {
+            collectionUserList.add(testData);
+            assigningMapping[testData.phone] = testData.name;
+          }
+     
+
         adminUserList.add(testData);
       }
     });
@@ -187,6 +211,10 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
   }
 
   Future<void> retreiveEachDataRequest() async {
+    SharedPreferences refs = await SharedPreferences.getInstance();
+    phoneNumber = refs.getString("phoneNumber")!;
+    typeUser = refs.getString("type")!;
+
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     type.text =
         createReqController.typeName[widget.testEachRequest!.type].toString();
@@ -338,6 +366,54 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
       agent_commission.text =
           widget.testEachRequest!.agent_commission!.toString();
     }
+
+    //new_typethree
+    if (widget.testEachRequest!.pathology_done == null ||
+        widget.testEachRequest!.pathology_done == "null") {
+      pathologyDone = false;
+    } else {
+      pathologyDone = widget.testEachRequest!.pathology_done;
+    }
+    if (widget.testEachRequest!.radiology_done == null ||
+        widget.testEachRequest!.radiology_done == "null") {
+      radiologyDone = false;
+    } else {
+      radiologyDone = widget.testEachRequest!.radiology_done;
+    }
+
+    if (widget.testEachRequest!.assigning == null ||
+        widget.testEachRequest!.assigning == "null") {
+      pathologyAssigningPhone = "";
+    } else {
+      pathologyAssigningPhone = widget.testEachRequest!.assigning;
+      print("ASSIGINIG" + widget.testEachRequest!.assigning);
+    }
+
+    if (widget.testEachRequest!.radiology_assigning == null ||
+        widget.testEachRequest!.radiology_assigning == "null") {
+      radiologyAssigningPhone = "";
+    } else {
+      radiologyAssigningPhone = widget.testEachRequest!.radiology_assigning;
+    }
+
+    if (widget.testEachRequest!.assigning_commission == null &&
+        widget.testEachRequest!.assigning_commission
+            .toString()
+            .contains("null")) {
+      assigning_commission.text = "0";
+    } else {
+      assigning_commission.text =
+          widget.testEachRequest!.assigning_commission!.toString();
+    }
+    if (widget.testEachRequest!.radiology_assigning_commission == null &&
+        widget.testEachRequest!.radiology_assigning_commission
+            .toString()
+            .contains("null")) {
+      radiology_assigning_commission.text = "0";
+    } else {
+      radiology_assigning_commission.text =
+          widget.testEachRequest!.radiology_assigning_commission!.toString();
+    }
   }
 
   void _onLoading(isClosed) {
@@ -426,6 +502,11 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
       image_two.text = urlDownload2.toString();
     }
 
+// pre collected modification
+    if (pathologyDone && radiologyDone) {
+      teststatus.text = "7";
+    }
+
     updateTestRequestItem = TestDataRequest(
       id: widget.testEachRequest!.id.toString(),
       name: name.text.toString(),
@@ -474,12 +555,17 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
       agent_radiology_discount:
           int.parse(agent_radiology_discount.text.toString()),
       area: "",
-      assigning: "",
-      assigning_commission: 0,
       is_paid: false,
       total_unpayable_imagine: total_unpayable_imaging,
       total_unpayable_pathology: total_unpayable_pathology,
       payment_date: 0,
+      pathology_done: pathologyDone,
+      radiology_done: radiologyDone,
+      assigning: pathologyAssigningPhone.toString(),
+      radiology_assigning: radiologyAssigningPhone.toString(),
+      assigning_commission: int.parse(assigning_commission.text.toString()),
+      radiology_assigning_commission:
+          int.parse(radiology_assigning_commission.text.toString()),
     );
 
     if (updateTestRequestItem != null) {
@@ -616,15 +702,59 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
 
     adminUserList.map((e) {
       if (e.referrer_code.contains(referrer.text.toString())) {
-        agent_commission.text = ((((total_payable_pathology) *
-                        int.parse(e.pathology_commission)) /
-                    100) +
-                (((total_payable_imaging) * int.parse(e.imagine_commission)) /
-                    100))
-            .toInt()
-            .toString();
+        var pathology_commision = 0;
+        var imagine_commission = 0;
 
-        return;
+        if (e.pathology_commission != null &&
+            e.pathology_commission.toString().contains("null")) {
+          pathology_commision = int.parse(e.pathology_commission);
+        }
+
+        if (e.imagine_commission != null &&
+            e.imagine_commission.toString().contains("null")) {
+          imagine_commission = int.parse(e.imagine_commission);
+        }
+
+        agent_commission.text =
+            ((((total_payable_pathology) * pathology_commision) / 100) +
+                    (((total_payable_imaging) * imagine_commission) / 100))
+                .toInt()
+                .toString();
+      }
+
+      if (e.phone.toString() == phoneNumber) {
+        if (e.phone.toString().contains(pathologyAssigningPhone)) {
+          var pathology_commision = 0;
+
+          if (e.pathology_commission != null &&
+              !e.pathology_commission.toString().contains("null") &&
+              e.pathology_commission != "") {
+            pathology_commision = int.parse(e.pathology_commission);
+          }
+
+          print("pathology_commision " + pathology_commision.toString());
+          assigning_commission.text =
+              ((((total_payable_pathology) * pathology_commision) / 100))
+                  .toInt()
+                  .toString();
+        }
+        print("assigining_commission " + assigning_commission.text.toString());
+
+        if (e.phone.toString().contains(radiologyAssigningPhone)) {
+          var imagine_commission = 0;
+
+          if (e.imagine_commission != null &&
+              !e.imagine_commission.toString().contains("null") &&
+              e.imagine_commission != "") {
+            imagine_commission = int.parse(e.imagine_commission);
+          }
+          print("radiology_assigning_commission " +
+              imagine_commission.toString());
+          radiology_assigning_commission.text =
+              ((((total_payable_imaging) * imagine_commission) / 100))
+                  .toInt()
+                  .toString();
+        }
       }
     }).toList();
   }
@@ -675,13 +805,61 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
 
       adminUserList.map((e) {
         if (e.referrer_code.contains(referrer.text.toString())) {
-          agent_commission.text = (((test_item_cost - test_item_discount) *
-                      int.parse(e.pathology_commission)) /
-                  100)
-              .toInt()
-              .toString();
+          var pathology_commision = 0;
+          var imagine_commission = 0;
 
-          return;
+          if (e.pathology_commission != null &&
+              e.pathology_commission.toString().contains("null")) {
+            pathology_commision = int.parse(e.pathology_commission);
+          }
+
+          if (e.imagine_commission != null &&
+              e.imagine_commission.toString().contains("null")) {
+            imagine_commission = int.parse(e.imagine_commission);
+          }
+
+          agent_commission.text =
+              ((((total_payable_pathology) * pathology_commision) / 100) +
+                      (((total_payable_imaging) * imagine_commission) / 100))
+                  .toInt()
+                  .toString();
+        }
+
+//collection
+        if (e.phone.toString() == phoneNumber) {
+          if (e.phone.toString().contains(pathologyAssigningPhone)) {
+            var pathology_commision = 0;
+
+            if (e.pathology_commission != null &&
+                !e.pathology_commission.toString().contains("null") &&
+                e.pathology_commission != "") {
+              pathology_commision = int.parse(e.pathology_commission);
+            }
+
+            print("pathology_commision " + pathology_commision.toString());
+            assigning_commission.text =
+                ((((total_payable_pathology) * pathology_commision) / 100))
+                    .toInt()
+                    .toString();
+          }
+          print(
+              "assigining_commission " + assigning_commission.text.toString());
+
+          if (e.phone.toString().contains(radiologyAssigningPhone)) {
+            var imagine_commission = 0;
+
+            if (e.imagine_commission != null &&
+                !e.imagine_commission.toString().contains("null") &&
+                e.imagine_commission != "") {
+              imagine_commission = int.parse(e.imagine_commission);
+            }
+            print("radiology_assigning_commission " +
+                imagine_commission.toString());
+            radiology_assigning_commission.text =
+                ((((total_payable_imaging) * imagine_commission) / 100))
+                    .toInt()
+                    .toString();
+          }
         }
       }).toList();
     });
@@ -1027,7 +1205,7 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
                               SizedBox(
                                 height: DM.p10,
                               ),
-                             widget.testEachRequest!.type == 1
+                              widget.testEachRequest!.type == 1
                                   ? Container(
                                       child: Row(
                                         mainAxisAlignment:
@@ -1238,62 +1416,52 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
                                                           Container(
                                                               height: DM.p180,
                                                               width: DM.p150,
-                                                              child: isFromNetwork2
-                                                                  ? InkWell(
-                                                                      onTap:
-                                                                          () {
-                                                                             showDialog(
-                                                                  context:
-                                                                      context,
-                                                                  builder:
-                                                                      (context) {
-                                                                    return MyDialogView(
-                                                                        myChild:
-                                                                            MyPhotoView(
-                                                                      image:
-                                                                           widget.testEachRequest!.image_two.toString(),
-                                                                      imageType:
-                                                                          "Network",
-                                                                    ));
-                                                                  });
+                                                              child:
+                                                                  isFromNetwork2
+                                                                      ? InkWell(
+                                                                          onTap:
+                                                                              () {
+                                                                            showDialog(
+                                                                                context: context,
+                                                                                builder: (context) {
+                                                                                  return MyDialogView(
+                                                                                      myChild: MyPhotoView(
+                                                                                    image: widget.testEachRequest!.image_two.toString(),
+                                                                                    imageType: "Network",
+                                                                                  ));
+                                                                                });
                                                                           },
-                                                                      child:
-                                                                          Container(
-                                                                        child:
-                                                                            Image.network(
-                                                                          widget.testEachRequest!.image_two.toString()!,
-                                                                          fit:
-                                                                              BoxFit.cover,
-                                                                        ),
-                                                                      ),
-                                                                    )
-                                                                  : InkWell(
-                                                                    onTap: (){
-                                                                       showDialog(
-                                                                  context:
-                                                                      context,
-                                                                  builder:
-                                                                      (context) {
-                                                                    return MyDialogView(
-                                                                        myChild:
-                                                                            MyPhotoView(
-                                                                      image:
-                                                                          imageFile2,
-                                                                      imageType:
-                                                                          "File",
-                                                                    ));
-                                                                  });
-                                                                    },
-                                                                      child:
-                                                                          Container(
-                                                                        child:
-                                                                            Image.file(
-                                                                          imageFile2!,
-                                                                          fit:
-                                                                              BoxFit.cover,
-                                                                        ),
-                                                                      ),
-                                                                    )),
+                                                                          child:
+                                                                              Container(
+                                                                            child:
+                                                                                Image.network(
+                                                                              widget.testEachRequest!.image_two.toString()!,
+                                                                              fit: BoxFit.cover,
+                                                                            ),
+                                                                          ),
+                                                                        )
+                                                                      : InkWell(
+                                                                          onTap:
+                                                                              () {
+                                                                            showDialog(
+                                                                                context: context,
+                                                                                builder: (context) {
+                                                                                  return MyDialogView(
+                                                                                      myChild: MyPhotoView(
+                                                                                    image: imageFile2,
+                                                                                    imageType: "File",
+                                                                                  ));
+                                                                                });
+                                                                          },
+                                                                          child:
+                                                                              Container(
+                                                                            child:
+                                                                                Image.file(
+                                                                              imageFile2!,
+                                                                              fit: BoxFit.cover,
+                                                                            ),
+                                                                          ),
+                                                                        )),
                                                           IconButton(
                                                             color: orangeColor,
                                                             icon: Icon(
@@ -1478,7 +1646,7 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
                                         ],
                                       ),
                                     )
-                                 : Row(
+                                  : Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
@@ -2535,6 +2703,210 @@ class _TestRequestCreateTypeThreeState extends State<TestRequestCreateTypeThree>
                         //   value: "0",
                         //   activate: false,
                         // ),
+
+                        typeUser == "4" && phoneNumber != superUser
+                            ? SizedBox()
+                            : Padding(
+                                padding: EdgeInsets.all(DM.p5),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: DM.p100,
+                                      child: Text(
+                                        "Pathology Assigning",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: DM.p14,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: DM.p5,
+                                    ),
+                                    Text(":"),
+                                    SizedBox(
+                                      width: DM.p10,
+                                    ),
+                                    DropdownButton<String>(
+                                      hint: Text(
+                                        "${assigningMapping[pathologyAssigningPhone]}",
+                                        style: TextStyle(color: blackFontColor),
+                                      ),
+                                      items: collectionUserList.map((
+                                        AdminUserModel value,
+                                      ) {
+                                        return DropdownMenuItem<String>(
+                                          value: value.phone,
+                                          child: Text(
+                                            "${value.name}",
+                                            style: TextStyle(
+                                                color: blackFontColor),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          pathologyAssigningPhone = newValue!;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                        typeUser == "4" && phoneNumber != superUser
+                            ? SizedBox()
+                            : Padding(
+                                padding: EdgeInsets.all(DM.p5),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: DM.p100,
+                                      child: Text(
+                                        "Radiology Assigning",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: DM.p14,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: DM.p5,
+                                    ),
+                                    Text(":"),
+                                    SizedBox(
+                                      width: DM.p10,
+                                    ),
+                                    DropdownButton<String>(
+                                      hint: Text(
+                                        "${assigningMapping[radiologyAssigningPhone]}",
+                                        style: TextStyle(color: blackFontColor),
+                                      ),
+                                      items: collectionUserList.map((
+                                        AdminUserModel value,
+                                      ) {
+                                        return DropdownMenuItem<String>(
+                                          value: value.phone,
+                                          child: Text(
+                                            "${value.name}",
+                                            style: TextStyle(
+                                                color: blackFontColor),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          radiologyAssigningPhone = newValue!;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                        widget.testEachRequest!.assigning == phoneNumber ||
+                                typeUser == "3" ||
+                                typeUser == "7" ||
+                                phoneNumber == superUser
+                            ? Padding(
+                                padding: EdgeInsets.all(DM.p5),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: DM.p100,
+                                      child: Text(
+                                        "Pathhology done",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: DM.p14,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: DM.p5,
+                                    ),
+                                    Text(":"),
+                                    SizedBox(
+                                      width: DM.p10,
+                                    ),
+                                    Checkbox(
+                                        value: pathologyDone,
+                                        onChanged: (value) {
+                                          if (typeUser == "4" &&
+                                              phoneNumber != superUser) {
+                                            if (widget.testEachRequest!
+                                                    .pathology_done !=
+                                                true)
+                                              setState(() {
+                                                pathologyDone = !pathologyDone;
+                                              });
+                                          } else {
+                                            if (widget.testEachRequest!
+                                                    .pathology_done !=
+                                                true)
+                                              setState(() {
+                                                pathologyDone = !pathologyDone;
+                                              });
+                                          }
+                                        })
+                                  ],
+                                ),
+                              )
+                            : SizedBox(),
+                        widget.testEachRequest!.radiology_assigning ==
+                                    phoneNumber ||
+                                typeUser == "3" ||
+                                typeUser == "7" ||
+                                phoneNumber == superUser
+                            ? Padding(
+                                padding: EdgeInsets.all(DM.p5),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: DM.p100,
+                                      child: Text(
+                                        "Radiology done",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: DM.p14,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: DM.p5,
+                                    ),
+                                    Text(":"),
+                                    SizedBox(
+                                      width: DM.p10,
+                                    ),
+                                    Checkbox(
+                                        value: radiologyDone,
+                                        onChanged: (value) {
+                                          if (typeUser == "4" &&
+                                              phoneNumber != superUser) {
+                                            if (widget.testEachRequest!
+                                                    .radiology_done !=
+                                                true)
+                                              setState(() {
+                                                radiologyDone = !radiologyDone;
+                                              });
+                                          } else {
+                                            if (widget.testEachRequest!
+                                                    .radiology_done !=
+                                                true)
+                                              setState(() {
+                                                radiologyDone = !radiologyDone;
+                                              });
+                                          }
+                                        })
+                                  ],
+                                ),
+                              )
+                            : SizedBox(),
                       ],
                     )),
 

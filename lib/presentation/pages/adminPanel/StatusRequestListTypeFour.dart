@@ -23,17 +23,17 @@ import '../../../constants/app_info.dart';
 import '../../../responsives/dimensions.dart';
 import '../../widgets/projectsWidget/RequestListTabView.dart';
 
-class StatusRequestListTypeThree extends StatefulWidget {
-  StatusRequestListTypeThree({super.key});
+class StatusRequestListTypeFour extends StatefulWidget {
+  StatusRequestListTypeFour({super.key});
 
   @override
-  State<StatusRequestListTypeThree> createState() =>
-      _StatusRequestListTypeThreeState();
+  State<StatusRequestListTypeFour> createState() =>
+      _StatusRequestListTypeFourState();
 }
 
 FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-class _StatusRequestListTypeThreeState extends State<StatusRequestListTypeThree>
+class _StatusRequestListTypeFourState extends State<StatusRequestListTypeFour>
     with TickerProviderStateMixin {
   int _selectedIndex = 0;
   late TabController tabController;
@@ -153,10 +153,8 @@ class _StatusRequestListTypeThreeState extends State<StatusRequestListTypeThree>
         padding: EdgeInsets.all(DM.p5),
         child: Container(
           child: Column(
-        
             children: [
               Container(
-                  
                 height: DM.p40,
                 child: TabBar(
                   isScrollable: true,
@@ -181,7 +179,7 @@ class _StatusRequestListTypeThreeState extends State<StatusRequestListTypeThree>
                             fontWeight: FontWeight.bold),
                       ),
                     ),
-                     Tab(
+                    Tab(
                       child: Text(
                         "PRE COLLECTED",
                         style: TextStyle(
@@ -192,7 +190,7 @@ class _StatusRequestListTypeThreeState extends State<StatusRequestListTypeThree>
                     ),
                     Tab(
                       child: Text(
-                        "${cr_controller.status[7]}",
+                        "${cr_controller.status[3]}",
                         style: TextStyle(
                             color: blackFontColor,
                             fontSize: DM.p11,
@@ -213,7 +211,7 @@ class _StatusRequestListTypeThreeState extends State<StatusRequestListTypeThree>
                     RequestListTabView(
                         statusKey: "PCollected", isButton: false),
                     RequestListTabView(
-                        statusKey: cr_controller.status[7], isButton: false),
+                        statusKey: cr_controller.status[3], isButton: false),
                   ],
                 ),
               ),

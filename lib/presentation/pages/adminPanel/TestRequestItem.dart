@@ -25,6 +25,9 @@ import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListD
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
 import 'package:intl/intl.dart';
+import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
+import 'package:multi_select_flutter/util/multi_select_item.dart';
+import 'package:multi_select_flutter/util/multi_select_list_type.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -97,41 +100,45 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   var agent_pathology_discount = new TextEditingController();
   var agent_radiology_discount = new TextEditingController();
 
+  var assigning_commission = new TextEditingController();
+  var radiology_assigning_commission = new TextEditingController();
+
   List<TestData> testItemList = [];
   List<AdminUserModel> adminUserList = [];
   List<TestData> testData_updated = [];
 
   final Map<String, bool> testItemListWithSelected = {};
-
   var totalTestCost = 0;
-
   var totalCost = 0;
   var serviceCost = 0;
   var tubeCost = 0;
   var totalDiscount = 0;
   var test_item_cost = 0;
   var test_item_discount = 0;
-
   var total_payable_pathology = 0;
   var total_payable_imaging = 0;
   var total_unpayable_pathology = 0;
   var total_unpayable_imaging = 0;
-
   var total_payable_item = 0;
   var total_unpayable_item = 0;
-
   var urlDownload1;
   var urlDownload2;
-
   var newRequestData;
-
   bool isFromNetwork1 = false;
   bool isFromNetwork2 = false;
-
   File? imageFile1, imageFile2;
   UploadTask? uploadTask1, uploadTask2;
-
   bool init = false;
+  var phoneNumber = "";
+  var typeUser = "";
+
+  List<AdminUserModel> collectionUserList = [];
+  String pathologyAssigningPhone = "";
+  String radiologyAssigningPhone = "";
+  Map<String, String> assigningMapping = {"": ""};
+  bool pathologyDone = false;
+  bool radiologyDone = false;
+
   Future<void> _getTestItemList() async {
     late DatabaseReference DbrefTestModel;
     DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
@@ -169,6 +176,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         AdminUserModel testData =
             AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
 
+        setState(() {
+          if (testData.type == "4") {
+            collectionUserList.add(testData);
+            assigningMapping[testData.phone] = testData.name;
+          }
+        });
+
         adminUserList.add(testData);
       }
     });
@@ -187,6 +201,10 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   }
 
   Future<void> retreiveEachDataRequest() async {
+    SharedPreferences refs = await SharedPreferences.getInstance();
+    phoneNumber = refs.getString("phoneNumber")!;
+    typeUser = refs.getString("type")!;
+
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     type.text =
         createReqController.typeName[widget.testEachRequest!.type].toString();
@@ -338,6 +356,48 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       agent_commission.text =
           widget.testEachRequest!.agent_commission!.toString();
     }
+
+    //new
+    if (widget.testEachRequest!.pathology_done == null) {
+      pathologyDone = false;
+    } else {
+      pathologyDone = widget.testEachRequest!.pathology_done;
+    }
+    if (widget.testEachRequest!.radiology_done == null) {
+      radiologyDone = false;
+    } else {
+      radiologyDone = widget.testEachRequest!.radiology_done;
+    }
+    if (widget.testEachRequest!.assigning == null) {
+      pathologyAssigningPhone = "";
+    } else {
+      pathologyAssigningPhone = widget.testEachRequest!.assigning;
+    }
+
+    if (widget.testEachRequest!.radiology_assigning == null) {
+      radiologyAssigningPhone = "";
+    } else {
+      radiologyAssigningPhone = widget.testEachRequest!.radiology_assigning;
+    }
+
+    if (widget.testEachRequest!.assigning_commission == null &&
+        widget.testEachRequest!.assigning_commission
+            .toString()
+            .contains("null")) {
+      assigning_commission.text = "0";
+    } else {
+      assigning_commission.text =
+          widget.testEachRequest!.assigning_commission!.toString();
+    }
+    if (widget.testEachRequest!.radiology_assigning_commission == null &&
+        widget.testEachRequest!.radiology_assigning_commission
+            .toString()
+            .contains("null")) {
+      radiology_assigning_commission.text = "0";
+    } else {
+      radiology_assigning_commission.text =
+          widget.testEachRequest!.radiology_assigning_commission!.toString();
+    }
   }
 
   void _onLoading(isClosed) {
@@ -474,12 +534,17 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       agent_radiology_discount:
           int.parse(agent_radiology_discount.text.toString()),
       area: "",
-      assigning: "",
-      assigning_commission: 0,
       is_paid: false,
       total_unpayable_imagine: total_unpayable_imaging,
       total_unpayable_pathology: total_unpayable_pathology,
       payment_date: 0,
+      pathology_done: pathologyDone,
+      radiology_done: radiologyDone,
+      assigning: pathologyAssigningPhone.toString(),
+      radiology_assigning: radiologyAssigningPhone.toString(),
+      assigning_commission: int.parse(assigning_commission.text.toString()),
+      radiology_assigning_commission:
+          int.parse(radiology_assigning_commission.text.toString()),
     );
 
     if (updateTestRequestItem != null) {
@@ -497,7 +562,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     Get.back();
   }
 
-  void calculationProcess() {
+  Future<void> calculationProcess() async {
     totalTestCost = 0;
     totalCost = 0;
     serviceCost = 0;
@@ -615,31 +680,63 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     total_discount.text = totalDiscount.toString();
 
     adminUserList.map((e) {
-      if (e.referrer_code.contains(referrer.text.toString()) ) {
-
+      if (e.referrer_code.contains(referrer.text.toString())) {
         var pathology_commision = 0;
         var imagine_commission = 0;
 
-        if(e.pathology_commission != null && e.pathology_commission.toString().contains("null") )
-        {
+        if (e.pathology_commission != null &&
+            !e.pathology_commission.toString().contains("null") &&
+            e.pathology_commission != "") {
           pathology_commision = int.parse(e.pathology_commission);
         }
 
-         if(e.imagine_commission != null  && e.imagine_commission.toString().contains("null"))
-        {
+        if (e.imagine_commission != null &&
+            !e.imagine_commission.toString().contains("null") &&
+            e.imagine_commission != "") {
           imagine_commission = int.parse(e.imagine_commission);
         }
 
+        agent_commission.text =
+            ((((total_payable_pathology) * pathology_commision) / 100) +
+                    (((total_payable_imaging) * imagine_commission) / 100))
+                .toInt()
+                .toString();
+      }
 
-        agent_commission.text = ((((total_payable_pathology) *
-                        pathology_commision) /
-                    100) +
-                (((total_payable_imaging) * imagine_commission) /
-                    100))
-            .toInt()
-            .toString();
+      //Collection commission
+      if (e.phone.toString() == phoneNumber) {
+        if (e.phone.toString().contains(pathologyAssigningPhone)) {
+          var pathology_commision = 0;
 
-        return;
+          if (e.pathology_commission != null &&
+              !e.pathology_commission.toString().contains("null") &&
+              e.pathology_commission != "") {
+            pathology_commision = int.parse(e.pathology_commission);
+          }
+
+          print("pathology_commision " + pathology_commision.toString());
+          assigning_commission.text =
+              ((((total_payable_pathology) * pathology_commision) / 100))
+                  .toInt()
+                  .toString();
+        }
+        print("assigining_commission " + assigning_commission.text.toString());
+
+        if (e.phone.toString().contains(radiologyAssigningPhone)) {
+          var imagine_commission = 0;
+
+          if (e.imagine_commission != null &&
+              !e.imagine_commission.toString().contains("null") &&
+              e.imagine_commission != "") {
+            imagine_commission = int.parse(e.imagine_commission);
+          }
+          print("radiology_assigning_commission " +
+              imagine_commission.toString());
+          radiology_assigning_commission.text =
+              ((((total_payable_imaging) * imagine_commission) / 100))
+                  .toInt()
+                  .toString();
+        }
       }
     }).toList();
   }
@@ -689,31 +786,63 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       total_discount.text = totalDiscount.toString();
 
       adminUserList.map((e) {
-       
         var pathology_commision = 0;
         var imagine_commission = 0;
 
-        if(e.pathology_commission != null && e.pathology_commission.toString().contains("null") )
-        {
+        if (e.pathology_commission != null &&
+            !e.pathology_commission.toString().contains("null") &&
+            e.pathology_commission != "") {
           pathology_commision = int.parse(e.pathology_commission);
         }
 
-         if(e.imagine_commission != null  && e.imagine_commission.toString().contains("null"))
-        {
+        if (e.imagine_commission != null &&
+            !e.imagine_commission.toString().contains("null") &&
+            e.imagine_commission != "") {
           imagine_commission = int.parse(e.imagine_commission);
         }
 
         if (e.referrer_code.contains(referrer.text.toString())) {
-  
-           agent_commission.text = ((((total_payable_pathology) *
-                        pathology_commision) /
-                    100) +
-                (((total_payable_imaging) * imagine_commission) /
-                    100))
-            .toInt()
-            .toString();
+          agent_commission.text =
+              ((((total_payable_pathology) * pathology_commision) / 100) +
+                      (((total_payable_imaging) * imagine_commission) / 100))
+                  .toInt()
+                  .toString();
+        }
 
-          return;
+        if (e.phone.toString() == phoneNumber) {
+          if (e.phone.toString().contains(pathologyAssigningPhone)) {
+            var pathology_commision = 0;
+
+            if (e.pathology_commission != null &&
+                !e.pathology_commission.toString().contains("null") &&
+                e.pathology_commission != "") {
+              pathology_commision = int.parse(e.pathology_commission);
+            }
+
+            print("pathology_commision " + pathology_commision.toString());
+            assigning_commission.text =
+                ((((total_payable_pathology) * pathology_commision) / 100))
+                    .toInt()
+                    .toString();
+          }
+          print(
+              "assigining_commission " + assigning_commission.text.toString());
+
+          if (e.phone.toString().contains(radiologyAssigningPhone)) {
+            var imagine_commission = 0;
+
+            if (e.imagine_commission != null &&
+                !e.imagine_commission.toString().contains("null") &&
+                e.imagine_commission != "") {
+              imagine_commission = int.parse(e.imagine_commission);
+            }
+            print("radiology_assigning_commission " +
+                imagine_commission.toString());
+            radiology_assigning_commission.text =
+                ((((total_payable_imaging) * imagine_commission) / 100))
+                    .toInt()
+                    .toString();
+          }
         }
       }).toList();
     });
@@ -989,6 +1118,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                               Flexible(
                                 child: Container(
                                   child: TextFormField(
+                                    readOnly: typeUser == "4" ? true : false,
                                     controller: referrer,
                                     keyboardType: TextInputType.multiline,
                                     maxLines: null,
@@ -1269,62 +1399,52 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                           Container(
                                                               height: DM.p180,
                                                               width: DM.p150,
-                                                              child: isFromNetwork2
-                                                                  ? InkWell(
-                                                                      onTap:
-                                                                          () {
-                                                                             showDialog(
-                                                                  context:
-                                                                      context,
-                                                                  builder:
-                                                                      (context) {
-                                                                    return MyDialogView(
-                                                                        myChild:
-                                                                            MyPhotoView(
-                                                                      image:
-                                                                           widget.testEachRequest!.image_two.toString(),
-                                                                      imageType:
-                                                                          "Network",
-                                                                    ));
-                                                                  });
+                                                              child:
+                                                                  isFromNetwork2
+                                                                      ? InkWell(
+                                                                          onTap:
+                                                                              () {
+                                                                            showDialog(
+                                                                                context: context,
+                                                                                builder: (context) {
+                                                                                  return MyDialogView(
+                                                                                      myChild: MyPhotoView(
+                                                                                    image: widget.testEachRequest!.image_two.toString(),
+                                                                                    imageType: "Network",
+                                                                                  ));
+                                                                                });
                                                                           },
-                                                                      child:
-                                                                          Container(
-                                                                        child:
-                                                                            Image.network(
-                                                                          widget.testEachRequest!.image_two.toString()!,
-                                                                          fit:
-                                                                              BoxFit.cover,
-                                                                        ),
-                                                                      ),
-                                                                    )
-                                                                  : InkWell(
-                                                                    onTap: (){
-                                                                       showDialog(
-                                                                  context:
-                                                                      context,
-                                                                  builder:
-                                                                      (context) {
-                                                                    return MyDialogView(
-                                                                        myChild:
-                                                                            MyPhotoView(
-                                                                      image:
-                                                                          imageFile2,
-                                                                      imageType:
-                                                                          "File",
-                                                                    ));
-                                                                  });
-                                                                    },
-                                                                      child:
-                                                                          Container(
-                                                                        child:
-                                                                            Image.file(
-                                                                          imageFile2!,
-                                                                          fit:
-                                                                              BoxFit.cover,
-                                                                        ),
-                                                                      ),
-                                                                    )),
+                                                                          child:
+                                                                              Container(
+                                                                            child:
+                                                                                Image.network(
+                                                                              widget.testEachRequest!.image_two.toString()!,
+                                                                              fit: BoxFit.cover,
+                                                                            ),
+                                                                          ),
+                                                                        )
+                                                                      : InkWell(
+                                                                          onTap:
+                                                                              () {
+                                                                            showDialog(
+                                                                                context: context,
+                                                                                builder: (context) {
+                                                                                  return MyDialogView(
+                                                                                      myChild: MyPhotoView(
+                                                                                    image: imageFile2,
+                                                                                    imageType: "File",
+                                                                                  ));
+                                                                                });
+                                                                          },
+                                                                          child:
+                                                                              Container(
+                                                                            child:
+                                                                                Image.file(
+                                                                              imageFile2!,
+                                                                              fit: BoxFit.cover,
+                                                                            ),
+                                                                          ),
+                                                                        )),
                                                           IconButton(
                                                             color: orangeColor,
                                                             icon: Icon(
@@ -2335,35 +2455,64 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                               SizedBox(
                                 width: DM.p10,
                               ),
-                              DropdownButton<String>(
-                                hint: Text(
-                                    "${createReqController.status[int.parse(teststatus.text)]}",
-                                    style: TextStyle(color: blackFontColor)),
-                                items: <String>[
-                                  "PENDING",
-                                  "RECIEVED",
-                                  "COLLECTED",
-                                  "READY",
-                                  "R.RECIEVED",
-                                  "DELIVERED",
-                                  "CANCEL"
-                                ].map((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(
-                                      "$value",
-                                      style: TextStyle(color: blackFontColor),
+                              typeUser == "4" && phoneNumber != superUser
+                                  ? DropdownButton<String>(
+                                      hint: Text(
+                                          "${createReqController.status[int.parse(teststatus.text)]}",
+                                          style:
+                                              TextStyle(color: blackFontColor)),
+                                      items: <String>[
+                                        "PENDING",
+                                        "RECIEVED",
+                                      ].map((String value) {
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Text(
+                                            "$value",
+                                            style: TextStyle(
+                                                color: blackFontColor),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          teststatus.text = createReqController
+                                              .toStatus[newValue]
+                                              .toString();
+                                        });
+                                      },
+                                    )
+                                  : DropdownButton<String>(
+                                      hint: Text(
+                                          "${createReqController.status[int.parse(teststatus.text)]}",
+                                          style:
+                                              TextStyle(color: blackFontColor)),
+                                      items: <String>[
+                                        "PENDING",
+                                        "RECIEVED",
+                                        "COLLECTED",
+                                        "READY",
+                                        "R.RECIEVED",
+                                        "DELIVERED",
+                                        "CANCEL"
+                                      ].map((String value) {
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Text(
+                                            "$value",
+                                            style: TextStyle(
+                                                color: blackFontColor),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          teststatus.text = createReqController
+                                              .toStatus[newValue]
+                                              .toString();
+                                        });
+                                      },
                                     ),
-                                  );
-                                }).toList(),
-                                onChanged: (newValue) {
-                                  setState(() {
-                                    teststatus.text = createReqController
-                                        .toStatus[newValue]
-                                        .toString();
-                                  });
-                                },
-                              ),
                             ],
                           ),
                         ),
@@ -2558,14 +2707,345 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           activate: false,
                         ),
 
-                        FormUserInfo(
-                          formKey: _formKey,
-                          textInputType: TextInputType.number,
-                          controller: softdelete,
-                          title: "Soft delete",
-                          value: "0",
-                          activate: false,
-                        ),
+                        // FormUserInfo(
+                        //   formKey: _formKey,
+                        //   textInputType: TextInputType.number,
+                        //   controller: softdelete,
+                        //   title: "Soft delete",
+                        //   value: "0",
+                        //   activate: false,
+                        // ),
+                        widget.testEachRequest!.assigning == phoneNumber ||
+                                phoneNumber == superUser ||
+                                typeUser == "7" ||
+                                typeUser == "3"
+                            ? Padding(
+                                padding: EdgeInsets.all(DM.p5),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: DM.p100,
+                                      child: Text(
+                                        "Pathology Assigning Commission",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: DM.p14,
+                                            color: blackFontColor),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: DM.p5,
+                                    ),
+                                    Text(":"),
+                                    SizedBox(
+                                      width: DM.p10,
+                                    ),
+                                    Flexible(
+                                      child: Container(
+                                        height: DM.p42,
+                                        child: TextFormField(
+                                          readOnly: true,
+                                          keyboardType: TextInputType.number,
+                                          onChanged: (value) {},
+                                          controller: assigning_commission,
+                                          decoration: InputDecoration(
+                                              errorStyle:
+                                                  TextStyle(fontSize: DM.p9),
+                                              focusedBorder: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      width: DM.p1,
+                                                      color: orangeColor)),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    width: DM.p1,
+                                                    color:
+                                                        orangeColor), //<-- SEE HERE
+                                              ),
+                                              filled: true,
+                                              fillColor: fullWhiteColor,
+                                              contentPadding:
+                                                  EdgeInsets.symmetric(
+                                                      horizontal: DM.p10),
+                                              border: InputBorder.none,
+                                              hintText: "0",
+                                              hintStyle: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: DM.p14,
+                                              )),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : SizedBox(),
+                        widget.testEachRequest!.radiology_assigning ==
+                                    phoneNumber ||
+                                phoneNumber == superUser ||
+                                typeUser == "7" ||
+                                typeUser == "3"
+                            ? Padding(
+                                padding: EdgeInsets.all(DM.p5),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: DM.p100,
+                                      child: Text(
+                                        "Radiology Assigning Commission",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: DM.p14,
+                                            color: blackFontColor),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: DM.p5,
+                                    ),
+                                    Text(":"),
+                                    SizedBox(
+                                      width: DM.p10,
+                                    ),
+                                    Flexible(
+                                      child: Container(
+                                        height: DM.p42,
+                                        child: TextFormField(
+                                          readOnly: true,
+                                          keyboardType: TextInputType.number,
+                                          onChanged: (value) {},
+                                          controller:
+                                              radiology_assigning_commission,
+                                          decoration: InputDecoration(
+                                              errorStyle:
+                                                  TextStyle(fontSize: DM.p9),
+                                              focusedBorder: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      width: DM.p1,
+                                                      color: orangeColor)),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    width: DM.p1,
+                                                    color:
+                                                        orangeColor), //<-- SEE HERE
+                                              ),
+                                              filled: true,
+                                              fillColor: fullWhiteColor,
+                                              contentPadding:
+                                                  EdgeInsets.symmetric(
+                                                      horizontal: DM.p10),
+                                              border: InputBorder.none,
+                                              hintText: "0",
+                                              hintStyle: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: DM.p14,
+                                              )),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : SizedBox(),
+                        typeUser == "4" && phoneNumber != superUser
+                            ? SizedBox()
+                            : Padding(
+                                padding: EdgeInsets.all(DM.p5),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: DM.p100,
+                                      child: Text(
+                                        "Pathology Assigning",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: DM.p14,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: DM.p5,
+                                    ),
+                                    Text(":"),
+                                    SizedBox(
+                                      width: DM.p10,
+                                    ),
+                                    DropdownButton<String>(
+                                      hint: Text(
+                                        "${assigningMapping[pathologyAssigningPhone]}",
+                                        style: TextStyle(color: blackFontColor),
+                                      ),
+                                      items: collectionUserList.map((
+                                        AdminUserModel value,
+                                      ) {
+                                        return DropdownMenuItem<String>(
+                                          value: value.phone,
+                                          child: Text(
+                                            "${value.name}",
+                                            style: TextStyle(
+                                                color: blackFontColor),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          pathologyAssigningPhone = newValue!;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                        typeUser == "4" && phoneNumber != superUser
+                            ? SizedBox()
+                            : Padding(
+                                padding: EdgeInsets.all(DM.p5),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: DM.p100,
+                                      child: Text(
+                                        "Radiology Assigning",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: DM.p14,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: DM.p5,
+                                    ),
+                                    Text(":"),
+                                    SizedBox(
+                                      width: DM.p10,
+                                    ),
+                                    DropdownButton<String>(
+                                      hint: Text(
+                                        "${assigningMapping[radiologyAssigningPhone]}",
+                                        style: TextStyle(color: blackFontColor),
+                                      ),
+                                      items: collectionUserList.map((
+                                        AdminUserModel value,
+                                      ) {
+                                        return DropdownMenuItem<String>(
+                                          value: value.phone,
+                                          child: Text(
+                                            "${value.name}",
+                                            style: TextStyle(
+                                                color: blackFontColor),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          radiologyAssigningPhone = newValue!;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                        widget.testEachRequest!.assigning == phoneNumber ||
+                                typeUser == "3" ||
+                                typeUser == "7" ||
+                                phoneNumber == superUser
+                            ? Padding(
+                                padding: EdgeInsets.all(DM.p5),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: DM.p100,
+                                      child: Text(
+                                        "Pathhology done",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: DM.p14,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: DM.p5,
+                                    ),
+                                    Text(":"),
+                                    SizedBox(
+                                      width: DM.p10,
+                                    ),
+                                    Checkbox(
+                                        value: pathologyDone,
+                                        onChanged: (value) {
+                                          if (typeUser == "4" &&
+                                              phoneNumber != superUser) {
+                                            if (widget.testEachRequest!
+                                                    .pathology_done !=
+                                                true)
+                                              setState(() {
+                                                pathologyDone = !pathologyDone;
+                                              });
+                                          } else {
+                                            setState(() {
+                                              pathologyDone = !pathologyDone;
+                                            });
+                                          }
+                                        })
+                                  ],
+                                ),
+                              )
+                            : SizedBox(),
+                        widget.testEachRequest!.radiology_assigning ==
+                                    phoneNumber ||
+                                typeUser == "3" ||
+                                typeUser == "7" ||
+                                phoneNumber == superUser
+                            ? Padding(
+                                padding: EdgeInsets.all(DM.p5),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: DM.p100,
+                                      child: Text(
+                                        "Radiology done",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: DM.p14,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: DM.p5,
+                                    ),
+                                    Text(":"),
+                                    SizedBox(
+                                      width: DM.p10,
+                                    ),
+                                    Checkbox(
+                                        value: radiologyDone,
+                                        onChanged: (value) {
+                                          if (typeUser == "4" &&
+                                              phoneNumber != superUser) {
+                                            if (widget.testEachRequest!
+                                                    .radiology_done !=
+                                                true)
+                                              setState(() {
+                                                radiologyDone = !radiologyDone;
+                                              });
+                                          } else {
+                                            setState(() {
+                                              radiologyDone = !radiologyDone;
+                                            });
+                                          }
+                                        })
+                                  ],
+                                ),
+                              )
+                            : SizedBox(),
                       ],
                     )),
 
@@ -3199,3 +3679,55 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
   PdfApi.openFile(pdfFile);
   PdfApi.openFile(pdfFile2);
 }
+
+//new
+//  Padding(
+//                               padding: EdgeInsets.all(DM.p1),
+//                               child: Row(
+//                                 children: [
+//                                   SizedBox(
+//                                     width: DM.p100,
+//                                     child: Text(
+//                                       "Gender",
+//                                       style: TextStyle(
+//                                           fontWeight: FontWeight.w500,
+//                                           fontSize: DM.p14,
+//                                           color: Color.fromARGB(
+//                                               255, 26, 1, 1)),
+//                                     ),
+//                                   ),
+//                                   SizedBox(
+//                                     width: DM.p5,
+//                                   ),
+//                                   Text(":"),
+//                                   SizedBox(
+//                                     width: DM.p10,
+//                                   ),
+//                                   DropdownButton<String>(
+//                                     hint: Text(
+//                                       "$gender",
+//                                       style:
+//                                           TextStyle(color: blackFontColor),
+//                                     ),
+//                                     items: <String>[
+//                                       'Male',
+//                                       'Female',
+//                                     ].map((String value) {
+//                                       return DropdownMenuItem<String>(
+//                                         value: value,
+//                                         child: Text(
+//                                           "$value",
+//                                           style: TextStyle(
+//                                               color: blackFontColor),
+//                                         ),
+//                                       );
+//                                     }).toList(),
+//                                     onChanged: (newValue) {
+//                                       setState(() {
+//                                         gender = newValue;
+//                                       });
+//                                     },
+//                                   ),
+//                                 ],
+//                               ),
+//                             ),

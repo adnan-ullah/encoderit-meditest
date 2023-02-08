@@ -13,6 +13,7 @@ import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminUser.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/StatusRequestList.dart';
+import 'package:healthcare_homelab/presentation/pages/adminPanel/StatusRequestListTypeFour.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/StatusRequestListTypeThree.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
@@ -123,7 +124,8 @@ class _AdminHomeState extends State<AdminHome> {
               widget.check_number == "$superUser" ||
                       widget.check_type == 7 ||
                       widget.check_type == 1 ||
-                      widget.check_type == 3
+                      widget.check_type == 3 ||
+                      widget.check_type == 4
                   ? Container(
                       color: creamColor,
                       child: Column(
@@ -134,7 +136,7 @@ class _AdminHomeState extends State<AdminHome> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 widget.check_type == 7 ||
-                                        widget.check_number == "$superUser"
+                                        widget.check_number == "$superUser" 
                                     ? Container(
                                         height: DM.p180,
                                         width: DM.screenWidth * 0.4,
@@ -194,7 +196,12 @@ class _AdminHomeState extends State<AdminHome> {
                                       if (widget.check_type == 3) {
                                         print("HERE Type three");
                                         Get.to(StatusRequestListTypeThree());
-                                      } else {
+                                      } 
+                                      else if(widget.check_type == 4)
+                                      {
+                                         Get.to(StatusRequestListTypeFour());
+                                      }
+                                      else {
                                         Get.to(StatusRequestList());
                                       }
                                     },
