@@ -40,7 +40,7 @@ class _StatusRequestListTypeFourState extends State<StatusRequestListTypeFour>
 
   @override
   void initState() {
-    tabController = TabController(length: 4, vsync: this, initialIndex: 0);
+    tabController = TabController(length: 3, vsync: this, initialIndex: 0);
 
     setState(() {
       _selectedIndex = tabController.index;
@@ -161,15 +161,7 @@ class _StatusRequestListTypeFourState extends State<StatusRequestListTypeFour>
                   controller: tabController,
                   onTap: ((value) {}),
                   tabs: [
-                    Tab(
-                      child: Text(
-                        "${cr_controller.status[1]}",
-                        style: TextStyle(
-                            color: blackFontColor,
-                            fontSize: DM.p11,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
+
                     Tab(
                       child: Text(
                         "${cr_controller.status[2]}",
@@ -181,7 +173,7 @@ class _StatusRequestListTypeFourState extends State<StatusRequestListTypeFour>
                     ),
                     Tab(
                       child: Text(
-                        "PRE COLLECTED",
+                        "${cr_controller.status[8]}",
                         style: TextStyle(
                             color: blackFontColor,
                             fontSize: DM.p11,
@@ -204,12 +196,11 @@ class _StatusRequestListTypeFourState extends State<StatusRequestListTypeFour>
                 child: TabBarView(
                   controller: tabController,
                   children: [
-                    RequestListTabView(
-                        statusKey: cr_controller.status[1], isButton: false),
+
                     RequestListTabView(
                         statusKey: cr_controller.status[2], isButton: false),
                     RequestListTabView(
-                        statusKey: "PCollected", isButton: false),
+                        statusKey: cr_controller.status[8], isButton: false),
                     RequestListTabView(
                         statusKey: cr_controller.status[3], isButton: false),
                   ],

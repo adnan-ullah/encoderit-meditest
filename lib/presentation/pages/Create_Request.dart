@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:ffi';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +19,7 @@ import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notificat
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListDialogueBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
 import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
@@ -121,7 +124,12 @@ class _CreateRequestState extends State<CreateRequest> {
   var totalDiscount = 0;
   var newRequestData;
 
+
+
   String? gender = "Male";
+  File? imageDiscountFile;
+  UploadTask? uploadTask3;
+  var urlDownload3;
 
   CreateRequest_controller createReqController =
       Get.put(CreateRequest_controller());
@@ -130,6 +138,304 @@ class _CreateRequestState extends State<CreateRequest> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     phone.text = prefs.getString("phoneNumber").toString();
     referredAddressText.text = prefs.getString("referrer_code").toString();
+  }
+
+  Future<void> uploadImage() async {
+
+
+    final SharedPreferences pref = await SharedPreferences.getInstance();
+
+
+    final path3 = "files/${phone.text}/${imageDiscountFile}";
+
+
+    final ref3 = FirebaseStorage.instance.ref().child(path3);
+
+
+
+
+
+
+    if (imageDiscountFile != null) {
+      uploadTask3 = ref3.putFile(imageDiscountFile!);
+      final snapshot3 = await uploadTask3!.whenComplete(() {});
+      urlDownload3 = await snapshot3.ref.getDownloadURL();
+    }
+
+
+
+    addTestRequest();
+
+    Get.back();
+    Get.back();
+    Get.back();
+
+  }
+
+
+
+
+
+  void _onLoading(isClosed) {
+    if (isClosed) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: Container(
+              height: DM.p80,
+              padding: EdgeInsets.all(DM.p16),
+              child: new Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  new CircularProgressIndicator(
+                    color: orangeColor,
+                  ),
+                  SizedBox(
+                    width: DM.p10,
+                  ),
+                  new Text(
+                    "Submitting, please wait...",
+                    style: TextStyle(color: orangeColor),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    if (!isClosed) Navigator.pop(context);
+    //pop dialog
+  }
+
+
+  void initialTestRequest() {
+
+    int currentTime = DateTime.now().millisecondsSinceEpoch;
+    setState(() {
+      newRequestData = TestDataRequest(
+          id: ((Random().nextInt(900000) + 100000).toString()),
+          name: name.text!,
+          gender: gender,
+          mobile: phone.text,
+          age: age.text,
+          testlist: createReqController.testData,
+          totalprice: createReqController.totalCost.value,
+          servicecharge: createReqController.serviceCost.value,
+          address: addressText.text,
+          referrer: referredAddressText.text,
+          lastupdate: currentTime,
+          dateofcreated: currentTime,
+          softdelete: 0,
+          latitude: latitude,
+          longitude: longitude,
+          teststatus: 1,
+          invoice_call: phone.text.substring(7) +
+              "-" +
+              (Random().nextInt(900000) + 100000).toString(),
+          type: 1,
+          image_one: null,
+          image_two: null,
+          comments: null,
+          delivery_date: null,
+          total_payable_imagine_cost: 0,
+          total_payable_pathology_cost: 0,
+          total_payable: 0,
+          total_unpayable: 0,
+          admin_pathology_discount: 0,
+          admin_radiology_discount: 0,
+          agent_commission: 0,
+          agent_pathology_discount: 0,
+          agent_radiology_discount: 0,
+          area: "",
+          assigning: "",
+          assigning_commission: 0,
+          advanced: 0,
+          due_amount: 0,
+          test_item_cost: createReqController.totalTestCost.value,
+          test_item_discount: 0,
+          total_admin_discount: 0,
+          total_agent_discount: 0,
+          total_discount: createReqController.totalDiscount.value,
+          is_paid: false,
+          total_unpayable_imagine: 0,
+          total_unpayable_pathology: 0, payment_date: 0,
+          imageDiscountFile: urlDownload3
+      );
+    });
+  }
+
+  Future<void> UpdateTestRequest() async {
+    int currentTime = DateTime.now().millisecondsSinceEpoch;
+    // DateTime currentTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    // String currentTime = DateFormat('dd-MMM-yyy').format(tsdate);
+
+    late DatabaseReference _dbref_testReqModel;
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
+
+    newRequestData = TestDataRequest(
+        id: ((Random().nextInt(900000) + 100000).toString()),
+        name: name.text,
+        gender: gender,
+        mobile: phone.text,
+        age: age.text,
+        testlist: createReqController.testData,
+        totalprice: createReqController.totalCost.value,
+        servicecharge: createReqController.serviceCost.value,
+        address: addressText.text,
+        referrer: referredAddressText.text,
+        lastupdate: currentTime,
+        dateofcreated: currentTime,
+        softdelete: 0,
+        latitude: latitude,
+        longitude: longitude,
+        teststatus: 1,
+        invoice_call: phone.text.substring(7) +
+            "-" +
+            (Random().nextInt(900000) + 100000).toString(),
+        type: 1,
+        image_one: null,
+        image_two: null,
+        total_payable_imagine_cost: 0,
+        total_payable_pathology_cost: 0,
+        total_payable: 0,
+        total_unpayable: 0,
+        admin_pathology_discount: 0,
+        admin_radiology_discount: 0,
+        agent_commission: 0,
+        agent_pathology_discount: 0,
+        agent_radiology_discount: 0,
+        area: "",
+        assigning: "",
+        assigning_commission: 0,
+        advanced: 0,
+        comments: "",
+        delivery_date: null,
+        due_amount: 0,
+        test_item_cost: createReqController.totalTestCost.value,
+        test_item_discount: 0,
+        total_admin_discount: 0,
+        total_agent_discount: 0,
+        total_discount: createReqController.totalDiscount.value,
+        is_paid: false,
+        total_unpayable_imagine: 0,
+        total_unpayable_pathology: 0, payment_date: 0);
+
+    if (newRequestData != null) {
+      await _dbref_testReqModel
+          .child("testRequest")
+          .update({newRequestData.mobile.toString(): "125412"});
+
+      Get.snackbar(
+          margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
+          duration: Duration(milliseconds: 2000),
+          backgroundColor: Colors.yellow,
+          colorText: whiteColor,
+          "Update",
+          "Data Update  , successfully!");
+    } else {
+      Get.snackbar(
+          duration: Duration(milliseconds: 2000),
+          margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
+          backgroundColor: redColor,
+          colorText: whiteColor,
+          "Request already exist",
+          "Failed to added!");
+    }
+  }
+
+  Future<void> addTestRequest() async {
+
+    int currentTime = DateTime.now().millisecondsSinceEpoch;
+    // DateTime currentTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    // String currentTime = DateFormat('dd-MMM-yyy').format(tsdate);
+
+
+
+    late DatabaseReference _dbref_testReqModel;
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
+
+    newRequestData = TestDataRequest(
+      id: ((Random().nextInt(900000) + 100000).toString()),
+      name: name.text,
+      gender: gender,
+      mobile: phone.text,
+      age: age.text,
+      testlist: createReqController.testData,
+      totalprice: createReqController.totalCost.value,
+      servicecharge: createReqController.serviceCost.value,
+      address: addressText.text,
+      referrer: referredAddressText.text,
+      lastupdate: currentTime,
+      dateofcreated: currentTime,
+      softdelete: 0,
+      latitude: latitude,
+      longitude: longitude,
+      teststatus: 1,
+      invoice_call: phone.text.substring(7) +
+          "-" +
+          (Random().nextInt(900000) + 100000).toString(),
+      type: 1,
+      image_one: null,
+      image_two: null,
+      comments: "",
+      delivery_date: null,
+      admin_pathology_discount: 0,
+      admin_radiology_discount: 0,
+      advanced: 0,
+      agent_commission: 0,
+      agent_pathology_discount: 0,
+      agent_radiology_discount: 0,
+      area: "",
+      assigning: "",
+      assigning_commission: 0,
+      due_amount: 0,
+      total_payable_imagine_cost: 0,
+      total_payable_pathology_cost: 0,
+      test_item_cost: createReqController.totalTestCost.value,
+      test_item_discount:0 ,
+      total_admin_discount: 0,
+      total_agent_discount: 0,
+      total_discount: createReqController.totalDiscount.value,
+      total_payable: 0,
+      total_unpayable: 0,
+      is_paid: false,
+      total_unpayable_pathology: 0,
+      total_unpayable_imagine: 0, payment_date: 0,
+        imageDiscountFile: urlDownload3
+    );
+
+    // DatabaseEvent ds = await _dbref_testReqModel
+    //     .child("testRequest/${newRequestData.mobile.toString()}")
+    //     .once();
+    //checking duplicate child && add data
+    if (newRequestData != null) {
+      await _dbref_testReqModel
+          .child("testRequest")
+          .child(newRequestData.mobile.toString())
+          .child(newRequestData.id)
+          .set(newRequestData.toJson());
+
+
+      Get.snackbar(
+          margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p120),
+          duration: Duration(milliseconds: 2000),
+          backgroundColor: limeBGColor,
+          colorText: whiteColor,
+          "Added",
+          "Data added , successfully!");
+    } else {
+      Get.snackbar(
+          margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p120),
+          duration: Duration(milliseconds: 2000),
+          backgroundColor: redColor,
+          colorText: whiteColor,
+          "Request already exist",
+          "Failed to added!");
+    }
   }
 
   @override
@@ -168,226 +474,7 @@ class _CreateRequestState extends State<CreateRequest> {
       });
     }
 
-    void initialTestRequest() {
-      int currentTime = DateTime.now().millisecondsSinceEpoch;
-      setState(() {
-        newRequestData = TestDataRequest(
-            id: ((Random().nextInt(900000) + 100000).toString()),
-            name: name.text!,
-            gender: gender,
-            mobile: phone.text,
-            age: age.text,
-            testlist: createReqController.testData,
-            totalprice: createReqController.totalCost.value,
-            servicecharge: createReqController.serviceCost.value,
-            address: addressText.text,
-            referrer: referredAddressText.text,
-            lastupdate: currentTime,
-            dateofcreated: currentTime,
-            softdelete: 0,
-            latitude: latitude,
-            longitude: longitude,
-            teststatus: 1,
-            invoice_call: phone.text.substring(7) +
-                "-" +
-                (Random().nextInt(900000) + 100000).toString(),
-            type: 1,
-            image_one: null,
-            image_two: null,
-            comments: null,
-            delivery_date: null,
-            total_payable_imagine_cost: 0,
-            total_payable_pathology_cost: 0,
-            total_payable: 0,
-            total_unpayable: 0,
-            admin_pathology_discount: 0,
-            admin_radiology_discount: 0,
-            agent_commission: 0,
-            agent_pathology_discount: 0,
-            agent_radiology_discount: 0,
-            area: "",
-            assigning: "",
-            assigning_commission: 0,
-            advanced: 0,
-            due_amount: 0,
-            test_item_cost: createReqController.totalTestCost.value,
-            test_item_discount: 0,
-            total_admin_discount: 0,
-            total_agent_discount: 0,
-            total_discount: createReqController.totalDiscount.value,
-            is_paid: false,
-            total_unpayable_imagine: 0,
-            total_unpayable_pathology: 0, payment_date: 0);
-      });
-    }
 
-    Future<void> UpdateTestRequest() async {
-      int currentTime = DateTime.now().millisecondsSinceEpoch;
-      // DateTime currentTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-      // String currentTime = DateFormat('dd-MMM-yyy').format(tsdate);
-
-      late DatabaseReference _dbref_testReqModel;
-      _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
-
-      newRequestData = TestDataRequest(
-          id: ((Random().nextInt(900000) + 100000).toString()),
-          name: name.text,
-          gender: gender,
-          mobile: phone.text,
-          age: age.text,
-          testlist: createReqController.testData,
-          totalprice: createReqController.totalCost.value,
-          servicecharge: createReqController.serviceCost.value,
-          address: addressText.text,
-          referrer: referredAddressText.text,
-          lastupdate: currentTime,
-          dateofcreated: currentTime,
-          softdelete: 0,
-          latitude: latitude,
-          longitude: longitude,
-          teststatus: 1,
-          invoice_call: phone.text.substring(7) +
-              "-" +
-              (Random().nextInt(900000) + 100000).toString(),
-          type: 1,
-          image_one: null,
-          image_two: null,
-          total_payable_imagine_cost: 0,
-          total_payable_pathology_cost: 0,
-          total_payable: 0,
-          total_unpayable: 0,
-          admin_pathology_discount: 0,
-          admin_radiology_discount: 0,
-          agent_commission: 0,
-          agent_pathology_discount: 0,
-          agent_radiology_discount: 0,
-          area: "",
-          assigning: "",
-          assigning_commission: 0,
-          advanced: 0,
-          comments: "",
-          delivery_date: null,
-          due_amount: 0,
-          test_item_cost: createReqController.totalTestCost.value,
-          test_item_discount: 0,
-          total_admin_discount: 0,
-          total_agent_discount: 0,
-          total_discount: createReqController.totalDiscount.value,
-          is_paid: false,
-          total_unpayable_imagine: 0,
-          total_unpayable_pathology: 0, payment_date: 0);
-
-      if (newRequestData != null) {
-        await _dbref_testReqModel
-            .child("testRequest")
-            .update({newRequestData.mobile.toString(): "125412"});
-
-        Get.snackbar(
-            margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
-            duration: Duration(milliseconds: 2000),
-            backgroundColor: Colors.yellow,
-            colorText: whiteColor,
-            "Update",
-            "Data Update  , successfully!");
-      } else {
-        Get.snackbar(
-            duration: Duration(milliseconds: 2000),
-            margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
-            backgroundColor: redColor,
-            colorText: whiteColor,
-            "Request already exist",
-            "Failed to added!");
-      }
-    }
-
-    Future<void> addTestRequest() async {
-      int currentTime = DateTime.now().millisecondsSinceEpoch;
-      // DateTime currentTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-      // String currentTime = DateFormat('dd-MMM-yyy').format(tsdate);
-
-      
-
-      late DatabaseReference _dbref_testReqModel;
-      _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
-
-      newRequestData = TestDataRequest(
-        id: ((Random().nextInt(900000) + 100000).toString()),
-        name: name.text,
-        gender: gender,
-        mobile: phone.text,
-        age: age.text,
-        testlist: createReqController.testData,
-        totalprice: createReqController.totalCost.value,
-        servicecharge: createReqController.serviceCost.value,
-        address: addressText.text,
-        referrer: referredAddressText.text,
-        lastupdate: currentTime,
-        dateofcreated: currentTime,
-        softdelete: 0,
-        latitude: latitude,
-        longitude: longitude,
-        teststatus: 1,
-        invoice_call: phone.text.substring(7) +
-            "-" +
-            (Random().nextInt(900000) + 100000).toString(),
-        type: 1,
-        image_one: null,
-        image_two: null,
-        comments: "",
-        delivery_date: null,
-        admin_pathology_discount: 0,
-        admin_radiology_discount: 0,
-        advanced: 0,
-        agent_commission: 0,
-        agent_pathology_discount: 0,
-        agent_radiology_discount: 0,
-        area: "",
-        assigning: "",
-        assigning_commission: 0,
-        due_amount: 0,
-        total_payable_imagine_cost: 0,
-        total_payable_pathology_cost: 0,
-        test_item_cost: createReqController.totalTestCost.value,
-        test_item_discount:0 ,
-        total_admin_discount: 0,
-        total_agent_discount: 0,
-        total_discount: createReqController.totalDiscount.value,
-        total_payable: 0,
-        total_unpayable: 0,
-        is_paid: false,
-        total_unpayable_pathology: 0,
-        total_unpayable_imagine: 0, payment_date: 0,
-      );
-
-      // DatabaseEvent ds = await _dbref_testReqModel
-      //     .child("testRequest/${newRequestData.mobile.toString()}")
-      //     .once();
-      //checking duplicate child && add data
-      if (newRequestData != null) {
-        await _dbref_testReqModel
-            .child("testRequest")
-            .child(newRequestData.mobile.toString())
-            .child(newRequestData.id)
-            .set(newRequestData.toJson());
-
-        Get.back();
-        Get.snackbar(
-            margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p120),
-            duration: Duration(milliseconds: 2000),
-            backgroundColor: limeBGColor,
-            colorText: whiteColor,
-            "Added",
-            "Data added , successfully!");
-      } else {
-        Get.snackbar(
-            margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p120),
-            duration: Duration(milliseconds: 2000),
-            backgroundColor: redColor,
-            colorText: whiteColor,
-            "Request already exist",
-            "Failed to added!");
-      }
-    }
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -738,6 +825,181 @@ class _CreateRequestState extends State<CreateRequest> {
                                     ],
                                   ),
                                 ),
+
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: DM.p1 , vertical: DM.p10),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: DM.p100,
+                                        child: Text(
+                                          "Discount Card\n(যদি থাকে)",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: DM.p14,
+                                              color: blackFontColor),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: DM.p5,
+                                      ),
+                                      Text(":"),
+                                      SizedBox(
+                                        width: DM.p10,
+                                      ),
+
+                                      Container(child:
+                                      imageDiscountFile == null
+                                          ? Container(
+                                        height: DM.p60,
+                                        width: DM.p80,
+                                        margin: EdgeInsets.symmetric(
+                                            horizontal: DM.p15),
+                                        child: MaterialButton(
+                                            onPressed: () async {
+                                              showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return Center(
+                                                      child: Container(
+                                                        color: whiteColor,
+                                                        child: Row(
+                                                          mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                          children: [
+                                                            Container(
+                                                              margin:
+                                                              EdgeInsets.all(
+                                                                  DM.p16),
+                                                              height: DM.p130,
+                                                              width: DM.p120,
+                                                              child:
+                                                              ElevatedButton(
+                                                                  style: ElevatedButton.styleFrom(
+                                                                      backgroundColor:
+                                                                      orangeColor,
+                                                                      elevation:
+                                                                      0),
+                                                                  onPressed:
+                                                                      () async {
+                                                                    PickedFile?
+                                                                    pickedFile =
+                                                                    await ImagePicker()
+                                                                        .getImage(
+                                                                      source:
+                                                                      ImageSource.gallery,
+                                                                      maxWidth:
+                                                                      1200,
+                                                                      maxHeight:
+                                                                      1600,
+                                                                    );
+                                                                    setState(
+                                                                            () {
+                                                                          if (pickedFile !=
+                                                                              null)
+                                                                            imageDiscountFile =
+                                                                                File(pickedFile!.path);
+                                                                        });
+
+                                                                    Navigator.pop(
+                                                                        context);
+                                                                  },
+                                                                  child: Text(
+                                                                    "Gallery",
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                        DM.p18),
+                                                                  )),
+                                                            ),
+                                                            Container(
+                                                              margin:
+                                                              EdgeInsets.all(
+                                                                  DM.p16),
+                                                              decoration: BoxDecoration(
+                                                                  borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                      25)),
+                                                              height: DM.p130,
+                                                              width: DM.p120,
+                                                              child:
+                                                              ElevatedButton(
+                                                                  style: ElevatedButton.styleFrom(
+                                                                      backgroundColor:
+                                                                      orangeColor,
+                                                                      elevation:
+                                                                      0),
+                                                                  onPressed:
+                                                                      () async {
+                                                                    PickedFile?
+                                                                    pickedFile =
+                                                                    await ImagePicker()
+                                                                        .getImage(
+                                                                      source:
+                                                                      ImageSource.camera,
+                                                                      maxWidth:
+                                                                      1200,
+                                                                      maxHeight:
+                                                                      1600,
+                                                                    );
+                                                                    setState(
+                                                                            () {
+                                                                          if (pickedFile !=
+                                                                              null)
+                                                                            imageDiscountFile =
+                                                                                File(pickedFile!.path);
+                                                                        });
+                                                                    Navigator.pop(
+                                                                        context);
+                                                                  },
+                                                                  child: Text(
+                                                                      "Camera",
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                          DM.p18))),
+                                                            )
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    );
+                                                  });
+                                            },
+                                            height: DM.p50,
+                                            color: orangeColor,
+                                            child: Icon(Icons.camera , size: DM.p40, color: whiteColor,)
+                                        ),
+                                      )
+                                          : Column(
+                                        children: [
+                                          Container(
+                                            height: DM.p60,
+                                            width: DM.p80,
+                                            child: Image.file(
+                                              imageDiscountFile as File,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          IconButton(
+                                            color: orangeColor,
+                                            icon: Icon(
+                                              CupertinoIcons.xmark_circle_fill,
+                                              size: DM.p30,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                imageDiscountFile = null;
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),)
+                                    ],
+                                  ),
+                                ),
+
                                 Padding(
                                   padding: EdgeInsets.all(DM.p1),
                                   child: Row(
@@ -1013,10 +1275,10 @@ class _CreateRequestState extends State<CreateRequest> {
                                                   builder: (context) {
                                                     return MyDialogView(
                                                       myChild: ConfirmationList(
+                                                        uploadImage: uploadImage,
                                                           newRequestData:
                                                               newRequestData,
-                                                          addTestRequest:
-                                                              addTestRequest),
+                                                          ),
                                                     );
                                                   });
                                             } else {

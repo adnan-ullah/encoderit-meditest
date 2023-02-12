@@ -37,6 +37,7 @@ class CreateRequest_controller extends GetxController {
     5: "R.RECIEVED",
     6: "DELIVERED",
     7: "CANCEL",
+    8:"PRECOLLECTED"
     // 8:"CONFIRM"
   };
 
@@ -48,6 +49,7 @@ class CreateRequest_controller extends GetxController {
    "R.RECIEVED" : 5,
   "DELIVERED" :  6,
   "CANCEL" :  7,
+    "PRECOLLECTED":8
   // "CONFIRM":8
   };
    Map<int, String> typeName = {

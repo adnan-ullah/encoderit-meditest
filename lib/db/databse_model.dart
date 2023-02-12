@@ -119,7 +119,8 @@ class TestDataRequest {
       this.radiology_assigning,
       this.radiology_assigning_commission,
       this.pathology_done,
-      this.radiology_done
+      this.radiology_done,
+        this.imageDiscountFile
 
       
   
@@ -179,6 +180,7 @@ class TestDataRequest {
   dynamic radiology_assigning_commission;
   dynamic pathology_done;
   dynamic radiology_done;
+  dynamic imageDiscountFile;
 
   Map toJson() => {
         'id': id,
@@ -231,6 +233,7 @@ class TestDataRequest {
         'radiology_assigning_commission': radiology_assigning_commission,
         'pathology_done': pathology_done,
         'radiology_done': radiology_done,
+    'imageDiscountFile':imageDiscountFile
       };
 
   factory TestDataRequest.fromJson(Map<String, dynamic> parsedJson) {
@@ -290,6 +293,8 @@ class TestDataRequest {
       radiology_assigning_commission: parsedJson['radiology_assigning_commission'],
       pathology_done: parsedJson['pathology_done'],
       radiology_done: parsedJson['radiology_done'],
+
+        imageDiscountFile:parsedJson['imageDiscountFile']
 
            
     );

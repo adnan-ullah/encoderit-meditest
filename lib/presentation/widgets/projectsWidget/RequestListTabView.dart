@@ -35,7 +35,7 @@ class RequestListTabView extends StatefulWidget {
 }
 
 var testStatusRequestList = <TestDataRequest>[];
-var localTestStatusRequestList = <TestDataRequest>[];
+// var localTestStatusRequestList = <TestDataRequest>[];
 var isLoading = false;
 
 var type;
@@ -165,7 +165,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
     _dbref_testReqModel.onValue.listen((event) async {
       _newTestRequestList.clear();
       testStatusRequestList.clear();
-      localTestStatusRequestList.clear();
+      //localTestStatusRequestList.clear();
 
       //  setState(() {
       //   _newTestRequestList.clear();
@@ -180,12 +180,17 @@ class _RequestListTabViewState extends State<RequestListTabView> {
           if (type == "4" && phone != superUser) {
             if (testData.assigning == phone ||
                 testData.radiology_assigning == phone) {
-              if (widget.statusKey.toString() == "PCollected") {
+              if (widget.statusKey.toString() == "PRECOLLECTED") {
                 if ((testData.pathology_done == true &&
                         testData.radiology_done == false) ||
                     (testData.pathology_done == false &&
                         testData.radiology_done == true)) {
-                  localTestStatusRequestList.add(testData);
+                  testStatusRequestList.add(testData);
+                }
+              } else if (widget.statusKey.toString() == "RECIEVED") {
+                if (testData.pathology_done == false ||
+                    testData.radiology_done == false) {
+                  testStatusRequestList.add(testData);
                 }
               } else {
                 if (widget.statusKey.toString() == "COLLECTED") {
@@ -200,17 +205,21 @@ class _RequestListTabViewState extends State<RequestListTabView> {
               }
             }
           } else if (type == "3" && phone != superUser) {
-            if (widget.statusKey.toString() == "PCollected") {
+            if (widget.statusKey.toString() == "PRECOLLECTED") {
               if ((testData.assigning != "" &&
                       testData.assigning != null &&
                       testData.assigning != "null") ||
                   (testData.radiology_assigning != "" &&
                       testData.radiology_assigning != null &&
                       testData.radiology_assigning != "null")) {
-
-                      if(!(testData.pathology_done && testData.radiology_done))
-                      localTestStatusRequestList.add(testData);
+                if (!(testData.pathology_done && testData.radiology_done))
+                  testStatusRequestList.add(testData);
               }
+            } else if (widget.statusKey.toString() == "COLLECTED") {
+              if (testData.pathology_done != null &&
+                  testData.radiology_done != null) if (testData
+                      .pathology_done &&
+                  testData.radiology_done) testStatusRequestList.add(testData);
             } else {
               testStatusRequestList.add(testData);
             }
@@ -261,17 +270,28 @@ class _RequestListTabViewState extends State<RequestListTabView> {
 
   void tabStatusList() async {
     setState(() {
-      if (widget.statusKey == "PCollected") {
-        _newTestRequestList.addAll(localTestStatusRequestList.toList());
-      } else if (widget.statusKey == "COLLECTED") {
-        _newTestRequestList.addAll(testStatusRequestList.toList());
-      } else {
+      // if (widget.statusKey == "PRECOLLECTED" && type == "3") {
+      //   _newTestRequestList.addAll(testStatusRequestList
+      //       .where((p0) =>
+      //           createRequest_controller.status[p0.teststatus].toString() ==
+      //           "RECIEVED")
+      //       .toList());
+      // }
+      // else if (widget.statusKey == "COLLECTED"  && (type == "3" || type=="4") ) {
+      //   _newTestRequestList.addAll(testStatusRequestList
+      //       .where((p0) =>
+      //   createRequest_controller.status[p0.teststatus].toString() ==
+      //       widget.statusKey.toString())
+      //       .toList());
+      //
+      // }
+
         _newTestRequestList.addAll(testStatusRequestList
             .where((p0) =>
                 createRequest_controller.status[p0.teststatus].toString() ==
                 widget.statusKey.toString())
             .toList());
-      }
+
     });
   }
 
@@ -337,304 +357,299 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                               thickness: DM.p2,
                               color: Colors.black,
                             ),
-                            widget.statusKey != "P.Collected"
-                                ? Container(
-                                    height: DM.screenHeight * 0.75,
-                                    child: ListView.builder(
-                                      shrinkWrap: true,
-                                      physics: BouncingScrollPhysics(),
-                                      itemCount: _newTestRequestList.length,
-                                      itemBuilder: (context, index) {
-                                        return InkWell(
-                                          onTap: () async {
-                                            if (type == "3" &&
-                                                phone != "$superUser" &&
-                                                createRequest_controller
-                                                            .toStatus[
-                                                        widget.statusKey] !=
-                                                    7) {
-                                              Get.to(TestRequestCreateTypeThree(
+                            Container(
+                              height: DM.screenHeight * 0.75,
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                physics: BouncingScrollPhysics(),
+                                itemCount: _newTestRequestList.length,
+                                itemBuilder: (context, index) {
+                                  return InkWell(
+                                    onTap: () async {
+                                      if (type == "3"&&
+                                          phone != "$superUser") {
+                                        if (createRequest_controller
+                                                .toStatus[widget.statusKey]! <
+                                            3 || createRequest_controller
+                                            .toStatus[widget.statusKey]! ==8)
+                                          Get.to(TestRequestCreateTypeThree(
+                                              testEachRequest:
+                                                  _newTestRequestList[index]));
+                                      }
+                                      else if (type == "4" &&
+                                          phone != "$superUser") {
+                                        if (createRequest_controller.toStatus[
+                                                    widget.statusKey]! ==
+                                                8 ||
+                                            createRequest_controller.toStatus[
+                                                    widget.statusKey]! !=
+                                                3)
+                                          {
+                                            if (_newTestRequestList[
+                                            index]
+                                                .assigning ==phone  &&
+                                                !_newTestRequestList[index]
+                                                    .pathology_done) {
+                                              Get.to(TestRequestCreate(
                                                   testEachRequest:
-                                                      _newTestRequestList[
-                                                          index]));
-                                            } else {
-                                              if (createRequest_controller
-                                                          .toStatus[
-                                                      widget.statusKey]! <
-                                                  5) {
-                                                Get.to(TestRequestCreate(
-                                                    testEachRequest:
-                                                        _newTestRequestList[
-                                                            index]));
-                                              } else if (createRequest_controller
-                                                          .toStatus[
-                                                      widget.statusKey]! <
-                                                  7) {
-                                                if (type == "7" ||
-                                                    phone == "$superUser") {
-                                                  Get.to(TestRequestCreate(
-                                                      testEachRequest:
-                                                          _newTestRequestList[
-                                                              index]));
-                                                }
-                                              } else if (createRequest_controller
-                                                          .toStatus[
-                                                      widget.statusKey]! ==
-                                                  7) {
-                                                SharedPreferences ref =
-                                                    await SharedPreferences
-                                                        .getInstance();
-                                                var type =
-                                                    ref.getString("type");
-                                                var phone = ref
-                                                    .getString("phoneNumber");
-                                                if (phone == "$superUser") {
-                                                  Get.to(TestRequestCreate(
-                                                      testEachRequest:
-                                                          _newTestRequestList[
-                                                              index]));
-                                                }
-                                              }
-                                            }
-                                          },
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: whiteColor,
-                                              borderRadius:
-                                                  BorderRadius.circular(DM.p10),
+                                                  _newTestRequestList[index]));
+                                          }
+                                            else if (_newTestRequestList[index]
+                                                .radiology_assigning ==phone  &&
+                                                !_newTestRequestList[index]
+                                                    .radiology_done) {
+                                              Get.to(TestRequestCreate(
+                                                  testEachRequest:
+                                                  _newTestRequestList[index]));
+                                        }
+
+
+                                        }
+                                      }
+
+
+                                      else {
+                                        if ( type =="7" &&  phone != "$superUser" && createRequest_controller
+                                                .toStatus[widget.statusKey]! <
+                                            7  || createRequest_controller
+                                            .toStatus[widget.statusKey] == 8 ) {
+                                          Get.to(TestRequestCreate(
+                                              testEachRequest:
+                                                  _newTestRequestList[index]));
+                                        }
+                                        else {
+
+                                            Get.to(TestRequestCreate(
+                                                testEachRequest:
+                                                _newTestRequestList[
+                                                index]));
+
+                                        }
+                                      }
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: whiteColor,
+                                        borderRadius:
+                                            BorderRadius.circular(DM.p10),
+                                      ),
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: DM.p10, vertical: DM.p5),
+                                      margin:
+                                          EdgeInsets.symmetric(vertical: DM.p5),
+                                      height: DM.p60,
+                                      child: Row(
+                                        children: [
+                                          SizedBox(
+                                            width: DM.p30,
+                                            child: Text(
+                                              "${createRequest_controller.typeName[_newTestRequestList[index].type]![0]}",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: DM.p12,
+                                                  color: Color.fromARGB(
+                                                      255, 26, 1, 1)),
                                             ),
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: DM.p10,
-                                                vertical: DM.p5),
-                                            margin: EdgeInsets.symmetric(
-                                                vertical: DM.p5),
-                                            height: DM.p60,
-                                            child: Row(
-                                              children: [
-                                                SizedBox(
-                                                  width: DM.p30,
-                                                  child: Text(
-                                                    "${createRequest_controller.typeName[_newTestRequestList[index].type]![0]}",
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p12,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
+                                          ),
+                                          SizedBox(
+                                            width: DM.p80,
+                                            child: Text(
+                                              // "${_newTestRequestList[index].name.toString().split(' ').last}",
+                                              "${getFirstName(_newTestRequestList[index].name)}",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: DM.p12,
+                                                  color: Color.fromARGB(
+                                                      255, 26, 1, 1)),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: DM.p100,
+                                            child: Text(
+                                              "#${_newTestRequestList[index].invoice_call.toString()}",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: DM.p12,
+                                                  color: Color.fromARGB(
+                                                      255, 26, 1, 1)),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: DM.p80,
+                                            child: Text(
+                                              (DateFormat('dd-MMM HH:mm').format(
+                                                      DateTime.fromMillisecondsSinceEpoch(
+                                                          _newTestRequestList[
+                                                                  index]
+                                                              .dateofcreated)))
+                                                  .toString(),
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: DM.p12,
+                                                  color: Color.fromARGB(
+                                                      255, 26, 1, 1)),
+                                            ),
+                                          ),
+                                          widget.isButton &&
+                                                  (createRequest_controller
+                                                              .toStatus[
+                                                          widget.statusKey]! <
+                                                      5)
+                                              ? Container(
+                                                  width: DM.p65,
+                                                  child: MaterialButton(
+                                                    onPressed: () async {
+                                                      _updateStatus(
+                                                          _newTestRequestList[
+                                                              index]);
+                                                    },
+                                                    height: DM.p40,
+                                                    shape:
+                                                        const StadiumBorder(),
+                                                    color: orangeColor,
+                                                    child: Text(
+                                                      "Done",
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                          color: fullWhiteColor,
+                                                          fontSize: DM.p13,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
                                                   ),
-                                                ),
-                                                SizedBox(
-                                                  width: DM.p80,
-                                                  child: Text(
-                                                    // "${_newTestRequestList[index].name.toString().split(' ').last}",
-                                                    "${getFirstName(_newTestRequestList[index].name)}",
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p12,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width: DM.p100,
-                                                  child: Text(
-                                                    "#${_newTestRequestList[index].invoice_call.toString()}",
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p12,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width: DM.p80,
-                                                  child: Text(
-                                                    (DateFormat('dd-MMM HH:mm')
-                                                            .format(DateTime
-                                                                .fromMillisecondsSinceEpoch(
-                                                                    _newTestRequestList[
-                                                                            index]
-                                                                        .dateofcreated)))
-                                                        .toString(),
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p12,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                ),
-                                                widget.isButton &&
-                                                        (createRequest_controller
-                                                                    .toStatus[
-                                                                widget
-                                                                    .statusKey]! <
-                                                            5)
-                                                    ? Container(
-                                                        width: DM.p65,
-                                                        child: MaterialButton(
-                                                          onPressed: () async {
-                                                            _updateStatus(
-                                                                _newTestRequestList[
-                                                                    index]);
-                                                          },
-                                                          height: DM.p40,
-                                                          shape:
-                                                              const StadiumBorder(),
-                                                          color: orangeColor,
-                                                          child: Text(
-                                                            "Done",
-                                                            textAlign: TextAlign
-                                                                .center,
-                                                            style: TextStyle(
-                                                                color:
-                                                                    fullWhiteColor,
-                                                                fontSize:
-                                                                    DM.p13,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                        ),
-                                                      )
-                                                    : widget.isButton &&
-                                                            (type == "7" ||
-                                                                phone ==
-                                                                    "$superUser")
-                                                        ? Container(
-                                                            width: DM.p65,
-                                                            child:
-                                                                MaterialButton(
-                                                              onPressed:
-                                                                  () async {
-                                                                _updateStatus(
-                                                                    _newTestRequestList[
-                                                                        index]);
-                                                              },
-                                                              height: DM.p40,
-                                                              shape:
-                                                                  const StadiumBorder(),
+                                                )
+                                              : widget.isButton &&
+                                                      (type == "7" ||
+                                                          type == "3" ||
+                                                          phone == "$superUser")
+                                                  ? Container(
+                                                      width: DM.p65,
+                                                      child: MaterialButton(
+                                                        onPressed: () async {
+                                                          _updateStatus(
+                                                              _newTestRequestList[
+                                                                  index]);
+                                                        },
+                                                        height: DM.p40,
+                                                        shape:
+                                                            const StadiumBorder(),
+                                                        color: orangeColor,
+                                                        child: Text(
+                                                          "Done",
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
                                                               color:
-                                                                  orangeColor,
-                                                              child: Text(
-                                                                "Done",
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                style: TextStyle(
-                                                                    color:
-                                                                        fullWhiteColor,
-                                                                    fontSize:
-                                                                        DM.p13,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                              ),
-                                                            ),
-                                                          )
-                                                        : Container()
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
+                                                                  fullWhiteColor,
+                                                              fontSize: DM.p13,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : Container()
+                                        ],
+                                      ),
                                     ),
-                                  )
-                                : Container(
-                                    height: DM.screenHeight * 0.75,
-                                    child: ListView.builder(
-                                      shrinkWrap: true,
-                                      physics: BouncingScrollPhysics(),
-                                      itemCount: _newTestRequestList.length,
-                                      itemBuilder: (context, index) {
-                                        return InkWell(
-                                          onTap: () {
-                                            if (type == "3" &&
-                                                phone != "$superUser" ) {
-                                              Get.to(TestRequestCreateTypeThree(
-                                                  testEachRequest:
-                                                      localTestStatusRequestList[
-                                                          index]));
-                                            }
-                                          },
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: whiteColor,
-                                              borderRadius:
-                                                  BorderRadius.circular(DM.p10),
-                                            ),
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: DM.p10,
-                                                vertical: DM.p5),
-                                            margin: EdgeInsets.symmetric(
-                                                vertical: DM.p5),
-                                            height: DM.p60,
-                                            child: Row(
-                                              children: [
-                                                SizedBox(
-                                                  width: DM.p30,
-                                                  child: Text(
-                                                    "${createRequest_controller.typeName[_newTestRequestList[index].type]![0]}",
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p12,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width: DM.p80,
-                                                  child: Text(
-                                                    // "${_newTestRequestList[index].name.toString().split(' ').last}",
-                                                    "${getFirstName(_newTestRequestList[index].name)}",
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p12,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width: DM.p100,
-                                                  child: Text(
-                                                    "#${_newTestRequestList[index].invoice_call.toString()}",
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p12,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width: DM.p80,
-                                                  child: Text(
-                                                    (DateFormat('dd-MMM HH:mm')
-                                                            .format(DateTime
-                                                                .fromMillisecondsSinceEpoch(
-                                                                    _newTestRequestList[
-                                                                            index]
-                                                                        .dateofcreated)))
-                                                        .toString(),
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p12,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
+                                  );
+                                },
+                              ),
+                            )
+                            // : Container(
+                            //     height: DM.screenHeight * 0.75,
+                            //     child: ListView.builder(
+                            //       shrinkWrap: true,
+                            //       physics: BouncingScrollPhysics(),
+                            //       itemCount: _newTestRequestList.length,
+                            //       itemBuilder: (context, index) {
+                            //         return InkWell(
+                            //           onTap: () {
+                            //             if (type == "3" &&
+                            //                 phone != "$superUser" ) {
+                            //               Get.to(TestRequestCreateTypeThree(
+                            //                   testEachRequest:
+                            //                       localTestStatusRequestList[
+                            //                           index]));
+                            //             }
+                            //           },
+                            //           child: Container(
+                            //             decoration: BoxDecoration(
+                            //               color: whiteColor,
+                            //               borderRadius:
+                            //                   BorderRadius.circular(DM.p10),
+                            //             ),
+                            //             padding: EdgeInsets.symmetric(
+                            //                 horizontal: DM.p10,
+                            //                 vertical: DM.p5),
+                            //             margin: EdgeInsets.symmetric(
+                            //                 vertical: DM.p5),
+                            //             height: DM.p60,
+                            //             child: Row(
+                            //               children: [
+                            //                 SizedBox(
+                            //                   width: DM.p30,
+                            //                   child: Text(
+                            //                     "${createRequest_controller.typeName[_newTestRequestList[index].type]![0]}",
+                            //                     style: TextStyle(
+                            //                         fontWeight:
+                            //                             FontWeight.w900,
+                            //                         fontSize: DM.p12,
+                            //                         color: Color.fromARGB(
+                            //                             255, 26, 1, 1)),
+                            //                   ),
+                            //                 ),
+                            //                 SizedBox(
+                            //                   width: DM.p80,
+                            //                   child: Text(
+                            //                     // "${_newTestRequestList[index].name.toString().split(' ').last}",
+                            //                     "${getFirstName(_newTestRequestList[index].name)}",
+                            //                     style: TextStyle(
+                            //                         fontWeight:
+                            //                             FontWeight.w900,
+                            //                         fontSize: DM.p12,
+                            //                         color: Color.fromARGB(
+                            //                             255, 26, 1, 1)),
+                            //                   ),
+                            //                 ),
+                            //                 SizedBox(
+                            //                   width: DM.p100,
+                            //                   child: Text(
+                            //                     "#${_newTestRequestList[index].invoice_call.toString()}",
+                            //                     style: TextStyle(
+                            //                         fontWeight:
+                            //                             FontWeight.w900,
+                            //                         fontSize: DM.p12,
+                            //                         color: Color.fromARGB(
+                            //                             255, 26, 1, 1)),
+                            //                   ),
+                            //                 ),
+                            //                 SizedBox(
+                            //                   width: DM.p80,
+                            //                   child: Text(
+                            //                     (DateFormat('dd-MMM HH:mm')
+                            //                             .format(DateTime
+                            //                                 .fromMillisecondsSinceEpoch(
+                            //                                     _newTestRequestList[
+                            //                                             index]
+                            //                                         .dateofcreated)))
+                            //                         .toString(),
+                            //                     style: TextStyle(
+                            //                         fontWeight:
+                            //                             FontWeight.w900,
+                            //                         fontSize: DM.p12,
+                            //                         color: Color.fromARGB(
+                            //                             255, 26, 1, 1)),
+                            //                   ),
+                            //                 ),
+                            //               ],
+                            //             ),
+                            //           ),
+                            //         );
+                            //       },
+                            //     ),
+                            //   ),
                           ],
                         ),
                       )
@@ -655,7 +670,6 @@ class _RequestListTabViewState extends State<RequestListTabView> {
   }
 
   //Return String
-
 }
 
 Future<void> getAdminNotification(phone, type, context) async {

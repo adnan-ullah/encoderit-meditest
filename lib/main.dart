@@ -41,7 +41,7 @@ Future<void> main() async {
       channelName: 'Basic Notifications',
       defaultColor: Color.fromARGB(255, 2, 39, 35),
       importance: NotificationImportance.High,
-      channelShowBadge: true,  
+      channelShowBadge: true, channelDescription: '',
     ),
   ],
 );

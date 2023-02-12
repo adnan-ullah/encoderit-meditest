@@ -16,10 +16,11 @@ import '../../../responsives/dimensions.dart';
 import '../../pages/Login_info.dart';
 
 class ConfirmationList extends StatefulWidget {
-  VoidCallback addTestRequest;
+
+  VoidCallback uploadImage;
   TestDataRequest newRequestData;
   ConfirmationList(
-      {super.key, required this.addTestRequest, required this.newRequestData});
+      {super.key,  required this.newRequestData , required this.uploadImage});
 
   @override
   State<ConfirmationList> createState() => _ConfirmationListState();
@@ -51,6 +52,42 @@ class _ConfirmationListState extends State<ConfirmationList> {
     cr_controller.serviceCost.value = serviceCost;
     cr_controller.tubeCost.value = tubeCost;
     cr_controller.totalDiscount.value = totalDiscount;
+  }
+
+
+  void _onLoading(isClosed) {
+    if (isClosed) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: Container(
+              height: DM.p80,
+              padding: EdgeInsets.all(DM.p16),
+              child: new Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  new CircularProgressIndicator(
+                    color: orangeColor,
+                  ),
+                  SizedBox(
+                    width: DM.p10,
+                  ),
+                  new Text(
+                    "Submitting, please wait...",
+                    style: TextStyle(color: orangeColor),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    if (!isClosed) Navigator.pop(context);
+    //pop dialog
   }
 
   @override
@@ -201,14 +238,23 @@ class _ConfirmationListState extends State<ConfirmationList> {
                       ),
                       MaterialButton(
                         onPressed: () async {
+                          _onLoading(true);
                           if (await chechkingInternet()) {
-                            widget.addTestRequest();
+
+                            widget.uploadImage();
+
+
+
+
+
                               final SharedPreferences prefs = await SharedPreferences.getInstance();
                             var type = prefs.getString("type");
                             getAdminNotification(
                                 widget.newRequestData.mobile.toString(),type,
                                 context);
-                            Get.back();
+
+
+
                           }
                         },
                         height: DM.p45,

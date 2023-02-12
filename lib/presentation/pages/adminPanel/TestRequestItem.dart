@@ -159,7 +159,6 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
         //false -> add button
         //true -> remove button
-
       }
     });
   }
@@ -385,7 +384,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
             .toString()
             .contains("null")) {
       assigning_commission.text = "0";
-    } else {
+    }
+    else {
       assigning_commission.text =
           widget.testEachRequest!.assigning_commission!.toString();
     }
@@ -485,6 +485,15 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     if (urlDownload2 != null) {
       image_two.text = urlDownload2.toString();
     }
+
+    //typeFourCondition
+    if(typeUser =="4")
+      {
+        if(pathologyDone && radiologyDone)
+        teststatus.text = "3";
+        else
+          teststatus.text = "8";
+      }
 
     updateTestRequestItem = TestDataRequest(
       id: widget.testEachRequest!.id.toString(),
@@ -715,6 +724,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
           }
 
           print("pathology_commision " + pathology_commision.toString());
+          print("total_payable_pathology " + total_payable_pathology.toString());
           assigning_commission.text =
               ((((total_payable_pathology) * pathology_commision) / 100))
                   .toInt()
@@ -1153,6 +1163,89 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                             ],
                           ),
                         ),
+
+                        Padding(
+                          padding: EdgeInsets.all(DM.p1),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Discount Card\n(যদি থাকে)",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+
+                              widget.testEachRequest!.imageDiscountFile != null
+                                  ? Column(
+                                children: [
+                                  //MyphotoView for Form
+                                  Container(
+                                    height: DM.p80,
+                                    width: DM.p80,
+                                    child:
+                                  InkWell(
+                                      onTap:
+                                          () {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return MyDialogView(
+                                                  myChild: MyPhotoView(
+                                                    image:  widget.testEachRequest!.imageDiscountFile .toString(),
+                                                    imageType: "Network",
+                                                  ));
+                                            });
+                                      },
+                                      child:
+                                      Container(
+                                        child:
+                                        Image.network(
+                                          widget.testEachRequest!.imageDiscountFile.toString()!,
+                                          fit:
+                                          BoxFit.cover,
+                                        ),
+                                      ),
+                                    )
+
+                                  ),
+                                  typeUser=="7" || phone==superUser?
+                                  IconButton(
+                                    color: orangeColor,
+                                    icon: Icon(
+                                      CupertinoIcons
+                                          .xmark_circle_fill,
+                                      size: DM.p30,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        imageFile1 =
+                                        null;
+                                        image_one.text =
+                                        "empty";
+                                      });
+                                    },
+                                  ):SizedBox(),
+                                ],
+                              )
+                                  :SizedBox()
+                            ],
+                          ),
+                        ),
+
+
                         FormUserInfo(
                           formKey: _formKey,
                           textInputType: TextInputType.name,
@@ -1258,6 +1351,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                         ),
                                                                       ),
                                                           ),
+                                                          typeUser=="7" || phone==superUser?
                                                           IconButton(
                                                             color: orangeColor,
                                                             icon: Icon(
@@ -1273,7 +1367,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                     "empty";
                                                               });
                                                             },
-                                                          ),
+                                                          ):SizedBox(),
                                                         ],
                                                       )
                                                     : Container(
@@ -1445,6 +1539,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                             ),
                                                                           ),
                                                                         )),
+                                                          typeUser=="7" || phone==superUser?
                                                           IconButton(
                                                             color: orangeColor,
                                                             icon: Icon(
@@ -1460,7 +1555,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                     "empty";
                                                               });
                                                             },
-                                                          ),
+                                                          ):SizedBox(),
                                                         ],
                                                       )
                                                     : Container(
@@ -1633,118 +1728,380 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        image_one.text != "empty"
+                                        image_one.text != "empty" ||
+                                            imageFile1 != null
                                             ? Column(
-                                                children: [
-                                                  InkWell(
-                                                    onTap: () => showDialog(
-                                                        context: context,
-                                                        builder: (context) {
-                                                          return MyDialogView(
-                                                              myChild:
-                                                                  MyPhotoView(
-                                                            image:
-                                                                image_one.text,
-                                                            imageType:
-                                                                "Network",
-                                                          ));
-                                                        }),
-                                                    child: Container(
-                                                      height: DM.p170,
-                                                      width: DM.p130,
-                                                      child: Image.network(
-                                                        image_one.text,
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                    ),
+                                          children: [
+                                            //MyphotoView for Form
+                                            Container(
+                                              height: DM.p180,
+                                              width: DM.p150,
+                                              child:
+                                              isFromNetwork1
+                                                  ? InkWell(
+                                                onTap:
+                                                    () {
+                                                  showDialog(
+                                                      context: context,
+                                                      builder: (context) {
+                                                        return MyDialogView(
+                                                            myChild: MyPhotoView(
+                                                              image: widget.testEachRequest!.image_one.toString(),
+                                                              imageType: "Network",
+                                                            ));
+                                                      });
+                                                },
+                                                child:
+                                                Container(
+                                                  child:
+                                                  Image.network(
+                                                    widget.testEachRequest!.image_one.toString()!,
+                                                    fit:
+                                                    BoxFit.cover,
                                                   ),
-                                                ],
-                                              )
-                                            : Container(
-                                                height: DM.p60,
-                                                width: DM.p160,
-                                                margin: EdgeInsets.symmetric(
-                                                  vertical: DM.p25,
                                                 ),
-                                                child: ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                              vertical: DM.p20),
-                                                      shape: RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      DM.p10)),
-                                                      primary: orangeColor),
-                                                  onPressed: () {},
-                                                  child: Text(
-                                                    "Image 1",
-                                                    style: TextStyle(
-                                                        color: fullWhiteColor,
-                                                        fontSize: DM.p15,
-                                                        fontWeight:
-                                                            FontWeight.bold),
+                                              )
+                                                  : InkWell(
+                                                onTap:
+                                                    () {
+                                                  showDialog(
+                                                      context: context,
+                                                      builder: (context) {
+                                                        return MyDialogView(
+                                                            myChild: MyPhotoView(
+                                                              image: imageFile1,
+                                                              imageType: "File",
+                                                            ));
+                                                      });
+                                                },
+                                                child:
+                                                Container(
+                                                  child:
+                                                  Image.file(
+                                                    imageFile1!,
+                                                    fit:
+                                                    BoxFit.cover,
                                                   ),
                                                 ),
                                               ),
+                                            ),
+                                            typeUser=="7" || phone==superUser?
+                                            IconButton(
+                                              color: orangeColor,
+                                              icon: Icon(
+                                                CupertinoIcons
+                                                    .xmark_circle_fill,
+                                                size: DM.p30,
+                                              ),
+                                              onPressed: () {
+                                                setState(() {
+                                                  imageFile1 =
+                                                  null;
+                                                  image_one.text =
+                                                  "empty";
+                                                });
+                                              },
+                                            ):SizedBox(),
+                                          ],
+                                        )
+                                            :  Container(
+                                          height: DM.p60,
+                                          width: DM.p160,
+                                          margin: EdgeInsets
+                                              .symmetric(
+                                              horizontal:
+                                              DM.p5),
+                                          child: ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                    BorderRadius
+                                                        .circular(DM
+                                                        .p10)),
+                                                padding: EdgeInsets
+                                                    .symmetric(
+                                                    vertical: DM
+                                                        .p20),
+                                                primary:
+                                                orangeColor),
+                                            onPressed: () async {
+                                              showDialog(
+                                                  context:
+                                                  context,
+                                                  builder:
+                                                      (context) {
+                                                    return Center(
+                                                      child:
+                                                      Container(
+                                                        color:
+                                                        whiteColor,
+                                                        child:
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                          MainAxisAlignment.center,
+                                                          children: [
+                                                            Container(
+                                                              margin:
+                                                              EdgeInsets.all(DM.p16),
+                                                              height:
+                                                              DM.p130,
+                                                              width:
+                                                              DM.p120,
+                                                              child: ElevatedButton(
+                                                                  style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                  onPressed: () async {
+                                                                    PickedFile? pickedFile = await ImagePicker().getImage(
+                                                                      source: ImageSource.gallery,
+                                                                      maxWidth: 800,
+                                                                      maxHeight: 1200,
+                                                                    );
+                                                                    setState(() {
+                                                                      if (pickedFile != null) {
+                                                                        imageFile1 = File(pickedFile!.path);
+                                                                        isFromNetwork1 = false;
+                                                                      }
+                                                                    });
+
+                                                                    Navigator.pop(context);
+                                                                  },
+                                                                  child: Text(
+                                                                    "Gallery",
+                                                                    style: TextStyle(fontSize: DM.p18),
+                                                                  )),
+                                                            ),
+                                                            Container(
+                                                              margin:
+                                                              EdgeInsets.all(DM.p16),
+                                                              decoration:
+                                                              BoxDecoration(borderRadius: BorderRadius.circular(25)),
+                                                              height:
+                                                              DM.p130,
+                                                              width:
+                                                              DM.p120,
+                                                              child: ElevatedButton(
+                                                                  style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                  onPressed: () async {
+                                                                    PickedFile? pickedFile = await ImagePicker().getImage(
+                                                                      source: ImageSource.camera,
+                                                                      maxWidth: 800,
+                                                                      maxHeight: 1200,
+                                                                    );
+                                                                    setState(() {
+                                                                      if (pickedFile != null) {
+                                                                        isFromNetwork1 = false;
+                                                                        imageFile1 = File(pickedFile!.path);
+                                                                      }
+                                                                    });
+                                                                    Navigator.pop(context);
+                                                                  },
+                                                                  child: Text("Camera", style: TextStyle(fontSize: DM.p18))),
+                                                            )
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    );
+                                                  });
+                                            },
+                                            child: Text(
+                                              "Image 1",
+                                              textAlign:
+                                              TextAlign.start,
+                                              style: TextStyle(
+                                                  color:
+                                                  fullWhiteColor,
+                                                  fontSize:
+                                                  DM.p15,
+                                                  fontWeight:
+                                                  FontWeight
+                                                      .bold),
+                                            ),
+                                          ),
+                                        ),
                                         SizedBox(
                                           width: DM.p10,
                                         ),
-                                        image_two.text != "empty"
+                                        image_two.text != "empty" ||
+                                            imageFile2 != null
                                             ? Column(
-                                                children: [
-                                                  InkWell(
-                                                    onTap: () => showDialog(
+                                          children: [
+                                            Container(
+                                                height: DM.p180,
+                                                width: DM.p150,
+                                                child:
+                                                isFromNetwork2
+                                                    ? InkWell(
+                                                  onTap:
+                                                      () {
+                                                    showDialog(
                                                         context: context,
                                                         builder: (context) {
                                                           return MyDialogView(
                                                               myChild: MyPhotoView(
-                                                                  image:
-                                                                      image_two
-                                                                          .text,
-                                                                  imageType:
-                                                                      "Network"));
-                                                        }),
-                                                    child: Container(
-                                                      height: DM.p170,
-                                                      width: DM.p130,
-                                                      child: Image.network(
-                                                        image_two.text,
-                                                        fit: BoxFit.cover,
-                                                      ),
+                                                                image: widget.testEachRequest!.image_two.toString(),
+                                                                imageType: "Network",
+                                                              ));
+                                                        });
+                                                  },
+                                                  child:
+                                                  Container(
+                                                    child:
+                                                    Image.network(
+                                                      widget.testEachRequest!.image_two.toString()!,
+                                                      fit: BoxFit.cover,
                                                     ),
                                                   ),
-                                                ],
-                                              )
-                                            : Container(
-                                                height: DM.p60,
-                                                width: DM.p160,
-                                                margin: EdgeInsets.symmetric(
-                                                  vertical: DM.p25,
-                                                ),
-                                                child: ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                              vertical: DM.p20),
-                                                      shape: RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      DM.p10)),
-                                                      primary: orangeColor),
-                                                  onPressed: () {},
-                                                  child: Text(
-                                                    "Image 2",
-                                                    style: TextStyle(
-                                                        color: fullWhiteColor,
-                                                        fontSize: DM.p15,
-                                                        fontWeight:
-                                                            FontWeight.bold),
+                                                )
+                                                    : InkWell(
+                                                  onTap:
+                                                      () {
+                                                    showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return MyDialogView(
+                                                              myChild: MyPhotoView(
+                                                                image: imageFile2,
+                                                                imageType: "File",
+                                                              ));
+                                                        });
+                                                  },
+                                                  child:
+                                                  Container(
+                                                    child:
+                                                    Image.file(
+                                                      imageFile2!,
+                                                      fit: BoxFit.cover,
+                                                    ),
                                                   ),
-                                                ),
+                                                )),
+                                            typeUser=="7" || phone==superUser?
+                                            IconButton(
+                                              color: orangeColor,
+                                              icon: Icon(
+                                                CupertinoIcons
+                                                    .xmark_circle_fill,
+                                                size: DM.p30,
                                               ),
+                                              onPressed: () {
+                                                setState(() {
+                                                  imageFile2 =
+                                                  null;
+                                                  image_two.text =
+                                                  "empty";
+                                                });
+                                              },
+                                            ):SizedBox(),
+                                          ],
+                                        )
+                                            : Container(
+                                          height: DM.p60,
+                                          width: DM.p160,
+                                          margin: EdgeInsets
+                                              .symmetric(
+                                              horizontal:
+                                              DM.p5),
+                                          child: ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                    BorderRadius
+                                                        .circular(DM
+                                                        .p10)),
+                                                padding: EdgeInsets
+                                                    .symmetric(
+                                                    vertical: DM
+                                                        .p20),
+                                                primary:
+                                                orangeColor),
+                                            onPressed: () async {
+                                              showDialog(
+                                                  context:
+                                                  context,
+                                                  builder:
+                                                      (context) {
+                                                    return Center(
+                                                      child:
+                                                      Container(
+                                                        color:
+                                                        whiteColor,
+                                                        child:
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                          MainAxisAlignment.center,
+                                                          children: [
+                                                            Container(
+                                                              margin:
+                                                              EdgeInsets.all(DM.p16),
+                                                              height:
+                                                              DM.p130,
+                                                              width:
+                                                              DM.p120,
+                                                              child: ElevatedButton(
+                                                                  style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                  onPressed: () async {
+                                                                    PickedFile? pickedFile = await ImagePicker().getImage(
+                                                                      source: ImageSource.gallery,
+                                                                      maxWidth: 800,
+                                                                      maxHeight: 1200,
+                                                                    );
+                                                                    setState(() {
+                                                                      if (pickedFile != null) {
+                                                                        imageFile2 = File(pickedFile!.path);
+                                                                        isFromNetwork2 = false;
+                                                                      }
+                                                                    });
+                                                                    Navigator.pop(context);
+                                                                  },
+                                                                  child: Text(
+                                                                    "Gallery",
+                                                                    style: TextStyle(fontSize: DM.p18),
+                                                                  )),
+                                                            ),
+                                                            Container(
+                                                              margin:
+                                                              EdgeInsets.all(DM.p16),
+                                                              height:
+                                                              DM.p130,
+                                                              width:
+                                                              DM.p120,
+                                                              child: ElevatedButton(
+                                                                  style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                  onPressed: () async {
+                                                                    PickedFile? pickedFile = await ImagePicker().getImage(
+                                                                      source: ImageSource.camera,
+                                                                      maxWidth: 800,
+                                                                      maxHeight: 1200,
+                                                                    );
+                                                                    setState(() {
+                                                                      if (pickedFile != null) {
+                                                                        isFromNetwork2 = false;
+                                                                        imageFile2 = File(pickedFile!.path);
+                                                                      }
+                                                                    });
+                                                                    Navigator.pop(context);
+                                                                  },
+                                                                  child: Text("Camera", style: TextStyle(fontSize: DM.p18))),
+                                                            )
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    );
+                                                  });
+                                            },
+                                            child: Text(
+                                              "Image 2",
+                                              textAlign: TextAlign
+                                                  .center,
+                                              style: TextStyle(
+                                                  color:
+                                                  fullWhiteColor,
+                                                  fontSize:
+                                                  DM.p15,
+                                                  fontWeight:
+                                                  FontWeight
+                                                      .bold),
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     ),
                             ],
@@ -1956,13 +2313,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                     thickness: DM.p1,
                                     color: blackFontColor,
                                   ),
-                                  Text(
-                                    "(Payable Pathology + Payable Radiology) = (${total_payable_pathology}+${total_payable_imaging}) =  ${total_payable_pathology + total_payable_imaging} /-",
+                                  type!="4" && phoneNumber==superUser?  Text(
+                                 "(Payable Pathology + Payable Radiology) = (${total_payable_pathology}+${total_payable_imaging}) =  ${total_payable_pathology + total_payable_imaging} /-",
                                     style: TextStyle(
                                         fontWeight: FontWeight.w800,
                                         fontSize: DM.p12,
                                         color: Color.fromARGB(255, 26, 1, 1)),
-                                  ),
+                                  ):SizedBox(),
                                 ],
                               ),
                             ),
@@ -2034,489 +2391,501 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           activate: false,
                         ),
 
-                        Padding(
-                          padding: EdgeInsets.all(DM.p5),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: DM.p100,
-                                child: Text(
-                                  "Admin Pathology Discount",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: DM.p14,
-                                      color: blackFontColor),
-                                ),
-                              ),
-                              SizedBox(
-                                width: DM.p5,
-                              ),
-                              Text(":"),
-                              SizedBox(
-                                width: DM.p10,
-                              ),
-                              Flexible(
-                                child: Container(
-                                  height: DM.p42,
-                                  child: TextFormField(
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (value) {
-                                      if (value.length != 0) {
-                                        setState(() {
-                                          calculationProcess();
-                                        });
-                                      }
-                                    },
-                                    controller: admin_pathology_discount,
-                                    decoration: InputDecoration(
-                                        errorStyle: TextStyle(fontSize: DM.p9),
-                                        focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                width: DM.p1,
-                                                color: orangeColor)),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              width: DM.p1,
-                                              color:
-                                                  orangeColor), //<-- SEE HERE
-                                        ),
-                                        filled: true,
-                                        fillColor: fullWhiteColor,
-                                        contentPadding: EdgeInsets.symmetric(
-                                            horizontal: DM.p10),
-                                        border: InputBorder.none,
-                                        hintText: "0",
-                                        hintStyle: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: DM.p14,
-                                        )),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
 
-                        Padding(
-                          padding: EdgeInsets.all(DM.p5),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: DM.p100,
-                                child: Text(
-                                  "Admin Radiology Discount",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: DM.p14,
-                                      color: blackFontColor),
-                                ),
-                              ),
-                              SizedBox(
-                                width: DM.p5,
-                              ),
-                              Text(":"),
-                              SizedBox(
-                                width: DM.p10,
-                              ),
-                              Flexible(
-                                child: Container(
-                                  height: DM.p42,
-                                  child: TextFormField(
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (value) {
-                                      if (value.length != 0) {
-                                        setState(() {
-                                          calculationProcess();
-                                        });
-                                      }
-                                    },
-                                    controller: admin_radiology_discount,
-                                    decoration: InputDecoration(
-                                        errorStyle: TextStyle(fontSize: DM.p9),
-                                        focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                width: DM.p1,
-                                                color: orangeColor)),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              width: DM.p1,
-                                              color:
-                                                  orangeColor), //<-- SEE HERE
-                                        ),
-                                        filled: true,
-                                        fillColor: fullWhiteColor,
-                                        contentPadding: EdgeInsets.symmetric(
-                                            horizontal: DM.p10),
-                                        border: InputBorder.none,
-                                        hintText: "0",
-                                        hintStyle: TextStyle(
-                                          color: Colors.grey,
+                    typeUser=="7"  || phoneNumber==superUser?
+                        Column(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(DM.p5),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: DM.p100,
+                                    child: Text(
+                                      "Admin Pathology Discount",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
                                           fontSize: DM.p14,
-                                        )),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        Padding(
-                          padding: EdgeInsets.all(DM.p5),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: DM.p100,
-                                child: Text(
-                                  "Total Admin Discount",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: DM.p14,
-                                      color: blackFontColor),
-                                ),
-                              ),
-                              SizedBox(
-                                width: DM.p5,
-                              ),
-                              Text(":"),
-                              SizedBox(
-                                width: DM.p10,
-                              ),
-                              Flexible(
-                                child: Container(
-                                  height: DM.p42,
-                                  child: TextFormField(
-                                    readOnly: true,
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (value) {
-                                      if (value.length != 0) {
-                                        setState(() {
-                                          calculationProcess();
-                                        });
-                                      }
-                                    },
-                                    controller: admin_discount,
-                                    decoration: InputDecoration(
-                                        errorStyle: TextStyle(fontSize: DM.p9),
-                                        focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                width: DM.p1,
-                                                color: orangeColor)),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              width: DM.p1,
-                                              color:
-                                                  orangeColor), //<-- SEE HERE
-                                        ),
-                                        filled: true,
-                                        fillColor: fullWhiteColor,
-                                        contentPadding: EdgeInsets.symmetric(
-                                            horizontal: DM.p10),
-                                        border: InputBorder.none,
-                                        hintText: "0",
-                                        hintStyle: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: DM.p14,
-                                        )),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        Padding(
-                          padding: EdgeInsets.all(DM.p5),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: DM.p100,
-                                child: Text(
-                                  "Agent Pathology Discount",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: DM.p14,
-                                      color: blackFontColor),
-                                ),
-                              ),
-                              SizedBox(
-                                width: DM.p5,
-                              ),
-                              Text(":"),
-                              SizedBox(
-                                width: DM.p10,
-                              ),
-                              Flexible(
-                                child: Container(
-                                  height: DM.p42,
-                                  child: TextFormField(
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (value) {
-                                      if (value.length != 0) {
-                                        setState(() {
-                                          calculationProcess();
-                                        });
-                                      }
-                                    },
-                                    controller: agent_pathology_discount,
-                                    decoration: InputDecoration(
-                                        errorStyle: TextStyle(fontSize: DM.p9),
-                                        focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                width: DM.p1,
-                                                color: orangeColor)),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              width: DM.p1,
-                                              color:
-                                                  orangeColor), //<-- SEE HERE
-                                        ),
-                                        filled: true,
-                                        fillColor: fullWhiteColor,
-                                        contentPadding: EdgeInsets.symmetric(
-                                            horizontal: DM.p10),
-                                        border: InputBorder.none,
-                                        hintText: "0",
-                                        hintStyle: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: DM.p14,
-                                        )),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        Padding(
-                          padding: EdgeInsets.all(DM.p5),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: DM.p100,
-                                child: Text(
-                                  "Agent Radiology Discount",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: DM.p14,
-                                      color: blackFontColor),
-                                ),
-                              ),
-                              SizedBox(
-                                width: DM.p5,
-                              ),
-                              Text(":"),
-                              SizedBox(
-                                width: DM.p10,
-                              ),
-                              Flexible(
-                                child: Container(
-                                  height: DM.p42,
-                                  child: TextFormField(
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (value) {
-                                      if (value.length != 0) {
-                                        setState(() {
-                                          calculationProcess();
-                                        });
-                                      }
-                                    },
-                                    controller: agent_radiology_discount,
-                                    decoration: InputDecoration(
-                                        errorStyle: TextStyle(fontSize: DM.p9),
-                                        focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                width: DM.p1,
-                                                color: orangeColor)),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              width: DM.p1,
-                                              color:
-                                                  orangeColor), //<-- SEE HERE
-                                        ),
-                                        filled: true,
-                                        fillColor: fullWhiteColor,
-                                        contentPadding: EdgeInsets.symmetric(
-                                            horizontal: DM.p10),
-                                        border: InputBorder.none,
-                                        hintText: "0",
-                                        hintStyle: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: DM.p14,
-                                        )),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        Padding(
-                          padding: EdgeInsets.all(DM.p5),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: DM.p100,
-                                child: Text(
-                                  "Total Agent Discount",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: DM.p14,
-                                      color: blackFontColor),
-                                ),
-                              ),
-                              SizedBox(
-                                width: DM.p5,
-                              ),
-                              Text(":"),
-                              SizedBox(
-                                width: DM.p10,
-                              ),
-                              Flexible(
-                                child: Container(
-                                  height: DM.p42,
-                                  child: TextFormField(
-                                    readOnly: true,
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (value) {
-                                      if (value.length != 0) {
-                                        setState(() {
-                                          calculationProcess();
-                                        });
-                                      }
-                                    },
-                                    controller: agent_discount,
-                                    decoration: InputDecoration(
-                                        errorStyle: TextStyle(fontSize: DM.p9),
-                                        focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                width: DM.p1,
-                                                color: orangeColor)),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              width: DM.p1,
-                                              color:
-                                                  orangeColor), //<-- SEE HERE
-                                        ),
-                                        filled: true,
-                                        fillColor: fullWhiteColor,
-                                        contentPadding: EdgeInsets.symmetric(
-                                            horizontal: DM.p10),
-                                        border: InputBorder.none,
-                                        hintText: "0",
-                                        hintStyle: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: DM.p14,
-                                        )),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        FormUserInfo(
-                          formKey: _formKey,
-                          textInputType: TextInputType.number,
-                          controller: agent_commission,
-                          title: "Agent Commission",
-                          value: "0",
-                          activate: true,
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(DM.p5),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: DM.p100,
-                                child: Text(
-                                  "Next Status",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: DM.p14,
-                                      color: Color.fromARGB(255, 26, 1, 1)),
-                                ),
-                              ),
-                              SizedBox(
-                                width: DM.p5,
-                              ),
-                              Text(":"),
-                              SizedBox(
-                                width: DM.p10,
-                              ),
-                              typeUser == "4" && phoneNumber != superUser
-                                  ? DropdownButton<String>(
-                                      hint: Text(
-                                          "${createReqController.status[int.parse(teststatus.text)]}",
-                                          style:
-                                              TextStyle(color: blackFontColor)),
-                                      items: <String>[
-                                        "PENDING",
-                                        "RECIEVED",
-                                      ].map((String value) {
-                                        return DropdownMenuItem<String>(
-                                          value: value,
-                                          child: Text(
-                                            "$value",
-                                            style: TextStyle(
-                                                color: blackFontColor),
-                                          ),
-                                        );
-                                      }).toList(),
-                                      onChanged: (newValue) {
-                                        setState(() {
-                                          teststatus.text = createReqController
-                                              .toStatus[newValue]
-                                              .toString();
-                                        });
-                                      },
-                                    )
-                                  : DropdownButton<String>(
-                                      hint: Text(
-                                          "${createReqController.status[int.parse(teststatus.text)]}",
-                                          style:
-                                              TextStyle(color: blackFontColor)),
-                                      items: <String>[
-                                        "PENDING",
-                                        "RECIEVED",
-                                        "COLLECTED",
-                                        "READY",
-                                        "R.RECIEVED",
-                                        "DELIVERED",
-                                        "CANCEL"
-                                      ].map((String value) {
-                                        return DropdownMenuItem<String>(
-                                          value: value,
-                                          child: Text(
-                                            "$value",
-                                            style: TextStyle(
-                                                color: blackFontColor),
-                                          ),
-                                        );
-                                      }).toList(),
-                                      onChanged: (newValue) {
-                                        setState(() {
-                                          teststatus.text = createReqController
-                                              .toStatus[newValue]
-                                              .toString();
-                                        });
-                                      },
+                                          color: blackFontColor),
                                     ),
-                            ],
-                          ),
-                        ),
-
+                                  ),
+                                  SizedBox(
+                                    width: DM.p5,
+                                  ),
+                                  Text(":"),
+                                  SizedBox(
+                                    width: DM.p10,
+                                  ),
+                                  Flexible(
+                                    child: Container(
+                                      height: DM.p42,
+                                      child: TextFormField(
+                                        keyboardType: TextInputType.number,
+                                        onChanged: (value) {
+                                          if (value.length != 0) {
+                                            setState(() {
+                                              calculationProcess();
+                                            });
+                                          }
+                                        },
+                                        controller: admin_pathology_discount,
+                                        decoration: InputDecoration(
+                                            errorStyle: TextStyle(fontSize: DM.p9),
+                                            focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    width: DM.p1,
+                                                    color: orangeColor)),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  width: DM.p1,
+                                                  color:
+                                                  orangeColor), //<-- SEE HERE
+                                            ),
+                                            filled: true,
+                                            fillColor: fullWhiteColor,
+                                            contentPadding: EdgeInsets.symmetric(
+                                                horizontal: DM.p10),
+                                            border: InputBorder.none,
+                                            hintText: "0",
+                                            hintStyle: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: DM.p14,
+                                            )),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(DM.p5),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: DM.p100,
+                                    child: Text(
+                                      "Admin Radiology Discount",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: DM.p14,
+                                          color: blackFontColor),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: DM.p5,
+                                  ),
+                                  Text(":"),
+                                  SizedBox(
+                                    width: DM.p10,
+                                  ),
+                                  Flexible(
+                                    child: Container(
+                                      height: DM.p42,
+                                      child: TextFormField(
+                                        keyboardType: TextInputType.number,
+                                        onChanged: (value) {
+                                          if (value.length != 0) {
+                                            setState(() {
+                                              calculationProcess();
+                                            });
+                                          }
+                                        },
+                                        controller: admin_radiology_discount,
+                                        decoration: InputDecoration(
+                                            errorStyle:
+                                                TextStyle(fontSize: DM.p9),
+                                            focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    width: DM.p1,
+                                                    color: orangeColor)),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  width: DM.p1,
+                                                  color:
+                                                      orangeColor), //<-- SEE HERE
+                                            ),
+                                            filled: true,
+                                            fillColor: fullWhiteColor,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    horizontal: DM.p10),
+                                            border: InputBorder.none,
+                                            hintText: "0",
+                                            hintStyle: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: DM.p14,
+                                            )),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(DM.p5),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: DM.p100,
+                                    child: Text(
+                                      "Total Admin Discount",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: DM.p14,
+                                          color: blackFontColor),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: DM.p5,
+                                  ),
+                                  Text(":"),
+                                  SizedBox(
+                                    width: DM.p10,
+                                  ),
+                                  Flexible(
+                                    child: Container(
+                                      height: DM.p42,
+                                      child: TextFormField(
+                                        readOnly: true,
+                                        keyboardType: TextInputType.number,
+                                        onChanged: (value) {
+                                          if (value.length != 0) {
+                                            setState(() {
+                                              calculationProcess();
+                                            });
+                                          }
+                                        },
+                                        controller: admin_discount,
+                                        decoration: InputDecoration(
+                                            errorStyle:
+                                                TextStyle(fontSize: DM.p9),
+                                            focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    width: DM.p1,
+                                                    color: orangeColor)),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  width: DM.p1,
+                                                  color:
+                                                      orangeColor), //<-- SEE HERE
+                                            ),
+                                            filled: true,
+                                            fillColor: fullWhiteColor,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    horizontal: DM.p10),
+                                            border: InputBorder.none,
+                                            hintText: "0",
+                                            hintStyle: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: DM.p14,
+                                            )),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(DM.p5),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: DM.p100,
+                                    child: Text(
+                                      "Agent Pathology Discount",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: DM.p14,
+                                          color: blackFontColor),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: DM.p5,
+                                  ),
+                                  Text(":"),
+                                  SizedBox(
+                                    width: DM.p10,
+                                  ),
+                                  Flexible(
+                                    child: Container(
+                                      height: DM.p42,
+                                      child: TextFormField(
+                                        keyboardType: TextInputType.number,
+                                        onChanged: (value) {
+                                          if (value.length != 0) {
+                                            setState(() {
+                                              calculationProcess();
+                                            });
+                                          }
+                                        },
+                                        controller: agent_pathology_discount,
+                                        decoration: InputDecoration(
+                                            errorStyle:
+                                                TextStyle(fontSize: DM.p9),
+                                            focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    width: DM.p1,
+                                                    color: orangeColor)),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  width: DM.p1,
+                                                  color:
+                                                      orangeColor), //<-- SEE HERE
+                                            ),
+                                            filled: true,
+                                            fillColor: fullWhiteColor,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    horizontal: DM.p10),
+                                            border: InputBorder.none,
+                                            hintText: "0",
+                                            hintStyle: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: DM.p14,
+                                            )),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(DM.p5),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: DM.p100,
+                                    child: Text(
+                                      "Agent Radiology Discount",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: DM.p14,
+                                          color: blackFontColor),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: DM.p5,
+                                  ),
+                                  Text(":"),
+                                  SizedBox(
+                                    width: DM.p10,
+                                  ),
+                                  Flexible(
+                                    child: Container(
+                                      height: DM.p42,
+                                      child: TextFormField(
+                                        keyboardType: TextInputType.number,
+                                        onChanged: (value) {
+                                          if (value.length != 0) {
+                                            setState(() {
+                                              calculationProcess();
+                                            });
+                                          }
+                                        },
+                                        controller: agent_radiology_discount,
+                                        decoration: InputDecoration(
+                                            errorStyle:
+                                                TextStyle(fontSize: DM.p9),
+                                            focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    width: DM.p1,
+                                                    color: orangeColor)),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  width: DM.p1,
+                                                  color:
+                                                      orangeColor), //<-- SEE HERE
+                                            ),
+                                            filled: true,
+                                            fillColor: fullWhiteColor,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    horizontal: DM.p10),
+                                            border: InputBorder.none,
+                                            hintText: "0",
+                                            hintStyle: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: DM.p14,
+                                            )),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(DM.p5),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: DM.p100,
+                                    child: Text(
+                                      "Total Agent Discount",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: DM.p14,
+                                          color: blackFontColor),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: DM.p5,
+                                  ),
+                                  Text(":"),
+                                  SizedBox(
+                                    width: DM.p10,
+                                  ),
+                                  Flexible(
+                                    child: Container(
+                                      height: DM.p42,
+                                      child: TextFormField(
+                                        readOnly: true,
+                                        keyboardType: TextInputType.number,
+                                        onChanged: (value) {
+                                          if (value.length != 0) {
+                                            setState(() {
+                                              calculationProcess();
+                                            });
+                                          }
+                                        },
+                                        controller: agent_discount,
+                                        decoration: InputDecoration(
+                                            errorStyle:
+                                                TextStyle(fontSize: DM.p9),
+                                            focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    width: DM.p1,
+                                                    color: orangeColor)),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  width: DM.p1,
+                                                  color:
+                                                      orangeColor), //<-- SEE HERE
+                                            ),
+                                            filled: true,
+                                            fillColor: fullWhiteColor,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    horizontal: DM.p10),
+                                            border: InputBorder.none,
+                                            hintText: "0",
+                                            hintStyle: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: DM.p14,
+                                            )),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            FormUserInfo(
+                              formKey: _formKey,
+                              textInputType: TextInputType.number,
+                              controller: agent_commission,
+                              title: "Agent Commission",
+                              value: "0",
+                              activate: true,
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(DM.p5),
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    width: DM.p100,
+                                    child: Text(
+                                      "Next Status",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: DM.p14,
+                                          color: Color.fromARGB(255, 26, 1, 1)),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: DM.p5,
+                                  ),
+                                  Text(":"),
+                                  SizedBox(
+                                    width: DM.p10,
+                                  ),
+                                  typeUser == "4" && phoneNumber != superUser
+                                      ? DropdownButton<String>(
+                                          hint: Text(
+                                              "${createReqController.status[int.parse(teststatus.text)]}",
+                                              style: TextStyle(
+                                                  color: blackFontColor)),
+                                          items: <String>[
+                                            "PENDING",
+                                            "RECIEVED",
+                                          ].map((String value) {
+                                            return DropdownMenuItem<String>(
+                                              value: value,
+                                              child: Text(
+                                                "$value",
+                                                style: TextStyle(
+                                                    color: blackFontColor),
+                                              ),
+                                            );
+                                          }).toList(),
+                                          onChanged: (newValue) {
+                                            setState(() {
+                                              teststatus.text =
+                                                  createReqController
+                                                      .toStatus[newValue]
+                                                      .toString();
+                                            });
+                                          },
+                                        )
+                                      : DropdownButton<String>(
+                                          hint: Text(
+                                              "${createReqController.status[int.parse(teststatus.text)]}",
+                                              style: TextStyle(
+                                                  color: blackFontColor)),
+                                          items: <String>[
+                                            "PENDING",
+                                            "RECIEVED",
+                                            "PRECOLLECTED",
+                                            "COLLECTED",
+                                            "READY",
+                                            "R.RECIEVED",
+                                            "DELIVERED",
+                                            "CANCEL"
+                                          ].map((String value) {
+                                            return DropdownMenuItem<String>(
+                                              value: value,
+                                              child: Text(
+                                                "$value",
+                                                style: TextStyle(
+                                                    color: blackFontColor),
+                                              ),
+                                            );
+                                          }).toList(),
+                                          onChanged: (newValue) {
+                                            setState(() {
+                                              teststatus.text =
+                                                  createReqController
+                                                      .toStatus[newValue]
+                                                      .toString();
+                                            });
+                                          },
+                                        ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ):SizedBox(),
                         Padding(
                           padding: EdgeInsets.all(DM.p5),
                           child: Row(
@@ -2892,7 +3261,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                       }).toList(),
                                       onChanged: (newValue) {
                                         setState(() {
-                                          pathologyAssigningPhone = newValue!;
+                                          if (widget.testEachRequest!
+                                                  .pathology_done !=
+                                              true) {
+                                            pathologyAssigningPhone = newValue!;
+                                          }
                                         });
                                       },
                                     ),
@@ -2943,7 +3316,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                       }).toList(),
                                       onChanged: (newValue) {
                                         setState(() {
-                                          radiologyAssigningPhone = newValue!;
+                                          if (widget.testEachRequest!
+                                                  .radiology_done !=
+                                              true) {
+                                            radiologyAssigningPhone = newValue!;
+                                          }
                                         });
                                       },
                                     ),
@@ -2962,7 +3339,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                     SizedBox(
                                       width: DM.p100,
                                       child: Text(
-                                        "Pathhology done",
+                                        "Pathology Collected",
                                         style: TextStyle(
                                             fontWeight: FontWeight.w500,
                                             fontSize: DM.p14,
@@ -3010,7 +3387,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                     SizedBox(
                                       width: DM.p100,
                                       child: Text(
-                                        "Radiology done",
+                                        "Radiology Collected",
                                         style: TextStyle(
                                             fontWeight: FontWeight.w500,
                                             fontSize: DM.p14,
@@ -3376,7 +3753,10 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                 padding: EdgeInsets.all(16),
                                                 margin: EdgeInsets.all(16),
                                                 child: Text(
-                                                  "Are you want to submit to ${createReqController.status[int.parse(teststatus.text)]}?",
+                                                    createReqController.status[int.parse(teststatus.text)]=="PRECOLLECTED"?
+                                                    "Are you want to submit to ${createReqController.status[3]}?":
+                                                    "Are you want to submit to ${createReqController.status[int.parse(teststatus.text)]}?"
+                                                  ,
                                                   style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.w400,
@@ -3431,7 +3811,6 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                             uploadImage();
 
                                                             //cr_controller.filter_testItemList.removeAt(index);
-
                                                           }
                                                         }
                                                       },

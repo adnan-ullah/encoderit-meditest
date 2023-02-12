@@ -182,6 +182,15 @@ class _StatusRequestListState extends State<StatusRequestList>
                     ),
                     Tab(
                       child: Text(
+                        "${cr_controller.status[8]}",
+                        style: TextStyle(
+                            color: blackFontColor,
+                            fontSize: DM.p11,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Tab(
+                      child: Text(
                         "${cr_controller.status[3]}",
                         style: TextStyle(
                             color: blackFontColor,
@@ -236,6 +245,8 @@ class _StatusRequestListState extends State<StatusRequestList>
                         statusKey: cr_controller.status[1], isButton: false),
                     RequestListTabView(
                         statusKey: cr_controller.status[2], isButton: false),
+                    RequestListTabView(
+                        statusKey: cr_controller.status[8], isButton: false),
                     RequestListTabView(
                         statusKey: cr_controller.status[3], isButton: true),
                     RequestListTabView(

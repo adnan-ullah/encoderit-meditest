@@ -161,9 +161,11 @@ class _TestRequestCreateTypeThreeState
         TestData testData =
             TestData.fromJson(json.decode(jsonEncode(ds.value)));
 
-        testItemList.add(testData);
-        if (testItemListWithSelected[testData.id] != true)
-          testItemListWithSelected[testData.id] = false;
+     setState(() {
+       testItemList.add(testData);
+       if (testItemListWithSelected[testData.id] != true)
+         testItemListWithSelected[testData.id] = false;
+     });
 
         print("HEREEEE");
 
@@ -186,12 +188,12 @@ class _TestRequestCreateTypeThreeState
         AdminUserModel testData =
             AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
 
-        
+        setState(() {
           if (testData.type == "4") {
             collectionUserList.add(testData);
             assigningMapping[testData.phone] = testData.name;
           }
-     
+        });
 
         adminUserList.add(testData);
       }
@@ -503,9 +505,9 @@ class _TestRequestCreateTypeThreeState
     }
 
 // pre collected modification
-    if (pathologyDone && radiologyDone) {
-      teststatus.text = "7";
-    }
+//     if (pathologyDone && radiologyDone) {
+//       teststatus.text = "7";
+//     }
 
     updateTestRequestItem = TestDataRequest(
       id: widget.testEachRequest!.id.toString(),
@@ -1170,6 +1172,89 @@ class _TestRequestCreateTypeThreeState
                             ],
                           ),
                         ),
+
+                        Padding(
+                          padding: EdgeInsets.all(DM.p1),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Discount Card\n(যদি থাকে)",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+
+                              widget.testEachRequest!.imageDiscountFile != null
+                                  ? Column(
+                                children: [
+                                  //MyphotoView for Form
+                                  Container(
+                                      height: DM.p80,
+                                      width: DM.p80,
+                                      child:
+                                      InkWell(
+                                        onTap:
+                                            () {
+                                          showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return MyDialogView(
+                                                    myChild: MyPhotoView(
+                                                      image:  widget.testEachRequest!.imageDiscountFile .toString(),
+                                                      imageType: "Network",
+                                                    ));
+                                              });
+                                        },
+                                        child:
+                                        Container(
+                                          child:
+                                          Image.network(
+                                            widget.testEachRequest!.imageDiscountFile.toString()!,
+                                            fit:
+                                            BoxFit.cover,
+                                          ),
+                                        ),
+                                      )
+
+                                  ),
+                                  typeUser=="7" || phone==superUser?
+                                  IconButton(
+                                    color: orangeColor,
+                                    icon: Icon(
+                                      CupertinoIcons
+                                          .xmark_circle_fill,
+                                      size: DM.p30,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        imageFile1 =
+                                        null;
+                                        image_one.text =
+                                        "empty";
+                                      });
+                                    },
+                                  ):SizedBox(),
+                                ],
+                              )
+                                  :SizedBox()
+                            ],
+                          ),
+                        ),
+
+
                         FormUserInfo(
                           formKey: _formKey,
                           textInputType: TextInputType.name,
@@ -2021,15 +2106,15 @@ class _TestRequestCreateTypeThreeState
                             ],
                           ),
                         ),
-                        // FormUserInfo(
-                        //   formKey: _formKey,
-                        //   validatorField: validateString,
-                        //   textInputType: TextInputType.number,
-                        //   controller: servicecharge,
-                        //   title: "Collection charge",
-                        //   value: "20",
-                        //   activate: false,
-                        // ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          validatorField: validateString,
+                          textInputType: TextInputType.number,
+                          controller: servicecharge,
+                          title: "Collection charge",
+                          value: "20",
+                          activate: false,
+                        ),
 
                         // FormUserInfo(
                         //   formKey: _formKey,
@@ -2041,416 +2126,416 @@ class _TestRequestCreateTypeThreeState
                         //   activate: false,
                         // ),
 
-                        // FormUserInfo(
-                        //   formKey: _formKey,
-                        //   validatorField: validateString,
-                        //   textInputType: TextInputType.number,
-                        //   controller: totalprice,
-                        //   title: "Total price",
-                        //   value: "0",
-                        //   activate: false,
-                        // ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          validatorField: validateString,
+                          textInputType: TextInputType.number,
+                          controller: totalprice,
+                          title: "Total price",
+                          value: "0",
+                          activate: false,
+                        ),
 
-                        // Padding(
-                        //   padding: EdgeInsets.all(DM.p5),
-                        //   child: Row(
-                        //     mainAxisAlignment: MainAxisAlignment.start,
-                        //     crossAxisAlignment: CrossAxisAlignment.center,
-                        //     children: [
-                        //       SizedBox(
-                        //         width: DM.p100,
-                        //         child: Text(
-                        //           "Admin Pathology Discount",
-                        //           style: TextStyle(
-                        //               fontWeight: FontWeight.w500,
-                        //               fontSize: DM.p14,
-                        //               color: blackFontColor),
-                        //         ),
-                        //       ),
-                        //       SizedBox(
-                        //         width: DM.p5,
-                        //       ),
-                        //       Text(":"),
-                        //       SizedBox(
-                        //         width: DM.p10,
-                        //       ),
-                        //       Flexible(
-                        //         child: Container(
-                        //           height: DM.p42,
-                        //           child: TextFormField(
-                        //             keyboardType: TextInputType.number,
-                        //             onChanged: (value) {
-                        //               if (value.length != 0) {
-                        //                 setState(() {
-                        //                   calculationProcess();
-                        //                 });
-                        //               }
-                        //             },
-                        //             controller: admin_pathology_discount,
-                        //             decoration: InputDecoration(
-                        //                 errorStyle: TextStyle(fontSize: DM.p9),
-                        //                 focusedBorder: OutlineInputBorder(
-                        //                     borderSide: BorderSide(
-                        //                         width: DM.p1,
-                        //                         color: orangeColor)),
-                        //                 enabledBorder: OutlineInputBorder(
-                        //                   borderSide: BorderSide(
-                        //                       width: DM.p1,
-                        //                       color:
-                        //                           orangeColor), //<-- SEE HERE
-                        //                 ),
-                        //                 filled: true,
-                        //                 fillColor: fullWhiteColor,
-                        //                 contentPadding: EdgeInsets.symmetric(
-                        //                     horizontal: DM.p10),
-                        //                 border: InputBorder.none,
-                        //                 hintText: "0",
-                        //                 hintStyle: TextStyle(
-                        //                   color: Colors.grey,
-                        //                   fontSize: DM.p14,
-                        //                 )),
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Admin Pathology Discount",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      if (value.length != 0) {
+                                        setState(() {
+                                          calculationProcess();
+                                        });
+                                      }
+                                    },
+                                    controller: admin_pathology_discount,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
-                        // Padding(
-                        //   padding: EdgeInsets.all(DM.p5),
-                        //   child: Row(
-                        //     mainAxisAlignment: MainAxisAlignment.start,
-                        //     crossAxisAlignment: CrossAxisAlignment.center,
-                        //     children: [
-                        //       SizedBox(
-                        //         width: DM.p100,
-                        //         child: Text(
-                        //           "Admin Radiology Discount",
-                        //           style: TextStyle(
-                        //               fontWeight: FontWeight.w500,
-                        //               fontSize: DM.p14,
-                        //               color: blackFontColor),
-                        //         ),
-                        //       ),
-                        //       SizedBox(
-                        //         width: DM.p5,
-                        //       ),
-                        //       Text(":"),
-                        //       SizedBox(
-                        //         width: DM.p10,
-                        //       ),
-                        //       Flexible(
-                        //         child: Container(
-                        //           height: DM.p42,
-                        //           child: TextFormField(
-                        //             keyboardType: TextInputType.number,
-                        //             onChanged: (value) {
-                        //               if (value.length != 0) {
-                        //                 setState(() {
-                        //                   calculationProcess();
-                        //                 });
-                        //               }
-                        //             },
-                        //             controller: admin_radiology_discount,
-                        //             decoration: InputDecoration(
-                        //                 errorStyle: TextStyle(fontSize: DM.p9),
-                        //                 focusedBorder: OutlineInputBorder(
-                        //                     borderSide: BorderSide(
-                        //                         width: DM.p1,
-                        //                         color: orangeColor)),
-                        //                 enabledBorder: OutlineInputBorder(
-                        //                   borderSide: BorderSide(
-                        //                       width: DM.p1,
-                        //                       color:
-                        //                           orangeColor), //<-- SEE HERE
-                        //                 ),
-                        //                 filled: true,
-                        //                 fillColor: fullWhiteColor,
-                        //                 contentPadding: EdgeInsets.symmetric(
-                        //                     horizontal: DM.p10),
-                        //                 border: InputBorder.none,
-                        //                 hintText: "0",
-                        //                 hintStyle: TextStyle(
-                        //                   color: Colors.grey,
-                        //                   fontSize: DM.p14,
-                        //                 )),
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Admin Radiology Discount",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      if (value.length != 0) {
+                                        setState(() {
+                                          calculationProcess();
+                                        });
+                                      }
+                                    },
+                                    controller: admin_radiology_discount,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
-                        // Padding(
-                        //   padding: EdgeInsets.all(DM.p5),
-                        //   child: Row(
-                        //     mainAxisAlignment: MainAxisAlignment.start,
-                        //     crossAxisAlignment: CrossAxisAlignment.center,
-                        //     children: [
-                        //       SizedBox(
-                        //         width: DM.p100,
-                        //         child: Text(
-                        //           "Total Admin Discount",
-                        //           style: TextStyle(
-                        //               fontWeight: FontWeight.w500,
-                        //               fontSize: DM.p14,
-                        //               color: blackFontColor),
-                        //         ),
-                        //       ),
-                        //       SizedBox(
-                        //         width: DM.p5,
-                        //       ),
-                        //       Text(":"),
-                        //       SizedBox(
-                        //         width: DM.p10,
-                        //       ),
-                        //       Flexible(
-                        //         child: Container(
-                        //           height: DM.p42,
-                        //           child: TextFormField(
-                        //             readOnly: true,
-                        //             keyboardType: TextInputType.number,
-                        //             onChanged: (value) {
-                        //               if (value.length != 0) {
-                        //                 setState(() {
-                        //                   calculationProcess();
-                        //                 });
-                        //               }
-                        //             },
-                        //             controller: admin_discount,
-                        //             decoration: InputDecoration(
-                        //                 errorStyle: TextStyle(fontSize: DM.p9),
-                        //                 focusedBorder: OutlineInputBorder(
-                        //                     borderSide: BorderSide(
-                        //                         width: DM.p1,
-                        //                         color: orangeColor)),
-                        //                 enabledBorder: OutlineInputBorder(
-                        //                   borderSide: BorderSide(
-                        //                       width: DM.p1,
-                        //                       color:
-                        //                           orangeColor), //<-- SEE HERE
-                        //                 ),
-                        //                 filled: true,
-                        //                 fillColor: fullWhiteColor,
-                        //                 contentPadding: EdgeInsets.symmetric(
-                        //                     horizontal: DM.p10),
-                        //                 border: InputBorder.none,
-                        //                 hintText: "0",
-                        //                 hintStyle: TextStyle(
-                        //                   color: Colors.grey,
-                        //                   fontSize: DM.p14,
-                        //                 )),
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Total Admin Discount",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    readOnly: true,
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      if (value.length != 0) {
+                                        setState(() {
+                                          calculationProcess();
+                                        });
+                                      }
+                                    },
+                                    controller: admin_discount,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
-                        // Padding(
-                        //   padding: EdgeInsets.all(DM.p5),
-                        //   child: Row(
-                        //     mainAxisAlignment: MainAxisAlignment.start,
-                        //     crossAxisAlignment: CrossAxisAlignment.center,
-                        //     children: [
-                        //       SizedBox(
-                        //         width: DM.p100,
-                        //         child: Text(
-                        //           "Agent Pathology Discount",
-                        //           style: TextStyle(
-                        //               fontWeight: FontWeight.w500,
-                        //               fontSize: DM.p14,
-                        //               color: blackFontColor),
-                        //         ),
-                        //       ),
-                        //       SizedBox(
-                        //         width: DM.p5,
-                        //       ),
-                        //       Text(":"),
-                        //       SizedBox(
-                        //         width: DM.p10,
-                        //       ),
-                        //       Flexible(
-                        //         child: Container(
-                        //           height: DM.p42,
-                        //           child: TextFormField(
-                        //             keyboardType: TextInputType.number,
-                        //             onChanged: (value) {
-                        //               if (value.length != 0) {
-                        //                 setState(() {
-                        //                   calculationProcess();
-                        //                 });
-                        //               }
-                        //             },
-                        //             controller: agent_pathology_discount,
-                        //             decoration: InputDecoration(
-                        //                 errorStyle: TextStyle(fontSize: DM.p9),
-                        //                 focusedBorder: OutlineInputBorder(
-                        //                     borderSide: BorderSide(
-                        //                         width: DM.p1,
-                        //                         color: orangeColor)),
-                        //                 enabledBorder: OutlineInputBorder(
-                        //                   borderSide: BorderSide(
-                        //                       width: DM.p1,
-                        //                       color:
-                        //                           orangeColor), //<-- SEE HERE
-                        //                 ),
-                        //                 filled: true,
-                        //                 fillColor: fullWhiteColor,
-                        //                 contentPadding: EdgeInsets.symmetric(
-                        //                     horizontal: DM.p10),
-                        //                 border: InputBorder.none,
-                        //                 hintText: "0",
-                        //                 hintStyle: TextStyle(
-                        //                   color: Colors.grey,
-                        //                   fontSize: DM.p14,
-                        //                 )),
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Agent Pathology Discount",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      if (value.length != 0) {
+                                        setState(() {
+                                          calculationProcess();
+                                        });
+                                      }
+                                    },
+                                    controller: agent_pathology_discount,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
-                        // Padding(
-                        //   padding: EdgeInsets.all(DM.p5),
-                        //   child: Row(
-                        //     mainAxisAlignment: MainAxisAlignment.start,
-                        //     crossAxisAlignment: CrossAxisAlignment.center,
-                        //     children: [
-                        //       SizedBox(
-                        //         width: DM.p100,
-                        //         child: Text(
-                        //           "Agent Radiology Discount",
-                        //           style: TextStyle(
-                        //               fontWeight: FontWeight.w500,
-                        //               fontSize: DM.p14,
-                        //               color: blackFontColor),
-                        //         ),
-                        //       ),
-                        //       SizedBox(
-                        //         width: DM.p5,
-                        //       ),
-                        //       Text(":"),
-                        //       SizedBox(
-                        //         width: DM.p10,
-                        //       ),
-                        //       Flexible(
-                        //         child: Container(
-                        //           height: DM.p42,
-                        //           child: TextFormField(
-                        //             keyboardType: TextInputType.number,
-                        //             onChanged: (value) {
-                        //               if (value.length != 0) {
-                        //                 setState(() {
-                        //                   calculationProcess();
-                        //                 });
-                        //               }
-                        //             },
-                        //             controller: agent_radiology_discount,
-                        //             decoration: InputDecoration(
-                        //                 errorStyle: TextStyle(fontSize: DM.p9),
-                        //                 focusedBorder: OutlineInputBorder(
-                        //                     borderSide: BorderSide(
-                        //                         width: DM.p1,
-                        //                         color: orangeColor)),
-                        //                 enabledBorder: OutlineInputBorder(
-                        //                   borderSide: BorderSide(
-                        //                       width: DM.p1,
-                        //                       color:
-                        //                           orangeColor), //<-- SEE HERE
-                        //                 ),
-                        //                 filled: true,
-                        //                 fillColor: fullWhiteColor,
-                        //                 contentPadding: EdgeInsets.symmetric(
-                        //                     horizontal: DM.p10),
-                        //                 border: InputBorder.none,
-                        //                 hintText: "0",
-                        //                 hintStyle: TextStyle(
-                        //                   color: Colors.grey,
-                        //                   fontSize: DM.p14,
-                        //                 )),
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Agent Radiology Discount",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      if (value.length != 0) {
+                                        setState(() {
+                                          calculationProcess();
+                                        });
+                                      }
+                                    },
+                                    controller: agent_radiology_discount,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
-                        // Padding(
-                        //   padding: EdgeInsets.all(DM.p5),
-                        //   child: Row(
-                        //     mainAxisAlignment: MainAxisAlignment.start,
-                        //     crossAxisAlignment: CrossAxisAlignment.center,
-                        //     children: [
-                        //       SizedBox(
-                        //         width: DM.p100,
-                        //         child: Text(
-                        //           "Total Agent Discount",
-                        //           style: TextStyle(
-                        //               fontWeight: FontWeight.w500,
-                        //               fontSize: DM.p14,
-                        //               color: blackFontColor),
-                        //         ),
-                        //       ),
-                        //       SizedBox(
-                        //         width: DM.p5,
-                        //       ),
-                        //       Text(":"),
-                        //       SizedBox(
-                        //         width: DM.p10,
-                        //       ),
-                        //       Flexible(
-                        //         child: Container(
-                        //           height: DM.p42,
-                        //           child: TextFormField(
-                        //             readOnly: true,
-                        //             keyboardType: TextInputType.number,
-                        //             onChanged: (value) {
-                        //               if (value.length != 0) {
-                        //                 setState(() {
-                        //                   calculationProcess();
-                        //                 });
-                        //               }
-                        //             },
-                        //             controller: agent_discount,
-                        //             decoration: InputDecoration(
-                        //                 errorStyle: TextStyle(fontSize: DM.p9),
-                        //                 focusedBorder: OutlineInputBorder(
-                        //                     borderSide: BorderSide(
-                        //                         width: DM.p1,
-                        //                         color: orangeColor)),
-                        //                 enabledBorder: OutlineInputBorder(
-                        //                   borderSide: BorderSide(
-                        //                       width: DM.p1,
-                        //                       color:
-                        //                           orangeColor), //<-- SEE HERE
-                        //                 ),
-                        //                 filled: true,
-                        //                 fillColor: fullWhiteColor,
-                        //                 contentPadding: EdgeInsets.symmetric(
-                        //                     horizontal: DM.p10),
-                        //                 border: InputBorder.none,
-                        //                 hintText: "0",
-                        //                 hintStyle: TextStyle(
-                        //                   color: Colors.grey,
-                        //                   fontSize: DM.p14,
-                        //                 )),
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Total Agent Discount",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    readOnly: true,
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      if (value.length != 0) {
+                                        setState(() {
+                                          calculationProcess();
+                                        });
+                                      }
+                                    },
+                                    controller: agent_discount,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
-                        // FormUserInfo(
-                        //   formKey: _formKey,
-                        //   textInputType: TextInputType.number,
-                        //   controller: agent_commission,
-                        //   title: "Agent Commission",
-                        //   value: "0",
-                        //   activate: true,
-                        // ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          textInputType: TextInputType.number,
+                          controller: agent_commission,
+                          title: "Agent Commission",
+                          value: "0",
+                          activate: true,
+                        ),
                         Padding(
                           padding: EdgeInsets.all(DM.p5),
                           child: Row(
@@ -2479,10 +2564,11 @@ class _TestRequestCreateTypeThreeState
                                 items: <String>[
                                   "PENDING",
                                   "RECIEVED",
-                                  // "COLLECTED",
-                                  // "READY",
-                                  // "R.RECIEVED",
-                                  // "DELIVERED",
+                                  "PRECOLLECTED",
+                                  "COLLECTED",
+                                  "READY",
+                                  "R.RECIEVED",
+                                  "DELIVERED",
                                   "CANCEL"
                                 ].map((String value) {
                                   return DropdownMenuItem<String>(
@@ -2505,101 +2591,101 @@ class _TestRequestCreateTypeThreeState
                           ),
                         ),
 
-                        // Padding(
-                        //   padding: EdgeInsets.all(DM.p5),
-                        //   child: Row(
-                        //     mainAxisAlignment: MainAxisAlignment.start,
-                        //     crossAxisAlignment: CrossAxisAlignment.center,
-                        //     children: [
-                        //       SizedBox(
-                        //         width: DM.p100,
-                        //         child: Text(
-                        //           "Delivery Date",
-                        //           style: TextStyle(
-                        //               fontWeight: FontWeight.w500,
-                        //               fontSize: DM.p14,
-                        //               color: blackFontColor),
-                        //         ),
-                        //       ),
-                        //       SizedBox(
-                        //         width: DM.p5,
-                        //       ),
-                        //       Text(":"),
-                        //       SizedBox(
-                        //         width: DM.p10,
-                        //       ),
-                        //       Flexible(
-                        //         child: Container(
-                        //           height: DM.p42,
-                        //           child: InkWell(
-                        //             onTap: () async {
-                        //               print("ADNANN");
-                        //               final DateTime? picked =
-                        //                   await showDatePicker(
-                        //                       context: context,
-                        //                       initialDate: DateTime
-                        //                           .fromMillisecondsSinceEpoch(
-                        //                               dateTime_delivery),
-                        //                       initialDatePickerMode:
-                        //                           DatePickerMode.day,
-                        //                       firstDate:
-                        //                           DateTime
-                        //                               .fromMillisecondsSinceEpoch(
-                        //                                   1669831200000),
-                        //                       lastDate: DateTime
-                        //                           .fromMillisecondsSinceEpoch(
-                        //                               1922292000000));
-                        //               if (picked != null)
-                        //                 setState(() {
-                        //                   delivery_date.text =
-                        //                       DateFormat.yMMMd().format(picked);
-                        //                   print(picked.millisecondsSinceEpoch);
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Delivery Date",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: InkWell(
+                                    onTap: () async {
+                                      print("ADNANN");
+                                      final DateTime? picked =
+                                          await showDatePicker(
+                                              context: context,
+                                              initialDate: DateTime
+                                                  .fromMillisecondsSinceEpoch(
+                                                      dateTime_delivery),
+                                              initialDatePickerMode:
+                                                  DatePickerMode.day,
+                                              firstDate:
+                                                  DateTime
+                                                      .fromMillisecondsSinceEpoch(
+                                                          1669831200000),
+                                              lastDate: DateTime
+                                                  .fromMillisecondsSinceEpoch(
+                                                      1922292000000));
+                                      if (picked != null)
+                                        setState(() {
+                                          delivery_date.text =
+                                              DateFormat.yMMMd().format(picked);
+                                          print(picked.millisecondsSinceEpoch);
 
-                        //                   dateTime_delivery =
-                        //                       picked.millisecondsSinceEpoch;
-                        //                 });
-                        //             },
-                        //             child: IgnorePointer(
-                        //               child: TextFormField(
-                        //                 controller: delivery_date,
-                        //                 decoration: InputDecoration(
-                        //                     errorStyle:
-                        //                         TextStyle(fontSize: DM.p9),
-                        //                     // focusedErrorBorder:
-                        //                     //     OutlineInputBorder(
-                        //                     //         borderSide: BorderSide(
-                        //                     //             width: DM.p1,
-                        //                     //             color:
-                        //                     //                 orangeColor)),
-                        //                     focusedBorder: OutlineInputBorder(
-                        //                         borderSide: BorderSide(
-                        //                             width: DM.p1,
-                        //                             color: orangeColor)),
-                        //                     enabledBorder: OutlineInputBorder(
-                        //                       borderSide: BorderSide(
-                        //                           width: DM.p1,
-                        //                           color:
-                        //                               orangeColor), //<-- SEE HERE
-                        //                     ),
-                        //                     filled: true,
-                        //                     fillColor: fullWhiteColor,
-                        //                     contentPadding:
-                        //                         EdgeInsets.symmetric(
-                        //                             horizontal: DM.p10),
-                        //                     border: InputBorder.none,
-                        //                     hintText: "Ex:Chittagong",
-                        //                     hintStyle: TextStyle(
-                        //                       color: Colors.grey,
-                        //                       fontSize: DM.p14,
-                        //                     )),
-                        //               ),
-                        //             ),
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
+                                          dateTime_delivery =
+                                              picked.millisecondsSinceEpoch;
+                                        });
+                                    },
+                                    child: IgnorePointer(
+                                      child: TextFormField(
+                                        controller: delivery_date,
+                                        decoration: InputDecoration(
+                                            errorStyle:
+                                                TextStyle(fontSize: DM.p9),
+                                            // focusedErrorBorder:
+                                            //     OutlineInputBorder(
+                                            //         borderSide: BorderSide(
+                                            //             width: DM.p1,
+                                            //             color:
+                                            //                 orangeColor)),
+                                            focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    width: DM.p1,
+                                                    color: orangeColor)),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  width: DM.p1,
+                                                  color:
+                                                      orangeColor), //<-- SEE HERE
+                                            ),
+                                            filled: true,
+                                            fillColor: fullWhiteColor,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    horizontal: DM.p10),
+                                            border: InputBorder.none,
+                                            hintText: "Ex:Chittagong",
+                                            hintStyle: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: DM.p14,
+                                            )),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
                         FormUserInfo(
                           formKey: _formKey,
@@ -2610,90 +2696,90 @@ class _TestRequestCreateTypeThreeState
                           activate: false,
                         ),
 
-                        // Padding(
-                        //   padding: EdgeInsets.all(DM.p5),
-                        //   child: Row(
-                        //     mainAxisAlignment: MainAxisAlignment.start,
-                        //     crossAxisAlignment: CrossAxisAlignment.center,
-                        //     children: [
-                        //       SizedBox(
-                        //         width: DM.p100,
-                        //         child: Text(
-                        //           "Advanced",
-                        //           style: TextStyle(
-                        //               fontWeight: FontWeight.w500,
-                        //               fontSize: DM.p14,
-                        //               color: blackFontColor),
-                        //         ),
-                        //       ),
-                        //       SizedBox(
-                        //         width: DM.p5,
-                        //       ),
-                        //       Text(":"),
-                        //       SizedBox(
-                        //         width: DM.p10,
-                        //       ),
-                        //       Flexible(
-                        //         child: Container(
-                        //           height: DM.p42,
-                        //           child: TextFormField(
-                        //             keyboardType: TextInputType.number,
-                        //             onChanged: (value) {
-                        //               if (advanced.text != null &&
-                        //                   advanced.text.isNotEmpty) {
-                        //                 due_amount.text = (totalCost -
-                        //                         int.parse(
-                        //                             advanced.text.toString()))
-                        //                     .toString();
-                        //               }
-                        //             },
-                        //             controller: advanced,
-                        //             decoration: InputDecoration(
-                        //                 errorStyle: TextStyle(fontSize: DM.p9),
-                        //                 focusedBorder: OutlineInputBorder(
-                        //                     borderSide: BorderSide(
-                        //                         width: DM.p1,
-                        //                         color: orangeColor)),
-                        //                 enabledBorder: OutlineInputBorder(
-                        //                   borderSide: BorderSide(
-                        //                       width: DM.p1,
-                        //                       color:
-                        //                           orangeColor), //<-- SEE HERE
-                        //                 ),
-                        //                 filled: true,
-                        //                 fillColor: fullWhiteColor,
-                        //                 contentPadding: EdgeInsets.symmetric(
-                        //                     horizontal: DM.p10),
-                        //                 border: InputBorder.none,
-                        //                 hintText: "0",
-                        //                 hintStyle: TextStyle(
-                        //                   color: Colors.grey,
-                        //                   fontSize: DM.p14,
-                        //                 )),
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Advanced",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      if (advanced.text != null &&
+                                          advanced.text.isNotEmpty) {
+                                        due_amount.text = (totalCost -
+                                                int.parse(
+                                                    advanced.text.toString()))
+                                            .toString();
+                                      }
+                                    },
+                                    controller: advanced,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
-                        // FormUserInfo(
-                        //   formKey: _formKey,
-                        //   textInputType: TextInputType.name,
-                        //   controller: due_amount,
-                        //   title: "Due Amount",
-                        //   value: "${totalCost - int.parse(advanced.text)}",
-                        //   activate: false,
-                        // ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          textInputType: TextInputType.name,
+                          controller: due_amount,
+                          title: "Due Amount",
+                          value: "${totalCost - int.parse(advanced.text)}",
+                          activate: false,
+                        ),
 
-                        // FormUserInfo(
-                        //   formKey: _formKey,
-                        //   textInputType: TextInputType.number,
-                        //   controller: total_discount,
-                        //   title: "Total Discount",
-                        //   value: "0",
-                        //   activate: false,
-                        // ),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          textInputType: TextInputType.number,
+                          controller: total_discount,
+                          title: "Total Discount",
+                          value: "0",
+                          activate: false,
+                        ),
 
                         // FormUserInfo(
                         //   formKey: _formKey,
@@ -2703,6 +2789,133 @@ class _TestRequestCreateTypeThreeState
                         //   value: "0",
                         //   activate: false,
                         // ),
+
+
+                      // Padding(
+                      //     padding: EdgeInsets.all(DM.p5),
+                      //     child: Row(
+                      //       mainAxisAlignment: MainAxisAlignment.start,
+                      //       crossAxisAlignment: CrossAxisAlignment.center,
+                      //       children: [
+                      //         SizedBox(
+                      //           width: DM.p100,
+                      //           child: Text(
+                      //             "Pathology Assigning Commission",
+                      //             style: TextStyle(
+                      //                 fontWeight: FontWeight.w500,
+                      //                 fontSize: DM.p14,
+                      //                 color: blackFontColor),
+                      //           ),
+                      //         ),
+                      //         SizedBox(
+                      //           width: DM.p5,
+                      //         ),
+                      //         Text(":"),
+                      //         SizedBox(
+                      //           width: DM.p10,
+                      //         ),
+                      //         Flexible(
+                      //           child: Container(
+                      //             height: DM.p42,
+                      //             child: TextFormField(
+                      //               readOnly: true,
+                      //               keyboardType: TextInputType.number,
+                      //               onChanged: (value) {},
+                      //               controller: assigning_commission,
+                      //               decoration: InputDecoration(
+                      //                   errorStyle:
+                      //                   TextStyle(fontSize: DM.p9),
+                      //                   focusedBorder: OutlineInputBorder(
+                      //                       borderSide: BorderSide(
+                      //                           width: DM.p1,
+                      //                           color: orangeColor)),
+                      //                   enabledBorder: OutlineInputBorder(
+                      //                     borderSide: BorderSide(
+                      //                         width: DM.p1,
+                      //                         color:
+                      //                         orangeColor), //<-- SEE HERE
+                      //                   ),
+                      //                   filled: true,
+                      //                   fillColor: fullWhiteColor,
+                      //                   contentPadding:
+                      //                   EdgeInsets.symmetric(
+                      //                       horizontal: DM.p10),
+                      //                   border: InputBorder.none,
+                      //                   hintText: "0",
+                      //                   hintStyle: TextStyle(
+                      //                     color: Colors.grey,
+                      //                     fontSize: DM.p14,
+                      //                   )),
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       ],
+                      //     ),
+                      //   )
+                      //  ,
+                      //  Padding(
+                      //     padding: EdgeInsets.all(DM.p5),
+                      //     child: Row(
+                      //       mainAxisAlignment: MainAxisAlignment.start,
+                      //       crossAxisAlignment: CrossAxisAlignment.center,
+                      //       children: [
+                      //         SizedBox(
+                      //           width: DM.p100,
+                      //           child: Text(
+                      //             "Radiology Assigning Commission",
+                      //             style: TextStyle(
+                      //                 fontWeight: FontWeight.w500,
+                      //                 fontSize: DM.p14,
+                      //                 color: blackFontColor),
+                      //           ),
+                      //         ),
+                      //         SizedBox(
+                      //           width: DM.p5,
+                      //         ),
+                      //         Text(":"),
+                      //         SizedBox(
+                      //           width: DM.p10,
+                      //         ),
+                      //         Flexible(
+                      //           child: Container(
+                      //             height: DM.p42,
+                      //             child: TextFormField(
+                      //               readOnly: true,
+                      //               keyboardType: TextInputType.number,
+                      //               onChanged: (value) {},
+                      //               controller:
+                      //               radiology_assigning_commission,
+                      //               decoration: InputDecoration(
+                      //                   errorStyle:
+                      //                   TextStyle(fontSize: DM.p9),
+                      //                   focusedBorder: OutlineInputBorder(
+                      //                       borderSide: BorderSide(
+                      //                           width: DM.p1,
+                      //                           color: orangeColor)),
+                      //                   enabledBorder: OutlineInputBorder(
+                      //                     borderSide: BorderSide(
+                      //                         width: DM.p1,
+                      //                         color:
+                      //                         orangeColor), //<-- SEE HERE
+                      //                   ),
+                      //                   filled: true,
+                      //                   fillColor: fullWhiteColor,
+                      //                   contentPadding:
+                      //                   EdgeInsets.symmetric(
+                      //                       horizontal: DM.p10),
+                      //                   border: InputBorder.none,
+                      //                   hintText: "0",
+                      //                   hintStyle: TextStyle(
+                      //                     color: Colors.grey,
+                      //                     fontSize: DM.p14,
+                      //                   )),
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       ],
+                      //     ),
+                      //   ),
+
 
                         typeUser == "4" && phoneNumber != superUser
                             ? SizedBox()
@@ -2746,9 +2959,16 @@ class _TestRequestCreateTypeThreeState
                                         );
                                       }).toList(),
                                       onChanged: (newValue) {
+
                                         setState(() {
-                                          pathologyAssigningPhone = newValue!;
+                                          if (widget.testEachRequest!
+                                              .pathology_done !=
+                                              true) {
+                                            pathologyAssigningPhone = newValue!;
+                                          }
+
                                         });
+
                                       },
                                     ),
                                   ],
@@ -2798,7 +3018,11 @@ class _TestRequestCreateTypeThreeState
                                       }).toList(),
                                       onChanged: (newValue) {
                                         setState(() {
-                                          radiologyAssigningPhone = newValue!;
+                                          if (widget.testEachRequest!
+                                              .radiology_done !=
+                                              true) {
+                                            radiologyAssigningPhone = newValue!;
+                                          }
                                         });
                                       },
                                     ),
@@ -2806,109 +3030,109 @@ class _TestRequestCreateTypeThreeState
                                 ),
                               ),
 
-                        widget.testEachRequest!.assigning == phoneNumber ||
-                                typeUser == "3" ||
-                                typeUser == "7" ||
-                                phoneNumber == superUser
-                            ? Padding(
-                                padding: EdgeInsets.all(DM.p5),
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      width: DM.p100,
-                                      child: Text(
-                                        "Pathhology done",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: DM.p14,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: DM.p5,
-                                    ),
-                                    Text(":"),
-                                    SizedBox(
-                                      width: DM.p10,
-                                    ),
-                                    Checkbox(
-                                        value: pathologyDone,
-                                        onChanged: (value) {
-                                          if (typeUser == "4" &&
-                                              phoneNumber != superUser) {
-                                            if (widget.testEachRequest!
-                                                    .pathology_done !=
-                                                true)
-                                              setState(() {
-                                                pathologyDone = !pathologyDone;
-                                              });
-                                          } else {
-                                            if (widget.testEachRequest!
-                                                    .pathology_done !=
-                                                true)
-                                              setState(() {
-                                                pathologyDone = !pathologyDone;
-                                              });
-                                          }
-                                        })
-                                  ],
-                                ),
-                              )
-                            : SizedBox(),
-                        widget.testEachRequest!.radiology_assigning ==
-                                    phoneNumber ||
-                                typeUser == "3" ||
-                                typeUser == "7" ||
-                                phoneNumber == superUser
-                            ? Padding(
-                                padding: EdgeInsets.all(DM.p5),
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      width: DM.p100,
-                                      child: Text(
-                                        "Radiology done",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: DM.p14,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: DM.p5,
-                                    ),
-                                    Text(":"),
-                                    SizedBox(
-                                      width: DM.p10,
-                                    ),
-                                    Checkbox(
-                                        value: radiologyDone,
-                                        onChanged: (value) {
-                                          if (typeUser == "4" &&
-                                              phoneNumber != superUser) {
-                                            if (widget.testEachRequest!
-                                                    .radiology_done !=
-                                                true)
-                                              setState(() {
-                                                radiologyDone = !radiologyDone;
-                                              });
-                                          } else {
-                                            if (widget.testEachRequest!
-                                                    .radiology_done !=
-                                                true)
-                                              setState(() {
-                                                radiologyDone = !radiologyDone;
-                                              });
-                                          }
-                                        })
-                                  ],
-                                ),
-                              )
-                            : SizedBox(),
-                      ],
-                    )),
+                    //     widget.testEachRequest!.assigning == phoneNumber ||
+                    //             typeUser == "3" ||
+                    //             typeUser == "7" ||
+                    //             phoneNumber == superUser
+                    //         ? Padding(
+                    //             padding: EdgeInsets.all(DM.p5),
+                    //             child: Row(
+                    //               children: [
+                    //                 SizedBox(
+                    //                   width: DM.p100,
+                    //                   child: Text(
+                    //                     "Pathology Collected",
+                    //                     style: TextStyle(
+                    //                         fontWeight: FontWeight.w500,
+                    //                         fontSize: DM.p14,
+                    //                         color:
+                    //                             Color.fromARGB(255, 26, 1, 1)),
+                    //                   ),
+                    //                 ),
+                    //                 SizedBox(
+                    //                   width: DM.p5,
+                    //                 ),
+                    //                 Text(":"),
+                    //                 SizedBox(
+                    //                   width: DM.p10,
+                    //                 ),
+                    //                 Checkbox(
+                    //                     value: pathologyDone,
+                    //                     onChanged: (value) {
+                    //                       if (typeUser == "4" &&
+                    //                           phoneNumber != superUser) {
+                    //                         if (widget.testEachRequest!
+                    //                                 .pathology_done !=
+                    //                             true)
+                    //                           setState(() {
+                    //                             pathologyDone = !pathologyDone;
+                    //                           });
+                    //                       } else {
+                    //                         if (widget.testEachRequest!
+                    //                                 .pathology_done !=
+                    //                             true)
+                    //                           setState(() {
+                    //                             pathologyDone = !pathologyDone;
+                    //                           });
+                    //                       }
+                    //                     })
+                    //               ],
+                    //             ),
+                    //           )
+                    //         : SizedBox(),
+                    //     widget.testEachRequest!.radiology_assigning ==
+                    //                 phoneNumber ||
+                    //             typeUser == "3" ||
+                    //             typeUser == "7" ||
+                    //             phoneNumber == superUser
+                    //         ? Padding(
+                    //             padding: EdgeInsets.all(DM.p5),
+                    //             child: Row(
+                    //               children: [
+                    //                 SizedBox(
+                    //                   width: DM.p100,
+                    //                   child: Text(
+                    //                     "Radiology Collected",
+                    //                     style: TextStyle(
+                    //                         fontWeight: FontWeight.w500,
+                    //                         fontSize: DM.p14,
+                    //                         color:
+                    //                             Color.fromARGB(255, 26, 1, 1)),
+                    //                   ),
+                    //                 ),
+                    //                 SizedBox(
+                    //                   width: DM.p5,
+                    //                 ),
+                    //                 Text(":"),
+                    //                 SizedBox(
+                    //                   width: DM.p10,
+                    //                 ),
+                    //                 Checkbox(
+                    //                     value: radiologyDone,
+                    //                     onChanged: (value) {
+                    //                       if (typeUser == "4" &&
+                    //                           phoneNumber != superUser) {
+                    //                         if (widget.testEachRequest!
+                    //                                 .radiology_done !=
+                    //                             true)
+                    //                           setState(() {
+                    //                             radiologyDone = !radiologyDone;
+                    //                           });
+                    //                       } else {
+                    //                         if (widget.testEachRequest!
+                    //                                 .radiology_done !=
+                    //                             true)
+                    //                           setState(() {
+                    //                             radiologyDone = !radiologyDone;
+                    //                           });
+                    //                       }
+                    //                     })
+                    //               ],
+                    //             ),
+                    //           )
+                    //         : SizedBox(),
+                    //   ],
+                    // )),
 
                 // #text_field
 
@@ -3352,9 +3576,9 @@ class _TestRequestCreateTypeThreeState
               ],
             ),
           ),
-        ),
+        ]),
       ),
-    );
+    )));
   }
 }
 

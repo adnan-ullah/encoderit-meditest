@@ -40,7 +40,7 @@ class _StatusRequestListTypeThreeState extends State<StatusRequestListTypeThree>
 
   @override
   void initState() {
-    tabController = TabController(length: 4, vsync: this, initialIndex: 0);
+    tabController = TabController(length: 8, vsync: this, initialIndex: 0);
 
     setState(() {
       _selectedIndex = tabController.index;
@@ -183,7 +183,44 @@ class _StatusRequestListTypeThreeState extends State<StatusRequestListTypeThree>
                     ),
                      Tab(
                       child: Text(
-                        "PRE COLLECTED",
+                        "${cr_controller.status[8]}",
+                        style: TextStyle(
+                            color: blackFontColor,
+                            fontSize: DM.p11,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+
+                    Tab(
+                      child: Text(
+                        "${cr_controller.status[3]}",
+                        style: TextStyle(
+                            color: blackFontColor,
+                            fontSize: DM.p11,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Tab(
+                      child: Text(
+                        "${cr_controller.status[4]}",
+                        style: TextStyle(
+                            color: blackFontColor,
+                            fontSize: DM.p11,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Tab(
+                      child: Text(
+                        "${cr_controller.status[5]}",
+                        style: TextStyle(
+                            color: blackFontColor,
+                            fontSize: DM.p11,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Tab(
+                      child: Text(
+                        "${cr_controller.status[6]}",
                         style: TextStyle(
                             color: blackFontColor,
                             fontSize: DM.p11,
@@ -211,7 +248,15 @@ class _StatusRequestListTypeThreeState extends State<StatusRequestListTypeThree>
                     RequestListTabView(
                         statusKey: cr_controller.status[2], isButton: false),
                     RequestListTabView(
-                        statusKey: "PCollected", isButton: false),
+                        statusKey: cr_controller.status[8], isButton: false),
+                    RequestListTabView(
+                        statusKey: cr_controller.status[3], isButton: true),
+                    RequestListTabView(
+                        statusKey: cr_controller.status[4], isButton: true),
+                    RequestListTabView(
+                        statusKey: cr_controller.status[5], isButton: true),
+                    RequestListTabView(
+                        statusKey: cr_controller.status[6], isButton: false),
                     RequestListTabView(
                         statusKey: cr_controller.status[7], isButton: false),
                   ],

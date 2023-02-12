@@ -40,7 +40,7 @@ class _PrescriptionState extends State<Prescription> {
 
   var phone = TextEditingController();
   var referrer = TextEditingController();
-  File? imageFile1, imageFile2;
+  File? imageFile1, imageFile2, imageDiscountFile;
 
   var status;
 
@@ -50,9 +50,9 @@ class _PrescriptionState extends State<Prescription> {
     referrer.text = pref.getString("referrer_code").toString();
   }
 
-  UploadTask? uploadTask1, uploadTask2;
+  UploadTask? uploadTask1, uploadTask2, uploadTask3;
 
-  Future<void> addImages(urlDownload1, urlDownload2) async {
+  Future<void> addImages(urlDownload1, urlDownload2 , urlDownload3) async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
@@ -101,7 +101,10 @@ class _PrescriptionState extends State<Prescription> {
         total_admin_discount: 0,
         total_agent_discount: 0,
         total_discount: 0,
-        is_paid: false, total_unpayable_imagine: 0, total_unpayable_pathology: 0, payment_date: 0)!;
+        is_paid: false, total_unpayable_imagine: 0, total_unpayable_pathology: 0, payment_date: 0,
+        imageDiscountFile: urlDownload3
+
+    )!;
 
     late DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
@@ -175,12 +178,17 @@ class _PrescriptionState extends State<Prescription> {
 
     final path1 = "files/${phone.text}/${imageFile1}";
     final path2 = "files/${phone.text}/${imageFile2}";
+    final path3 = "files/${phone.text}/${imageDiscountFile}";
+
 
     final ref1 = FirebaseStorage.instance.ref().child(path1);
     final ref2 = FirebaseStorage.instance.ref().child(path2);
+    final ref3 = FirebaseStorage.instance.ref().child(path3);
+
 
     var urlDownload1;
     var urlDownload2;
+    var urlDownload3;
 
     if (imageFile1 != null) {
       uploadTask1 = ref1.putFile(imageFile1!);
@@ -194,7 +202,13 @@ class _PrescriptionState extends State<Prescription> {
       urlDownload2 = await snapshot2.ref.getDownloadURL();
     }
 
-    addImages(urlDownload1, urlDownload2);
+    if (imageDiscountFile != null) {
+      uploadTask3 = ref3.putFile(imageDiscountFile!);
+      final snapshot3 = await uploadTask3!.whenComplete(() {});
+      urlDownload3 = await snapshot3.ref.getDownloadURL();
+    }
+
+    addImages(urlDownload1, urlDownload2,urlDownload3);
     Get.back();
     _onLoading(false);
   }
@@ -422,6 +436,182 @@ class _PrescriptionState extends State<Prescription> {
                                 ],
                               ),
                             ),
+
+
+
+                            Padding(
+                              padding: EdgeInsets.all(DM.p12),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: DM.p100,
+                                    child: Text(
+                                      "Discount Card\n(যদি থাকে)",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: DM.p14,
+                                          color: blackFontColor),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: DM.p5,
+                                  ),
+                                  Text(":"),
+                                  SizedBox(
+                                    width: DM.p10,
+                                  ),
+
+                                  Container(child:
+                                  imageDiscountFile == null
+                                      ? Container(
+                                    height: DM.p60,
+                                    width: DM.p80,
+                                    margin: EdgeInsets.symmetric(
+                                        horizontal: DM.p15),
+                                    child: MaterialButton(
+                                      onPressed: () async {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return Center(
+                                                child: Container(
+                                                  color: whiteColor,
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .center,
+                                                    children: [
+                                                      Container(
+                                                        margin:
+                                                        EdgeInsets.all(
+                                                            DM.p16),
+                                                        height: DM.p130,
+                                                        width: DM.p120,
+                                                        child:
+                                                        ElevatedButton(
+                                                            style: ElevatedButton.styleFrom(
+                                                                backgroundColor:
+                                                                orangeColor,
+                                                                elevation:
+                                                                0),
+                                                            onPressed:
+                                                                () async {
+                                                              PickedFile?
+                                                              pickedFile =
+                                                              await ImagePicker()
+                                                                  .getImage(
+                                                                source:
+                                                                ImageSource.gallery,
+                                                                maxWidth:
+                                                                1200,
+                                                                maxHeight:
+                                                                1600,
+                                                              );
+                                                              setState(
+                                                                      () {
+                                                                    if (pickedFile !=
+                                                                        null)
+                                                                      imageDiscountFile =
+                                                                          File(pickedFile!.path);
+                                                                  });
+
+                                                              Navigator.pop(
+                                                                  context);
+                                                            },
+                                                            child: Text(
+                                                              "Gallery",
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                  DM.p18),
+                                                            )),
+                                                      ),
+                                                      Container(
+                                                        margin:
+                                                        EdgeInsets.all(
+                                                            DM.p16),
+                                                        decoration: BoxDecoration(
+                                                            borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                                25)),
+                                                        height: DM.p130,
+                                                        width: DM.p120,
+                                                        child:
+                                                        ElevatedButton(
+                                                            style: ElevatedButton.styleFrom(
+                                                                backgroundColor:
+                                                                orangeColor,
+                                                                elevation:
+                                                                0),
+                                                            onPressed:
+                                                                () async {
+                                                              PickedFile?
+                                                              pickedFile =
+                                                              await ImagePicker()
+                                                                  .getImage(
+                                                                source:
+                                                                ImageSource.camera,
+                                                                maxWidth:
+                                                                1200,
+                                                                maxHeight:
+                                                                1600,
+                                                              );
+                                                              setState(
+                                                                      () {
+                                                                    if (pickedFile !=
+                                                                        null)
+                                                                      imageDiscountFile =
+                                                                          File(pickedFile!.path);
+                                                                  });
+                                                              Navigator.pop(
+                                                                  context);
+                                                            },
+                                                            child: Text(
+                                                                "Camera",
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                    DM.p18))),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            });
+                                      },
+                                      height: DM.p50,
+                                      color: orangeColor,
+                                      child: Icon(Icons.camera , size: DM.p40,color: whiteColor,)
+                                    ),
+                                  )
+                                      : Column(
+                                    children: [
+                                      Container(
+                                        height: DM.p60,
+                                        width: DM.p80,
+                                        child: Image.file(
+                                          imageDiscountFile as File,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        color: orangeColor,
+                                        icon: Icon(
+                                          CupertinoIcons.xmark_circle_fill,
+                                          size: DM.p30,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            imageDiscountFile = null;
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),)
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                         Container(
@@ -472,9 +662,9 @@ class _PrescriptionState extends State<Prescription> {
                                                                         source:
                                                                             ImageSource.gallery,
                                                                         maxWidth:
-                                                                            800,
-                                                                        maxHeight:
                                                                             1200,
+                                                                        maxHeight:
+                                                                            1600,
                                                                       );
                                                                       setState(
                                                                           () {
@@ -521,9 +711,9 @@ class _PrescriptionState extends State<Prescription> {
                                                                         source:
                                                                             ImageSource.camera,
                                                                         maxWidth:
-                                                                            800,
-                                                                        maxHeight:
                                                                             1200,
+                                                                        maxHeight:
+                                                                            1600,
                                                                       );
                                                                       setState(
                                                                           () {
@@ -550,11 +740,11 @@ class _PrescriptionState extends State<Prescription> {
                                           height: DM.p50,
                                           color: orangeColor,
                                           child: Text(
-                                            "Upload \nimage 1",
-                                            textAlign: TextAlign.start,
+                                            "1\n প্রেসক্রিপশনের ছবি সংযুক্ত করুন ",
+                                            textAlign: TextAlign.center,
                                             style: TextStyle(
                                                 color: fullWhiteColor,
-                                                fontSize: DM.p20,
+                                                fontSize: DM.p15,
                                                 fontWeight: FontWeight.bold),
                                           ),
                                         ),
@@ -627,9 +817,9 @@ class _PrescriptionState extends State<Prescription> {
                                                                         source:
                                                                             ImageSource.gallery,
                                                                         maxWidth:
-                                                                            800,
-                                                                        maxHeight:
                                                                             1200,
+                                                                        maxHeight:
+                                                                            1600,
                                                                       );
                                                                       setState(
                                                                           () {
@@ -670,9 +860,9 @@ class _PrescriptionState extends State<Prescription> {
                                                                         source:
                                                                             ImageSource.camera,
                                                                         maxWidth:
-                                                                            800,
-                                                                        maxHeight:
                                                                             1200,
+                                                                        maxHeight:
+                                                                            1600,
                                                                       );
                                                                       setState(
                                                                           () {
@@ -699,11 +889,11 @@ class _PrescriptionState extends State<Prescription> {
                                           height: DM.p50,
                                           color: orangeColor,
                                           child: Text(
-                                            "Upload \nimage 2",
+                                            "2\n প্রেসক্রিপশনের ছবি সংযুক্ত করুন ",
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                                 color: fullWhiteColor,
-                                                fontSize: DM.p20,
+                                                fontSize: DM.p15,
                                                 fontWeight: FontWeight.bold),
                                           ),
                                         ),
