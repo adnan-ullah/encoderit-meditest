@@ -563,6 +563,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                       ),
                                       Flexible(
                                         child: Container(
+                                          height: DM.p42,
                                           child: TextFormField(
                                             controller: age,
                                             keyboardType: TextInputType.name,
@@ -694,6 +695,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                       ),
                                       Flexible(
                                         child: Container(
+
                                           child: TextFormField(
                                             controller: addressText,
                                             keyboardType:
@@ -734,9 +736,10 @@ class _CreateRequestState extends State<CreateRequest> {
                                                 ),
                                                 filled: true,
                                                 fillColor: fullWhiteColor,
+                                                isDense: true,
                                                 contentPadding:
                                                     EdgeInsets.symmetric(
-                                                        horizontal: DM.p10),
+                                                        horizontal: DM.p10, vertical: DM.p10),
                                                 border: InputBorder.none,
                                                 hintText: "Your Address",
                                                 hintStyle: TextStyle(
@@ -775,6 +778,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                       ),
                                       Flexible(
                                         child: Container(
+                                          height: DM.p42,
                                           child: TextFormField(
                                             controller: referredAddressText,
                                             keyboardType:
@@ -853,7 +857,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                       Container(child:
                                       imageDiscountFile == null
                                           ? Container(
-                                        height: DM.p60,
+                                        height: DM.p45,
                                         width: DM.p80,
                                         margin: EdgeInsets.symmetric(
                                             horizontal: DM.p15),
@@ -1119,7 +1123,7 @@ class _CreateRequestState extends State<CreateRequest> {
                           () => Container(
                             margin: EdgeInsets.symmetric(
                                 horizontal: DM.p10, vertical: DM.p3),
-                            height: DM.screenHeight * 0.35,
+                            height: DM.screenHeight * 0.30,
                             width: double.infinity,
                             decoration: BoxDecoration(
                               color: whiteColor,
@@ -1378,6 +1382,7 @@ class FormUserInfo extends StatelessWidget {
           ),
           Flexible(
             child: Container(
+
               child: TextFormField(
                 validator: validatorField,
                 onChanged: ((value) {
@@ -1405,7 +1410,10 @@ class FormUserInfo extends StatelessWidget {
                     ),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: EdgeInsets.symmetric(horizontal: DM.p10),
+                    isDense: true,
+                    contentPadding:
+                    EdgeInsets.symmetric(
+                        horizontal: DM.p10, vertical: DM.p10),
                     border: InputBorder.none,
                     hintText: value,
                     hintStyle: TextStyle(

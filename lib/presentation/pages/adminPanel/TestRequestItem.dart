@@ -554,6 +554,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       assigning_commission: int.parse(assigning_commission.text.toString()),
       radiology_assigning_commission:
           int.parse(radiology_assigning_commission.text.toString()),
+      imageDiscountFile: widget.testEachRequest!.imageDiscountFile
     );
 
     if (updateTestRequestItem != null) {
@@ -2313,7 +2314,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                     thickness: DM.p1,
                                     color: blackFontColor,
                                   ),
-                                  type!="4" && phoneNumber==superUser?  Text(
+                                  typeUser=="7" || phoneNumber==superUser?
+                                  Text(
                                  "(Payable Pathology + Payable Radiology) = (${total_payable_pathology}+${total_payable_imaging}) =  ${total_payable_pathology + total_payable_imaging} /-",
                                     style: TextStyle(
                                         fontWeight: FontWeight.w800,
@@ -2368,7 +2370,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           controller: servicecharge,
                           title: "Collection charge",
                           value: "20",
-                          activate: false,
+                          activate: phoneNumber==superUser?false:true,
                         ),
 
                         // FormUserInfo(
@@ -2388,7 +2390,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           controller: totalprice,
                           title: "Total price",
                           value: "0",
-                          activate: false,
+                          activate: phoneNumber==superUser?false:true,
                         ),
 
 
@@ -3064,7 +3066,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           controller: due_amount,
                           title: "Due Amount",
                           value: "${totalCost - int.parse(advanced.text)}",
-                          activate: false,
+                          activate: phoneNumber==superUser?false:true,
                         ),
 
                         FormUserInfo(
@@ -3073,9 +3075,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           controller: total_discount,
                           title: "Total Discount",
                           value: "0",
-                          activate: false,
+                          activate: phoneNumber==superUser?false:true,
                         ),
-
                         // FormUserInfo(
                         //   formKey: _formKey,
                         //   textInputType: TextInputType.number,

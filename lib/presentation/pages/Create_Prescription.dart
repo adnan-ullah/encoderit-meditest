@@ -440,7 +440,7 @@ class _PrescriptionState extends State<Prescription> {
 
 
                             Padding(
-                              padding: EdgeInsets.all(DM.p12),
+                              padding: EdgeInsets.symmetric(horizontal:DM.p12),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -615,7 +615,7 @@ class _PrescriptionState extends State<Prescription> {
                           ],
                         ),
                         Container(
-                          margin: EdgeInsets.only(top: DM.p24),
+                          margin: EdgeInsets.only(top: DM.p5),
                           child: Padding(
                             padding: EdgeInsets.all(DM.p10),
                             child: Row(

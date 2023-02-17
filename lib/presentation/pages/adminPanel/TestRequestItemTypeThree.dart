@@ -568,6 +568,8 @@ class _TestRequestCreateTypeThreeState
       assigning_commission: int.parse(assigning_commission.text.toString()),
       radiology_assigning_commission:
           int.parse(radiology_assigning_commission.text.toString()),
+
+        imageDiscountFile: widget.testEachRequest!.imageDiscountFile
     );
 
     if (updateTestRequestItem != null) {
@@ -2113,7 +2115,7 @@ class _TestRequestCreateTypeThreeState
                           controller: servicecharge,
                           title: "Collection charge",
                           value: "20",
-                          activate: false,
+                          activate: true,
                         ),
 
                         // FormUserInfo(
@@ -2133,7 +2135,7 @@ class _TestRequestCreateTypeThreeState
                           controller: totalprice,
                           title: "Total price",
                           value: "0",
-                          activate: false,
+                          activate: true,
                         ),
 
                         Padding(
@@ -2769,7 +2771,7 @@ class _TestRequestCreateTypeThreeState
                           controller: due_amount,
                           title: "Due Amount",
                           value: "${totalCost - int.parse(advanced.text)}",
-                          activate: false,
+                          activate: true,
                         ),
 
                         FormUserInfo(
@@ -2778,7 +2780,7 @@ class _TestRequestCreateTypeThreeState
                           controller: total_discount,
                           title: "Total Discount",
                           value: "0",
-                          activate: false,
+                          activate: true,
                         ),
 
                         // FormUserInfo(
