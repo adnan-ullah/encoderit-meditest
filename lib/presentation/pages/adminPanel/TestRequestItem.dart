@@ -83,6 +83,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   var type = new TextEditingController();
   var image_one = new TextEditingController();
   var image_two = new TextEditingController();
+  var image_discount_card = new TextEditingController();
 
   var comments = new TextEditingController();
   var delivery_date = new TextEditingController();
@@ -123,11 +124,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   var total_unpayable_item = 0;
   var urlDownload1;
   var urlDownload2;
+  var urlDownload3;
   var newRequestData;
   bool isFromNetwork1 = false;
   bool isFromNetwork2 = false;
-  File? imageFile1, imageFile2;
-  UploadTask? uploadTask1, uploadTask2;
+  bool isFromNetwork_discount= false;
+  File? imageFile1, imageFile2, imageDiscountFile;
+  UploadTask? uploadTask1, uploadTask2, uploadTask3;
   bool init = false;
   var phoneNumber = "";
   var typeUser = "";
@@ -151,10 +154,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         TestData testData =
             TestData.fromJson(json.decode(jsonEncode(ds.value)));
 
+        setState(() {
         testItemList.add(testData);
         if (testItemListWithSelected[testData.id] != true)
           testItemListWithSelected[testData.id] = false;
-
+      });
         print("HEREEEE");
 
         //false -> add button
@@ -200,6 +204,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   }
 
   Future<void> retreiveEachDataRequest() async {
+
+
     SharedPreferences refs = await SharedPreferences.getInstance();
     phoneNumber = refs.getString("phoneNumber")!;
     typeUser = refs.getString("type")!;
@@ -398,6 +404,16 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       radiology_assigning_commission.text =
           widget.testEachRequest!.radiology_assigning_commission!.toString();
     }
+
+    if (widget.testEachRequest!.imageDiscountFile == null)
+      image_discount_card.text = "empty";
+    else {
+      setState(() {
+        isFromNetwork_discount = true;
+      });
+      image_discount_card.text = widget.testEachRequest!.imageDiscountFile.toString();
+    }
+
   }
 
   void _onLoading(isClosed) {
@@ -442,9 +458,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
     final path1 = "files/${phone.text}/${imageFile1}";
     final path2 = "files/${phone.text}/${imageFile2}";
+    final path3 = "files/${phone.text}/${imageDiscountFile}";
 
     final ref1 = FirebaseStorage.instance.ref().child(path1);
     final ref2 = FirebaseStorage.instance.ref().child(path2);
+    final ref3 = FirebaseStorage.instance.ref().child(path3);
 
     if (imageFile1 != null) {
       uploadTask1 = ref1.putFile(imageFile1!);
@@ -456,6 +474,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       uploadTask2 = ref2.putFile(imageFile2!);
       final snapshot2 = await uploadTask2!.whenComplete(() {});
       urlDownload2 = await snapshot2.ref.getDownloadURL();
+    }
+
+    if (imageDiscountFile != null) {
+      uploadTask3 = ref3.putFile(imageDiscountFile!);
+      final snapshot3 = await uploadTask3!.whenComplete(() {});
+      urlDownload3 = await snapshot3.ref.getDownloadURL();
     }
 
     //addImages(urlDownload1, urlDownload2);
@@ -485,6 +509,10 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     if (urlDownload2 != null) {
       image_two.text = urlDownload2.toString();
     }
+    if (urlDownload3 != null) {
+      image_discount_card.text = urlDownload3.toString();
+    }
+
 
     //typeFourCondition
     if(typeUser =="4")
@@ -554,7 +582,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       assigning_commission: int.parse(assigning_commission.text.toString()),
       radiology_assigning_commission:
           int.parse(radiology_assigning_commission.text.toString()),
-      imageDiscountFile: widget.testEachRequest!.imageDiscountFile
+      imageDiscountFile: image_discount_card.text.toString()
     );
 
     if (updateTestRequestItem != null) {
@@ -1189,7 +1217,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 width: DM.p10,
                               ),
 
-                              widget.testEachRequest!.imageDiscountFile != null
+                              image_discount_card.text != "empty" || imageDiscountFile!=null
                                   ? Column(
                                 children: [
                                   //MyphotoView for Form
@@ -1197,7 +1225,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                     height: DM.p80,
                                     width: DM.p80,
                                     child:
-                                  InkWell(
+                                    isFromNetwork_discount
+                                        ? InkWell(
                                       onTap:
                                           () {
                                         showDialog(
@@ -1205,7 +1234,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                             builder: (context) {
                                               return MyDialogView(
                                                   myChild: MyPhotoView(
-                                                    image:  widget.testEachRequest!.imageDiscountFile .toString(),
+                                                    image: widget.testEachRequest!.imageDiscountFile.toString(),
                                                     imageType: "Network",
                                                   ));
                                             });
@@ -1220,6 +1249,29 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                         ),
                                       ),
                                     )
+                                        : InkWell(
+                                      onTap:
+                                          () {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return MyDialogView(
+                                                  myChild: MyPhotoView(
+                                                    image: imageDiscountFile,
+                                                    imageType: "File",
+                                                  ));
+                                            });
+                                      },
+                                      child:
+                                      Container(
+                                        child:
+                                        Image.file(
+                                          imageDiscountFile!,
+                                          fit:
+                                          BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
 
                                   ),
                                   typeUser=="7" || phone==superUser?
@@ -1232,19 +1284,141 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                     ),
                                     onPressed: () {
                                       setState(() {
-                                        imageFile1 =
+                                        imageDiscountFile =
                                         null;
-                                        image_one.text =
+                                        image_discount_card.text =
                                         "empty";
                                       });
                                     },
                                   ):SizedBox(),
                                 ],
                               )
-                                  :SizedBox()
+                                  : Container(
+                                height: DM.p60,
+                                width: DM.p80,
+                                margin: EdgeInsets.symmetric(
+                                    horizontal: DM.p15),
+                                child: MaterialButton(
+                                    onPressed: () async {
+                                      showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return Center(
+                                              child: Container(
+                                                color: whiteColor,
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .center,
+                                                  children: [
+                                                    Container(
+                                                      margin:
+                                                      EdgeInsets.all(
+                                                          DM.p16),
+                                                      height: DM.p130,
+                                                      width: DM.p120,
+                                                      child:
+                                                      ElevatedButton(
+                                                          style: ElevatedButton.styleFrom(
+                                                              backgroundColor:
+                                                              orangeColor,
+                                                              elevation:
+                                                              0),
+                                                          onPressed:
+                                                              () async {
+
+                                                            PickedFile?
+                                                            pickedFile =
+                                                            await ImagePicker()
+                                                                .getImage(
+                                                              source:
+                                                              ImageSource.gallery,
+                                                              maxWidth:
+                                                              1200,
+                                                              maxHeight:
+                                                              1600,
+                                                            );
+                                                            setState(
+                                                                    () {
+                                                                  if (pickedFile !=
+                                                                      null)
+                                                                    imageDiscountFile =
+                                                                        File(pickedFile!.path);
+                                                                });
+
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                          child: Text(
+                                                            "Gallery",
+                                                            style: TextStyle(
+                                                                fontSize:
+                                                                DM.p18),
+                                                          )),
+                                                    ),
+                                                    Container(
+                                                      margin:
+                                                      EdgeInsets.all(
+                                                          DM.p16),
+                                                      decoration: BoxDecoration(
+                                                          borderRadius:
+                                                          BorderRadius
+                                                              .circular(
+                                                              25)),
+                                                      height: DM.p130,
+                                                      width: DM.p120,
+                                                      child:
+                                                      ElevatedButton(
+                                                          style: ElevatedButton.styleFrom(
+                                                              backgroundColor:
+                                                              orangeColor,
+                                                              elevation:
+                                                              0),
+                                                          onPressed:
+                                                              () async {
+                                                            PickedFile?
+                                                            pickedFile =
+                                                            await ImagePicker()
+                                                                .getImage(
+                                                              source:
+                                                              ImageSource.camera,
+                                                              maxWidth:
+                                                              1200,
+                                                              maxHeight:
+                                                              1600,
+                                                            );
+                                                            setState(
+                                                                    () {
+                                                                  if (pickedFile !=
+                                                                      null)
+                                                                    imageDiscountFile =
+                                                                        File(pickedFile!.path);
+                                                                });
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                          child: Text(
+                                                              "Camera",
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                  DM.p18))),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          });
+                                    },
+                                    height: DM.p50,
+                                    color: orangeColor,
+                                    child: Icon(Icons.camera , size: DM.p40,color: whiteColor,)
+                                ),
+                              )
                             ],
                           ),
                         ),
+
+
 
 
                         FormUserInfo(
@@ -1352,7 +1526,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                         ),
                                                                       ),
                                                           ),
-                                                          typeUser=="7" || phone==superUser?
+                                                          typeUser=="7" || phoneNumber==superUser?
                                                           IconButton(
                                                             color: orangeColor,
                                                             icon: Icon(
@@ -1540,7 +1714,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                             ),
                                                                           ),
                                                                         )),
-                                                          typeUser=="7" || phone==superUser?
+                                                          typeUser=="7" || phoneNumber==superUser?
                                                           IconButton(
                                                             color: orangeColor,
                                                             icon: Icon(
@@ -1640,8 +1814,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                                   );
                                                                                   setState(() {
                                                                                     if (pickedFile != null) {
-                                                                                      isFromNetwork2 = false;
+
                                                                                       imageFile2 = File(pickedFile!.path);
+                                                                                      isFromNetwork2 = false;
                                                                                     }
                                                                                   });
                                                                                   Navigator.pop(context);
@@ -1786,7 +1961,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                 ),
                                               ),
                                             ),
-                                            typeUser=="7" || phone==superUser?
+                                            typeUser=="7" || phoneNumber==superUser?
                                             IconButton(
                                               color: orangeColor,
                                               icon: Icon(
@@ -1889,8 +2064,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                     );
                                                                     setState(() {
                                                                       if (pickedFile != null) {
-                                                                        isFromNetwork1 = false;
+
                                                                         imageFile1 = File(pickedFile!.path);
+                                                                        isFromNetwork1 = false;
                                                                       }
                                                                     });
                                                                     Navigator.pop(context);
@@ -1974,7 +2150,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                     ),
                                                   ),
                                                 )),
-                                            typeUser=="7" || phone==superUser?
+                                            typeUser=="7" || phoneNumber==superUser?
                                             IconButton(
                                               color: orangeColor,
                                               icon: Icon(
@@ -2074,8 +2250,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                     );
                                                                     setState(() {
                                                                       if (pickedFile != null) {
-                                                                        isFromNetwork2 = false;
+
                                                                         imageFile2 = File(pickedFile!.path);
+                                                                        isFromNetwork2 = false;
                                                                       }
                                                                     });
                                                                     Navigator.pop(context);

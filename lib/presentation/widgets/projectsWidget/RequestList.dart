@@ -342,7 +342,14 @@ Future<void> _updateStatus(TestDataRequest requestItem) async {
         is_paid: requestItem.is_paid,
         total_unpayable_pathology: requestItem.total_unpayable_pathology,
         total_unpayable_imagine: requestItem.total_unpayable_imagine,
-        payment_date: requestItem.payment_date);
+        payment_date: requestItem.payment_date,
+        pathology_done: requestItem.pathology_done,
+        radiology_done: requestItem.radiology_done,
+        radiology_assigning: requestItem.radiology_assigning,
+        radiology_assigning_commission: requestItem.radiology_assigning_commission,
+        imageDiscountFile: requestItem.imageDiscountFile,
+
+  );
 
   if (updateTestRequestItem != null) {
     await DbrefTestReqModel.child("testRequest")

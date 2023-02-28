@@ -22,6 +22,7 @@ import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminRepo
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminSuperReport.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminUserReport.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AgentReportList.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/CollectionReportList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/RequestListTabView.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -267,7 +268,7 @@ class _AdminHomeState extends State<AdminHome> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        widget.check_number == "$superUser"
+                                        widget.check_number == "$superUser" || widget.check_type==4
                                             ? Container(
                                                 child: Row(
                                                   mainAxisAlignment:
@@ -315,6 +316,10 @@ class _AdminHomeState extends State<AdminHome> {
                                                               "$superUser")) {
                                                             Get.to(
                                                                 AdminSuperReport());
+                                                          }
+                                                          else if(widget.check_type == 4)
+                                                          {
+                                                            Get.to(CollectionReportList());
                                                           }
                                                         },
                                                         child: Text(

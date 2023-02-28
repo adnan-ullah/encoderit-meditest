@@ -141,7 +141,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
       assigning_commission: requestItem.assigning_commission,
       radiology_assigning_commission:
           requestItem.radiology_assigning_commission,
-      imageDiscountFile: requestItem.imageDiscountFile!
+      imageDiscountFile: requestItem.imageDiscountFile
     );
 
     if (updateTestRequestItem != null) {

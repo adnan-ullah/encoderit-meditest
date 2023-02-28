@@ -32,8 +32,7 @@ class _AdminUserState extends State<AdminUser> {
   Future<void> getTestItemList() async {
     _onLoading(true);
     late DatabaseReference DbrefTestModel;
-    DbrefTestModel =
-        FirebaseDatabase.instance.ref("$database_name/admin_user/");
+    DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/admin_user/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     DbrefTestModel.keepSynced(true);
 

@@ -44,11 +44,15 @@ double totalTestCost = 0;
 double totalPaidAmount = 0;
 List<TestDataRequest> _newTestRequestList = [];
 List<TestDataRequest> _allRequestListAdmin = [];
+List<String> paidStatusList = ["PAID", "UNPAID", "BOTH"];
 
 late TabController tabController;
 
 var type = "0";
 var phone = "0";
+var paidStatus = "BOTH";
+
+Map<dynamic, int> lastPaymentDate = {};
 var referrer_input = new TextEditingController(text: "0");
 
 class _AgentReportListState extends State<AgentReportList>
@@ -104,51 +108,58 @@ class _AgentReportListState extends State<AgentReportList>
     DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
     TestDataRequest updateTestRequestItem;
     updateTestRequestItem = TestDataRequest(
-        id: requestItem.id,
-        name: requestItem.name,
-        gender: requestItem.gender,
-        mobile: requestItem.mobile,
-        age: requestItem.age,
-        testlist: requestItem.testlist,
-        totalprice: requestItem.totalprice,
-        servicecharge: requestItem.servicecharge,
-        address: requestItem.address,
-        referrer: requestItem.referrer,
-        lastupdate: currentTime,
-        dateofcreated: requestItem.dateofcreated,
-        softdelete: requestItem.softdelete,
-        latitude: requestItem.latitude,
-        longitude: requestItem.longitude,
-        teststatus: requestItem.teststatus,
-        invoice_call: requestItem.invoice_call,
-        type: requestItem.type,
-        image_one: requestItem.image_one,
-        image_two: requestItem.image_two,
-        comments: requestItem.comments,
-        total_payable_imagine_cost: requestItem.total_payable_imagine_cost,
-        total_payable_pathology_cost: requestItem.total_payable_pathology_cost,
-        total_payable: requestItem.total_payable,
-        total_unpayable: requestItem.total_unpayable,
-        admin_pathology_discount: requestItem.admin_pathology_discount,
-        admin_radiology_discount: requestItem.admin_radiology_discount,
-        agent_commission: requestItem.agent_commission,
-        agent_pathology_discount: requestItem.agent_pathology_discount,
-        agent_radiology_discount: requestItem.agent_radiology_discount,
-        area: requestItem.area,
-        assigning: requestItem.assigning,
-        assigning_commission: requestItem.assigning_commission,
-        advanced: requestItem.advanced,
-        delivery_date: requestItem.delivery_date,
-        due_amount: requestItem.due_amount,
-        test_item_cost: requestItem.test_item_cost,
-        test_item_discount: requestItem.test_item_discount,
-        total_admin_discount: requestItem.total_admin_discount,
-        total_agent_discount: requestItem.total_agent_discount,
-        total_discount: requestItem.total_discount,
-        is_paid: true,
-        total_unpayable_pathology: requestItem.total_unpayable_pathology,
-        total_unpayable_imagine: requestItem.total_unpayable_imagine,
-        payment_date: currentTime);
+      id: requestItem.id,
+      name: requestItem.name,
+      gender: requestItem.gender,
+      mobile: requestItem.mobile,
+      age: requestItem.age,
+      testlist: requestItem.testlist,
+      totalprice: requestItem.totalprice,
+      servicecharge: requestItem.servicecharge,
+      address: requestItem.address,
+      referrer: requestItem.referrer,
+      lastupdate: currentTime,
+      dateofcreated: requestItem.dateofcreated,
+      softdelete: requestItem.softdelete,
+      latitude: requestItem.latitude,
+      longitude: requestItem.longitude,
+      teststatus: requestItem.teststatus,
+      invoice_call: requestItem.invoice_call,
+      type: requestItem.type,
+      image_one: requestItem.image_one,
+      image_two: requestItem.image_two,
+      comments: requestItem.comments,
+      total_payable_imagine_cost: requestItem.total_payable_imagine_cost,
+      total_payable_pathology_cost: requestItem.total_payable_pathology_cost,
+      total_payable: requestItem.total_payable,
+      total_unpayable: requestItem.total_unpayable,
+      admin_pathology_discount: requestItem.admin_pathology_discount,
+      admin_radiology_discount: requestItem.admin_radiology_discount,
+      agent_commission: requestItem.agent_commission,
+      agent_pathology_discount: requestItem.agent_pathology_discount,
+      agent_radiology_discount: requestItem.agent_radiology_discount,
+      area: requestItem.area,
+      assigning: requestItem.assigning,
+      assigning_commission: requestItem.assigning_commission,
+      advanced: requestItem.advanced,
+      delivery_date: requestItem.delivery_date,
+      due_amount: requestItem.due_amount,
+      test_item_cost: requestItem.test_item_cost,
+      test_item_discount: requestItem.test_item_discount,
+      total_admin_discount: requestItem.total_admin_discount,
+      total_agent_discount: requestItem.total_agent_discount,
+      total_discount: requestItem.total_discount,
+      is_paid: true,
+      total_unpayable_pathology: requestItem.total_unpayable_pathology,
+      total_unpayable_imagine: requestItem.total_unpayable_imagine,
+      payment_date: currentTime,
+      pathology_done: requestItem.pathology_done,
+      radiology_done: requestItem.radiology_done,
+      radiology_assigning: requestItem.radiology_assigning,
+      radiology_assigning_commission:
+          requestItem.radiology_assigning_commission,
+      imageDiscountFile: requestItem.imageDiscountFile,
+    );
 
     if (updateTestRequestItem != null) {
       await DbrefTestReqModel.child("testRequest")
@@ -166,19 +177,12 @@ class _AgentReportListState extends State<AgentReportList>
     _onLoading(true);
 
     SharedPreferences ref = await SharedPreferences.getInstance();
-      phone = ref.getString('phoneNumber')!;
-      type = ref.getString("type")!;
-if(phone!="$superUser" && type!="7" )
-{
-   commission = ref.getString("commission");
-    referrer_code = ref.getString("referrer_code")!;
-    
-}
-
-   
-  
-
-    
+    phone = ref.getString('phoneNumber')!;
+    type = ref.getString("type")!;
+    if (phone != "$superUser" && type != "7") {
+      commission = ref.getString("commission");
+      referrer_code = ref.getString("referrer_code")!;
+    }
 
     late DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel =
@@ -197,32 +201,56 @@ if(phone!="$superUser" && type!="7" )
       }
 
       setState(() {
+        if (referrer_input.text == "0") {
+          _allRequestListAdmin.map((element) {
+            if (paidStatus == "BOTH") {
+              _newTestRequestList.add(element);
+            } else if (paidStatus == "PAID") {
+              if (element.is_paid == true) _newTestRequestList.add(element);
+            } else if (paidStatus == "UNPAID") {
+              if (element.is_paid == false) _newTestRequestList.add(element);
+            }
+
+            //last date
+
+            if (lastPaymentDate[element] == null) lastPaymentDate[element] = 0;
+            if (element.is_paid == true) if (element.payment_date >
+                lastPaymentDate[element]) {
+              lastPaymentDate[element] = element.payment_date;
+              print("lastPaymentDate" + lastPaymentDate[element].toString());
+            }
+          }).toList();
+        }
+
         if (type == "2") {
           _newTestRequestList = _allRequestListAdmin
               .where((element) =>
-                  element.referrer.toString() == referrer_code.toString()) 
+                  element.referrer.toString() == referrer_code.toString())
               .toList();
         }
       });
 
-      totalEarning = 0;
-      totalTestCost = 0;
-      totalPaidAmount = 0;
+        totalEarning = 0;
+        totalTestCost = 0;
+        totalPaidAmount = 0;
 
-      _newTestRequestList.map((e) {
-        if (e.teststatus == 6) {
-          totalEarning =
-              totalEarning + e.agent_commission - e.total_agent_discount;
+        _newTestRequestList.map((e) {
+          if (e.teststatus == 6) {
+            totalEarning =
+                totalEarning + e.agent_commission - e.total_agent_discount;
 
-          totalTestCost = totalTestCost + e.total_payable;
+            totalTestCost = totalTestCost + e.total_payable;
 
-          if (e.is_paid) {
-            totalPaidAmount =
-                totalPaidAmount + e.agent_commission - e.total_agent_discount;
+            if (e.is_paid) {
+              totalPaidAmount =
+                  totalPaidAmount + e.agent_commission - e.total_agent_discount;
+            }
           }
-        }
-      }).toList();
+        }).toList();
+
     });
+
+
 
     if (_newTestRequestList != null) _onLoading(false);
 
@@ -230,25 +258,54 @@ if(phone!="$superUser" && type!="7" )
   }
 
   Future<void> filterStatusDateTime(var referrer) async {
-    // _newTestRequestList.clear();
+    _newTestRequestList.clear();
     // _newTestRequestList.addAll(_allRequestListAdmin);
 
     if (type == "2") {
       referrer = referrer_code;
     }
-    if (referrer.isNotEmpty && referrer!="0" ) {
-      _newTestRequestList = _allRequestListAdmin
-          .where((element) =>
-              element.referrer.toString() == referrer &&
-              (start_datetime <= element.dateofcreated &&
-                  element.dateofcreated <= end_datetime))
-          .toList();
+    var last_payment = 0;
+    _allRequestListAdmin.map((element) {
+      if (referrer.isNotEmpty && referrer != "0") {
+        if (element.referrer.toString() == referrer &&
+            (start_datetime <= element.dateofcreated &&
+                element.dateofcreated <= end_datetime)) {
+          if (paidStatus == "BOTH") {
+            _newTestRequestList.add(element);
+          } else if (paidStatus == "PAID") {
+            if (element.is_paid == true) _newTestRequestList.add(element);
+          } else if (paidStatus == "UNPAID") {
+            if (element.is_paid == false) _newTestRequestList.add(element);
+          }
+        }
+      } else {
+        if ((start_datetime <= element.dateofcreated &&
+            element.dateofcreated <= end_datetime)) {
+          if (paidStatus == "BOTH") {
+            _newTestRequestList.add(element);
+          } else if (paidStatus == "PAID") {
+            if (element.is_paid == true) _newTestRequestList.add(element);
+          } else if (paidStatus == "UNPAID") {
+            if (element.is_paid == false) _newTestRequestList.add(element);
+          }
+        }
+      }
+
+      //last date
+      if (lastPaymentDate[element] == null) lastPaymentDate[element] = 0;
+      if (element.is_paid == true) if (element.payment_date >
+          lastPaymentDate[element]) {
+        lastPaymentDate[element] = element.payment_date;
+        print("lastPaymentDate" + lastPaymentDate[element].toString());
+      }
+    }).toList();
 
       totalEarning = 0;
       totalTestCost = 0;
       totalPaidAmount = 0;
 
       _newTestRequestList.map((e) {
+
         if (e.teststatus == 6) {
           totalEarning =
               totalEarning + e.agent_commission - e.total_agent_discount;
@@ -261,7 +318,7 @@ if(phone!="$superUser" && type!="7" )
           }
         }
       }).toList();
-    }
+
   }
 
   Future getStoragePermission() async {
@@ -475,6 +532,53 @@ if(phone!="$superUser" && type!="7" )
                 ],
               ),
             ),
+            Padding(
+              padding: EdgeInsets.all(DM.p10),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: DM.p100,
+                    child: Text(
+                      "Paid Status:",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: DM.p14,
+                          color: Color.fromARGB(255, 26, 1, 1)),
+                    ),
+                  ),
+                  SizedBox(
+                    width: DM.p5,
+                  ),
+                  Text(":"),
+                  SizedBox(
+                    width: DM.p10,
+                  ),
+                  DropdownButton<String>(
+                    hint: Text(
+                      "${paidStatus}",
+                      style: TextStyle(color: blackFontColor),
+                    ),
+                    items: paidStatusList.map((
+                      String value,
+                    ) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          "${value}",
+                          style: TextStyle(color: blackFontColor),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (newValue) {
+                      setState(() {
+                        paidStatus = newValue!;
+                        filterStatusDateTime(referrer_input.text);
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
             Container(
               height: DM.screenHeight * 0.62,
               margin: EdgeInsets.symmetric(horizontal: DM.p5),
@@ -487,7 +591,7 @@ if(phone!="$superUser" && type!="7" )
                     children: [
                       Container(
                         height: DM.p50,
-                        width: DM.screenWidth * 2.5,
+                        width: DM.screenWidth * 2.7,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -502,6 +606,46 @@ if(phone!="$superUser" && type!="7" )
                                     color: Color.fromARGB(255, 26, 1, 1)),
                               ),
                             ),
+                            type == "2" && superUser != phone
+                                ? Container(
+                                    width: DM.p80,
+                                    child: Text(
+                                      "Patient Name",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: DM.p10,
+                                          color: Color.fromARGB(255, 26, 1, 1)),
+                                    ),
+                                  )
+                                : Row(
+                                    children: [
+                                      Container(
+                                        width: DM.p80,
+                                        child: Text(
+                                          "Agent Name",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: DM.p10,
+                                              color: Color.fromARGB(
+                                                  255, 26, 1, 1)),
+                                        ),
+                                      ),
+                                      Container(
+                                        width: DM.p80,
+                                        child: Text(
+                                          "Agent Code",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: DM.p10,
+                                              color: Color.fromARGB(
+                                                  255, 26, 1, 1)),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                             Container(
                               width: DM.p80,
                               child: Text(
@@ -593,6 +737,17 @@ if(phone!="$superUser" && type!="7" )
                             Container(
                               width: DM.p80,
                               child: Text(
+                                "Last Payment Date",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: DM.p10,
+                                    color: Color.fromARGB(255, 26, 1, 1)),
+                              ),
+                            ),
+                            Container(
+                              width: DM.p80,
+                              child: Text(
                                 "Payment",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
@@ -608,7 +763,7 @@ if(phone!="$superUser" && type!="7" )
                         child: isLoading == false
                             ? Container(
                                 height: DM.screenHeight * 0.50,
-                                width: DM.screenWidth * 2.5,
+                            width: DM.screenWidth * 2.7,
                                 child: _newTestRequestList.isNotEmpty
                                     ? Container(
                                         height: DM.p100,
@@ -620,7 +775,7 @@ if(phone!="$superUser" && type!="7" )
                                             ),
                                             Container(
                                               height: DM.screenHeight * 0.50,
-                                              width: DM.screenWidth * 2.5,
+                                              width: DM.screenWidth * 2.7,
                                               child: ListView.builder(
                                                 shrinkWrap: true,
                                                 itemCount:
@@ -662,6 +817,73 @@ if(phone!="$superUser" && type!="7" )
                                                                         1)),
                                                           ),
                                                         ),
+                                                        type == "2" &&
+                                                                superUser !=
+                                                                    phone
+                                                            ?  Container(
+                                                          width:
+                                                          DM.p80,
+                                                          child: Text(
+                                                            "${_newTestRequestList[index].name.toString()}",
+                                                            textAlign:
+                                                            TextAlign
+                                                                .center,
+                                                            style: TextStyle(
+                                                                fontWeight: FontWeight
+                                                                    .w900,
+                                                                fontSize: DM
+                                                                    .p10,
+                                                                color: Color.fromARGB(
+                                                                    255,
+                                                                    26,
+                                                                    1,
+                                                                    1)),
+                                                          ),
+                                                        )
+                                                            : Row(
+                                                                children: [
+                                                                  Container(
+                                                                    width:
+                                                                        DM.p80,
+                                                                    child: Text(
+                                                                      "${_newTestRequestList[index].name.toString()}",
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .center,
+                                                                      style: TextStyle(
+                                                                          fontWeight: FontWeight
+                                                                              .w900,
+                                                                          fontSize: DM
+                                                                              .p10,
+                                                                          color: Color.fromARGB(
+                                                                              255,
+                                                                              26,
+                                                                              1,
+                                                                              1)),
+                                                                    ),
+                                                                  ),
+                                                                  Container(
+                                                                    width:
+                                                                        DM.p80,
+                                                                    child: Text(
+                                                                      "${_newTestRequestList[index].id.toString()}",
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .center,
+                                                                      style: TextStyle(
+                                                                          fontWeight: FontWeight
+                                                                              .w900,
+                                                                          fontSize: DM
+                                                                              .p10,
+                                                                          color: Color.fromARGB(
+                                                                              255,
+                                                                              26,
+                                                                              1,
+                                                                              1)),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
                                                         _newTestRequestList[
                                                                         index]
                                                                     .teststatus !=
@@ -1019,6 +1241,52 @@ if(phone!="$superUser" && type!="7" )
                                                                 ),
                                                         ),
                                                         SizedBox(
+                                                          width: DM.p80,
+                                                          child: _newTestRequestList[
+                                                                          index]
+                                                                      .payment_date ==
+                                                                  0
+                                                              ? Text(
+                                                                  "NA",
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+                                                                  style: TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w900,
+                                                                      fontSize: DM
+                                                                          .p10,
+                                                                      color: Color
+                                                                          .fromARGB(
+                                                                              255,
+                                                                              26,
+                                                                              1,
+                                                                              1)),
+                                                                )
+                                                              : Text(
+                                                                  (DateFormat('dd-MMM-yyyy')
+                                                                          .format(
+                                                                              DateTime.fromMillisecondsSinceEpoch(lastPaymentDate[_newTestRequestList[index]]!)))
+                                                                      .toString(),
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+                                                                  style: TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w900,
+                                                                      fontSize: DM
+                                                                          .p10,
+                                                                      color: Color
+                                                                          .fromARGB(
+                                                                              255,
+                                                                              26,
+                                                                              1,
+                                                                              1)),
+                                                                ),
+                                                        ),
+                                                        SizedBox(
                                                             width: DM.p80,
                                                             child: _newTestRequestList[
                                                                         index]
@@ -1152,5 +1420,4 @@ if(phone!="$superUser" && type!="7" )
   }
 
   //Return String
-
 }
