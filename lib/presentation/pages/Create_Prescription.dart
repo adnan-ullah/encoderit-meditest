@@ -937,6 +937,8 @@ class _PrescriptionState extends State<Prescription> {
                                   if (await chechkingInternet()) {
                                     if (imageFile1 != null ||
                                         imageFile2 != null) {
+                                      print("Adnan");
+                                      print(imageFile2);
                                       uploadImage();
                                     } else {
                                       Get.snackbar(
