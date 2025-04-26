@@ -456,9 +456,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
     final SharedPreferences pref = await SharedPreferences.getInstance();
 
-    final path1 = "files/${phone.text}/${imageFile1}";
-    final path2 = "files/${phone.text}/${imageFile2}";
-    final path3 = "files/${phone.text}/${imageDiscountFile}";
+    final path1 = "demo_files/${phone.text}/${imageFile1}";
+    final path2 = "demo_files/${phone.text}/${imageFile2}";
+    final path3 = "demo_files/${phone.text}/${imageDiscountFile}";
 
     final ref1 = FirebaseStorage.instance.ref().child(path1);
     final ref2 = FirebaseStorage.instance.ref().child(path2);

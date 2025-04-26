@@ -410,69 +410,69 @@ class _LoginScreenState extends State<LoginScreen> {
                                           true &&
                                       await chechkingInternet()) {
                                     //client-app
-                                    // savePhone(phone.text);
-                                    // Get.to(HomeScreen());
+                                    savePhone(phone.text);
+                                    Get.to(HomeScreen());
 
                                     //admin-app
-                                    if (phone.text == "$superUser" ||
-                                        (checkUser(phone.text) == true &&
-                                            password.text == admin_password)) {
-                                      if (phone.text == "$superUser") {
-                                        savePhone(phone.text);
-                                        Get.to(AdminHome(
-                                          check_type: phone.text,
-                                          check_number: phone.text,
-                                        ));
-                                      } else if (checkUser(phone.text) ==
-                                              true &&
-                                          type == '2') {
-                                        savePhone(phone.text);
-                                        Get.to(AdminHome(
-                                          check_type: 2,
-                                          check_number: phone.text,
-                                        ));
-                                      }
-                                      // else if (phone.text == "$superUser" ||
-                                      //     checkUser(phone.text) == true) {
-                                      //   savePhone(phone.text);
-                                      //   Get.to(AdminHome(check_type: 1 , check_number: phone.text));
-                                      // }
-                                      else if (checkUser(phone.text) == true &&
-                                          type == '1') {
-                                        savePhone(phone.text);
-                                        Get.to(AdminHome(
-                                            check_type: 1,
-                                            check_number: phone.text));
-                                      } else if (checkUser(phone.text) ==
-                                              true &&
-                                          type == '7') {
-                                        savePhone(phone.text);
-                                        Get.to(AdminHome(
-                                            check_type: 7,
-                                            check_number: phone.text));
-                                      } 
-                                       else if (checkUser(phone.text) == true &&
-                                          type == '3') {
-                                        savePhone(phone.text);
-                                        Get.to(AdminHome(
-                                            check_type: 3,
-                                            check_number: phone.text));
-                                      }
-                                      else if (checkUser(phone.text) == true &&
-                                          type == '4') {
-                                        savePhone(phone.text);
-                                        Get.to(AdminHome(
-                                            check_type: 4,
-                                            check_number: phone.text));
-                                      }
-                                      else {
-                                        savePhone(phone.text);
-                                        Get.to(HomeScreen());
-                                      }
-                                    } else {
-                                      savePhone(phone.text);
-                                      Get.to(HomeScreen());
-                                    }
+                                    // if (phone.text == "$superUser" ||
+                                    //     (checkUser(phone.text) == true &&
+                                    //         password.text == admin_password)) {
+                                    //   if (phone.text == "$superUser") {
+                                    //     savePhone(phone.text);
+                                    //     Get.to(AdminHome(
+                                    //       check_type: phone.text,
+                                    //       check_number: phone.text,
+                                    //     ));
+                                    //   } else if (checkUser(phone.text) ==
+                                    //           true &&
+                                    //       type == '2') {
+                                    //     savePhone(phone.text);
+                                    //     Get.to(AdminHome(
+                                    //       check_type: 2,
+                                    //       check_number: phone.text,
+                                    //     ));
+                                    //   }
+                                    //   // else if (phone.text == "$superUser" ||
+                                    //   //     checkUser(phone.text) == true) {
+                                    //   //   savePhone(phone.text);
+                                    //   //   Get.to(AdminHome(check_type: 1 , check_number: phone.text));
+                                    //   // }
+                                    //   else if (checkUser(phone.text) == true &&
+                                    //       type == '1') {
+                                    //     savePhone(phone.text);
+                                    //     Get.to(AdminHome(
+                                    //         check_type: 1,
+                                    //         check_number: phone.text));
+                                    //   } else if (checkUser(phone.text) ==
+                                    //           true &&
+                                    //       type == '7') {
+                                    //     savePhone(phone.text);
+                                    //     Get.to(AdminHome(
+                                    //         check_type: 7,
+                                    //         check_number: phone.text));
+                                    //   }
+                                    //    else if (checkUser(phone.text) == true &&
+                                    //       type == '3') {
+                                    //     savePhone(phone.text);
+                                    //     Get.to(AdminHome(
+                                    //         check_type: 3,
+                                    //         check_number: phone.text));
+                                    //   }
+                                    //   else if (checkUser(phone.text) == true &&
+                                    //       type == '4') {
+                                    //     savePhone(phone.text);
+                                    //     Get.to(AdminHome(
+                                    //         check_type: 4,
+                                    //         check_number: phone.text));
+                                    //   }
+                                    //   else {
+                                    //     savePhone(phone.text);
+                                    //     Get.to(HomeScreen());
+                                    //   }
+                                    // } else {
+                                    //   savePhone(phone.text);
+                                    //   Get.to(HomeScreen());
+                                    // }
                                   }
                                 },
                                 height: DM.p50,
