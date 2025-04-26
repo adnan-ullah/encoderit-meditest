@@ -1,29 +1,14 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
 
-import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
-import 'package:healthcare_homelab/db/databse_model.dart';
-import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminUser.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/StatusRequestList.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/StatusRequestListTypeFour.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/StatusRequestListTypeThree.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem.dart';
-import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminReportList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminSuperReport.dart';
-import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminUserReport.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AgentReportList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/CollectionReportList.dart';
-import 'package:healthcare_homelab/presentation/widgets/projectsWidget/RequestListTabView.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -196,14 +181,23 @@ class _AdminHomeState extends State<AdminHome> {
                                     onPressed: () {
                                       if (widget.check_type == 3) {
                                         print("HERE Type three");
-                                        Get.to(StatusRequestListTypeThree());
+                                        Get.to(StatusRequestList(
+                                          statusIndices: [1, 2, 8, 3, 4, 5, 6, 7],
+                                          isButtonList: [false, false, false, true, true, true, false, false],
+                                        ));
                                       } 
                                       else if(widget.check_type == 4)
                                       {
-                                         Get.to(StatusRequestListTypeFour());
+                                         Get.to(StatusRequestList(
+                                           statusIndices: [2, 8, 3],
+                                           isButtonList: [false, false, false],
+                                         ));
                                       }
                                       else {
-                                        Get.to(StatusRequestList());
+                                        Get.to(StatusRequestList(
+                                          statusIndices: [1, 2, 8, 3, 4, 5, 6, 7],
+                                          isButtonList: [false, false, false, true, true, true, false, false],
+                                        ));
                                       }
                                     },
                                     child: Text(
