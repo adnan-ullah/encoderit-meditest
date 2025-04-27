@@ -353,7 +353,7 @@ class _AgentReportListState extends State<AgentReportList>
                 'Status',
                 'Payment Date',
                 'Last Payment Date',
-                'Payment',
+                'Collection',
               ],
               data: _newTestRequestList.asMap().entries.map((entry) {
                 final index = entry.key;
@@ -870,7 +870,7 @@ class _AgentReportListState extends State<AgentReportList>
                             Container(
                               width: DM.p80,
                               child: Text(
-                                "Payment",
+                                "Collection",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     fontWeight: FontWeight.w900,
