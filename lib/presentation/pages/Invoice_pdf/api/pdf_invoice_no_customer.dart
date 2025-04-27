@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:healthcare_homelab/constants/app_info.dart';
+import 'package:healthcare_homelab/responsives/dimensions.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -8,7 +9,6 @@ import 'package:pdf/widgets.dart';
 
 import '../model/customer.dart';
 import '../model/invoice.dart';
-import '../model/supplier.dart';
 import '../utils.dart';
 import 'pdf_api.dart';
 
@@ -33,7 +33,9 @@ class PdfInvoiceApiNoCustomer {
       ],
     ));
 
-    return PdfApi.saveDocument(name: '${invoice.customer.invoice_id.toString()} (Lab_Copy.pdf', pdf: pdf);
+    return PdfApi.saveDocument(
+        name: '${invoice.customer.invoice_id.toString()} (Lab_Copy.pdf',
+        pdf: pdf);
   }
 
   static Widget buildHeader(Invoice invoice) => Column(
@@ -54,19 +56,18 @@ class PdfInvoiceApiNoCustomer {
   static Widget buildCustomerAddress(Customer customer) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-            SizedBox(
+          SizedBox(
             width: PdfPageFormat.cm * 3.4,
-            child:
-          Text("ID#  " + customer.invoice_id,
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),),
-                SizedBox(
+            child: Text("ID#  " + customer.invoice_id,
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+          ),
+          SizedBox(
             width: PdfPageFormat.cm * 3.5,
-            child:
-          Text("Name: " + customer.name,
-              style: TextStyle(
-                fontSize: 8,
-              )),
-                ),
+            child: Text("Name: " + customer.name,
+                style: TextStyle(
+                  fontSize: 8,
+                )),
+          ),
           Text("Gender: " + customer.gender,
               style: TextStyle(
                 fontSize: 8,
@@ -78,13 +79,12 @@ class PdfInvoiceApiNoCustomer {
                   fontSize: 8,
                 )),
           ),
-            
         ],
       );
 
   static Widget buildInvoiceInfo(Customer customer) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-     Text(
+      Text(
           "Date: " +
               DateFormat(
                 'dd-MMM-yyy',
@@ -92,8 +92,8 @@ class PdfInvoiceApiNoCustomer {
                   .format(DateTime.fromMillisecondsSinceEpoch(customer.date))
                   .toString(),
           style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold)),
-       Text(
-            "Time: "+
+      Text(
+          "Time: " +
               DateFormat(
                 'hh:mm a',
               )
@@ -129,7 +129,6 @@ class PdfInvoiceApiNoCustomer {
     final headers = [
       'SL',
       'TEST NAME',
-    
     ];
     final data = invoice.items.map((item) {
       //  final total = item.unitPrice * item.quantity * (1 + item.vat);
@@ -137,12 +136,11 @@ class PdfInvoiceApiNoCustomer {
       return [
         '${item.serialNumber}',
         item.testName,
-   
       ];
     }).toList();
 
-    data.add(["", "Collection Charge" ,""]);
-    data.add(["", "Tube Cost" , ""]);
+    data.add(["", "Collection Charge", ""]);
+    data.add(["", "Tube Cost", ""]);
 
     return Table.fromTextArray(
       headers: headers,
@@ -241,17 +239,33 @@ class PdfInvoiceApiNoCustomer {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
           ),
           Text(
-           DateFormat(
-                'dd MMM, yyy',
-              )
-                  .format(DateTime.fromMillisecondsSinceEpoch(invoice.customer.deliveryDate))
-                  .toString(),
+            DateFormat(
+              'dd MMM, yyy',
+            )
+                .format(DateTime.fromMillisecondsSinceEpoch(
+                    invoice.customer.deliveryDate))
+                .toString(),
             style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
           ),
           Text(
             "08:00 PM",
             style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
           ),
+          SizedBox(height: DM.p30),
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(
+              "Prepared by: ${invoice.customer.prepared_by}",
+              style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              "Received by: ${invoice.customer.reciever_name}",
+              style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              "Modified by: ${invoice.customer.last_modifier}",
+              style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+            ),
+          ]),
         ]),
         Column(children: [
           Container(
@@ -271,7 +285,7 @@ class PdfInvoiceApiNoCustomer {
                   ),
                 ]),
           ),
-           Container(
+          Container(
               width: PdfPageFormat.inch * 1.3,
               child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -305,7 +319,6 @@ class PdfInvoiceApiNoCustomer {
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
                     )
                   ])),
-         
           Container(
               width: PdfPageFormat.inch * 1.3,
               child: Row(
