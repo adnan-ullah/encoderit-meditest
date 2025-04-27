@@ -90,6 +90,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
   var advanced = new TextEditingController();
   var due_amount = new TextEditingController();
+  var due_recieved = new TextEditingController();
   var admin_discount = new TextEditingController();
 
   var agent_discount = new TextEditingController();
@@ -114,6 +115,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   var serviceCost = 0;
   var tubeCost = 0;
   var totalDiscount = 0;
+  var totalDueRecieved = 0;
   var test_item_cost = 0;
   var test_item_discount = 0;
   var total_payable_pathology = 0;
@@ -190,6 +192,23 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       }
     });
   }
+
+  Future<String?> getLoggedUserName() async {
+    final refs = await SharedPreferences.getInstance();
+    final phoneNumber = refs.getString("phoneNumber");
+    final typeUser = refs.getString("type");
+
+    if(phoneNumber=="$superUser") return "Super User";
+
+    if (phoneNumber == null || typeUser == null) {
+      return null;
+    }
+    final matchingUser = adminUserList.firstWhere(
+          (user) => user.phone == phoneNumber && user.type == typeUser
+    );
+    return matchingUser.name;
+  }
+
 
   Future<void> openMap(double latitude, double longitude) async {
     if (await MapLauncher.isMapAvailable(MapType.google) != null) {
@@ -275,6 +294,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       due_amount.text = widget.testEachRequest!.due_amount.toString();
     else
       due_amount.text = totalprice.text.toString();
+
+    if (widget.testEachRequest!.due_recieved != null)
+      due_recieved.text = widget.testEachRequest!.due_recieved.toString();
+    else
+      due_recieved.text = "0";
 
     if (widget.testEachRequest!.testlist != null) {
       widget.testEachRequest!.testlist!.map((e) {
@@ -489,115 +513,162 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   }
 
   Future<void> _updateRequest() async {
-    int currentTime = DateTime.now().millisecondsSinceEpoch;
+    final currentTime = DateTime.now().millisecondsSinceEpoch;
+    final dbRef = FirebaseDatabase.instance.ref("$database_name/");
 
-    late DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    admin_discount.text = admin_discount.text.isEmpty ? "0" : admin_discount.text;
+    agent_discount.text = agent_discount.text.isEmpty ? "0" : agent_discount.text;
 
-    if (admin_discount.text == null || admin_discount.text.isEmpty) {
-      admin_discount.text = "0";
-    }
-    if (agent_discount.text == null || agent_discount.text.isEmpty) {
-      agent_discount.text = "0";
-    }
+    if (urlDownload1 != null) image_one.text = urlDownload1!;
+    if (urlDownload2 != null) image_two.text = urlDownload2!;
+    if (urlDownload3 != null) image_discount_card.text = urlDownload3!;
 
-    //uploadImage();
-
-    if (urlDownload1 != null) {
-      image_one.text = urlDownload1.toString();
-    }
-    if (urlDownload2 != null) {
-      image_two.text = urlDownload2.toString();
-    }
-    if (urlDownload3 != null) {
-      image_discount_card.text = urlDownload3.toString();
+    if (typeUser == "4") {
+      teststatus.text = (pathologyDone && radiologyDone) ? "3" : "8";
     }
 
-
-    //typeFourCondition
-    if(typeUser =="4")
-      {
-        if(pathologyDone && radiologyDone)
-        teststatus.text = "3";
-        else
-          teststatus.text = "8";
-      }
-
-    updateTestRequestItem = TestDataRequest(
-      id: widget.testEachRequest!.id.toString(),
-      name: name.text.toString(),
-      gender: gender.toString(),
-      mobile: phone.text.toString(),
-      age: age.text,
-      testlist: testData_updated,
-      totalprice: totalCost,
-      servicecharge: serviceCost,
-      address: address.text.toString(),
-      referrer: referrer.text.toString(),
-      lastupdate: currentTime,
-      dateofcreated: widget.testEachRequest!.dateofcreated,
-      softdelete: 0,
-      latitude: widget.testEachRequest!.latitude,
-      longitude: widget.testEachRequest!.longitude,
-      teststatus: int.parse(teststatus.text),
-      invoice_call: invoice_call.text.toString(),
-      type: createReqController.toType[type.text.toString()],
-      image_one: image_one.text.toString() == "empty"
-          ? null
-          : image_one.text.toString(),
-      image_two: image_two.text.toString() == "empty"
-          ? null
-          : image_two.text.toString(),
-      delivery_date: dateTime_delivery,
-      comments: comments.text.toString(),
-      advanced: int.parse(advanced.text.toString()),
-      due_amount: int.parse(due_amount.text.toString()),
-      total_admin_discount: int.parse(admin_discount.text.toString()),
-      total_agent_discount: int.parse(agent_discount.text.toString()),
-      test_item_cost: test_item_cost,
-      test_item_discount: test_item_discount,
-      total_discount: totalDiscount,
-      total_payable_imagine_cost: total_payable_imaging,
-      total_payable_pathology_cost: total_payable_pathology,
-      total_payable: total_payable_item,
-      total_unpayable: total_unpayable_item,
-      admin_pathology_discount:
-          int.parse(admin_pathology_discount.text.toString()),
-      admin_radiology_discount:
-          int.parse(admin_radiology_discount.text.toString()),
-      agent_commission: int.parse(agent_commission.text.toString()),
-      agent_pathology_discount:
-          int.parse(agent_pathology_discount.text.toString()),
-      agent_radiology_discount:
-          int.parse(agent_radiology_discount.text.toString()),
-      area: "",
-      is_paid: false,
-      total_unpayable_imagine: total_unpayable_imaging,
-      total_unpayable_pathology: total_unpayable_pathology,
-      payment_date: 0,
-      pathology_done: pathologyDone,
-      radiology_done: radiologyDone,
-      assigning: pathologyAssigningPhone.toString(),
-      radiology_assigning: radiologyAssigningPhone.toString(),
-      assigning_commission: int.parse(assigning_commission.text.toString()),
-      radiology_assigning_commission:
-          int.parse(radiology_assigning_commission.text.toString()),
-      imageDiscountFile: image_discount_card.text.toString()
-    );
-
-    if (updateTestRequestItem != null) {
-      await DbrefTestReqModel.child("testRequest")
-          .child(updateTestRequestItem.mobile)
-          .child(updateTestRequestItem.id)
-          .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
-
-      if (widget.testEachRequest!.teststatus == 2) {
-        InvoicePrint(updateTestRequestItem, totalDiscount, due_amount, advanced,
-            tubeCost);
-      }
+    TestDataRequest buildRequest({String? receiverName, String? preparedBy, String? lastModifier}) {
+      return TestDataRequest(
+        id: widget.testEachRequest!.id!,
+        name: name.text,
+        gender: gender,
+        mobile: phone.text,
+        age: age.text,
+        testlist: testData_updated,
+        totalprice: totalCost,
+        servicecharge: serviceCost,
+        address: address.text,
+        referrer: referrer.text,
+        lastupdate: currentTime,
+        dateofcreated: widget.testEachRequest!.dateofcreated,
+        softdelete: 0,
+        latitude: widget.testEachRequest!.latitude,
+        longitude: widget.testEachRequest!.longitude,
+        teststatus: int.parse(teststatus.text),
+        invoice_call: invoice_call.text,
+        type: createReqController.toType[type.text] ?? 0,
+        image_one: image_one.text == "empty" ? null : image_one.text,
+        image_two: image_two.text == "empty" ? null : image_two.text,
+        delivery_date: dateTime_delivery,
+        comments: comments.text,
+        advanced: int.parse(advanced.text),
+        due_amount: int.parse(due_amount.text),
+        total_admin_discount: int.parse(admin_discount.text),
+        total_agent_discount: int.parse(agent_discount.text),
+        test_item_cost: test_item_cost,
+        test_item_discount: test_item_discount,
+        total_discount: totalDiscount,
+        total_payable_imagine_cost: total_payable_imaging,
+        total_payable_pathology_cost: total_payable_pathology,
+        total_payable: total_payable_item,
+        total_unpayable: total_unpayable_item,
+        admin_pathology_discount: int.parse(admin_pathology_discount.text),
+        admin_radiology_discount: int.parse(admin_radiology_discount.text),
+        agent_commission: int.parse(agent_commission.text),
+        agent_pathology_discount: int.parse(agent_pathology_discount.text),
+        agent_radiology_discount: int.parse(agent_radiology_discount.text),
+        area: "",
+        is_paid: false,
+        total_unpayable_imagine: total_unpayable_imaging,
+        total_unpayable_pathology: total_unpayable_pathology,
+        payment_date: 0,
+        pathology_done: pathologyDone,
+        radiology_done: radiologyDone,
+        assigning: pathologyAssigningPhone.toString(),
+        radiology_assigning: radiologyAssigningPhone.toString(),
+        assigning_commission: int.parse(assigning_commission.text),
+        radiology_assigning_commission: int.parse(radiology_assigning_commission.text),
+        imageDiscountFile: image_discount_card.text,
+        reciever_name:receiverName ?? widget.testEachRequest?.reciever_name,
+        prepared_by: preparedBy ?? widget.testEachRequest?.prepared_by,
+        due_recieved: int.tryParse(due_recieved.text.trim()) ?? 0,
+        last_modifier: lastModifier?? widget.testEachRequest?.last_modifier,
+      );
     }
+
+    var updateTestRequestItem = buildRequest();
+    final loggedUserName = await getLoggedUserName();
+
+    if (widget.testEachRequest!.teststatus == 2) {
+      updateTestRequestItem = buildRequest(receiverName: loggedUserName);
+      InvoicePrint(updateTestRequestItem, totalDiscount, due_amount, advanced, tubeCost);
+    }
+
+    if (widget.testEachRequest!.prepared_by == null || widget.testEachRequest!.prepared_by!.isEmpty) {
+      updateTestRequestItem = buildRequest(
+        preparedBy: loggedUserName,
+        receiverName: updateTestRequestItem.reciever_name,
+      );
+    } else if (isTestRequestModified(widget.testEachRequest!, updateTestRequestItem)) {
+      updateTestRequestItem = buildRequest(
+        lastModifier: loggedUserName,
+        receiverName: updateTestRequestItem.reciever_name,
+      );
+    }
+
+
+    await dbRef
+        .child("testRequest")
+        .child(updateTestRequestItem.mobile)
+        .child(updateTestRequestItem.id)
+        .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
 
     Get.back();
+  }
+
+
+  bool isTestRequestModified(TestDataRequest oldRequest, TestDataRequest newRequest) {
+    return oldRequest.name != newRequest.name ||
+        oldRequest.gender != newRequest.gender ||
+        oldRequest.mobile != newRequest.mobile ||
+        oldRequest.age != newRequest.age ||
+        oldRequest.testlist != newRequest.testlist ||
+        oldRequest.totalprice != newRequest.totalprice ||
+        oldRequest.servicecharge != newRequest.servicecharge ||
+        oldRequest.address != newRequest.address ||
+        oldRequest.referrer != newRequest.referrer ||
+        oldRequest.lastupdate != newRequest.lastupdate ||
+        oldRequest.softdelete != newRequest.softdelete ||
+        oldRequest.latitude != newRequest.latitude ||
+        oldRequest.longitude != newRequest.longitude ||
+        // teststatus is intentionally skipped
+        oldRequest.invoice_call != newRequest.invoice_call ||
+        oldRequest.type != newRequest.type ||
+        oldRequest.image_one != newRequest.image_one ||
+        oldRequest.image_two != newRequest.image_two ||
+        oldRequest.delivery_date != newRequest.delivery_date ||
+        oldRequest.comments != newRequest.comments ||
+        oldRequest.advanced != newRequest.advanced ||
+        oldRequest.due_amount != newRequest.due_amount ||
+        oldRequest.total_admin_discount != newRequest.total_admin_discount ||
+        oldRequest.total_agent_discount != newRequest.total_agent_discount ||
+        oldRequest.test_item_cost != newRequest.test_item_cost ||
+        oldRequest.test_item_discount != newRequest.test_item_discount ||
+        oldRequest.total_discount != newRequest.total_discount ||
+        oldRequest.total_payable_imagine_cost != newRequest.total_payable_imagine_cost ||
+        oldRequest.total_payable_pathology_cost != newRequest.total_payable_pathology_cost ||
+        oldRequest.total_payable != newRequest.total_payable ||
+        oldRequest.total_unpayable != newRequest.total_unpayable ||
+        oldRequest.admin_pathology_discount != newRequest.admin_pathology_discount ||
+        oldRequest.admin_radiology_discount != newRequest.admin_radiology_discount ||
+        oldRequest.agent_commission != newRequest.agent_commission ||
+        oldRequest.agent_pathology_discount != newRequest.agent_pathology_discount ||
+        oldRequest.agent_radiology_discount != newRequest.agent_radiology_discount ||
+        oldRequest.area != newRequest.area ||
+        oldRequest.is_paid != newRequest.is_paid ||
+        oldRequest.total_unpayable_imagine != newRequest.total_unpayable_imagine ||
+        oldRequest.total_unpayable_pathology != newRequest.total_unpayable_pathology ||
+        oldRequest.payment_date != newRequest.payment_date ||
+        oldRequest.pathology_done != newRequest.pathology_done ||
+        oldRequest.radiology_done != newRequest.radiology_done ||
+        oldRequest.assigning != newRequest.assigning ||
+        oldRequest.radiology_assigning != newRequest.radiology_assigning ||
+        oldRequest.assigning_commission != newRequest.assigning_commission ||
+        oldRequest.radiology_assigning_commission != newRequest.radiology_assigning_commission ||
+        oldRequest.imageDiscountFile != newRequest.imageDiscountFile ||
+        oldRequest.reciever_name != newRequest.reciever_name ||
+        oldRequest.last_modifier != newRequest.last_modifier ||
+        oldRequest.due_recieved != newRequest.due_recieved;
   }
 
   Future<void> calculationProcess() async {
@@ -606,6 +677,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     serviceCost = 0;
     tubeCost = 0;
     totalDiscount = 0;
+    totalDueRecieved = 0;
     test_item_discount = 0;
     total_payable_pathology = 0;
     total_payable_imaging = 0;
@@ -632,6 +704,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         .toString();
 
     totalDiscount = totalDiscount + int.parse(admin_discount.text.toString());
+    totalDueRecieved = totalDueRecieved + int.parse(due_recieved.text.toString());;
 
     //agent
 
@@ -695,7 +768,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       }
     }).toList();
 
-    totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
+    totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount + totalDueRecieved;
 
     //totalCost = totalTestCost  + serviceCost - totalDiscount;
 
@@ -805,7 +878,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
             test_item_discount + int.parse(testItem.discount.toString());
       }).toList();
 
-      totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
+      totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount + totalDueRecieved;
       // totalCost = totalTestCost  + tubeCost ;
       //totalCost = totalTestCost  + serviceCost - totalDiscount;
 
@@ -3262,6 +3335,71 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         //   value: "0",
                         //   activate: false,
                         // ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Due Received",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      if (due_recieved.text.isNotEmpty) {
+                                        totalprice.text = (totalCost +
+                                            int.parse(
+                                                due_recieved.text.toString()))
+                                            .toString();
+                                      }
+                                    },
+                                    controller: due_recieved,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                              orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         widget.testEachRequest!.assigning == phoneNumber ||
                                 phoneNumber == superUser ||
                                 typeUser == "7" ||
@@ -4165,11 +4303,6 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
   final date = DateTime.now().millisecondsSinceEpoch;
 
   final invoice = Invoice(
-    // supplier: Supplier(
-    //   name: 'Sarah Field',
-    //   address: 'Sarah Street 9, Beijing, China',
-    //   paymentInfo: 'https://paypal.me/sarahfieldzz',
-    // ),
     customer: Customer(
         id: testDataRequest.id,
         invoice_id: testDataRequest.invoice_call,
@@ -4186,7 +4319,9 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
         testItems: testDataRequest.testlist,
         collection_charge: testDataRequest.servicecharge,
         tube_cost: tubeCost,
-        deliveryDate: testDataRequest.delivery_date),
+        deliveryDate: testDataRequest.delivery_date,
+        reciever_name: testDataRequest.reciever_name,
+        last_modifier: testDataRequest.last_modifier),
 
     info: InvoiceInfo(
       date: DateTime.now(),
@@ -4201,33 +4336,6 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
                 " (${testDataRequest.testlist![index].diagnostic_center})",
             testPrice: testDataRequest.testlist![index].testprice,
             serialNumber: index + 1))
-
-    // InvoiceItem(
-    //   testName: 'Coffee',
-    //   quantity: 3,
-    //   testPrice: 5.999999,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Water',
-    //   quantity: 8,
-    //   testPrice: 0.99,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Orange',
-    //   quantity: 3,
-    //   testPrice: 2.99,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Apple',
-    //   quantity: 8,
-    //   testPrice: 3.99,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Mango',
-    //   quantity: 1,
-    //   testPrice: 1.59,
-    // ),
-    ,
   );
 
   final pdfFile = await PdfInvoiceApi.generate(invoice);
@@ -4236,55 +4344,3 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
   PdfApi.openFile(pdfFile);
   PdfApi.openFile(pdfFile2);
 }
-
-//new
-//  Padding(
-//                               padding: EdgeInsets.all(DM.p1),
-//                               child: Row(
-//                                 children: [
-//                                   SizedBox(
-//                                     width: DM.p100,
-//                                     child: Text(
-//                                       "Gender",
-//                                       style: TextStyle(
-//                                           fontWeight: FontWeight.w500,
-//                                           fontSize: DM.p14,
-//                                           color: Color.fromARGB(
-//                                               255, 26, 1, 1)),
-//                                     ),
-//                                   ),
-//                                   SizedBox(
-//                                     width: DM.p5,
-//                                   ),
-//                                   Text(":"),
-//                                   SizedBox(
-//                                     width: DM.p10,
-//                                   ),
-//                                   DropdownButton<String>(
-//                                     hint: Text(
-//                                       "$gender",
-//                                       style:
-//                                           TextStyle(color: blackFontColor),
-//                                     ),
-//                                     items: <String>[
-//                                       'Male',
-//                                       'Female',
-//                                     ].map((String value) {
-//                                       return DropdownMenuItem<String>(
-//                                         value: value,
-//                                         child: Text(
-//                                           "$value",
-//                                           style: TextStyle(
-//                                               color: blackFontColor),
-//                                         ),
-//                                       );
-//                                     }).toList(),
-//                                     onChanged: (newValue) {
-//                                       setState(() {
-//                                         gender = newValue;
-//                                       });
-//                                     },
-//                                   ),
-//                                 ],
-//                               ),
-//                             ),

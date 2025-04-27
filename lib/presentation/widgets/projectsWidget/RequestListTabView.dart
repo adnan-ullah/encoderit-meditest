@@ -270,31 +270,20 @@ class _RequestListTabViewState extends State<RequestListTabView> {
   List<TestDataRequest> _newTestRequestList = [];
 
   void tabStatusList() async {
+    if (!mounted) return; // Add this line to prevent setState when not mounted
+
     setState(() {
-      // if (widget.statusKey == "PRECOLLECTED" && type == "3") {
-      //   _newTestRequestList.addAll(testStatusRequestList
-      //       .where((p0) =>
-      //           createRequest_controller.status[p0.teststatus].toString() ==
-      //           "RECIEVED")
-      //       .toList());
-      // }
-      // else if (widget.statusKey == "COLLECTED"  && (type == "3" || type=="4") ) {
-      //   _newTestRequestList.addAll(testStatusRequestList
-      //       .where((p0) =>
-      //   createRequest_controller.status[p0.teststatus].toString() ==
-      //       widget.statusKey.toString())
-      //       .toList());
-      //
-      // }
+      _newTestRequestList.clear(); // Optional: clear previous list before adding new ones
 
-        _newTestRequestList.addAll(testStatusRequestList
-            .where((p0) =>
-                createRequest_controller.status[p0.teststatus].toString() ==
-                widget.statusKey.toString())
-            .toList());
-
+      _newTestRequestList.addAll(
+          testStatusRequestList.where((p0) =>
+          createRequest_controller.status[p0.teststatus].toString() ==
+              widget.statusKey.toString()
+          ).toList()
+      );
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
