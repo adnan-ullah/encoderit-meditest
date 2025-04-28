@@ -428,7 +428,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           type == '2') {
                                         savePhone(phone.text);
                                         Get.to(AdminHome(
-                                          check_type: 2,
+                                          check_type: "2",
                                           check_number: phone.text,
                                         ));
                                       }
@@ -441,28 +441,28 @@ class _LoginScreenState extends State<LoginScreen> {
                                           type == '1') {
                                         savePhone(phone.text);
                                         Get.to(AdminHome(
-                                            check_type: 1,
+                                            check_type: "1",
                                             check_number: phone.text));
                                       } else if (checkUser(phone.text) ==
                                               true &&
                                           type == '7') {
                                         savePhone(phone.text);
                                         Get.to(AdminHome(
-                                            check_type: 7,
+                                            check_type: "7",
                                             check_number: phone.text));
                                       } 
                                        else if (checkUser(phone.text) == true &&
                                           type == '3') {
                                         savePhone(phone.text);
                                         Get.to(AdminHome(
-                                            check_type: 3,
+                                            check_type: "3",
                                             check_number: phone.text));
                                       }
                                       else if (checkUser(phone.text) == true &&
                                           type == '4') {
                                         savePhone(phone.text);
                                         Get.to(AdminHome(
-                                            check_type: 4,
+                                            check_type: "4",
                                             check_number: phone.text));
                                       }
                                       else {

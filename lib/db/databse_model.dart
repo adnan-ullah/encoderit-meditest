@@ -356,3 +356,72 @@ class AdminUserModel {
         imagine_commission: parsedJson['imagine_commission']);
   }
 }
+
+class CostModel {
+  CostModel({
+    required this.id,
+    required this.postingDate,
+    required this.category,
+    required this.voucherNo,
+    required this.voucherDate,
+    required this.totalAmount,
+    required this.remarks,
+  });
+
+  final dynamic id;
+  final dynamic postingDate;
+  final dynamic category;
+  final dynamic voucherNo;
+  final dynamic voucherDate;
+  final dynamic totalAmount;
+  final dynamic remarks;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'posting_date': postingDate,
+    'category': category,
+    'voucher_no': voucherNo,
+    'voucher_date': voucherDate,
+    'total_amount': totalAmount,
+    'remarks': remarks,
+  };
+
+  factory CostModel.fromJson(Map<String, dynamic> parsedJson) {
+    return CostModel(
+      id: parsedJson['id'],
+      postingDate: parsedJson['posting_date'],
+      category: parsedJson['category'],
+      voucherNo: parsedJson['voucher_no'],
+      voucherDate: parsedJson['voucher_date'],
+      totalAmount: parsedJson['total_amount'],
+      remarks: parsedJson['remarks'],
+    );
+  }
+}
+
+
+class CategoryModel {
+  CategoryModel({
+    required this.id,
+    required this.name,
+    required this.type,
+  });
+
+  final dynamic id;
+  final dynamic name;
+  final dynamic type;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'type': type,
+  };
+
+  factory CategoryModel.fromJson(Map<String, dynamic> parsedJson) {
+    return CategoryModel(
+      id: parsedJson['id'],
+      name: parsedJson['name'],
+      type: parsedJson['type'],
+    );
+  }
+}
