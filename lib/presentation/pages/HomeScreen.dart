@@ -1,32 +1,15 @@
-import 'dart:convert';
-import 'dart:ffi';
-import 'dart:io';
-import 'dart:math';
-
-import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:healthcare_homelab/presentation/widgets/majorWidgets/Custom_Dialog.dart';
-import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Prescription.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/RequestList.dart';
-import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListDialogueBox.dart';
-import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
-import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
+
 import '../../constants/app_info.dart';
 import '../../constants/colors.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/Create_Request_Controller.dart';
-import '../../state_programming/getController.dart';
-import '../widgets/minorWidgets/frostedContainer.dart';
 import 'Login_info.dart';
 
 class HomeScreen extends StatefulWidget {

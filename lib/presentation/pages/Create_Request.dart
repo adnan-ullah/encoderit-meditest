@@ -1,35 +1,25 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/presentation/widgets/majorWidgets/Custom_Dialog.dart';
-import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
-import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/ConfirmationList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListDialogueBox.dart';
-import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
-import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../constants/app_info.dart';
 import '../../constants/colors.dart';
 import '../../db/databse_model.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/Create_Request_Controller.dart';
-import '../../state_programming/getController.dart';
 import '../widgets/projectsWidget/Notifications/NotificationServices.dart';
 import 'Login_info.dart';
 

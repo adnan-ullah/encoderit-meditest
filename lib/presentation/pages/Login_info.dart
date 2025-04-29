@@ -18,7 +18,6 @@ import 'package:get/get.dart';
 import 'package:healthcare_homelab/presentation/widgets/majorWidgets/Custom_Dialog.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
-import 'package:healthcare_homelab/presentation/pages/Template.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
