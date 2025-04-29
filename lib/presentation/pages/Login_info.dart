@@ -163,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: MaterialButton(
                                 onPressed: () async {
                                   final Uri _url = Uri.parse(
-                                      "https://play.google.com/store/apps/details?id=com.innova.meditest");
+                                      "https://play.google.com/store/apps/details?id=com.innova.meditest_new");
                                   if (!await launchUrl(_url)) {
                                     throw 'Could not launch $_url';
                                   }
