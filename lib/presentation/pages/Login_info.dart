@@ -1,32 +1,21 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:io';
-import 'dart:math';
-import 'package:flutter/services.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminHom.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
-import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
-import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/NotificationServices.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:sizer/sizer.dart';
+
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:healthcare_homelab/presentation/widgets/majorWidgets/Custom_Dialog.dart';
-import 'package:healthcare_homelab/db/databse_model.dart';
 import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
+import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminHom.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:uuid/uuid.dart';
+
 import '../../constants/app_info.dart';
 import '../../constants/colors.dart';
 import '../../db/models/AdminUserModel.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/Create_Request_Controller.dart';
-import '../../state_programming/getController.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);

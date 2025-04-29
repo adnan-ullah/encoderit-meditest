@@ -1,33 +1,14 @@
-import 'dart:ui';
-
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
-import 'package:healthcare_homelab/db/databse_model.dart';
-import 'package:healthcare_homelab/presentation/pages/Create_Prescription.dart';
-import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
-import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
-import 'package:healthcare_homelab/presentation/pages/Invoice_pdf/page/PdfPage.dart';
-import 'package:healthcare_homelab/presentation/pages/Login_info.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminHom.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/StatusRequestList.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sizer/sizer.dart';
 
 import 'presentation/pages/splash_pages/SplashScreen.dart';
 import 'presentation/widgets/majorWidgets/MyScaffold.dart';
-import 'responsives/dimensions.dart';
-
-import 'package:device_preview/device_preview.dart';
 
 // void main() => runApp(const MyApp());
 

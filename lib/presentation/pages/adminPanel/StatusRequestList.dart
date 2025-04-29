@@ -1,18 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
-import 'package:healthcare_homelab/db/databse_model.dart';
-import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/NotificationServices.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
@@ -30,7 +22,8 @@ class StatusRequestList extends StatefulWidget {
     super.key,
     required this.statusIndices,
     required this.isButtonList,
-  }) : assert(statusIndices.length == isButtonList.length, 'Lists must have the same length');
+  }) : assert(statusIndices.length == isButtonList.length,
+            'Lists must have the same length');
 
   @override
   State<StatusRequestList> createState() => _StatusRequestListState();
@@ -38,7 +31,8 @@ class StatusRequestList extends StatefulWidget {
 
 FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-class _StatusRequestListState extends State<StatusRequestList> with TickerProviderStateMixin {
+class _StatusRequestListState extends State<StatusRequestList>
+    with TickerProviderStateMixin {
   int _selectedIndex = 0;
   late TabController tabController;
   CreateRequest_controller cr_controller = Get.put(CreateRequest_controller());
@@ -98,7 +92,8 @@ class _StatusRequestListState extends State<StatusRequestList> with TickerProvid
   }
 
   Future<void> _getNotification(BuildContext context) async {
-    _dbref_testReqModel = await FirebaseDatabase.instance.ref("$database_name/testRequest/");
+    _dbref_testReqModel =
+        await FirebaseDatabase.instance.ref("$database_name/testRequest/");
 
     status2 = _dbref_testReqModel.onChildAdded.listen((event) async {
       SharedPreferences refs = await SharedPreferences.getInstance();
@@ -181,9 +176,11 @@ class _StatusRequestListState extends State<StatusRequestList> with TickerProvid
 }
 
 Future<void> populateAllRequest() async {
-  CreateRequest_controller createRequestController = Get.put(CreateRequest_controller());
+  CreateRequest_controller createRequestController =
+      Get.put(CreateRequest_controller());
   late DatabaseReference dbrefTestRequest;
-  dbrefTestRequest = FirebaseDatabase.instance.ref("$database_name/testRequest/");
+  dbrefTestRequest =
+      FirebaseDatabase.instance.ref("$database_name/testRequest/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);
   dbrefTestRequest.keepSynced(true);
 
@@ -195,7 +192,8 @@ Future<void> populateAllRequest() async {
   });
 }
 
-Future<void> getAdminNotification(String? phone, String? type, BuildContext context) async {
+Future<void> getAdminNotification(
+    String? phone, String? type, BuildContext context) async {
   if (type == "1" || type == "7" || phone == "$superUser") {
     createPlantFoodNotification();
     showNotification(context);
