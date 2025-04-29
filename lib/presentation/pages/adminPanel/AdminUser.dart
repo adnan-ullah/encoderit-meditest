@@ -14,7 +14,7 @@ import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/WarningDialogu.dart';
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
 
-import '../../../animations/Custom_Dialog.dart';
+import '../../widgets/majorWidgets/Custom_Dialog.dart';
 import '../../../constants/app_info.dart';
 import '../../../responsives/dimensions.dart';
 

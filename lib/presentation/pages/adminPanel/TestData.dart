@@ -8,7 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
+import 'package:healthcare_homelab/presentation/widgets/majorWidgets/Custom_Dialog.dart';
 import 'package:healthcare_homelab/constants/app_info.dart';
 import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
 

@@ -7,7 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
+import 'package:healthcare_homelab/presentation/widgets/majorWidgets/Custom_Dialog.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestListDialogueAdmin.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/FormUserAge.dart';
 import 'package:image_picker/image_picker.dart';

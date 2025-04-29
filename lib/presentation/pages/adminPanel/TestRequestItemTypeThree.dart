@@ -16,7 +16,7 @@ import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notificat
 import 'package:image_picker/image_picker.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:get/get.dart';
-import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
+import 'package:healthcare_homelab/presentation/widgets/majorWidgets/Custom_Dialog.dart';
 
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/ConfirmationList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Confirmation_TestItem.dart';

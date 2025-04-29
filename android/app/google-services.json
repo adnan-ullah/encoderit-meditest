@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "931036564647",
+    "firebase_url": "https://meditest-new-default-rtdb.firebaseio.com",
     "project_id": "meditest-new",
     "storage_bucket": "meditest-new.firebasestorage.app"
   },
