@@ -1,48 +1,27 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import 'package:geolocator/geolocator.dart';
-import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/TestListDialogueAdmin.dart';
-import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:map_launcher/map_launcher.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/animations/Custom_Dialog.dart';
-
-import 'package:healthcare_homelab/presentation/widgets/projectsWidget/ConfirmationList.dart';
-import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Confirmation_TestItem.dart';
-import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListDialogueBox.dart';
-import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TextBoxDialogBox.dart';
-import 'package:healthcare_homelab/presentation/widgets/minorWidgets/smallDialogBox.dart';
+import 'package:healthcare_homelab/presentation/pages/adminPanel/TestListDialogueAdmin.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/FormUserAge.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
-import 'package:multi_select_flutter/util/multi_select_item.dart';
-import 'package:multi_select_flutter/util/multi_select_list_type.dart';
+import 'package:map_launcher/map_launcher.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:photo_view/photo_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../constants/app_info.dart';
 import '../../../constants/colors.dart';
 import '../../../db/databse_model.dart';
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/Create_Request_Controller.dart';
-import '../../../state_programming/getController.dart';
 import '../../widgets/minorWidgets/PhotoViewImage.dart';
-import '../../widgets/projectsWidget/Notifications/NotificationServices.dart';
 import '../Invoice_pdf/api/pdf_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_no_customer.dart';
@@ -52,6 +31,7 @@ import '../Login_info.dart';
 
 class TestRequestCreate extends StatefulWidget {
   TestDataRequest? testEachRequest;
+
   TestRequestCreate({Key? key, this.testEachRequest}) : super(key: key);
 
   @override
@@ -90,6 +70,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
   var advanced = new TextEditingController();
   var due_amount = new TextEditingController();
+  var due_recieved = new TextEditingController();
   var admin_discount = new TextEditingController();
 
   var agent_discount = new TextEditingController();
@@ -114,6 +95,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   var serviceCost = 0;
   var tubeCost = 0;
   var totalDiscount = 0;
+  var totalDueRecieved = 0;
   var test_item_cost = 0;
   var test_item_discount = 0;
   var total_payable_pathology = 0;
@@ -128,7 +110,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   var newRequestData;
   bool isFromNetwork1 = false;
   bool isFromNetwork2 = false;
-  bool isFromNetwork_discount= false;
+  bool isFromNetwork_discount = false;
   File? imageFile1, imageFile2, imageDiscountFile;
   UploadTask? uploadTask1, uploadTask2, uploadTask3;
   bool init = false;
@@ -155,10 +137,10 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
             TestData.fromJson(json.decode(jsonEncode(ds.value)));
 
         setState(() {
-        testItemList.add(testData);
-        if (testItemListWithSelected[testData.id] != true)
-          testItemListWithSelected[testData.id] = false;
-      });
+          testItemList.add(testData);
+          if (testItemListWithSelected[testData.id] != true)
+            testItemListWithSelected[testData.id] = false;
+        });
         print("HEREEEE");
 
         //false -> add button
@@ -191,6 +173,21 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     });
   }
 
+  Future<String?> getLoggedUserName() async {
+    final refs = await SharedPreferences.getInstance();
+    final phoneNumber = refs.getString("phoneNumber");
+    final typeUser = refs.getString("type");
+
+    if (phoneNumber == "$superUser") return "Super User";
+
+    if (phoneNumber == null || typeUser == null) {
+      return null;
+    }
+    final matchingUser = adminUserList.firstWhere(
+        (user) => user.phone == phoneNumber && user.type == typeUser);
+    return matchingUser.name;
+  }
+
   Future<void> openMap(double latitude, double longitude) async {
     if (await MapLauncher.isMapAvailable(MapType.google) != null) {
       await MapLauncher.showMarker(
@@ -204,8 +201,6 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   }
 
   Future<void> retreiveEachDataRequest() async {
-
-
     SharedPreferences refs = await SharedPreferences.getInstance();
     phoneNumber = refs.getString("phoneNumber")!;
     typeUser = refs.getString("type")!;
@@ -275,6 +270,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       due_amount.text = widget.testEachRequest!.due_amount.toString();
     else
       due_amount.text = totalprice.text.toString();
+
+    if (widget.testEachRequest!.due_recieved != null)
+      due_recieved.text = widget.testEachRequest!.due_recieved.toString();
+    else
+      due_recieved.text = "0";
 
     if (widget.testEachRequest!.testlist != null) {
       widget.testEachRequest!.testlist!.map((e) {
@@ -390,8 +390,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
             .toString()
             .contains("null")) {
       assigning_commission.text = "0";
-    }
-    else {
+    } else {
       assigning_commission.text =
           widget.testEachRequest!.assigning_commission!.toString();
     }
@@ -411,9 +410,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       setState(() {
         isFromNetwork_discount = true;
       });
-      image_discount_card.text = widget.testEachRequest!.imageDiscountFile.toString();
+      image_discount_card.text =
+          widget.testEachRequest!.imageDiscountFile.toString();
     }
-
   }
 
   void _onLoading(isClosed) {
@@ -489,115 +488,188 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   }
 
   Future<void> _updateRequest() async {
-    int currentTime = DateTime.now().millisecondsSinceEpoch;
+    final currentTime = DateTime.now().millisecondsSinceEpoch;
+    final dbRef = FirebaseDatabase.instance.ref("$database_name/");
 
-    late DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    admin_discount.text =
+        admin_discount.text.isEmpty ? "0" : admin_discount.text;
+    agent_discount.text =
+        agent_discount.text.isEmpty ? "0" : agent_discount.text;
 
-    if (admin_discount.text == null || admin_discount.text.isEmpty) {
-      admin_discount.text = "0";
-    }
-    if (agent_discount.text == null || agent_discount.text.isEmpty) {
-      agent_discount.text = "0";
-    }
+    if (urlDownload1 != null) image_one.text = urlDownload1!;
+    if (urlDownload2 != null) image_two.text = urlDownload2!;
+    if (urlDownload3 != null) image_discount_card.text = urlDownload3!;
 
-    //uploadImage();
-
-    if (urlDownload1 != null) {
-      image_one.text = urlDownload1.toString();
-    }
-    if (urlDownload2 != null) {
-      image_two.text = urlDownload2.toString();
-    }
-    if (urlDownload3 != null) {
-      image_discount_card.text = urlDownload3.toString();
+    if (typeUser == "4") {
+      teststatus.text = (pathologyDone && radiologyDone) ? "3" : "8";
     }
 
+    TestDataRequest buildRequest(
+        {String? receiverName, String? preparedBy, String? lastModifier}) {
+      return TestDataRequest(
+        id: widget.testEachRequest!.id!,
+        name: name.text,
+        gender: gender,
+        mobile: phone.text,
+        age: age.text,
+        testlist: testData_updated,
+        totalprice: totalCost,
+        servicecharge: serviceCost,
+        address: address.text,
+        referrer: referrer.text,
+        lastupdate: currentTime,
+        dateofcreated: widget.testEachRequest!.dateofcreated,
+        softdelete: 0,
+        latitude: widget.testEachRequest!.latitude,
+        longitude: widget.testEachRequest!.longitude,
+        teststatus: int.parse(teststatus.text),
+        invoice_call: invoice_call.text,
+        type: createReqController.toType[type.text] ?? 0,
+        image_one: image_one.text == "empty" ? null : image_one.text,
+        image_two: image_two.text == "empty" ? null : image_two.text,
+        delivery_date: dateTime_delivery,
+        comments: comments.text,
+        advanced: int.parse(advanced.text),
+        due_amount: int.parse(due_amount.text),
+        total_admin_discount: int.parse(admin_discount.text),
+        total_agent_discount: int.parse(agent_discount.text),
+        test_item_cost: test_item_cost,
+        test_item_discount: test_item_discount,
+        total_discount: totalDiscount,
+        total_payable_imagine_cost: total_payable_imaging,
+        total_payable_pathology_cost: total_payable_pathology,
+        total_payable: total_payable_item,
+        total_unpayable: total_unpayable_item,
+        admin_pathology_discount: int.parse(admin_pathology_discount.text),
+        admin_radiology_discount: int.parse(admin_radiology_discount.text),
+        agent_commission: int.parse(agent_commission.text),
+        agent_pathology_discount: int.parse(agent_pathology_discount.text),
+        agent_radiology_discount: int.parse(agent_radiology_discount.text),
+        area: "",
+        is_paid: false,
+        total_unpayable_imagine: total_unpayable_imaging,
+        total_unpayable_pathology: total_unpayable_pathology,
+        payment_date: 0,
+        pathology_done: pathologyDone,
+        radiology_done: radiologyDone,
+        assigning: pathologyAssigningPhone.toString(),
+        radiology_assigning: radiologyAssigningPhone.toString(),
+        assigning_commission: int.parse(assigning_commission.text),
+        radiology_assigning_commission:
+            int.parse(radiology_assigning_commission.text),
+        imageDiscountFile: image_discount_card.text,
+        reciever_name: receiverName ?? widget.testEachRequest?.reciever_name,
+        prepared_by: preparedBy ?? widget.testEachRequest?.prepared_by,
+        due_recieved: int.tryParse(due_recieved.text.trim()) ?? 0,
+        last_modifier: lastModifier ?? widget.testEachRequest?.last_modifier,
+      );
+    }
 
-    //typeFourCondition
-    if(typeUser =="4")
-      {
-        if(pathologyDone && radiologyDone)
-        teststatus.text = "3";
-        else
-          teststatus.text = "8";
-      }
+    var updateTestRequestItem = buildRequest();
+    final loggedUserName = await getLoggedUserName();
 
-    updateTestRequestItem = TestDataRequest(
-      id: widget.testEachRequest!.id.toString(),
-      name: name.text.toString(),
-      gender: gender.toString(),
-      mobile: phone.text.toString(),
-      age: age.text,
-      testlist: testData_updated,
-      totalprice: totalCost,
-      servicecharge: serviceCost,
-      address: address.text.toString(),
-      referrer: referrer.text.toString(),
-      lastupdate: currentTime,
-      dateofcreated: widget.testEachRequest!.dateofcreated,
-      softdelete: 0,
-      latitude: widget.testEachRequest!.latitude,
-      longitude: widget.testEachRequest!.longitude,
-      teststatus: int.parse(teststatus.text),
-      invoice_call: invoice_call.text.toString(),
-      type: createReqController.toType[type.text.toString()],
-      image_one: image_one.text.toString() == "empty"
-          ? null
-          : image_one.text.toString(),
-      image_two: image_two.text.toString() == "empty"
-          ? null
-          : image_two.text.toString(),
-      delivery_date: dateTime_delivery,
-      comments: comments.text.toString(),
-      advanced: int.parse(advanced.text.toString()),
-      due_amount: int.parse(due_amount.text.toString()),
-      total_admin_discount: int.parse(admin_discount.text.toString()),
-      total_agent_discount: int.parse(agent_discount.text.toString()),
-      test_item_cost: test_item_cost,
-      test_item_discount: test_item_discount,
-      total_discount: totalDiscount,
-      total_payable_imagine_cost: total_payable_imaging,
-      total_payable_pathology_cost: total_payable_pathology,
-      total_payable: total_payable_item,
-      total_unpayable: total_unpayable_item,
-      admin_pathology_discount:
-          int.parse(admin_pathology_discount.text.toString()),
-      admin_radiology_discount:
-          int.parse(admin_radiology_discount.text.toString()),
-      agent_commission: int.parse(agent_commission.text.toString()),
-      agent_pathology_discount:
-          int.parse(agent_pathology_discount.text.toString()),
-      agent_radiology_discount:
-          int.parse(agent_radiology_discount.text.toString()),
-      area: "",
-      is_paid: false,
-      total_unpayable_imagine: total_unpayable_imaging,
-      total_unpayable_pathology: total_unpayable_pathology,
-      payment_date: 0,
-      pathology_done: pathologyDone,
-      radiology_done: radiologyDone,
-      assigning: pathologyAssigningPhone.toString(),
-      radiology_assigning: radiologyAssigningPhone.toString(),
-      assigning_commission: int.parse(assigning_commission.text.toString()),
-      radiology_assigning_commission:
-          int.parse(radiology_assigning_commission.text.toString()),
-      imageDiscountFile: image_discount_card.text.toString()
+    String? preparedBy = widget.testEachRequest!.prepared_by;
+    String? lastModifier = widget.testEachRequest!.last_modifier;
+    String? receiverName = widget.testEachRequest!.reciever_name;
+
+// update preparedBy or lastModifier first
+    if (widget.testEachRequest!.prepared_by == null ||
+        widget.testEachRequest!.prepared_by!.isEmpty) {
+      preparedBy = loggedUserName;
+    } else if (isTestRequestModified(
+        widget.testEachRequest!, updateTestRequestItem)) {
+      lastModifier = loggedUserName;
+    }
+
+// update receiverName if teststatus == 2
+    if (widget.testEachRequest!.teststatus == 2) {
+      receiverName = loggedUserName;
+    }
+
+// finally build once
+    updateTestRequestItem = buildRequest(
+      preparedBy: preparedBy,
+      lastModifier: lastModifier,
+      receiverName: receiverName,
     );
 
-    if (updateTestRequestItem != null) {
-      await DbrefTestReqModel.child("testRequest")
-          .child(updateTestRequestItem.mobile)
-          .child(updateTestRequestItem.id)
-          .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
-
-      if (widget.testEachRequest!.teststatus == 2) {
-        InvoicePrint(updateTestRequestItem, totalDiscount, due_amount, advanced,
-            tubeCost);
-      }
+// print invoice if needed
+    if (widget.testEachRequest!.teststatus == 2) {
+      InvoicePrint(
+          updateTestRequestItem, totalDiscount, due_amount, advanced, tubeCost);
     }
 
+    await dbRef
+        .child("testRequest")
+        .child(updateTestRequestItem.mobile)
+        .child(updateTestRequestItem.id)
+        .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
+
     Get.back();
+  }
+
+  bool isTestRequestModified(
+      TestDataRequest oldRequest, TestDataRequest newRequest) {
+    return oldRequest.name != newRequest.name ||
+        oldRequest.gender != newRequest.gender ||
+        oldRequest.mobile != newRequest.mobile ||
+        oldRequest.age != newRequest.age ||
+        oldRequest.testlist != newRequest.testlist ||
+        oldRequest.totalprice != newRequest.totalprice ||
+        oldRequest.servicecharge != newRequest.servicecharge ||
+        oldRequest.address != newRequest.address ||
+        oldRequest.referrer != newRequest.referrer ||
+        oldRequest.lastupdate != newRequest.lastupdate ||
+        oldRequest.softdelete != newRequest.softdelete ||
+        oldRequest.latitude != newRequest.latitude ||
+        oldRequest.longitude != newRequest.longitude ||
+        // teststatus is intentionally skipped
+        oldRequest.invoice_call != newRequest.invoice_call ||
+        oldRequest.type != newRequest.type ||
+        oldRequest.image_one != newRequest.image_one ||
+        oldRequest.image_two != newRequest.image_two ||
+        oldRequest.delivery_date != newRequest.delivery_date ||
+        oldRequest.comments != newRequest.comments ||
+        oldRequest.advanced != newRequest.advanced ||
+        oldRequest.due_amount != newRequest.due_amount ||
+        oldRequest.total_admin_discount != newRequest.total_admin_discount ||
+        oldRequest.total_agent_discount != newRequest.total_agent_discount ||
+        oldRequest.test_item_cost != newRequest.test_item_cost ||
+        oldRequest.test_item_discount != newRequest.test_item_discount ||
+        oldRequest.total_discount != newRequest.total_discount ||
+        oldRequest.total_payable_imagine_cost !=
+            newRequest.total_payable_imagine_cost ||
+        oldRequest.total_payable_pathology_cost !=
+            newRequest.total_payable_pathology_cost ||
+        oldRequest.total_payable != newRequest.total_payable ||
+        oldRequest.total_unpayable != newRequest.total_unpayable ||
+        oldRequest.admin_pathology_discount !=
+            newRequest.admin_pathology_discount ||
+        oldRequest.admin_radiology_discount !=
+            newRequest.admin_radiology_discount ||
+        oldRequest.agent_commission != newRequest.agent_commission ||
+        oldRequest.agent_pathology_discount !=
+            newRequest.agent_pathology_discount ||
+        oldRequest.agent_radiology_discount !=
+            newRequest.agent_radiology_discount ||
+        oldRequest.area != newRequest.area ||
+        oldRequest.is_paid != newRequest.is_paid ||
+        oldRequest.total_unpayable_imagine !=
+            newRequest.total_unpayable_imagine ||
+        oldRequest.total_unpayable_pathology !=
+            newRequest.total_unpayable_pathology ||
+        oldRequest.payment_date != newRequest.payment_date ||
+        oldRequest.pathology_done != newRequest.pathology_done ||
+        oldRequest.radiology_done != newRequest.radiology_done ||
+        oldRequest.assigning != newRequest.assigning ||
+        oldRequest.radiology_assigning != newRequest.radiology_assigning ||
+        oldRequest.assigning_commission != newRequest.assigning_commission ||
+        oldRequest.radiology_assigning_commission !=
+            newRequest.radiology_assigning_commission ||
+        oldRequest.imageDiscountFile != newRequest.imageDiscountFile ||
+        oldRequest.reciever_name != newRequest.reciever_name ||
+        oldRequest.last_modifier != newRequest.last_modifier ||
+        oldRequest.due_recieved != newRequest.due_recieved;
   }
 
   Future<void> calculationProcess() async {
@@ -606,6 +678,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     serviceCost = 0;
     tubeCost = 0;
     totalDiscount = 0;
+    totalDueRecieved = 0;
     test_item_discount = 0;
     total_payable_pathology = 0;
     total_payable_imaging = 0;
@@ -632,6 +705,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         .toString();
 
     totalDiscount = totalDiscount + int.parse(admin_discount.text.toString());
+    totalDueRecieved =
+        totalDueRecieved + int.parse(due_recieved.text.toString());
+    ;
 
     //agent
 
@@ -695,7 +771,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       }
     }).toList();
 
-    totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
+    totalCost = totalTestCost +
+        serviceCost +
+        tubeCost -
+        totalDiscount +
+        totalDueRecieved;
 
     //totalCost = totalTestCost  + serviceCost - totalDiscount;
 
@@ -753,7 +833,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
           }
 
           print("pathology_commision " + pathology_commision.toString());
-          print("total_payable_pathology " + total_payable_pathology.toString());
+          print(
+              "total_payable_pathology " + total_payable_pathology.toString());
           assigning_commission.text =
               ((((total_payable_pathology) * pathology_commision) / 100))
                   .toInt()
@@ -805,7 +886,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
             test_item_discount + int.parse(testItem.discount.toString());
       }).toList();
 
-      totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
+      totalCost = totalTestCost +
+          serviceCost +
+          tubeCost -
+          totalDiscount +
+          totalDueRecieved;
       // totalCost = totalTestCost  + tubeCost ;
       //totalCost = totalTestCost  + serviceCost - totalDiscount;
 
@@ -1049,14 +1134,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                             ],
                           ),
                         ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateString,
-                          textInputType: TextInputType.number,
-                          controller: age,
-                          title: "Age",
-                          value: "0",
-                          activate: false,
+                        FormUserAge(
+                          ageController: age, // Controller to collect the combined age string
+                          initialAge: age.text, // The initial value
                         ),
                         Padding(
                           padding: EdgeInsets.all(DM.p5),
@@ -1216,210 +1296,208 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                               SizedBox(
                                 width: DM.p10,
                               ),
-
-                              image_discount_card.text != "empty" || imageDiscountFile!=null
+                              image_discount_card.text != "empty" ||
+                                      imageDiscountFile != null
                                   ? Column(
-                                children: [
-                                  //MyphotoView for Form
-                                  Container(
-                                    height: DM.p80,
-                                    width: DM.p80,
-                                    child:
-                                    isFromNetwork_discount
-                                        ? InkWell(
-                                      onTap:
-                                          () {
-                                        showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              return MyDialogView(
-                                                  myChild: MyPhotoView(
-                                                    image: widget.testEachRequest!.imageDiscountFile.toString(),
-                                                    imageType: "Network",
-                                                  ));
-                                            });
-                                      },
-                                      child:
-                                      Container(
-                                        child:
-                                        Image.network(
-                                          widget.testEachRequest!.imageDiscountFile.toString()!,
-                                          fit:
-                                          BoxFit.cover,
-                                        ),
-                                      ),
-                                    )
-                                        : InkWell(
-                                      onTap:
-                                          () {
-                                        showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              return MyDialogView(
-                                                  myChild: MyPhotoView(
-                                                    image: imageDiscountFile,
-                                                    imageType: "File",
-                                                  ));
-                                            });
-                                      },
-                                      child:
-                                      Container(
-                                        child:
-                                        Image.file(
-                                          imageDiscountFile!,
-                                          fit:
-                                          BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-
-                                  ),
-                                  typeUser=="7" || phone==superUser?
-                                  IconButton(
-                                    color: orangeColor,
-                                    icon: Icon(
-                                      CupertinoIcons
-                                          .xmark_circle_fill,
-                                      size: DM.p30,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        imageDiscountFile =
-                                        null;
-                                        image_discount_card.text =
-                                        "empty";
-                                      });
-                                    },
-                                  ):SizedBox(),
-                                ],
-                              )
-                                  : Container(
-                                height: DM.p60,
-                                width: DM.p80,
-                                margin: EdgeInsets.symmetric(
-                                    horizontal: DM.p15),
-                                child: MaterialButton(
-                                    onPressed: () async {
-                                      showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            return Center(
-                                              child: Container(
-                                                color: whiteColor,
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .center,
-                                                  children: [
-                                                    Container(
-                                                      margin:
-                                                      EdgeInsets.all(
-                                                          DM.p16),
-                                                      height: DM.p130,
-                                                      width: DM.p120,
-                                                      child:
-                                                      ElevatedButton(
-                                                          style: ElevatedButton.styleFrom(
-                                                              backgroundColor:
-                                                              orangeColor,
-                                                              elevation:
-                                                              0),
-                                                          onPressed:
-                                                              () async {
-
-                                                            PickedFile?
-                                                            pickedFile =
-                                                            await ImagePicker()
-                                                                .getImage(
-                                                              source:
-                                                              ImageSource.gallery,
-                                                              maxWidth:
-                                                              1200,
-                                                              maxHeight:
-                                                              1600,
-                                                            );
-                                                            setState(
-                                                                    () {
-                                                                  if (pickedFile !=
-                                                                      null)
-                                                                    imageDiscountFile =
-                                                                        File(pickedFile!.path);
-                                                                });
-
-                                                            Navigator.pop(
-                                                                context);
-                                                          },
-                                                          child: Text(
-                                                            "Gallery",
-                                                            style: TextStyle(
-                                                                fontSize:
-                                                                DM.p18),
-                                                          )),
+                                      children: [
+                                        //MyphotoView for Form
+                                        Container(
+                                          height: DM.p80,
+                                          width: DM.p80,
+                                          child: isFromNetwork_discount
+                                              ? InkWell(
+                                                  onTap: () {
+                                                    showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return MyDialogView(
+                                                              myChild:
+                                                                  MyPhotoView(
+                                                            image: widget
+                                                                .testEachRequest!
+                                                                .imageDiscountFile
+                                                                .toString(),
+                                                            imageType:
+                                                                "Network",
+                                                          ));
+                                                        });
+                                                  },
+                                                  child: Container(
+                                                    child: Image.network(
+                                                      widget.testEachRequest!
+                                                          .imageDiscountFile
+                                                          .toString()!,
+                                                      fit: BoxFit.cover,
                                                     ),
-                                                    Container(
-                                                      margin:
-                                                      EdgeInsets.all(
-                                                          DM.p16),
-                                                      decoration: BoxDecoration(
-                                                          borderRadius:
-                                                          BorderRadius
-                                                              .circular(
-                                                              25)),
-                                                      height: DM.p130,
-                                                      width: DM.p120,
-                                                      child:
-                                                      ElevatedButton(
-                                                          style: ElevatedButton.styleFrom(
-                                                              backgroundColor:
-                                                              orangeColor,
-                                                              elevation:
-                                                              0),
-                                                          onPressed:
-                                                              () async {
-                                                            PickedFile?
-                                                            pickedFile =
-                                                            await ImagePicker()
-                                                                .getImage(
-                                                              source:
-                                                              ImageSource.camera,
-                                                              maxWidth:
-                                                              1200,
-                                                              maxHeight:
-                                                              1600,
-                                                            );
-                                                            setState(
-                                                                    () {
-                                                                  if (pickedFile !=
-                                                                      null)
-                                                                    imageDiscountFile =
-                                                                        File(pickedFile!.path);
-                                                                });
-                                                            Navigator.pop(
-                                                                context);
-                                                          },
-                                                          child: Text(
-                                                              "Camera",
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                  DM.p18))),
-                                                    )
-                                                  ],
+                                                  ),
+                                                )
+                                              : InkWell(
+                                                  onTap: () {
+                                                    showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return MyDialogView(
+                                                              myChild:
+                                                                  MyPhotoView(
+                                                            image:
+                                                                imageDiscountFile,
+                                                            imageType: "File",
+                                                          ));
+                                                        });
+                                                  },
+                                                  child: Container(
+                                                    child: Image.file(
+                                                      imageDiscountFile!,
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                                  ),
                                                 ),
-                                              ),
-                                            );
-                                          });
-                                    },
-                                    height: DM.p50,
-                                    color: orangeColor,
-                                    child: Icon(Icons.camera , size: DM.p40,color: whiteColor,)
-                                ),
-                              )
+                                        ),
+                                        typeUser == "7" || phone == superUser
+                                            ? IconButton(
+                                                color: orangeColor,
+                                                icon: Icon(
+                                                  CupertinoIcons
+                                                      .xmark_circle_fill,
+                                                  size: DM.p30,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    imageDiscountFile = null;
+                                                    image_discount_card.text =
+                                                        "empty";
+                                                  });
+                                                },
+                                              )
+                                            : SizedBox(),
+                                      ],
+                                    )
+                                  : Container(
+                                      height: DM.p60,
+                                      width: DM.p80,
+                                      margin: EdgeInsets.symmetric(
+                                          horizontal: DM.p15),
+                                      child: MaterialButton(
+                                          onPressed: () async {
+                                            showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return Center(
+                                                    child: Container(
+                                                      color: whiteColor,
+                                                      child: Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Container(
+                                                            margin:
+                                                                EdgeInsets.all(
+                                                                    DM.p16),
+                                                            height: DM.p130,
+                                                            width: DM.p120,
+                                                            child:
+                                                                ElevatedButton(
+                                                                    style: ElevatedButton.styleFrom(
+                                                                        backgroundColor:
+                                                                            orangeColor,
+                                                                        elevation:
+                                                                            0),
+                                                                    onPressed:
+                                                                        () async {
+                                                                      PickedFile?
+                                                                          pickedFile =
+                                                                          await ImagePicker()
+                                                                              .getImage(
+                                                                        source:
+                                                                            ImageSource.gallery,
+                                                                        maxWidth:
+                                                                            1200,
+                                                                        maxHeight:
+                                                                            1600,
+                                                                      );
+                                                                      setState(
+                                                                          () {
+                                                                        if (pickedFile !=
+                                                                            null)
+                                                                          imageDiscountFile =
+                                                                              File(pickedFile!.path);
+                                                                      });
+
+                                                                      Navigator.pop(
+                                                                          context);
+                                                                    },
+                                                                    child: Text(
+                                                                      "Gallery",
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              DM.p18),
+                                                                    )),
+                                                          ),
+                                                          Container(
+                                                            margin:
+                                                                EdgeInsets.all(
+                                                                    DM.p16),
+                                                            decoration: BoxDecoration(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            25)),
+                                                            height: DM.p130,
+                                                            width: DM.p120,
+                                                            child:
+                                                                ElevatedButton(
+                                                                    style: ElevatedButton.styleFrom(
+                                                                        backgroundColor:
+                                                                            orangeColor,
+                                                                        elevation:
+                                                                            0),
+                                                                    onPressed:
+                                                                        () async {
+                                                                      PickedFile?
+                                                                          pickedFile =
+                                                                          await ImagePicker()
+                                                                              .getImage(
+                                                                        source:
+                                                                            ImageSource.camera,
+                                                                        maxWidth:
+                                                                            1200,
+                                                                        maxHeight:
+                                                                            1600,
+                                                                      );
+                                                                      setState(
+                                                                          () {
+                                                                        if (pickedFile !=
+                                                                            null)
+                                                                          imageDiscountFile =
+                                                                              File(pickedFile!.path);
+                                                                      });
+                                                                      Navigator.pop(
+                                                                          context);
+                                                                    },
+                                                                    child: Text(
+                                                                        "Camera",
+                                                                        style: TextStyle(
+                                                                            fontSize:
+                                                                                DM.p18))),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                });
+                                          },
+                                          height: DM.p50,
+                                          color: orangeColor,
+                                          child: Icon(
+                                            Icons.camera,
+                                            size: DM.p40,
+                                            color: whiteColor,
+                                          )),
+                                    )
                             ],
                           ),
                         ),
-
-
-
 
                         FormUserInfo(
                           formKey: _formKey,
@@ -1526,23 +1604,31 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                         ),
                                                                       ),
                                                           ),
-                                                          typeUser=="7" || phoneNumber==superUser?
-                                                          IconButton(
-                                                            color: orangeColor,
-                                                            icon: Icon(
-                                                              CupertinoIcons
-                                                                  .xmark_circle_fill,
-                                                              size: DM.p30,
-                                                            ),
-                                                            onPressed: () {
-                                                              setState(() {
-                                                                imageFile1 =
-                                                                    null;
-                                                                image_one.text =
-                                                                    "empty";
-                                                              });
-                                                            },
-                                                          ):SizedBox(),
+                                                          typeUser == "7" ||
+                                                                  phoneNumber ==
+                                                                      superUser
+                                                              ? IconButton(
+                                                                  color:
+                                                                      orangeColor,
+                                                                  icon: Icon(
+                                                                    CupertinoIcons
+                                                                        .xmark_circle_fill,
+                                                                    size:
+                                                                        DM.p30,
+                                                                  ),
+                                                                  onPressed:
+                                                                      () {
+                                                                    setState(
+                                                                        () {
+                                                                      imageFile1 =
+                                                                          null;
+                                                                      image_one
+                                                                              .text =
+                                                                          "empty";
+                                                                    });
+                                                                  },
+                                                                )
+                                                              : SizedBox(),
                                                         ],
                                                       )
                                                     : Container(
@@ -1714,23 +1800,31 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                             ),
                                                                           ),
                                                                         )),
-                                                          typeUser=="7" || phoneNumber==superUser?
-                                                          IconButton(
-                                                            color: orangeColor,
-                                                            icon: Icon(
-                                                              CupertinoIcons
-                                                                  .xmark_circle_fill,
-                                                              size: DM.p30,
-                                                            ),
-                                                            onPressed: () {
-                                                              setState(() {
-                                                                imageFile2 =
-                                                                    null;
-                                                                image_two.text =
-                                                                    "empty";
-                                                              });
-                                                            },
-                                                          ):SizedBox(),
+                                                          typeUser == "7" ||
+                                                                  phoneNumber ==
+                                                                      superUser
+                                                              ? IconButton(
+                                                                  color:
+                                                                      orangeColor,
+                                                                  icon: Icon(
+                                                                    CupertinoIcons
+                                                                        .xmark_circle_fill,
+                                                                    size:
+                                                                        DM.p30,
+                                                                  ),
+                                                                  onPressed:
+                                                                      () {
+                                                                    setState(
+                                                                        () {
+                                                                      imageFile2 =
+                                                                          null;
+                                                                      image_two
+                                                                              .text =
+                                                                          "empty";
+                                                                    });
+                                                                  },
+                                                                )
+                                                              : SizedBox(),
                                                         ],
                                                       )
                                                     : Container(
@@ -1814,7 +1908,6 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                                   );
                                                                                   setState(() {
                                                                                     if (pickedFile != null) {
-
                                                                                       imageFile2 = File(pickedFile!.path);
                                                                                       isFromNetwork2 = false;
                                                                                     }
@@ -1905,381 +1998,419 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                           MainAxisAlignment.center,
                                       children: [
                                         image_one.text != "empty" ||
-                                            imageFile1 != null
+                                                imageFile1 != null
                                             ? Column(
-                                          children: [
-                                            //MyphotoView for Form
-                                            Container(
-                                              height: DM.p180,
-                                              width: DM.p150,
-                                              child:
-                                              isFromNetwork1
-                                                  ? InkWell(
-                                                onTap:
-                                                    () {
-                                                  showDialog(
-                                                      context: context,
-                                                      builder: (context) {
-                                                        return MyDialogView(
-                                                            myChild: MyPhotoView(
-                                                              image: widget.testEachRequest!.image_one.toString(),
-                                                              imageType: "Network",
-                                                            ));
-                                                      });
-                                                },
-                                                child:
-                                                Container(
-                                                  child:
-                                                  Image.network(
-                                                    widget.testEachRequest!.image_one.toString()!,
-                                                    fit:
-                                                    BoxFit.cover,
-                                                  ),
-                                                ),
-                                              )
-                                                  : InkWell(
-                                                onTap:
-                                                    () {
-                                                  showDialog(
-                                                      context: context,
-                                                      builder: (context) {
-                                                        return MyDialogView(
-                                                            myChild: MyPhotoView(
-                                                              image: imageFile1,
-                                                              imageType: "File",
-                                                            ));
-                                                      });
-                                                },
-                                                child:
-                                                Container(
-                                                  child:
-                                                  Image.file(
-                                                    imageFile1!,
-                                                    fit:
-                                                    BoxFit.cover,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            typeUser=="7" || phoneNumber==superUser?
-                                            IconButton(
-                                              color: orangeColor,
-                                              icon: Icon(
-                                                CupertinoIcons
-                                                    .xmark_circle_fill,
-                                                size: DM.p30,
-                                              ),
-                                              onPressed: () {
-                                                setState(() {
-                                                  imageFile1 =
-                                                  null;
-                                                  image_one.text =
-                                                  "empty";
-                                                });
-                                              },
-                                            ):SizedBox(),
-                                          ],
-                                        )
-                                            :  Container(
-                                          height: DM.p60,
-                                          width: DM.p160,
-                                          margin: EdgeInsets
-                                              .symmetric(
-                                              horizontal:
-                                              DM.p5),
-                                          child: ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                    BorderRadius
-                                                        .circular(DM
-                                                        .p10)),
-                                                padding: EdgeInsets
-                                                    .symmetric(
-                                                    vertical: DM
-                                                        .p20),
-                                                primary:
-                                                orangeColor),
-                                            onPressed: () async {
-                                              showDialog(
-                                                  context:
-                                                  context,
-                                                  builder:
-                                                      (context) {
-                                                    return Center(
-                                                      child:
-                                                      Container(
-                                                        color:
-                                                        whiteColor,
-                                                        child:
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                          MainAxisAlignment.center,
-                                                          children: [
-                                                            Container(
-                                                              margin:
-                                                              EdgeInsets.all(DM.p16),
-                                                              height:
-                                                              DM.p130,
-                                                              width:
-                                                              DM.p120,
-                                                              child: ElevatedButton(
-                                                                  style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
-                                                                  onPressed: () async {
-                                                                    PickedFile? pickedFile = await ImagePicker().getImage(
-                                                                      source: ImageSource.gallery,
-                                                                      maxWidth: 800,
-                                                                      maxHeight: 1200,
-                                                                    );
-                                                                    setState(() {
-                                                                      if (pickedFile != null) {
-                                                                        imageFile1 = File(pickedFile!.path);
-                                                                        isFromNetwork1 = false;
-                                                                      }
-                                                                    });
-
-                                                                    Navigator.pop(context);
-                                                                  },
-                                                                  child: Text(
-                                                                    "Gallery",
-                                                                    style: TextStyle(fontSize: DM.p18),
-                                                                  )),
+                                                children: [
+                                                  //MyphotoView for Form
+                                                  Container(
+                                                    height: DM.p180,
+                                                    width: DM.p150,
+                                                    child: isFromNetwork1
+                                                        ? InkWell(
+                                                            onTap: () {
+                                                              showDialog(
+                                                                  context:
+                                                                      context,
+                                                                  builder:
+                                                                      (context) {
+                                                                    return MyDialogView(
+                                                                        myChild:
+                                                                            MyPhotoView(
+                                                                      image: widget
+                                                                          .testEachRequest!
+                                                                          .image_one
+                                                                          .toString(),
+                                                                      imageType:
+                                                                          "Network",
+                                                                    ));
+                                                                  });
+                                                            },
+                                                            child: Container(
+                                                              child:
+                                                                  Image.network(
+                                                                widget
+                                                                    .testEachRequest!
+                                                                    .image_one
+                                                                    .toString()!,
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                              ),
                                                             ),
-                                                            Container(
-                                                              margin:
-                                                              EdgeInsets.all(DM.p16),
-                                                              decoration:
-                                                              BoxDecoration(borderRadius: BorderRadius.circular(25)),
-                                                              height:
-                                                              DM.p130,
-                                                              width:
-                                                              DM.p120,
-                                                              child: ElevatedButton(
-                                                                  style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
-                                                                  onPressed: () async {
-                                                                    PickedFile? pickedFile = await ImagePicker().getImage(
-                                                                      source: ImageSource.camera,
-                                                                      maxWidth: 800,
-                                                                      maxHeight: 1200,
-                                                                    );
-                                                                    setState(() {
-                                                                      if (pickedFile != null) {
+                                                          )
+                                                        : InkWell(
+                                                            onTap: () {
+                                                              showDialog(
+                                                                  context:
+                                                                      context,
+                                                                  builder:
+                                                                      (context) {
+                                                                    return MyDialogView(
+                                                                        myChild:
+                                                                            MyPhotoView(
+                                                                      image:
+                                                                          imageFile1,
+                                                                      imageType:
+                                                                          "File",
+                                                                    ));
+                                                                  });
+                                                            },
+                                                            child: Container(
+                                                              child: Image.file(
+                                                                imageFile1!,
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                  ),
+                                                  typeUser == "7" ||
+                                                          phoneNumber ==
+                                                              superUser
+                                                      ? IconButton(
+                                                          color: orangeColor,
+                                                          icon: Icon(
+                                                            CupertinoIcons
+                                                                .xmark_circle_fill,
+                                                            size: DM.p30,
+                                                          ),
+                                                          onPressed: () {
+                                                            setState(() {
+                                                              imageFile1 = null;
+                                                              image_one.text =
+                                                                  "empty";
+                                                            });
+                                                          },
+                                                        )
+                                                      : SizedBox(),
+                                                ],
+                                              )
+                                            : Container(
+                                                height: DM.p60,
+                                                width: DM.p160,
+                                                margin: EdgeInsets.symmetric(
+                                                    horizontal: DM.p5),
+                                                child: ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                      shape: RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      DM.p10)),
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: DM.p20),
+                                                      primary: orangeColor),
+                                                  onPressed: () async {
+                                                    showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return Center(
+                                                            child: Container(
+                                                              color: whiteColor,
+                                                              child: Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .center,
+                                                                children: [
+                                                                  Container(
+                                                                    margin: EdgeInsets
+                                                                        .all(DM
+                                                                            .p16),
+                                                                    height:
+                                                                        DM.p130,
+                                                                    width:
+                                                                        DM.p120,
+                                                                    child: ElevatedButton(
+                                                                        style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                        onPressed: () async {
+                                                                          PickedFile?
+                                                                              pickedFile =
+                                                                              await ImagePicker().getImage(
+                                                                            source:
+                                                                                ImageSource.gallery,
+                                                                            maxWidth:
+                                                                                800,
+                                                                            maxHeight:
+                                                                                1200,
+                                                                          );
+                                                                          setState(
+                                                                              () {
+                                                                            if (pickedFile !=
+                                                                                null) {
+                                                                              imageFile1 = File(pickedFile!.path);
+                                                                              isFromNetwork1 = false;
+                                                                            }
+                                                                          });
 
-                                                                        imageFile1 = File(pickedFile!.path);
-                                                                        isFromNetwork1 = false;
-                                                                      }
-                                                                    });
-                                                                    Navigator.pop(context);
-                                                                  },
-                                                                  child: Text("Camera", style: TextStyle(fontSize: DM.p18))),
-                                                            )
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    );
-                                                  });
-                                            },
-                                            child: Text(
-                                              "Image 1",
-                                              textAlign:
-                                              TextAlign.start,
-                                              style: TextStyle(
-                                                  color:
-                                                  fullWhiteColor,
-                                                  fontSize:
-                                                  DM.p15,
-                                                  fontWeight:
-                                                  FontWeight
-                                                      .bold),
-                                            ),
-                                          ),
-                                        ),
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        child: Text(
+                                                                          "Gallery",
+                                                                          style:
+                                                                              TextStyle(fontSize: DM.p18),
+                                                                        )),
+                                                                  ),
+                                                                  Container(
+                                                                    margin: EdgeInsets
+                                                                        .all(DM
+                                                                            .p16),
+                                                                    decoration: BoxDecoration(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(25)),
+                                                                    height:
+                                                                        DM.p130,
+                                                                    width:
+                                                                        DM.p120,
+                                                                    child: ElevatedButton(
+                                                                        style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                        onPressed: () async {
+                                                                          PickedFile?
+                                                                              pickedFile =
+                                                                              await ImagePicker().getImage(
+                                                                            source:
+                                                                                ImageSource.camera,
+                                                                            maxWidth:
+                                                                                800,
+                                                                            maxHeight:
+                                                                                1200,
+                                                                          );
+                                                                          setState(
+                                                                              () {
+                                                                            if (pickedFile !=
+                                                                                null) {
+                                                                              imageFile1 = File(pickedFile!.path);
+                                                                              isFromNetwork1 = false;
+                                                                            }
+                                                                          });
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        child: Text("Camera", style: TextStyle(fontSize: DM.p18))),
+                                                                  )
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          );
+                                                        });
+                                                  },
+                                                  child: Text(
+                                                    "Image 1",
+                                                    textAlign: TextAlign.start,
+                                                    style: TextStyle(
+                                                        color: fullWhiteColor,
+                                                        fontSize: DM.p15,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ),
+                                              ),
                                         SizedBox(
                                           width: DM.p10,
                                         ),
                                         image_two.text != "empty" ||
-                                            imageFile2 != null
+                                                imageFile2 != null
                                             ? Column(
-                                          children: [
-                                            Container(
-                                                height: DM.p180,
-                                                width: DM.p150,
-                                                child:
-                                                isFromNetwork2
-                                                    ? InkWell(
-                                                  onTap:
-                                                      () {
-                                                    showDialog(
-                                                        context: context,
-                                                        builder: (context) {
-                                                          return MyDialogView(
-                                                              myChild: MyPhotoView(
-                                                                image: widget.testEachRequest!.image_two.toString(),
-                                                                imageType: "Network",
-                                                              ));
-                                                        });
-                                                  },
-                                                  child:
+                                                children: [
                                                   Container(
-                                                    child:
-                                                    Image.network(
-                                                      widget.testEachRequest!.image_two.toString()!,
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                )
-                                                    : InkWell(
-                                                  onTap:
-                                                      () {
-                                                    showDialog(
-                                                        context: context,
-                                                        builder: (context) {
-                                                          return MyDialogView(
-                                                              myChild: MyPhotoView(
-                                                                image: imageFile2,
-                                                                imageType: "File",
-                                                              ));
-                                                        });
-                                                  },
-                                                  child:
-                                                  Container(
-                                                    child:
-                                                    Image.file(
-                                                      imageFile2!,
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                )),
-                                            typeUser=="7" || phoneNumber==superUser?
-                                            IconButton(
-                                              color: orangeColor,
-                                              icon: Icon(
-                                                CupertinoIcons
-                                                    .xmark_circle_fill,
-                                                size: DM.p30,
-                                              ),
-                                              onPressed: () {
-                                                setState(() {
-                                                  imageFile2 =
-                                                  null;
-                                                  image_two.text =
-                                                  "empty";
-                                                });
-                                              },
-                                            ):SizedBox(),
-                                          ],
-                                        )
-                                            : Container(
-                                          height: DM.p60,
-                                          width: DM.p160,
-                                          margin: EdgeInsets
-                                              .symmetric(
-                                              horizontal:
-                                              DM.p5),
-                                          child: ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                    BorderRadius
-                                                        .circular(DM
-                                                        .p10)),
-                                                padding: EdgeInsets
-                                                    .symmetric(
-                                                    vertical: DM
-                                                        .p20),
-                                                primary:
-                                                orangeColor),
-                                            onPressed: () async {
-                                              showDialog(
-                                                  context:
-                                                  context,
-                                                  builder:
-                                                      (context) {
-                                                    return Center(
-                                                      child:
-                                                      Container(
-                                                        color:
-                                                        whiteColor,
-                                                        child:
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                          MainAxisAlignment.center,
-                                                          children: [
-                                                            Container(
-                                                              margin:
-                                                              EdgeInsets.all(DM.p16),
-                                                              height:
-                                                              DM.p130,
-                                                              width:
-                                                              DM.p120,
-                                                              child: ElevatedButton(
-                                                                  style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
-                                                                  onPressed: () async {
-                                                                    PickedFile? pickedFile = await ImagePicker().getImage(
-                                                                      source: ImageSource.gallery,
-                                                                      maxWidth: 800,
-                                                                      maxHeight: 1200,
-                                                                    );
-                                                                    setState(() {
-                                                                      if (pickedFile != null) {
-                                                                        imageFile2 = File(pickedFile!.path);
-                                                                        isFromNetwork2 = false;
-                                                                      }
+                                                      height: DM.p180,
+                                                      width: DM.p150,
+                                                      child: isFromNetwork2
+                                                          ? InkWell(
+                                                              onTap: () {
+                                                                showDialog(
+                                                                    context:
+                                                                        context,
+                                                                    builder:
+                                                                        (context) {
+                                                                      return MyDialogView(
+                                                                          myChild:
+                                                                              MyPhotoView(
+                                                                        image: widget
+                                                                            .testEachRequest!
+                                                                            .image_two
+                                                                            .toString(),
+                                                                        imageType:
+                                                                            "Network",
+                                                                      ));
                                                                     });
-                                                                    Navigator.pop(context);
-                                                                  },
-                                                                  child: Text(
-                                                                    "Gallery",
-                                                                    style: TextStyle(fontSize: DM.p18),
-                                                                  )),
-                                                            ),
-                                                            Container(
-                                                              margin:
-                                                              EdgeInsets.all(DM.p16),
-                                                              height:
-                                                              DM.p130,
-                                                              width:
-                                                              DM.p120,
-                                                              child: ElevatedButton(
-                                                                  style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
-                                                                  onPressed: () async {
-                                                                    PickedFile? pickedFile = await ImagePicker().getImage(
-                                                                      source: ImageSource.camera,
-                                                                      maxWidth: 800,
-                                                                      maxHeight: 1200,
-                                                                    );
-                                                                    setState(() {
-                                                                      if (pickedFile != null) {
-
-                                                                        imageFile2 = File(pickedFile!.path);
-                                                                        isFromNetwork2 = false;
-                                                                      }
-                                                                    });
-                                                                    Navigator.pop(context);
-                                                                  },
-                                                                  child: Text("Camera", style: TextStyle(fontSize: DM.p18))),
+                                                              },
+                                                              child: Container(
+                                                                child: Image
+                                                                    .network(
+                                                                  widget
+                                                                      .testEachRequest!
+                                                                      .image_two
+                                                                      .toString()!,
+                                                                  fit: BoxFit
+                                                                      .cover,
+                                                                ),
+                                                              ),
                                                             )
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    );
-                                                  });
-                                            },
-                                            child: Text(
-                                              "Image 2",
-                                              textAlign: TextAlign
-                                                  .center,
-                                              style: TextStyle(
-                                                  color:
-                                                  fullWhiteColor,
-                                                  fontSize:
-                                                  DM.p15,
-                                                  fontWeight:
-                                                  FontWeight
-                                                      .bold),
-                                            ),
-                                          ),
-                                        ),
+                                                          : InkWell(
+                                                              onTap: () {
+                                                                showDialog(
+                                                                    context:
+                                                                        context,
+                                                                    builder:
+                                                                        (context) {
+                                                                      return MyDialogView(
+                                                                          myChild:
+                                                                              MyPhotoView(
+                                                                        image:
+                                                                            imageFile2,
+                                                                        imageType:
+                                                                            "File",
+                                                                      ));
+                                                                    });
+                                                              },
+                                                              child: Container(
+                                                                child:
+                                                                    Image.file(
+                                                                  imageFile2!,
+                                                                  fit: BoxFit
+                                                                      .cover,
+                                                                ),
+                                                              ),
+                                                            )),
+                                                  typeUser == "7" ||
+                                                          phoneNumber ==
+                                                              superUser
+                                                      ? IconButton(
+                                                          color: orangeColor,
+                                                          icon: Icon(
+                                                            CupertinoIcons
+                                                                .xmark_circle_fill,
+                                                            size: DM.p30,
+                                                          ),
+                                                          onPressed: () {
+                                                            setState(() {
+                                                              imageFile2 = null;
+                                                              image_two.text =
+                                                                  "empty";
+                                                            });
+                                                          },
+                                                        )
+                                                      : SizedBox(),
+                                                ],
+                                              )
+                                            : Container(
+                                                height: DM.p60,
+                                                width: DM.p160,
+                                                margin: EdgeInsets.symmetric(
+                                                    horizontal: DM.p5),
+                                                child: ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                      shape: RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      DM.p10)),
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: DM.p20),
+                                                      primary: orangeColor),
+                                                  onPressed: () async {
+                                                    showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return Center(
+                                                            child: Container(
+                                                              color: whiteColor,
+                                                              child: Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .center,
+                                                                children: [
+                                                                  Container(
+                                                                    margin: EdgeInsets
+                                                                        .all(DM
+                                                                            .p16),
+                                                                    height:
+                                                                        DM.p130,
+                                                                    width:
+                                                                        DM.p120,
+                                                                    child: ElevatedButton(
+                                                                        style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                        onPressed: () async {
+                                                                          PickedFile?
+                                                                              pickedFile =
+                                                                              await ImagePicker().getImage(
+                                                                            source:
+                                                                                ImageSource.gallery,
+                                                                            maxWidth:
+                                                                                800,
+                                                                            maxHeight:
+                                                                                1200,
+                                                                          );
+                                                                          setState(
+                                                                              () {
+                                                                            if (pickedFile !=
+                                                                                null) {
+                                                                              imageFile2 = File(pickedFile!.path);
+                                                                              isFromNetwork2 = false;
+                                                                            }
+                                                                          });
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        child: Text(
+                                                                          "Gallery",
+                                                                          style:
+                                                                              TextStyle(fontSize: DM.p18),
+                                                                        )),
+                                                                  ),
+                                                                  Container(
+                                                                    margin: EdgeInsets
+                                                                        .all(DM
+                                                                            .p16),
+                                                                    height:
+                                                                        DM.p130,
+                                                                    width:
+                                                                        DM.p120,
+                                                                    child: ElevatedButton(
+                                                                        style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                        onPressed: () async {
+                                                                          PickedFile?
+                                                                              pickedFile =
+                                                                              await ImagePicker().getImage(
+                                                                            source:
+                                                                                ImageSource.camera,
+                                                                            maxWidth:
+                                                                                800,
+                                                                            maxHeight:
+                                                                                1200,
+                                                                          );
+                                                                          setState(
+                                                                              () {
+                                                                            if (pickedFile !=
+                                                                                null) {
+                                                                              imageFile2 = File(pickedFile!.path);
+                                                                              isFromNetwork2 = false;
+                                                                            }
+                                                                          });
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        child: Text("Camera", style: TextStyle(fontSize: DM.p18))),
+                                                                  )
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          );
+                                                        });
+                                                  },
+                                                  child: Text(
+                                                    "Image 2",
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        color: fullWhiteColor,
+                                                        fontSize: DM.p15,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ),
+                                              ),
                                       ],
                                     ),
                             ],
@@ -2491,14 +2622,16 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                     thickness: DM.p1,
                                     color: blackFontColor,
                                   ),
-                                  typeUser=="7" || phoneNumber==superUser?
-                                  Text(
-                                 "(Payable Pathology + Payable Radiology) = (${total_payable_pathology}+${total_payable_imaging}) =  ${total_payable_pathology + total_payable_imaging} /-",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: DM.p12,
-                                        color: Color.fromARGB(255, 26, 1, 1)),
-                                  ):SizedBox(),
+                                  typeUser == "7" || phoneNumber == superUser
+                                      ? Text(
+                                          "(Payable Pathology + Payable Radiology) = (${total_payable_pathology}+${total_payable_imaging}) =  ${total_payable_pathology + total_payable_imaging} /-",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: DM.p12,
+                                              color: Color.fromARGB(
+                                                  255, 26, 1, 1)),
+                                        )
+                                      : SizedBox(),
                                 ],
                               ),
                             ),
@@ -2547,7 +2680,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           controller: servicecharge,
                           title: "Collection charge",
                           value: "20",
-                          activate: phoneNumber==superUser?false:true,
+                          activate: phoneNumber == superUser ? false : true,
                         ),
 
                         // FormUserInfo(
@@ -2567,504 +2700,552 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           controller: totalprice,
                           title: "Total price",
                           value: "0",
-                          activate: phoneNumber==superUser?false:true,
+                          activate: phoneNumber == superUser ? false : true,
                         ),
 
-
-                    typeUser=="7"  || phoneNumber==superUser?
-                        Column(
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.all(DM.p5),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                        typeUser == "7" || phoneNumber == superUser
+                            ? Column(
                                 children: [
-                                  SizedBox(
-                                    width: DM.p100,
-                                    child: Text(
-                                      "Admin Pathology Discount",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: DM.p14,
-                                          color: blackFontColor),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: DM.p5,
-                                  ),
-                                  Text(":"),
-                                  SizedBox(
-                                    width: DM.p10,
-                                  ),
-                                  Flexible(
-                                    child: Container(
-                                      height: DM.p42,
-                                      child: TextFormField(
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (value) {
-                                          if (value.length != 0) {
-                                            setState(() {
-                                              calculationProcess();
-                                            });
-                                          }
-                                        },
-                                        controller: admin_pathology_discount,
-                                        decoration: InputDecoration(
-                                            errorStyle: TextStyle(fontSize: DM.p9),
-                                            focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    width: DM.p1,
-                                                    color: orangeColor)),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  width: DM.p1,
-                                                  color:
-                                                  orangeColor), //<-- SEE HERE
-                                            ),
-                                            filled: true,
-                                            fillColor: fullWhiteColor,
-                                            contentPadding: EdgeInsets.symmetric(
-                                                horizontal: DM.p10),
-                                            border: InputBorder.none,
-                                            hintText: "0",
-                                            hintStyle: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: DM.p14,
-                                            )),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(DM.p5),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: DM.p100,
-                                    child: Text(
-                                      "Admin Radiology Discount",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: DM.p14,
-                                          color: blackFontColor),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: DM.p5,
-                                  ),
-                                  Text(":"),
-                                  SizedBox(
-                                    width: DM.p10,
-                                  ),
-                                  Flexible(
-                                    child: Container(
-                                      height: DM.p42,
-                                      child: TextFormField(
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (value) {
-                                          if (value.length != 0) {
-                                            setState(() {
-                                              calculationProcess();
-                                            });
-                                          }
-                                        },
-                                        controller: admin_radiology_discount,
-                                        decoration: InputDecoration(
-                                            errorStyle:
-                                                TextStyle(fontSize: DM.p9),
-                                            focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    width: DM.p1,
-                                                    color: orangeColor)),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  width: DM.p1,
-                                                  color:
-                                                      orangeColor), //<-- SEE HERE
-                                            ),
-                                            filled: true,
-                                            fillColor: fullWhiteColor,
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                    horizontal: DM.p10),
-                                            border: InputBorder.none,
-                                            hintText: "0",
-                                            hintStyle: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: DM.p14,
-                                            )),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(DM.p5),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: DM.p100,
-                                    child: Text(
-                                      "Total Admin Discount",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: DM.p14,
-                                          color: blackFontColor),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: DM.p5,
-                                  ),
-                                  Text(":"),
-                                  SizedBox(
-                                    width: DM.p10,
-                                  ),
-                                  Flexible(
-                                    child: Container(
-                                      height: DM.p42,
-                                      child: TextFormField(
-                                        readOnly: true,
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (value) {
-                                          if (value.length != 0) {
-                                            setState(() {
-                                              calculationProcess();
-                                            });
-                                          }
-                                        },
-                                        controller: admin_discount,
-                                        decoration: InputDecoration(
-                                            errorStyle:
-                                                TextStyle(fontSize: DM.p9),
-                                            focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    width: DM.p1,
-                                                    color: orangeColor)),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  width: DM.p1,
-                                                  color:
-                                                      orangeColor), //<-- SEE HERE
-                                            ),
-                                            filled: true,
-                                            fillColor: fullWhiteColor,
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                    horizontal: DM.p10),
-                                            border: InputBorder.none,
-                                            hintText: "0",
-                                            hintStyle: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: DM.p14,
-                                            )),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(DM.p5),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: DM.p100,
-                                    child: Text(
-                                      "Agent Pathology Discount",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: DM.p14,
-                                          color: blackFontColor),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: DM.p5,
-                                  ),
-                                  Text(":"),
-                                  SizedBox(
-                                    width: DM.p10,
-                                  ),
-                                  Flexible(
-                                    child: Container(
-                                      height: DM.p42,
-                                      child: TextFormField(
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (value) {
-                                          if (value.length != 0) {
-                                            setState(() {
-                                              calculationProcess();
-                                            });
-                                          }
-                                        },
-                                        controller: agent_pathology_discount,
-                                        decoration: InputDecoration(
-                                            errorStyle:
-                                                TextStyle(fontSize: DM.p9),
-                                            focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    width: DM.p1,
-                                                    color: orangeColor)),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  width: DM.p1,
-                                                  color:
-                                                      orangeColor), //<-- SEE HERE
-                                            ),
-                                            filled: true,
-                                            fillColor: fullWhiteColor,
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                    horizontal: DM.p10),
-                                            border: InputBorder.none,
-                                            hintText: "0",
-                                            hintStyle: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: DM.p14,
-                                            )),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(DM.p5),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: DM.p100,
-                                    child: Text(
-                                      "Agent Radiology Discount",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: DM.p14,
-                                          color: blackFontColor),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: DM.p5,
-                                  ),
-                                  Text(":"),
-                                  SizedBox(
-                                    width: DM.p10,
-                                  ),
-                                  Flexible(
-                                    child: Container(
-                                      height: DM.p42,
-                                      child: TextFormField(
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (value) {
-                                          if (value.length != 0) {
-                                            setState(() {
-                                              calculationProcess();
-                                            });
-                                          }
-                                        },
-                                        controller: agent_radiology_discount,
-                                        decoration: InputDecoration(
-                                            errorStyle:
-                                                TextStyle(fontSize: DM.p9),
-                                            focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    width: DM.p1,
-                                                    color: orangeColor)),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  width: DM.p1,
-                                                  color:
-                                                      orangeColor), //<-- SEE HERE
-                                            ),
-                                            filled: true,
-                                            fillColor: fullWhiteColor,
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                    horizontal: DM.p10),
-                                            border: InputBorder.none,
-                                            hintText: "0",
-                                            hintStyle: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: DM.p14,
-                                            )),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(DM.p5),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: DM.p100,
-                                    child: Text(
-                                      "Total Agent Discount",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: DM.p14,
-                                          color: blackFontColor),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: DM.p5,
-                                  ),
-                                  Text(":"),
-                                  SizedBox(
-                                    width: DM.p10,
-                                  ),
-                                  Flexible(
-                                    child: Container(
-                                      height: DM.p42,
-                                      child: TextFormField(
-                                        readOnly: true,
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (value) {
-                                          if (value.length != 0) {
-                                            setState(() {
-                                              calculationProcess();
-                                            });
-                                          }
-                                        },
-                                        controller: agent_discount,
-                                        decoration: InputDecoration(
-                                            errorStyle:
-                                                TextStyle(fontSize: DM.p9),
-                                            focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    width: DM.p1,
-                                                    color: orangeColor)),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  width: DM.p1,
-                                                  color:
-                                                      orangeColor), //<-- SEE HERE
-                                            ),
-                                            filled: true,
-                                            fillColor: fullWhiteColor,
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                    horizontal: DM.p10),
-                                            border: InputBorder.none,
-                                            hintText: "0",
-                                            hintStyle: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: DM.p14,
-                                            )),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            FormUserInfo(
-                              formKey: _formKey,
-                              textInputType: TextInputType.number,
-                              controller: agent_commission,
-                              title: "Agent Commission",
-                              value: "0",
-                              activate: true,
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(DM.p5),
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    width: DM.p100,
-                                    child: Text(
-                                      "Next Status",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: DM.p14,
-                                          color: Color.fromARGB(255, 26, 1, 1)),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: DM.p5,
-                                  ),
-                                  Text(":"),
-                                  SizedBox(
-                                    width: DM.p10,
-                                  ),
-                                  typeUser == "4" && phoneNumber != superUser
-                                      ? DropdownButton<String>(
-                                          hint: Text(
-                                              "${createReqController.status[int.parse(teststatus.text)]}",
-                                              style: TextStyle(
-                                                  color: blackFontColor)),
-                                          items: <String>[
-                                            "PENDING",
-                                            "RECIEVED",
-                                          ].map((String value) {
-                                            return DropdownMenuItem<String>(
-                                              value: value,
-                                              child: Text(
-                                                "$value",
-                                                style: TextStyle(
-                                                    color: blackFontColor),
-                                              ),
-                                            );
-                                          }).toList(),
-                                          onChanged: (newValue) {
-                                            setState(() {
-                                              teststatus.text =
-                                                  createReqController
-                                                      .toStatus[newValue]
-                                                      .toString();
-                                            });
-                                          },
-                                        )
-                                      : DropdownButton<String>(
-                                          hint: Text(
-                                              "${createReqController.status[int.parse(teststatus.text)]}",
-                                              style: TextStyle(
-                                                  color: blackFontColor)),
-                                          items: <String>[
-                                            "PENDING",
-                                            "RECIEVED",
-                                            "PRECOLLECTED",
-                                            "COLLECTED",
-                                            "READY",
-                                            "R.RECIEVED",
-                                            "DELIVERED",
-                                            "CANCEL"
-                                          ].map((String value) {
-                                            return DropdownMenuItem<String>(
-                                              value: value,
-                                              child: Text(
-                                                "$value",
-                                                style: TextStyle(
-                                                    color: blackFontColor),
-                                              ),
-                                            );
-                                          }).toList(),
-                                          onChanged: (newValue) {
-                                            setState(() {
-                                              teststatus.text =
-                                                  createReqController
-                                                      .toStatus[newValue]
-                                                      .toString();
-                                            });
-                                          },
+                                  Padding(
+                                    padding: EdgeInsets.all(DM.p5),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: DM.p100,
+                                          child: Text(
+                                            "Admin Pathology Discount",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: DM.p14,
+                                                color: blackFontColor),
+                                          ),
                                         ),
+                                        SizedBox(
+                                          width: DM.p5,
+                                        ),
+                                        Text(":"),
+                                        SizedBox(
+                                          width: DM.p10,
+                                        ),
+                                        Flexible(
+                                          child: Container(
+                                            height: DM.p42,
+                                            child: TextFormField(
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              onChanged: (value) {
+                                                if (value.length != 0) {
+                                                  setState(() {
+                                                    calculationProcess();
+                                                  });
+                                                }
+                                              },
+                                              controller:
+                                                  admin_pathology_discount,
+                                              decoration: InputDecoration(
+                                                  errorStyle: TextStyle(
+                                                      fontSize: DM.p9),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                          borderSide: BorderSide(
+                                                              width: DM.p1,
+                                                              color:
+                                                                  orangeColor)),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        width: DM.p1,
+                                                        color:
+                                                            orangeColor), //<-- SEE HERE
+                                                  ),
+                                                  filled: true,
+                                                  fillColor: fullWhiteColor,
+                                                  contentPadding:
+                                                      EdgeInsets.symmetric(
+                                                          horizontal: DM.p10),
+                                                  border: InputBorder.none,
+                                                  hintText: "0",
+                                                  hintStyle: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: DM.p14,
+                                                  )),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(DM.p5),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: DM.p100,
+                                          child: Text(
+                                            "Admin Radiology Discount",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: DM.p14,
+                                                color: blackFontColor),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: DM.p5,
+                                        ),
+                                        Text(":"),
+                                        SizedBox(
+                                          width: DM.p10,
+                                        ),
+                                        Flexible(
+                                          child: Container(
+                                            height: DM.p42,
+                                            child: TextFormField(
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              onChanged: (value) {
+                                                if (value.length != 0) {
+                                                  setState(() {
+                                                    calculationProcess();
+                                                  });
+                                                }
+                                              },
+                                              controller:
+                                                  admin_radiology_discount,
+                                              decoration: InputDecoration(
+                                                  errorStyle: TextStyle(
+                                                      fontSize: DM.p9),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                          borderSide: BorderSide(
+                                                              width: DM.p1,
+                                                              color:
+                                                                  orangeColor)),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        width: DM.p1,
+                                                        color:
+                                                            orangeColor), //<-- SEE HERE
+                                                  ),
+                                                  filled: true,
+                                                  fillColor: fullWhiteColor,
+                                                  contentPadding:
+                                                      EdgeInsets.symmetric(
+                                                          horizontal: DM.p10),
+                                                  border: InputBorder.none,
+                                                  hintText: "0",
+                                                  hintStyle: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: DM.p14,
+                                                  )),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(DM.p5),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: DM.p100,
+                                          child: Text(
+                                            "Total Admin Discount",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: DM.p14,
+                                                color: blackFontColor),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: DM.p5,
+                                        ),
+                                        Text(":"),
+                                        SizedBox(
+                                          width: DM.p10,
+                                        ),
+                                        Flexible(
+                                          child: Container(
+                                            height: DM.p42,
+                                            child: TextFormField(
+                                              readOnly: true,
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              onChanged: (value) {
+                                                if (value.length != 0) {
+                                                  setState(() {
+                                                    calculationProcess();
+                                                  });
+                                                }
+                                              },
+                                              controller: admin_discount,
+                                              decoration: InputDecoration(
+                                                  errorStyle: TextStyle(
+                                                      fontSize: DM.p9),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                          borderSide: BorderSide(
+                                                              width: DM.p1,
+                                                              color:
+                                                                  orangeColor)),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        width: DM.p1,
+                                                        color:
+                                                            orangeColor), //<-- SEE HERE
+                                                  ),
+                                                  filled: true,
+                                                  fillColor: fullWhiteColor,
+                                                  contentPadding:
+                                                      EdgeInsets.symmetric(
+                                                          horizontal: DM.p10),
+                                                  border: InputBorder.none,
+                                                  hintText: "0",
+                                                  hintStyle: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: DM.p14,
+                                                  )),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(DM.p5),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: DM.p100,
+                                          child: Text(
+                                            "Agent Pathology Discount",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: DM.p14,
+                                                color: blackFontColor),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: DM.p5,
+                                        ),
+                                        Text(":"),
+                                        SizedBox(
+                                          width: DM.p10,
+                                        ),
+                                        Flexible(
+                                          child: Container(
+                                            height: DM.p42,
+                                            child: TextFormField(
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              onChanged: (value) {
+                                                if (value.length != 0) {
+                                                  setState(() {
+                                                    calculationProcess();
+                                                  });
+                                                }
+                                              },
+                                              controller:
+                                                  agent_pathology_discount,
+                                              decoration: InputDecoration(
+                                                  errorStyle: TextStyle(
+                                                      fontSize: DM.p9),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                          borderSide: BorderSide(
+                                                              width: DM.p1,
+                                                              color:
+                                                                  orangeColor)),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        width: DM.p1,
+                                                        color:
+                                                            orangeColor), //<-- SEE HERE
+                                                  ),
+                                                  filled: true,
+                                                  fillColor: fullWhiteColor,
+                                                  contentPadding:
+                                                      EdgeInsets.symmetric(
+                                                          horizontal: DM.p10),
+                                                  border: InputBorder.none,
+                                                  hintText: "0",
+                                                  hintStyle: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: DM.p14,
+                                                  )),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(DM.p5),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: DM.p100,
+                                          child: Text(
+                                            "Agent Radiology Discount",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: DM.p14,
+                                                color: blackFontColor),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: DM.p5,
+                                        ),
+                                        Text(":"),
+                                        SizedBox(
+                                          width: DM.p10,
+                                        ),
+                                        Flexible(
+                                          child: Container(
+                                            height: DM.p42,
+                                            child: TextFormField(
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              onChanged: (value) {
+                                                if (value.length != 0) {
+                                                  setState(() {
+                                                    calculationProcess();
+                                                  });
+                                                }
+                                              },
+                                              controller:
+                                                  agent_radiology_discount,
+                                              decoration: InputDecoration(
+                                                  errorStyle: TextStyle(
+                                                      fontSize: DM.p9),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                          borderSide: BorderSide(
+                                                              width: DM.p1,
+                                                              color:
+                                                                  orangeColor)),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        width: DM.p1,
+                                                        color:
+                                                            orangeColor), //<-- SEE HERE
+                                                  ),
+                                                  filled: true,
+                                                  fillColor: fullWhiteColor,
+                                                  contentPadding:
+                                                      EdgeInsets.symmetric(
+                                                          horizontal: DM.p10),
+                                                  border: InputBorder.none,
+                                                  hintText: "0",
+                                                  hintStyle: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: DM.p14,
+                                                  )),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(DM.p5),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: DM.p100,
+                                          child: Text(
+                                            "Total Agent Discount",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: DM.p14,
+                                                color: blackFontColor),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: DM.p5,
+                                        ),
+                                        Text(":"),
+                                        SizedBox(
+                                          width: DM.p10,
+                                        ),
+                                        Flexible(
+                                          child: Container(
+                                            height: DM.p42,
+                                            child: TextFormField(
+                                              readOnly: true,
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              onChanged: (value) {
+                                                if (value.length != 0) {
+                                                  setState(() {
+                                                    calculationProcess();
+                                                  });
+                                                }
+                                              },
+                                              controller: agent_discount,
+                                              decoration: InputDecoration(
+                                                  errorStyle: TextStyle(
+                                                      fontSize: DM.p9),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                          borderSide: BorderSide(
+                                                              width: DM.p1,
+                                                              color:
+                                                                  orangeColor)),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        width: DM.p1,
+                                                        color:
+                                                            orangeColor), //<-- SEE HERE
+                                                  ),
+                                                  filled: true,
+                                                  fillColor: fullWhiteColor,
+                                                  contentPadding:
+                                                      EdgeInsets.symmetric(
+                                                          horizontal: DM.p10),
+                                                  border: InputBorder.none,
+                                                  hintText: "0",
+                                                  hintStyle: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: DM.p14,
+                                                  )),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  FormUserInfo(
+                                    formKey: _formKey,
+                                    textInputType: TextInputType.number,
+                                    controller: agent_commission,
+                                    title: "Agent Commission",
+                                    value: "0",
+                                    activate: true,
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(DM.p5),
+                                    child: Row(
+                                      children: [
+                                        SizedBox(
+                                          width: DM.p100,
+                                          child: Text(
+                                            "Next Status",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: DM.p14,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: DM.p5,
+                                        ),
+                                        Text(":"),
+                                        SizedBox(
+                                          width: DM.p10,
+                                        ),
+                                        typeUser == "4" &&
+                                                phoneNumber != superUser
+                                            ? DropdownButton<String>(
+                                                hint: Text(
+                                                    "${createReqController.status[int.parse(teststatus.text)]}",
+                                                    style: TextStyle(
+                                                        color: blackFontColor)),
+                                                items: <String>[
+                                                  "PENDING",
+                                                  "RECIEVED",
+                                                ].map((String value) {
+                                                  return DropdownMenuItem<
+                                                      String>(
+                                                    value: value,
+                                                    child: Text(
+                                                      "$value",
+                                                      style: TextStyle(
+                                                          color:
+                                                              blackFontColor),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (newValue) {
+                                                  setState(() {
+                                                    teststatus.text =
+                                                        createReqController
+                                                            .toStatus[newValue]
+                                                            .toString();
+                                                  });
+                                                },
+                                              )
+                                            : DropdownButton<String>(
+                                                hint: Text(
+                                                    "${createReqController.status[int.parse(teststatus.text)]}",
+                                                    style: TextStyle(
+                                                        color: blackFontColor)),
+                                                items: <String>[
+                                                  "PENDING",
+                                                  "RECIEVED",
+                                                  "PRECOLLECTED",
+                                                  "COLLECTED",
+                                                  "READY",
+                                                  "R.RECIEVED",
+                                                  "DELIVERED",
+                                                  "CANCEL"
+                                                ].map((String value) {
+                                                  return DropdownMenuItem<
+                                                      String>(
+                                                    value: value,
+                                                    child: Text(
+                                                      "$value",
+                                                      style: TextStyle(
+                                                          color:
+                                                              blackFontColor),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (newValue) {
+                                                  setState(() {
+                                                    teststatus.text =
+                                                        createReqController
+                                                            .toStatus[newValue]
+                                                            .toString();
+                                                  });
+                                                },
+                                              ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
-                              ),
-                            ),
-                          ],
-                        ):SizedBox(),
+                              )
+                            : SizedBox(),
                         Padding(
                           padding: EdgeInsets.all(DM.p5),
                           child: Row(
@@ -3243,7 +3424,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           controller: due_amount,
                           title: "Due Amount",
                           value: "${totalCost - int.parse(advanced.text)}",
-                          activate: phoneNumber==superUser?false:true,
+                          activate: phoneNumber == superUser ? false : true,
                         ),
 
                         FormUserInfo(
@@ -3252,7 +3433,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           controller: total_discount,
                           title: "Total Discount",
                           value: "0",
-                          activate: phoneNumber==superUser?false:true,
+                          activate: phoneNumber == superUser ? false : true,
                         ),
                         // FormUserInfo(
                         //   formKey: _formKey,
@@ -3262,6 +3443,71 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         //   value: "0",
                         //   activate: false,
                         // ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Due Received",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      if (due_recieved.text.isNotEmpty) {
+                                        totalprice.text = (totalCost +
+                                                int.parse(due_recieved.text
+                                                    .toString()))
+                                            .toString();
+                                      }
+                                    },
+                                    controller: due_recieved,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: orangeColor)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                                  orangeColor), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         widget.testEachRequest!.assigning == phoneNumber ||
                                 phoneNumber == superUser ||
                                 typeUser == "7" ||
@@ -3931,10 +4177,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                 padding: EdgeInsets.all(16),
                                                 margin: EdgeInsets.all(16),
                                                 child: Text(
-                                                    createReqController.status[int.parse(teststatus.text)]=="PRECOLLECTED"?
-                                                    "Are you want to submit to ${createReqController.status[3]}?":
-                                                    "Are you want to submit to ${createReqController.status[int.parse(teststatus.text)]}?"
-                                                  ,
+                                                  createReqController.status[
+                                                              int.parse(
+                                                                  teststatus
+                                                                      .text)] ==
+                                                          "PRECOLLECTED"
+                                                      ? "Are you want to submit to ${createReqController.status[3]}?"
+                                                      : "Are you want to submit to ${createReqController.status[int.parse(teststatus.text)]}?",
                                                   style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.w400,
@@ -4063,6 +4312,7 @@ class FormUserInfo extends StatelessWidget {
 
   var controller = new TextEditingController();
   var textInputType;
+
   FormUserInfo({
     Key? key,
     required this.formKey,
@@ -4165,70 +4415,38 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
   final date = DateTime.now().millisecondsSinceEpoch;
 
   final invoice = Invoice(
-    // supplier: Supplier(
-    //   name: 'Sarah Field',
-    //   address: 'Sarah Street 9, Beijing, China',
-    //   paymentInfo: 'https://paypal.me/sarahfieldzz',
-    // ),
-    customer: Customer(
-        id: testDataRequest.id,
-        invoice_id: testDataRequest.invoice_call,
-        name: testDataRequest.name,
-        address: testDataRequest.address,
-        gender: testDataRequest.gender,
-        referrer: testDataRequest.referrer,
-        age: testDataRequest.age,
-        date: date,
-        totalAmount: testDataRequest.totalprice,
-        advance: advanced.text.toString(),
-        dueAmount: due_amount.text.toString(),
-        totalDiscount: totalDiscount,
-        testItems: testDataRequest.testlist,
-        collection_charge: testDataRequest.servicecharge,
-        tube_cost: tubeCost,
-        deliveryDate: testDataRequest.delivery_date),
-
-    info: InvoiceInfo(
-      date: DateTime.now(),
-      description: 'My description...',
-      number: '${DateTime.now().year}-9999',
-    ),
-
-    items: List.generate(
-        testDataRequest.testlist!.length,
-        (index) => InvoiceItem(
-            testName: testDataRequest.testlist![index].name +
-                " (${testDataRequest.testlist![index].diagnostic_center})",
-            testPrice: testDataRequest.testlist![index].testprice,
-            serialNumber: index + 1))
-
-    // InvoiceItem(
-    //   testName: 'Coffee',
-    //   quantity: 3,
-    //   testPrice: 5.999999,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Water',
-    //   quantity: 8,
-    //   testPrice: 0.99,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Orange',
-    //   quantity: 3,
-    //   testPrice: 2.99,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Apple',
-    //   quantity: 8,
-    //   testPrice: 3.99,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Mango',
-    //   quantity: 1,
-    //   testPrice: 1.59,
-    // ),
-    ,
-  );
+      customer: Customer(
+          id: testDataRequest.id,
+          invoice_id: testDataRequest.invoice_call,
+          name: testDataRequest.name,
+          address: testDataRequest.address,
+          gender: testDataRequest.gender,
+          referrer: testDataRequest.referrer,
+          age: testDataRequest.age,
+          date: date,
+          totalAmount: testDataRequest.totalprice,
+          advance: advanced.text.toString(),
+          dueAmount: due_amount.text.toString(),
+          totalDiscount: totalDiscount,
+          testItems: testDataRequest.testlist,
+          collection_charge: testDataRequest.servicecharge,
+          tube_cost: tubeCost,
+          deliveryDate: testDataRequest.delivery_date,
+          reciever_name: testDataRequest.reciever_name,
+          last_modifier: testDataRequest.last_modifier,
+          prepared_by: testDataRequest.prepared_by),
+      info: InvoiceInfo(
+        date: DateTime.now(),
+        description: 'My description...',
+        number: '${DateTime.now().year}-9999',
+      ),
+      items: List.generate(
+          testDataRequest.testlist!.length,
+          (index) => InvoiceItem(
+              testName: testDataRequest.testlist![index].name +
+                  " (${testDataRequest.testlist![index].diagnostic_center})",
+              testPrice: testDataRequest.testlist![index].testprice,
+              serialNumber: index + 1)));
 
   final pdfFile = await PdfInvoiceApi.generate(invoice);
   final pdfFile2 = await PdfInvoiceApiNoCustomer.generate(invoice);
@@ -4236,55 +4454,3 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
   PdfApi.openFile(pdfFile);
   PdfApi.openFile(pdfFile2);
 }
-
-//new
-//  Padding(
-//                               padding: EdgeInsets.all(DM.p1),
-//                               child: Row(
-//                                 children: [
-//                                   SizedBox(
-//                                     width: DM.p100,
-//                                     child: Text(
-//                                       "Gender",
-//                                       style: TextStyle(
-//                                           fontWeight: FontWeight.w500,
-//                                           fontSize: DM.p14,
-//                                           color: Color.fromARGB(
-//                                               255, 26, 1, 1)),
-//                                     ),
-//                                   ),
-//                                   SizedBox(
-//                                     width: DM.p5,
-//                                   ),
-//                                   Text(":"),
-//                                   SizedBox(
-//                                     width: DM.p10,
-//                                   ),
-//                                   DropdownButton<String>(
-//                                     hint: Text(
-//                                       "$gender",
-//                                       style:
-//                                           TextStyle(color: blackFontColor),
-//                                     ),
-//                                     items: <String>[
-//                                       'Male',
-//                                       'Female',
-//                                     ].map((String value) {
-//                                       return DropdownMenuItem<String>(
-//                                         value: value,
-//                                         child: Text(
-//                                           "$value",
-//                                           style: TextStyle(
-//                                               color: blackFontColor),
-//                                         ),
-//                                       );
-//                                     }).toList(),
-//                                     onChanged: (newValue) {
-//                                       setState(() {
-//                                         gender = newValue;
-//                                       });
-//                                     },
-//                                   ),
-//                                 ],
-//                               ),
-//                             ),

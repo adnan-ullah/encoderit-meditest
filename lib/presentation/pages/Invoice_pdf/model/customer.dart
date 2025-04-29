@@ -15,7 +15,10 @@ class Customer {
   final dynamic advance;
     final dynamic testItems;
    final dynamic collection_charge;
-    final dynamic tube_cost;   
+    final dynamic tube_cost;
+    final dynamic prepared_by;
+    final dynamic reciever_name;
+  final dynamic last_modifier;
 
 
 
@@ -37,7 +40,11 @@ class Customer {
     this.advance,
     this.testItems,
     this.collection_charge,
-    this.tube_cost
+    this.tube_cost,
+
+    this.prepared_by,
+    this.reciever_name,
+    this.last_modifier
 
     
 

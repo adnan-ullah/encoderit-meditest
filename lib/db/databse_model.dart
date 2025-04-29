@@ -120,7 +120,11 @@ class TestDataRequest {
       this.radiology_assigning_commission,
       this.pathology_done,
       this.radiology_done,
-        this.imageDiscountFile
+        this.imageDiscountFile,
+        this.reciever_name,
+        this.last_modifier,
+        this.due_recieved,
+        this.prepared_by,
 
       
   
@@ -148,7 +152,11 @@ class TestDataRequest {
   final dynamic image_two;
   final dynamic comments;
   final dynamic delivery_date;
+  final dynamic reciever_name;
+  final dynamic last_modifier;
+  final dynamic prepared_by;
 
+  dynamic due_recieved;
   dynamic advanced;
   dynamic due_amount;
   dynamic total_admin_discount;
@@ -233,7 +241,11 @@ class TestDataRequest {
         'radiology_assigning_commission': radiology_assigning_commission,
         'pathology_done': pathology_done,
         'radiology_done': radiology_done,
-    'imageDiscountFile':imageDiscountFile
+    'imageDiscountFile':imageDiscountFile,
+    'reciever_name':reciever_name,
+    'last_modifier':last_modifier,
+    'due_recieved':due_recieved,
+    'prepared_by':prepared_by,
       };
 
   factory TestDataRequest.fromJson(Map<String, dynamic> parsedJson) {
@@ -294,7 +306,11 @@ class TestDataRequest {
       pathology_done: parsedJson['pathology_done'],
       radiology_done: parsedJson['radiology_done'],
 
-        imageDiscountFile:parsedJson['imageDiscountFile']
+        imageDiscountFile:parsedJson['imageDiscountFile'],
+      reciever_name:parsedJson['reciever_name'],
+      last_modifier: parsedJson['last_modifier'],
+      due_recieved: parsedJson['due_recieved'],
+      prepared_by: parsedJson['prepared_by'],
 
            
     );
