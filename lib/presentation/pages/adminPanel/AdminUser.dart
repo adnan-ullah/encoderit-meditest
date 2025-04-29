@@ -10,6 +10,7 @@ import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminUserData.d
 import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
 
 import '../../../constants/app_info.dart';
+import '../../../db/models/AdminUserModel.dart';
 import '../../../responsives/dimensions.dart';
 
 class AdminUser extends StatefulWidget {

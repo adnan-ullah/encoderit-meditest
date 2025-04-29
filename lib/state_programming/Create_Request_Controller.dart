@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:healthcare_homelab/db/databse_model.dart';
 
 import '../constants/colors.dart';
+import '../db/models/TestData.dart';
+import '../db/models/TestDataRequest.dart';
 
 class CreateRequest_controller extends GetxController {
   RxString address = "".obs;
