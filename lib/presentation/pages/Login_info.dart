@@ -117,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Container(
                     margin: EdgeInsets.all(DM.p10),
                     height: DM.p200,
-                    color: creamColor,
+                    color: secondaryColor,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -146,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 height: DM.p40,
                                 minWidth: DM.p120,
                                 shape: const StadiumBorder(),
-                                color: orangeColor,
+                                color: appTheme,
                                 child: Text(
                                   "Cancel",
                                   style: TextStyle(
@@ -170,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 height: DM.p40,
                                 minWidth: DM.p120,
                                 shape: const StadiumBorder(),
-                                color: orangeColor,
+                                color: appTheme,
                                 child: Text(
                                   "Update",
                                   style: TextStyle(
@@ -206,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(backgroundColor: orangeColor, actions: [
+      appBar: AppBar(backgroundColor: appTheme, actions: [
         Container(
           alignment: Alignment.centerLeft,
           padding: EdgeInsets.symmetric(horizontal: DM.p20),
@@ -215,13 +215,13 @@ class _LoginScreenState extends State<LoginScreen> {
             "Login",
             textAlign: TextAlign.left,
             style: TextStyle(
-                color: creamColor,
+                color: secondaryColor,
                 fontWeight: FontWeight.bold,
                 fontSize: DM.p25),
           ),
         ),
       ]),
-      backgroundColor: creamColor,
+      backgroundColor: secondaryColor,
       body: Form(
         key: _formKey,
         child: Container(
@@ -247,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: DM.p30,
-                                    color: orangeColor),
+                                    color: appTheme),
                               ),
                             ],
                           ),
@@ -306,12 +306,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                           focusedBorder: OutlineInputBorder(
                                               borderSide: BorderSide(
                                                   width: DM.p1,
-                                                  color: orangeColor)),
+                                                  color: appTheme)),
                                           enabledBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
                                                 width: DM.p1,
                                                 color:
-                                                    orangeColor), //<-- SEE HERE
+                                                    appTheme), //<-- SEE HERE
                                           ),
                                           filled: true,
                                           fillColor: Colors.white,
@@ -370,12 +370,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                           focusedBorder: OutlineInputBorder(
                                               borderSide: BorderSide(
                                                   width: DM.p1,
-                                                  color: orangeColor)),
+                                                  color: appTheme)),
                                           enabledBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
                                                 width: DM.p1,
                                                 color:
-                                                    orangeColor), //<-- SEE HERE
+                                                    appTheme), //<-- SEE HERE
                                           ),
                                           filled: true,
                                           fillColor: Colors.white,
@@ -476,7 +476,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 },
                                 height: DM.p50,
                                 shape: const StadiumBorder(),
-                                color: orangeColor,
+                                color: appTheme,
                                 child: Text(
                                   "Login",
                                   textAlign: TextAlign.center,

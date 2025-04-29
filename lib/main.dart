@@ -78,8 +78,8 @@ class _MyAppState extends State<MyApp> {
                 resizeToAvoidBottomInset: true,
                 body: MyScaffold(
                     container: SplashScreen(),
-                    color1: creamColor,
-                    color2: creamColor))),
+                    color1: secondaryColor,
+                    color2: secondaryColor))),
       );
     
   }

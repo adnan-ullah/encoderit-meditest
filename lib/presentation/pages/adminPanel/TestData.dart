@@ -146,18 +146,18 @@ class _TestDataCreateState extends State<TestDataCreate> {
     chechkingInternet();
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(backgroundColor: orangeColor, actions: [
+      appBar: AppBar(backgroundColor: appTheme, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
           width: DM.screenWidth,
           child: Text(
             "Test Item form",
             textAlign: TextAlign.left,
-            style: TextStyle(color: creamColor, fontSize: DM.p30),
+            style: TextStyle(color: secondaryColor, fontSize: DM.p30),
           ),
         ),
       ]),
-      backgroundColor: creamColor,
+      backgroundColor: secondaryColor,
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -388,7 +388,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
                     height: DM.p40,
                     minWidth: DM.p120,
                     shape: const StadiumBorder(),
-                    color: orangeColor,
+                    color: appTheme,
                     child: Text(
                       widget.testItem == null ? "Submit" : "Update",
                       style: TextStyle(
@@ -472,16 +472,16 @@ class FormUserInfo extends StatelessWidget {
                     errorStyle: TextStyle(fontSize: DM.p9),
                     disabledBorder: OutlineInputBorder(
                         borderSide:
-                            BorderSide(width: DM.p1, color: orangeColor)),
+                            BorderSide(width: DM.p1, color: appTheme)),
                     // focusedErrorBorder: OutlineInputBorder(
                     //     borderSide:
                     //         BorderSide(width: DM.p1, color: orangeColor)),
                     focusedBorder: OutlineInputBorder(
                         borderSide:
-                            BorderSide(width: DM.p1, color: orangeColor)),
+                            BorderSide(width: DM.p1, color: appTheme)),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                          width: DM.p1, color: orangeColor), //<-- SEE HERE
+                          width: DM.p1, color: appTheme), //<-- SEE HERE
                     ),
                     filled: true,
                     fillColor: Colors.white,
@@ -561,16 +561,16 @@ class FormInitialUserInfo extends StatelessWidget {
                     errorStyle: TextStyle(fontSize: DM.p9),
                     disabledBorder: OutlineInputBorder(
                         borderSide:
-                            BorderSide(width: DM.p1, color: orangeColor)),
+                            BorderSide(width: DM.p1, color: appTheme)),
                     // focusedErrorBorder: OutlineInputBorder(
                     //     borderSide:
                     //         BorderSide(width: DM.p1, color: orangeColor)),
                     focusedBorder: OutlineInputBorder(
                         borderSide:
-                            BorderSide(width: DM.p1, color: orangeColor)),
+                            BorderSide(width: DM.p1, color: appTheme)),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                          width: DM.p1, color: orangeColor), //<-- SEE HERE
+                          width: DM.p1, color: appTheme), //<-- SEE HERE
                     ),
                     filled: true,
                     fillColor: Colors.white,

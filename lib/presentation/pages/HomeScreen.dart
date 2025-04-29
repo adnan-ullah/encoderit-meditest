@@ -40,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(backgroundColor: orangeColor, actions: [
+      appBar: AppBar(backgroundColor: appTheme, actions: [
         Container(
           alignment: Alignment.centerLeft,
           padding: EdgeInsets.only(left: DM.p50),
@@ -48,13 +48,13 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Text(
             "$app_name",
             style: TextStyle(
-                color: creamColor,
+                color: secondaryColor,
                 fontWeight: FontWeight.bold,
                 fontSize: DM.p25),
           ),
         ),
       ]),
-      backgroundColor: creamColor,
+      backgroundColor: secondaryColor,
       body: Container(
         width: DM.screenWidth,
         child: Column(
@@ -102,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                         height: DM.p50,
                         shape: const StadiumBorder(),
-                        color: orangeColor,
+                        color: appTheme,
                         child: Text(
                           // "Prescription \nRequest",
                           "প্রেসক্রিপশনের \nছবি তুলুন",
@@ -137,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                         height: DM.p50,
                         shape: const StadiumBorder(),
-                        color: orangeColor,
+                        color: appTheme,
                         child: Text(
                           //"Request \nForm",
                           "ফরম পূরণ \nকরুন",
@@ -224,10 +224,10 @@ class FormUserInfo extends StatelessWidget {
                 decoration: InputDecoration(
                     focusedBorder: OutlineInputBorder(
                         borderSide:
-                            BorderSide(width: DM.p1, color: orangeColor)),
+                            BorderSide(width: DM.p1, color: appTheme)),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                          width: DM.p1, color: orangeColor), //<-- SEE HERE
+                          width: DM.p1, color: appTheme), //<-- SEE HERE
                     ),
                     filled: true,
                     fillColor: Colors.white,

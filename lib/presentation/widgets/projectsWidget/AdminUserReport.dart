@@ -57,14 +57,14 @@ class _AdminUserReportState extends State<AdminUserReport> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   new CircularProgressIndicator(
-                    color: orangeColor,
+                    color: appTheme,
                   ),
                   SizedBox(
                     width: DM.p10,
                   ),
                   new Text(
                     "Loading, please wait...",
-                    style: TextStyle(color: orangeColor),
+                    style: TextStyle(color: appTheme),
                   ),
                 ],
               ),
@@ -211,15 +211,15 @@ class _AdminUserReportState extends State<AdminUserReport> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: creamColor,
-      appBar: AppBar(backgroundColor: orangeColor, actions: [
+      backgroundColor: secondaryColor,
+      appBar: AppBar(backgroundColor: appTheme, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
           width: DM.screenWidth,
           child: Text(
             "Report",
             textAlign: TextAlign.left,
-            style: TextStyle(color: creamColor, fontSize: DM.p30),
+            style: TextStyle(color: secondaryColor, fontSize: DM.p30),
           ),
         ),
       ]),
@@ -272,11 +272,11 @@ class _AdminUserReportState extends State<AdminUserReport> {
                               errorStyle: TextStyle(fontSize: DM.p9),
                               focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      width: DM.p1, color: orangeColor)),
+                                      width: DM.p1, color: appTheme)),
                               enabledBorder: OutlineInputBorder(
                                 borderSide: BorderSide(
                                     width: DM.p1,
-                                    color: orangeColor), //<-- SEE HERE
+                                    color: appTheme), //<-- SEE HERE
                               ),
                               filled: true,
                               fillColor: Colors.white,
@@ -304,7 +304,7 @@ class _AdminUserReportState extends State<AdminUserReport> {
                         height: DM.p60,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: orangeColor, elevation: 0),
+                              backgroundColor: appTheme, elevation: 0),
                           onPressed: () async {
                             final DateTime? picked = await showDatePicker(
                                 context: context,
@@ -347,7 +347,7 @@ class _AdminUserReportState extends State<AdminUserReport> {
                         height: DM.p60,
                         child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                                backgroundColor: orangeColor, elevation: 0),
+                                backgroundColor: appTheme, elevation: 0),
                             onPressed: () async {
                               final DateTime? picked_end = await showDatePicker(
                                   context: context,
@@ -742,7 +742,7 @@ class _AdminUserReportState extends State<AdminUserReport> {
                               style: TextStyle(
                                   fontWeight: FontWeight.w400,
                                   fontSize: DM.p25,
-                                  color: orangeColor),
+                                  color: appTheme),
                             ),
                           ))),
             ],

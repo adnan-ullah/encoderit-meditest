@@ -53,9 +53,9 @@ class _RequestListTabViewState extends State<RequestListTabView> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(color: orangeColor),
+                  CircularProgressIndicator(color: appTheme),
                   SizedBox(width: DM.p10),
-                  Text("Loading, please wait...", style: TextStyle(color: orangeColor)),
+                  Text("Loading, please wait...", style: TextStyle(color: appTheme)),
                 ],
               ),
             ),
@@ -443,7 +443,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                     },
                                     height: DM.p40,
                                     shape: const StadiumBorder(),
-                                    color: orangeColor,
+                                    color: appTheme,
                                     child: Text(
                                       "Done",
                                       textAlign: TextAlign.center,
@@ -464,7 +464,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                     },
                                     height: DM.p40,
                                     shape: const StadiumBorder(),
-                                    color: orangeColor,
+                                    color: appTheme,
                                     child: Text(
                                       "Done",
                                       textAlign: TextAlign.center,
@@ -490,7 +490,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
               child: Center(
                 child: Text(
                   "Request list empty ",
-                  style: TextStyle(fontWeight: FontWeight.w400, fontSize: DM.p25, color: orangeColor),
+                  style: TextStyle(fontWeight: FontWeight.w400, fontSize: DM.p25, color: appTheme),
                 ),
               ),
             ),

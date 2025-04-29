@@ -180,14 +180,14 @@ class _CreateRequestState extends State<CreateRequest> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   new CircularProgressIndicator(
-                    color: orangeColor,
+                    color: appTheme,
                   ),
                   SizedBox(
                     width: DM.p10,
                   ),
                   new Text(
                     "Submitting, please wait...",
-                    style: TextStyle(color: orangeColor),
+                    style: TextStyle(color: appTheme),
                   ),
                 ],
               ),
@@ -468,7 +468,7 @@ class _CreateRequestState extends State<CreateRequest> {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(backgroundColor: orangeColor, actions: [
+      appBar: AppBar(backgroundColor: appTheme, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
           width: DM.screenWidth,
@@ -476,13 +476,13 @@ class _CreateRequestState extends State<CreateRequest> {
             "Requisition form",
             textAlign: TextAlign.left,
             style: TextStyle(
-                color: creamColor,
+                color: secondaryColor,
                 fontWeight: FontWeight.bold,
                 fontSize: DM.p25),
           ),
         ),
       ]),
-      backgroundColor: creamColor,
+      backgroundColor: secondaryColor,
       body: Form(
         key: _formKey,
         child: Container(
@@ -583,13 +583,13 @@ class _CreateRequestState extends State<CreateRequest> {
                                                         borderSide: BorderSide(
                                                             width: DM.p1,
                                                             color:
-                                                                orangeColor)),
+                                                                appTheme)),
                                                 enabledBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                       width: DM.p1,
                                                       color:
-                                                          orangeColor), //<-- SEE HERE
+                                                          appTheme), //<-- SEE HERE
                                                 ),
                                                 filled: true,
                                                 fillColor: Colors.white,
@@ -716,13 +716,13 @@ class _CreateRequestState extends State<CreateRequest> {
                                                         borderSide: BorderSide(
                                                             width: DM.p1,
                                                             color:
-                                                                orangeColor)),
+                                                                appTheme)),
                                                 enabledBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                       width: DM.p1,
                                                       color:
-                                                          orangeColor), //<-- SEE HERE
+                                                          appTheme), //<-- SEE HERE
                                                 ),
                                                 filled: true,
                                                 fillColor: fullWhiteColor,
@@ -794,13 +794,13 @@ class _CreateRequestState extends State<CreateRequest> {
                                                         borderSide: BorderSide(
                                                             width: DM.p1,
                                                             color:
-                                                                orangeColor)),
+                                                                appTheme)),
                                                 enabledBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                       width: DM.p1,
                                                       color:
-                                                          orangeColor), //<-- SEE HERE
+                                                          appTheme), //<-- SEE HERE
                                                 ),
                                                 filled: true,
                                                 fillColor: Colors.white,
@@ -874,7 +874,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                                               ElevatedButton(
                                                                   style: ElevatedButton.styleFrom(
                                                                       backgroundColor:
-                                                                      orangeColor,
+                                                                      appTheme,
                                                                       elevation:
                                                                       0),
                                                                   onPressed:
@@ -923,7 +923,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                                               ElevatedButton(
                                                                   style: ElevatedButton.styleFrom(
                                                                       backgroundColor:
-                                                                      orangeColor,
+                                                                      appTheme,
                                                                       elevation:
                                                                       0),
                                                                   onPressed:
@@ -962,7 +962,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                                   });
                                             },
                                             height: DM.p50,
-                                            color: orangeColor,
+                                            color: appTheme,
                                             child: Icon(Icons.camera , size: DM.p40, color: whiteColor,)
                                         ),
                                       )
@@ -977,7 +977,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                             ),
                                           ),
                                           IconButton(
-                                            color: orangeColor,
+                                            color: appTheme,
                                             icon: Icon(
                                               CupertinoIcons.xmark_circle_fill,
                                               size: DM.p30,
@@ -1040,13 +1040,13 @@ class _CreateRequestState extends State<CreateRequest> {
                                                         borderSide: BorderSide(
                                                             width: DM.p1,
                                                             color:
-                                                                orangeColor)),
+                                                                appTheme)),
                                                 enabledBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                       width: DM.p1,
                                                       color:
-                                                          orangeColor), //<-- SEE HERE
+                                                          appTheme), //<-- SEE HERE
                                                 ),
                                                 filled: true,
                                                 fillColor: Colors.white,
@@ -1096,7 +1096,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                 },
                                 height: DM.p40,
                                 shape: const StadiumBorder(),
-                                color: orangeColor,
+                                color: appTheme,
                                 child: Text(
                                   "Add test",
                                   style: TextStyle(
@@ -1166,7 +1166,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                               ),
                                               Container(
                                                 child: IconButton(
-                                                  color: orangeColor,
+                                                  color: appTheme,
                                                   icon: Icon(
                                                     CupertinoIcons
                                                         .xmark_circle_fill,
@@ -1293,7 +1293,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                       height: DM.p40,
                                       minWidth: DM.p120,
                                       shape: const StadiumBorder(),
-                                      color: orangeColor,
+                                      color: appTheme,
                                       child: Text(
                                         // "Submit",
                                         "সাবমিট",
@@ -1387,16 +1387,16 @@ class FormUserInfo extends StatelessWidget {
                     errorStyle: TextStyle(fontSize: DM.p9),
                     disabledBorder: OutlineInputBorder(
                         borderSide:
-                            BorderSide(width: DM.p1, color: orangeColor)),
+                            BorderSide(width: DM.p1, color: appTheme)),
                     focusedErrorBorder: OutlineInputBorder(
                         borderSide:
-                            BorderSide(width: DM.p1, color: orangeColor)),
+                            BorderSide(width: DM.p1, color: appTheme)),
                     focusedBorder: OutlineInputBorder(
                         borderSide:
-                            BorderSide(width: DM.p1, color: orangeColor)),
+                            BorderSide(width: DM.p1, color: appTheme)),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                          width: DM.p1, color: orangeColor), //<-- SEE HERE
+                          width: DM.p1, color: appTheme), //<-- SEE HERE
                     ),
                     filled: true,
                     fillColor: Colors.white,

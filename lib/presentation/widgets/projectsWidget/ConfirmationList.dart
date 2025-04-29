@@ -69,14 +69,14 @@ class _ConfirmationListState extends State<ConfirmationList> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   new CircularProgressIndicator(
-                    color: orangeColor,
+                    color: appTheme,
                   ),
                   SizedBox(
                     width: DM.p10,
                   ),
                   new Text(
                     "Submitting, please wait...",
-                    style: TextStyle(color: orangeColor),
+                    style: TextStyle(color: appTheme),
                   ),
                 ],
               ),
@@ -98,7 +98,7 @@ class _ConfirmationListState extends State<ConfirmationList> {
       child: Stack(
         children: [
           Container(
-              color: creamColor,
+              color: secondaryColor,
               height: DM.screenHeight * 0.9,
               width: DM.screenWidth * 0.9,
               padding: EdgeInsets.all(DM.p15),
@@ -260,7 +260,7 @@ class _ConfirmationListState extends State<ConfirmationList> {
                         height: DM.p45,
                         minWidth: DM.p120,
                         shape: const StadiumBorder(),
-                        color: orangeColor,
+                        color: appTheme,
                         child: Text(
                           "কনফার্ম",
                           style: TextStyle(

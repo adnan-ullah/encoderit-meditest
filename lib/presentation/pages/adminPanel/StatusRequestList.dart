@@ -77,11 +77,11 @@ class _StatusRequestListState extends State<StatusRequestList> with TickerProvid
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(color: orangeColor),
+                  CircularProgressIndicator(color: appTheme),
                   SizedBox(width: DM.p10),
                   Text(
                     "Loading, please wait...",
-                    style: TextStyle(color: orangeColor),
+                    style: TextStyle(color: appTheme),
                   ),
                 ],
               ),
@@ -122,9 +122,9 @@ class _StatusRequestListState extends State<StatusRequestList> with TickerProvid
     });
 
     return Scaffold(
-      backgroundColor: creamColor,
+      backgroundColor: secondaryColor,
       appBar: AppBar(
-        backgroundColor: orangeColor,
+        backgroundColor: appTheme,
         actions: [
           Container(
             padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
@@ -132,7 +132,7 @@ class _StatusRequestListState extends State<StatusRequestList> with TickerProvid
             child: Text(
               "Report Status",
               textAlign: TextAlign.left,
-              style: TextStyle(color: creamColor, fontSize: DM.p30),
+              style: TextStyle(color: secondaryColor, fontSize: DM.p30),
             ),
           ),
         ],

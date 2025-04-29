@@ -115,10 +115,10 @@ class _FormUserAgeState extends State<FormUserAge> {
                     decoration: InputDecoration(
                       errorStyle: TextStyle(fontSize: DM.p14),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1, color: orangeColor),
+                        borderSide: BorderSide(width: 1, color: appTheme),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1, color: orangeColor),
+                        borderSide: BorderSide(width: 1, color: appTheme),
                       ),
                       filled: true,
                       fillColor: Colors.white,
@@ -139,10 +139,10 @@ class _FormUserAgeState extends State<FormUserAge> {
                     decoration: InputDecoration(
                       errorStyle: TextStyle(fontSize: DM.p14),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1, color: orangeColor),
+                        borderSide: BorderSide(width: 1, color: appTheme),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1, color: orangeColor),
+                        borderSide: BorderSide(width: 1, color: appTheme),
                       ),
                       filled: true,
                       fillColor: Colors.white,
@@ -163,10 +163,10 @@ class _FormUserAgeState extends State<FormUserAge> {
                     decoration: InputDecoration(
                       errorStyle: TextStyle(fontSize: DM.p14),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1, color: orangeColor),
+                        borderSide: BorderSide(width: 1, color: appTheme),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1, color: orangeColor),
+                        borderSide: BorderSide(width: 1, color: appTheme),
                       ),
                       filled: true,
                       fillColor: Colors.white,

@@ -429,14 +429,14 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   new CircularProgressIndicator(
-                    color: orangeColor,
+                    color: appTheme,
                   ),
                   SizedBox(
                     width: DM.p10,
                   ),
                   new Text(
                     "Submitting, please wait...",
-                    style: TextStyle(color: orangeColor),
+                    style: TextStyle(color: appTheme),
                   ),
                 ],
               ),
@@ -1017,18 +1017,18 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(backgroundColor: orangeColor, actions: [
+      appBar: AppBar(backgroundColor: appTheme, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
           width: DM.screenWidth,
           child: Text(
             "Test Request Form",
             textAlign: TextAlign.left,
-            style: TextStyle(color: creamColor, fontSize: DM.p30),
+            style: TextStyle(color: secondaryColor, fontSize: DM.p30),
           ),
         ),
       ]),
-      backgroundColor: creamColor,
+      backgroundColor: secondaryColor,
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -1188,12 +1188,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                         focusedBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
                                                 width: DM.p1,
-                                                color: orangeColor)),
+                                                color: appTheme)),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                               width: DM.p1,
                                               color:
-                                                  orangeColor), //<-- SEE HERE
+                                                  appTheme), //<-- SEE HERE
                                         ),
                                         filled: true,
                                         fillColor: fullWhiteColor,
@@ -1249,12 +1249,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                         focusedBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
                                                 width: DM.p1,
-                                                color: orangeColor)),
+                                                color: appTheme)),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                               width: DM.p1,
                                               color:
-                                                  orangeColor), //<-- SEE HERE
+                                                  appTheme), //<-- SEE HERE
                                         ),
                                         filled: true,
                                         fillColor: Colors.white,
@@ -1355,7 +1355,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                         ),
                                         typeUser == "7" || phone == superUser
                                             ? IconButton(
-                                                color: orangeColor,
+                                                color: appTheme,
                                                 icon: Icon(
                                                   CupertinoIcons
                                                       .xmark_circle_fill,
@@ -1400,7 +1400,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                 ElevatedButton(
                                                                     style: ElevatedButton.styleFrom(
                                                                         backgroundColor:
-                                                                            orangeColor,
+                                                                            appTheme,
                                                                         elevation:
                                                                             0),
                                                                     onPressed:
@@ -1449,7 +1449,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                 ElevatedButton(
                                                                     style: ElevatedButton.styleFrom(
                                                                         backgroundColor:
-                                                                            orangeColor,
+                                                                            appTheme,
                                                                         elevation:
                                                                             0),
                                                                     onPressed:
@@ -1488,7 +1488,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                 });
                                           },
                                           height: DM.p50,
-                                          color: orangeColor,
+                                          color: appTheme,
                                           child: Icon(
                                             Icons.camera,
                                             size: DM.p40,
@@ -1609,7 +1609,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                       superUser
                                                               ? IconButton(
                                                                   color:
-                                                                      orangeColor,
+                                                                      appTheme,
                                                                   icon: Icon(
                                                                     CupertinoIcons
                                                                         .xmark_circle_fill,
@@ -1650,7 +1650,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                       vertical: DM
                                                                           .p20),
                                                               primary:
-                                                                  orangeColor),
+                                                                  appTheme),
                                                           onPressed: () async {
                                                             showDialog(
                                                                 context:
@@ -1675,7 +1675,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                             width:
                                                                                 DM.p120,
                                                                             child: ElevatedButton(
-                                                                                style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                                style: ElevatedButton.styleFrom(backgroundColor: appTheme, elevation: 0),
                                                                                 onPressed: () async {
                                                                                   PickedFile? pickedFile = await ImagePicker().getImage(
                                                                                     source: ImageSource.gallery,
@@ -1706,7 +1706,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                             width:
                                                                                 DM.p120,
                                                                             child: ElevatedButton(
-                                                                                style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                                style: ElevatedButton.styleFrom(backgroundColor: appTheme, elevation: 0),
                                                                                 onPressed: () async {
                                                                                   PickedFile? pickedFile = await ImagePicker().getImage(
                                                                                     source: ImageSource.camera,
@@ -1805,7 +1805,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                       superUser
                                                               ? IconButton(
                                                                   color:
-                                                                      orangeColor,
+                                                                      appTheme,
                                                                   icon: Icon(
                                                                     CupertinoIcons
                                                                         .xmark_circle_fill,
@@ -1846,7 +1846,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                       vertical: DM
                                                                           .p20),
                                                               primary:
-                                                                  orangeColor),
+                                                                  appTheme),
                                                           onPressed: () async {
                                                             showDialog(
                                                                 context:
@@ -1871,7 +1871,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                             width:
                                                                                 DM.p120,
                                                                             child: ElevatedButton(
-                                                                                style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                                style: ElevatedButton.styleFrom(backgroundColor: appTheme, elevation: 0),
                                                                                 onPressed: () async {
                                                                                   PickedFile? pickedFile = await ImagePicker().getImage(
                                                                                     source: ImageSource.gallery,
@@ -1899,7 +1899,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                             width:
                                                                                 DM.p120,
                                                                             child: ElevatedButton(
-                                                                                style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                                style: ElevatedButton.styleFrom(backgroundColor: appTheme, elevation: 0),
                                                                                 onPressed: () async {
                                                                                   PickedFile? pickedFile = await ImagePicker().getImage(
                                                                                     source: ImageSource.camera,
@@ -2067,7 +2067,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                           phoneNumber ==
                                                               superUser
                                                       ? IconButton(
-                                                          color: orangeColor,
+                                                          color: appTheme,
                                                           icon: Icon(
                                                             CupertinoIcons
                                                                 .xmark_circle_fill,
@@ -2099,7 +2099,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                       padding:
                                                           EdgeInsets.symmetric(
                                                               vertical: DM.p20),
-                                                      primary: orangeColor),
+                                                      primary: appTheme),
                                                   onPressed: () async {
                                                     showDialog(
                                                         context: context,
@@ -2121,7 +2121,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                     width:
                                                                         DM.p120,
                                                                     child: ElevatedButton(
-                                                                        style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                        style: ElevatedButton.styleFrom(backgroundColor: appTheme, elevation: 0),
                                                                         onPressed: () async {
                                                                           PickedFile?
                                                                               pickedFile =
@@ -2163,7 +2163,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                     width:
                                                                         DM.p120,
                                                                     child: ElevatedButton(
-                                                                        style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                        style: ElevatedButton.styleFrom(backgroundColor: appTheme, elevation: 0),
                                                                         onPressed: () async {
                                                                           PickedFile?
                                                                               pickedFile =
@@ -2277,7 +2277,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                           phoneNumber ==
                                                               superUser
                                                       ? IconButton(
-                                                          color: orangeColor,
+                                                          color: appTheme,
                                                           icon: Icon(
                                                             CupertinoIcons
                                                                 .xmark_circle_fill,
@@ -2309,7 +2309,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                       padding:
                                                           EdgeInsets.symmetric(
                                                               vertical: DM.p20),
-                                                      primary: orangeColor),
+                                                      primary: appTheme),
                                                   onPressed: () async {
                                                     showDialog(
                                                         context: context,
@@ -2331,7 +2331,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                     width:
                                                                         DM.p120,
                                                                     child: ElevatedButton(
-                                                                        style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                        style: ElevatedButton.styleFrom(backgroundColor: appTheme, elevation: 0),
                                                                         onPressed: () async {
                                                                           PickedFile?
                                                                               pickedFile =
@@ -2369,7 +2369,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                     width:
                                                                         DM.p120,
                                                                     child: ElevatedButton(
-                                                                        style: ElevatedButton.styleFrom(backgroundColor: orangeColor, elevation: 0),
+                                                                        style: ElevatedButton.styleFrom(backgroundColor: appTheme, elevation: 0),
                                                                         onPressed: () async {
                                                                           PickedFile?
                                                                               pickedFile =
@@ -2440,7 +2440,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                       height: DM.p40,
                                       minWidth: DM.p100,
                                       shape: const StadiumBorder(),
-                                      color: orangeColor,
+                                      color: appTheme,
                                       onPressed: () async {
                                         if (await chechkingInternet()) {
                                           showDialog(
@@ -2530,7 +2530,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                 ),
                                                 Container(
                                                   child: IconButton(
-                                                    color: orangeColor,
+                                                    color: appTheme,
                                                     icon: Icon(
                                                       CupertinoIcons
                                                           .xmark_circle_fill,
@@ -2754,13 +2754,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                           borderSide: BorderSide(
                                                               width: DM.p1,
                                                               color:
-                                                                  orangeColor)),
+                                                                  appTheme)),
                                                   enabledBorder:
                                                       OutlineInputBorder(
                                                     borderSide: BorderSide(
                                                         width: DM.p1,
                                                         color:
-                                                            orangeColor), //<-- SEE HERE
+                                                            appTheme), //<-- SEE HERE
                                                   ),
                                                   filled: true,
                                                   fillColor: fullWhiteColor,
@@ -2827,13 +2827,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                           borderSide: BorderSide(
                                                               width: DM.p1,
                                                               color:
-                                                                  orangeColor)),
+                                                                  appTheme)),
                                                   enabledBorder:
                                                       OutlineInputBorder(
                                                     borderSide: BorderSide(
                                                         width: DM.p1,
                                                         color:
-                                                            orangeColor), //<-- SEE HERE
+                                                            appTheme), //<-- SEE HERE
                                                   ),
                                                   filled: true,
                                                   fillColor: fullWhiteColor,
@@ -2900,13 +2900,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                           borderSide: BorderSide(
                                                               width: DM.p1,
                                                               color:
-                                                                  orangeColor)),
+                                                                  appTheme)),
                                                   enabledBorder:
                                                       OutlineInputBorder(
                                                     borderSide: BorderSide(
                                                         width: DM.p1,
                                                         color:
-                                                            orangeColor), //<-- SEE HERE
+                                                            appTheme), //<-- SEE HERE
                                                   ),
                                                   filled: true,
                                                   fillColor: fullWhiteColor,
@@ -2973,13 +2973,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                           borderSide: BorderSide(
                                                               width: DM.p1,
                                                               color:
-                                                                  orangeColor)),
+                                                                  appTheme)),
                                                   enabledBorder:
                                                       OutlineInputBorder(
                                                     borderSide: BorderSide(
                                                         width: DM.p1,
                                                         color:
-                                                            orangeColor), //<-- SEE HERE
+                                                            appTheme), //<-- SEE HERE
                                                   ),
                                                   filled: true,
                                                   fillColor: fullWhiteColor,
@@ -3046,13 +3046,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                           borderSide: BorderSide(
                                                               width: DM.p1,
                                                               color:
-                                                                  orangeColor)),
+                                                                  appTheme)),
                                                   enabledBorder:
                                                       OutlineInputBorder(
                                                     borderSide: BorderSide(
                                                         width: DM.p1,
                                                         color:
-                                                            orangeColor), //<-- SEE HERE
+                                                            appTheme), //<-- SEE HERE
                                                   ),
                                                   filled: true,
                                                   fillColor: fullWhiteColor,
@@ -3119,13 +3119,13 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                           borderSide: BorderSide(
                                                               width: DM.p1,
                                                               color:
-                                                                  orangeColor)),
+                                                                  appTheme)),
                                                   enabledBorder:
                                                       OutlineInputBorder(
                                                     borderSide: BorderSide(
                                                         width: DM.p1,
                                                         color:
-                                                            orangeColor), //<-- SEE HERE
+                                                            appTheme), //<-- SEE HERE
                                                   ),
                                                   filled: true,
                                                   fillColor: fullWhiteColor,
@@ -3315,12 +3315,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                             focusedBorder: OutlineInputBorder(
                                                 borderSide: BorderSide(
                                                     width: DM.p1,
-                                                    color: orangeColor)),
+                                                    color: appTheme)),
                                             enabledBorder: OutlineInputBorder(
                                               borderSide: BorderSide(
                                                   width: DM.p1,
                                                   color:
-                                                      orangeColor), //<-- SEE HERE
+                                                      appTheme), //<-- SEE HERE
                                             ),
                                             filled: true,
                                             fillColor: fullWhiteColor,
@@ -3394,12 +3394,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                         focusedBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
                                                 width: DM.p1,
-                                                color: orangeColor)),
+                                                color: appTheme)),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                               width: DM.p1,
                                               color:
-                                                  orangeColor), //<-- SEE HERE
+                                                  appTheme), //<-- SEE HERE
                                         ),
                                         filled: true,
                                         fillColor: fullWhiteColor,
@@ -3485,12 +3485,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                         focusedBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
                                                 width: DM.p1,
-                                                color: orangeColor)),
+                                                color: appTheme)),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                               width: DM.p1,
                                               color:
-                                                  orangeColor), //<-- SEE HERE
+                                                  appTheme), //<-- SEE HERE
                                         ),
                                         filled: true,
                                         fillColor: fullWhiteColor,
@@ -3549,12 +3549,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                               focusedBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                       width: DM.p1,
-                                                      color: orangeColor)),
+                                                      color: appTheme)),
                                               enabledBorder: OutlineInputBorder(
                                                 borderSide: BorderSide(
                                                     width: DM.p1,
                                                     color:
-                                                        orangeColor), //<-- SEE HERE
+                                                        appTheme), //<-- SEE HERE
                                               ),
                                               filled: true,
                                               fillColor: fullWhiteColor,
@@ -3617,12 +3617,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                               focusedBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                       width: DM.p1,
-                                                      color: orangeColor)),
+                                                      color: appTheme)),
                                               enabledBorder: OutlineInputBorder(
                                                 borderSide: BorderSide(
                                                     width: DM.p1,
                                                     color:
-                                                        orangeColor), //<-- SEE HERE
+                                                        appTheme), //<-- SEE HERE
                                               ),
                                               filled: true,
                                               fillColor: fullWhiteColor,
@@ -3871,7 +3871,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                       child: Stack(
                                         children: [
                                           Container(
-                                              color: creamColor,
+                                              color: secondaryColor,
                                               height: DM.screenHeight * 0.8,
                                               width: DM.screenWidth * 0.9,
                                               padding: EdgeInsets.all(DM.p15),
@@ -4127,7 +4127,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                         minWidth: DM.p120,
                                                         shape:
                                                             const StadiumBorder(),
-                                                        color: orangeColor,
+                                                        color: appTheme,
                                                         child: Text(
                                                           "Confirm",
                                                           style: TextStyle(
@@ -4168,7 +4168,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                       child: Container(
                                           margin: EdgeInsets.all(DM.p10),
                                           height: DM.p200,
-                                          color: creamColor,
+                                          color: secondaryColor,
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.center,
@@ -4209,7 +4209,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                       minWidth: DM.p120,
                                                       shape:
                                                           const StadiumBorder(),
-                                                      color: orangeColor,
+                                                      color: appTheme,
                                                       child: Text(
                                                         "Cancel",
                                                         style: TextStyle(
@@ -4245,7 +4245,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                       minWidth: DM.p120,
                                                       shape:
                                                           const StadiumBorder(),
-                                                      color: orangeColor,
+                                                      color: appTheme,
                                                       child: Text(
                                                         "Yes",
                                                         style: TextStyle(
@@ -4282,7 +4282,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                     height: DM.p40,
                     minWidth: DM.p120,
                     shape: const StadiumBorder(),
-                    color: orangeColor,
+                    color: appTheme,
                     child: Text(
                       "Confirm",
                       style: TextStyle(
@@ -4367,16 +4367,16 @@ class FormUserInfo extends StatelessWidget {
                     errorStyle: TextStyle(fontSize: DM.p9),
                     disabledBorder: OutlineInputBorder(
                         borderSide:
-                            BorderSide(width: DM.p1, color: orangeColor)),
+                            BorderSide(width: DM.p1, color: appTheme)),
                     // focusedErrorBorder: OutlineInputBorder(
                     //     borderSide:
                     //         BorderSide(width: DM.p1, color: orangeColor)),
                     focusedBorder: OutlineInputBorder(
                         borderSide:
-                            BorderSide(width: DM.p1, color: orangeColor)),
+                            BorderSide(width: DM.p1, color: appTheme)),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                          width: DM.p1, color: orangeColor), //<-- SEE HERE
+                          width: DM.p1, color: appTheme), //<-- SEE HERE
                     ),
                     filled: true,
                     fillColor: Colors.white,

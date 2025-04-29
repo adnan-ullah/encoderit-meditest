@@ -42,7 +42,7 @@ Future<void> createPlantFoodNotification() async {
   AwesomeNotifications().createNotification(
     content: NotificationContent(
       id: 1,
-      backgroundColor: orangeColor,
+      backgroundColor: appTheme,
       channelKey: 'basic_channel',
       title: 'Request Info!!!',
       body: 'You have a new request.',

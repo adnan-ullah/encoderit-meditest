@@ -143,14 +143,14 @@ class _PrescriptionState extends State<Prescription> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   new CircularProgressIndicator(
-                    color: orangeColor,
+                    color: appTheme,
                   ),
                   SizedBox(
                     width: DM.p10,
                   ),
                   new Text(
                     "Submitting, please wait...",
-                    style: TextStyle(color: orangeColor),
+                    style: TextStyle(color: appTheme),
                   ),
                 ],
               ),
@@ -248,7 +248,7 @@ class _PrescriptionState extends State<Prescription> {
     getLocation_Camera();
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(backgroundColor: orangeColor, actions: [
+      appBar: AppBar(backgroundColor: appTheme, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
           width: DM.screenWidth,
@@ -256,13 +256,13 @@ class _PrescriptionState extends State<Prescription> {
             "Prescription Form",
             textAlign: TextAlign.left,
             style: TextStyle(
-                color: creamColor,
+                color: secondaryColor,
                 fontWeight: FontWeight.bold,
                 fontSize: DM.p25),
           ),
         ),
       ]),
-      backgroundColor: creamColor,
+      backgroundColor: secondaryColor,
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -287,7 +287,7 @@ class _PrescriptionState extends State<Prescription> {
                                   style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: DM.p30,
-                                      color: orangeColor),
+                                      color: appTheme),
                                 ),
                               ],
                             ),
@@ -343,12 +343,12 @@ class _PrescriptionState extends State<Prescription> {
                                             focusedBorder: OutlineInputBorder(
                                                 borderSide: BorderSide(
                                                     width: DM.p1,
-                                                    color: orangeColor)),
+                                                    color: appTheme)),
                                             enabledBorder: OutlineInputBorder(
                                               borderSide: BorderSide(
                                                   width: DM.p1,
                                                   color:
-                                                      orangeColor), //<-- SEE HERE
+                                                      appTheme), //<-- SEE HERE
                                             ),
                                             filled: true,
                                             fillColor: Colors.white,
@@ -406,12 +406,12 @@ class _PrescriptionState extends State<Prescription> {
                                             focusedBorder: OutlineInputBorder(
                                                 borderSide: BorderSide(
                                                     width: DM.p1,
-                                                    color: orangeColor)),
+                                                    color: appTheme)),
                                             enabledBorder: OutlineInputBorder(
                                               borderSide: BorderSide(
                                                   width: DM.p1,
                                                   color:
-                                                      orangeColor), //<-- SEE HERE
+                                                      appTheme), //<-- SEE HERE
                                             ),
                                             filled: true,
                                             fillColor: Colors.white,
@@ -482,7 +482,7 @@ class _PrescriptionState extends State<Prescription> {
                                                                       ElevatedButton(
                                                                           style: ElevatedButton.styleFrom(
                                                                               backgroundColor:
-                                                                                  orangeColor,
+                                                                                  appTheme,
                                                                               elevation:
                                                                                   0),
                                                                           onPressed:
@@ -524,7 +524,7 @@ class _PrescriptionState extends State<Prescription> {
                                                                       ElevatedButton(
                                                                           style: ElevatedButton.styleFrom(
                                                                               backgroundColor:
-                                                                                  orangeColor,
+                                                                                  appTheme,
                                                                               elevation:
                                                                                   0),
                                                                           onPressed:
@@ -553,7 +553,7 @@ class _PrescriptionState extends State<Prescription> {
                                                       });
                                                 },
                                                 height: DM.p50,
-                                                color: orangeColor,
+                                                color: appTheme,
                                                 child: Icon(
                                                   Icons.camera,
                                                   size: DM.p40,
@@ -571,7 +571,7 @@ class _PrescriptionState extends State<Prescription> {
                                                 ),
                                               ),
                                               IconButton(
-                                                color: orangeColor,
+                                                color: appTheme,
                                                 icon: Icon(
                                                   CupertinoIcons
                                                       .xmark_circle_fill,
@@ -627,7 +627,7 @@ class _PrescriptionState extends State<Prescription> {
                                                                 ElevatedButton(
                                                                     style: ElevatedButton.styleFrom(
                                                                         backgroundColor:
-                                                                            orangeColor,
+                                                                            appTheme,
                                                                         elevation:
                                                                             0),
                                                                     onPressed:
@@ -676,7 +676,7 @@ class _PrescriptionState extends State<Prescription> {
                                                                 ElevatedButton(
                                                                     style: ElevatedButton.styleFrom(
                                                                         backgroundColor:
-                                                                            orangeColor,
+                                                                            appTheme,
                                                                         elevation:
                                                                             0),
                                                                     onPressed:
@@ -715,7 +715,7 @@ class _PrescriptionState extends State<Prescription> {
                                                 });
                                           },
                                           height: DM.p50,
-                                          color: orangeColor,
+                                          color: appTheme,
                                           child: Text(
                                             "1\n প্রেসক্রিপশনের ছবি সংযুক্ত করুন ",
                                             textAlign: TextAlign.center,
@@ -737,7 +737,7 @@ class _PrescriptionState extends State<Prescription> {
                                             ),
                                           ),
                                           IconButton(
-                                            color: orangeColor,
+                                            color: appTheme,
                                             icon: Icon(
                                               CupertinoIcons.xmark_circle_fill,
                                               size: DM.p30,
@@ -782,7 +782,7 @@ class _PrescriptionState extends State<Prescription> {
                                                                 ElevatedButton(
                                                                     style: ElevatedButton.styleFrom(
                                                                         backgroundColor:
-                                                                            orangeColor,
+                                                                            appTheme,
                                                                         elevation:
                                                                             0),
                                                                     onPressed:
@@ -825,7 +825,7 @@ class _PrescriptionState extends State<Prescription> {
                                                                 ElevatedButton(
                                                                     style: ElevatedButton.styleFrom(
                                                                         backgroundColor:
-                                                                            orangeColor,
+                                                                            appTheme,
                                                                         elevation:
                                                                             0),
                                                                     onPressed:
@@ -864,7 +864,7 @@ class _PrescriptionState extends State<Prescription> {
                                                 });
                                           },
                                           height: DM.p50,
-                                          color: orangeColor,
+                                          color: appTheme,
                                           child: Text(
                                             "2\n প্রেসক্রিপশনের ছবি সংযুক্ত করুন ",
                                             textAlign: TextAlign.center,
@@ -886,7 +886,7 @@ class _PrescriptionState extends State<Prescription> {
                                             ),
                                           ),
                                           IconButton(
-                                            color: orangeColor,
+                                            color: appTheme,
                                             icon: Icon(
                                               CupertinoIcons.xmark_circle_fill,
                                               size: DM.p30,
@@ -933,7 +933,7 @@ class _PrescriptionState extends State<Prescription> {
                                 },
                                 height: DM.p50,
                                 shape: const StadiumBorder(),
-                                color: orangeColor,
+                                color: appTheme,
                                 child: Text(
                                   // "Submit",
                                   "সাবমিট",

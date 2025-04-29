@@ -71,14 +71,14 @@ class _RequestListState extends State<RequestList> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   new CircularProgressIndicator(
-                    color: orangeColor,
+                    color: appTheme,
                   ),
                   SizedBox(
                     width: DM.p10,
                   ),
                   new Text(
                     "Loading, please wait...",
-                    style: TextStyle(color: orangeColor),
+                    style: TextStyle(color: appTheme),
                   ),
                 ],
               ),
@@ -213,7 +213,7 @@ class _RequestListState extends State<RequestList> {
                                                       height: DM.p40,
                                                       shape:
                                                           const StadiumBorder(),
-                                                      color: orangeColor,
+                                                      color: appTheme,
                                                       child: Text(
                                                         "RECIEVED",
                                                         textAlign:
@@ -272,7 +272,7 @@ class _RequestListState extends State<RequestList> {
                                 style: TextStyle(
                                     fontWeight: FontWeight.w400,
                                     fontSize: DM.p25,
-                                    color: orangeColor),
+                                    color: appTheme),
                               ),
                             )))
                 : Container(

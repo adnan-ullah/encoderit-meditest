@@ -61,14 +61,14 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   new CircularProgressIndicator(
-                    color: orangeColor,
+                    color: appTheme,
                   ),
                   SizedBox(
                     width: DM.p10,
                   ),
                   new Text(
                     "Loading, please wait...",
-                    style: TextStyle(color: orangeColor),
+                    style: TextStyle(color: appTheme),
                   ),
                 ],
               ),
@@ -281,15 +281,15 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: creamColor,
-      appBar: AppBar(backgroundColor: orangeColor, actions: [
+      backgroundColor: secondaryColor,
+      appBar: AppBar(backgroundColor: appTheme, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
           width: DM.screenWidth,
           child: Text(
             "Report",
             textAlign: TextAlign.left,
-            style: TextStyle(color: creamColor, fontSize: DM.p30),
+            style: TextStyle(color: secondaryColor, fontSize: DM.p30),
           ),
         ),
       ]),
@@ -342,11 +342,11 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
                               errorStyle: TextStyle(fontSize: DM.p9),
                               focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      width: DM.p1, color: orangeColor)),
+                                      width: DM.p1, color: appTheme)),
                               enabledBorder: OutlineInputBorder(
                                 borderSide: BorderSide(
                                     width: DM.p1,
-                                    color: orangeColor), //<-- SEE HERE
+                                    color: appTheme), //<-- SEE HERE
                               ),
                               filled: true,
                               fillColor: Colors.white,
@@ -374,7 +374,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
                         height: DM.p45,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: orangeColor, elevation: 0),
+                              backgroundColor: appTheme, elevation: 0),
                           onPressed: () async {
                             final DateTime? picked = await showDatePicker(
                                 context: context,
@@ -417,7 +417,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
                         height: DM.p45,
                         child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                                backgroundColor: orangeColor, elevation: 0),
+                                backgroundColor: appTheme, elevation: 0),
                             onPressed: () async {
                               final DateTime? picked_end = await showDatePicker(
                                   context: context,
@@ -740,7 +740,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
                                                   margin: EdgeInsets.only(
                                                       right: DM.p5),
                                                   child: IconButton(
-                                                    color: orangeColor,
+                                                    color: appTheme,
                                                     icon: Icon(
                                                       CupertinoIcons
                                                           .xmark_circle_fill,
@@ -759,7 +759,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
                                                                   child: Container(
                                                                       margin: EdgeInsets.all(DM.p10),
                                                                       height: DM.p200,
-                                                                      color: creamColor,
+                                                                      color: secondaryColor,
                                                                       child: Column(
                                                                         crossAxisAlignment:
                                                                             CrossAxisAlignment.center,
@@ -788,7 +788,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
                                                                                   height: DM.p40,
                                                                                   minWidth: DM.p120,
                                                                                   shape: const StadiumBorder(),
-                                                                                  color: orangeColor,
+                                                                                  color: appTheme,
                                                                                   child: Text(
                                                                                     "Cancel",
                                                                                     style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
@@ -810,7 +810,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
                                                                                   height: DM.p40,
                                                                                   minWidth: DM.p120,
                                                                                   shape: const StadiumBorder(),
-                                                                                  color: orangeColor,
+                                                                                  color: appTheme,
                                                                                   child: Text(
                                                                                     "Yes",
                                                                                     style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
@@ -849,7 +849,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
                               style: TextStyle(
                                   fontWeight: FontWeight.w400,
                                   fontSize: DM.p25,
-                                  color: orangeColor),
+                                  color: appTheme),
                             ),
                           ))),
 

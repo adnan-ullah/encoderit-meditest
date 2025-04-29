@@ -103,7 +103,7 @@ class _CostDataCreateState extends State<CostDataCreate> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Cancel", style: TextStyle(color: orangeColor)),
+            child: Text("Cancel", style: TextStyle(color: appTheme)),
           ),
           TextButton(
             onPressed: () async {
@@ -114,7 +114,7 @@ class _CostDataCreateState extends State<CostDataCreate> {
                 setState(() => category = nameController.text);
               }
             },
-            child: Text("Submit", style: TextStyle(color: orangeColor)),
+            child: Text("Submit", style: TextStyle(color: appTheme)),
           ),
         ],
       ),
@@ -126,7 +126,7 @@ class _CostDataCreateState extends State<CostDataCreate> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        backgroundColor: orangeColor,
+        backgroundColor: appTheme,
         actions: [
           Container(
             padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
@@ -134,12 +134,12 @@ class _CostDataCreateState extends State<CostDataCreate> {
             child: Text(
               "Cost Item Form",
               textAlign: TextAlign.left,
-              style: TextStyle(color: creamColor, fontSize: DM.p30),
+              style: TextStyle(color: secondaryColor, fontSize: DM.p30),
             ),
           ),
         ],
       ),
-      backgroundColor: creamColor,
+      backgroundColor: secondaryColor,
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -229,7 +229,7 @@ class _CostDataCreateState extends State<CostDataCreate> {
                                   )),
                             ),
                             IconButton(
-                              icon: Icon(Icons.add, color: orangeColor),
+                              icon: Icon(Icons.add, color: appTheme),
                               onPressed: showAddCategoryDialog,
                             ),
                           ],
@@ -259,7 +259,7 @@ class _CostDataCreateState extends State<CostDataCreate> {
                                 padding: EdgeInsets.symmetric(
                                     horizontal: DM.p10, vertical: DM.p8),
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: orangeColor),
+                                  border: Border.all(color: appTheme),
                                   borderRadius: BorderRadius.circular(DM.p5),
                                 ),
                                 child: Text(
@@ -295,7 +295,7 @@ class _CostDataCreateState extends State<CostDataCreate> {
                                 padding: EdgeInsets.symmetric(
                                     horizontal: DM.p10, vertical: DM.p8),
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: orangeColor),
+                                  border: Border.all(color: appTheme),
                                   borderRadius: BorderRadius.circular(DM.p5),
                                 ),
                                 child: Text(
@@ -337,7 +337,7 @@ class _CostDataCreateState extends State<CostDataCreate> {
                     height: DM.p40,
                     minWidth: DM.p120,
                     shape: const StadiumBorder(),
-                    color: orangeColor,
+                    color: appTheme,
                     child: Text(
                       "Submit",
                       style: TextStyle(

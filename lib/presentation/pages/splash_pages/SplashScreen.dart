@@ -17,10 +17,10 @@ class SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     print(MediaQuery.of(context).size.width); print(MediaQuery.of(context).size.height);
     return MyScaffold(
-        color1: Colors.amber,
-        color2: Colors.amber,
+        color1: Colors.green,
+        color2: Colors.green,
         container: EasySplashScreen(
-          loaderColor: orangeColor,
+          loaderColor: appTheme,
           //backgroundImage: Image.asset('lib/assets/images/plus.png',,).image,
           logo: Image(image: AssetImage("lib/assets/images/new_plus.png")),
 
@@ -31,7 +31,7 @@ class SplashScreen extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          backgroundColor: creamColor,
+          backgroundColor: secondaryColor,
           showLoader: true,
 
           loadingText: Text(

@@ -69,14 +69,14 @@ class _CollectionReportListState extends State<CollectionReportList>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   new CircularProgressIndicator(
-                    color: orangeColor,
+                    color: appTheme,
                   ),
                   SizedBox(
                     width: DM.p10,
                   ),
                   new Text(
                     "Loading, please wait...",
-                    style: TextStyle(color: orangeColor),
+                    style: TextStyle(color: appTheme),
                   ),
                 ],
               ),
@@ -301,15 +301,15 @@ setState(() {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: creamColor,
-      appBar: AppBar(backgroundColor: orangeColor, actions: [
+      backgroundColor: secondaryColor,
+      appBar: AppBar(backgroundColor: appTheme, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
           width: DM.screenWidth,
           child: Text(
             "Collection Report",
             textAlign: TextAlign.left,
-            style: TextStyle(color: creamColor, fontSize: DM.p30),
+            style: TextStyle(color: secondaryColor, fontSize: DM.p30),
           ),
         ),
       ]),
@@ -329,7 +329,7 @@ setState(() {
                       height: DM.p60,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: orangeColor, elevation: 0),
+                            backgroundColor: appTheme, elevation: 0),
                         onPressed: () async {
                           final DateTime? picked = await showDatePicker(
                               context: context,
@@ -373,7 +373,7 @@ setState(() {
                       height: DM.p60,
                       child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: orangeColor, elevation: 0),
+                              backgroundColor: appTheme, elevation: 0),
                           onPressed: () async {
                             final DateTime? picked_end = await showDatePicker(
                                 context: context,
@@ -682,7 +682,7 @@ setState(() {
                                                     shape:
                                                     const StadiumBorder(),
                                                     color:
-                                                    orangeColor,
+                                                    appTheme,
                                                     child:
                                                     Text(
                                                       "Pay",
@@ -728,7 +728,7 @@ setState(() {
                                   style: TextStyle(
                                       fontWeight: FontWeight.w400,
                                       fontSize: DM.p25,
-                                      color: orangeColor),
+                                      color: appTheme),
                                 )))
                             : SizedBox(),
                       )

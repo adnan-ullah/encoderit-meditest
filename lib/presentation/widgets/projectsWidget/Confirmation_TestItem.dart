@@ -53,7 +53,7 @@ class _ConfirmationTestItemState extends State<ConfirmationTestItem> {
       child: Stack(
         children: [
           Container(
-              color: creamColor,
+              color: secondaryColor,
               height: DM.screenHeight * 0.8,
               width: DM.screenWidth * 0.9,
               padding: EdgeInsets.all(DM.p15),
@@ -202,7 +202,7 @@ class _ConfirmationTestItemState extends State<ConfirmationTestItem> {
                         height: DM.p45,
                         minWidth: DM.p120,
                         shape: const StadiumBorder(),
-                        color: orangeColor,
+                        color: appTheme,
                         child: Text(
                           "Confirm",
                           style: TextStyle(

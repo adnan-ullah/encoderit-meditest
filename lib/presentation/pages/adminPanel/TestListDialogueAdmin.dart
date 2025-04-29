@@ -86,7 +86,7 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
         () => Stack(
           children: [
             Container(
-                color: creamColor,
+                color: secondaryColor,
                 height: DM.screenHeight * 0.9,
                 width: DM.screenWidth * 0.9,
                 padding: EdgeInsets.all(DM.p10),
@@ -128,12 +128,12 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
                                     focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(40),
                                         borderSide: BorderSide(
-                                            width: DM.p1, color: orangeColor)),
+                                            width: DM.p1, color: appTheme)),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(40),
                                       borderSide: BorderSide(
                                           width: DM.p1,
-                                          color: orangeColor), //<-- SEE HERE
+                                          color: appTheme), //<-- SEE HERE
                                     ),
                                     filled: true,
                                     fillColor: Colors.white,
@@ -207,7 +207,7 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
                                               // deleteFromStore(snapshot.key);
                                             },
                                             shape: const StadiumBorder(),
-                                            color: orangeColor,
+                                            color: appTheme,
                                             child: Text(
                                               "Add",
                                               style: TextStyle(
@@ -257,7 +257,7 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
                         height: DM.p45,
                         minWidth: DM.p130,
                         shape: const StadiumBorder(),
-                        color: orangeColor,
+                        color: appTheme,
                         child: Text(
                           "Add",
                           style: TextStyle(

@@ -58,9 +58,9 @@ class _AdminHomeState extends State<AdminHome> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(color: orangeColor),
+                CircularProgressIndicator(color: appTheme),
                 SizedBox(width: DM.p10),
-                Text("Loading, please wait...", style: TextStyle(color: orangeColor)),
+                Text("Loading, please wait...", style: TextStyle(color: appTheme)),
               ],
             ),
           ),
@@ -81,7 +81,7 @@ class _AdminHomeState extends State<AdminHome> {
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.symmetric(horizontal: DM.p30, vertical: DM.p20),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DM.p10)),
-          backgroundColor: orangeColor,
+          backgroundColor: appTheme,
         ),
         onPressed: onPressed,
         child: Text(
@@ -101,12 +101,12 @@ class _AdminHomeState extends State<AdminHome> {
     final isReportUser = widget.check_type == "2";
 
     return Scaffold(
-      backgroundColor: creamColor,
+      backgroundColor: secondaryColor,
       appBar: AppBar(
-        backgroundColor: orangeColor,
+        backgroundColor: appTheme,
         title: Text(
           isAdmin || phone == superUser ? "Admin" : "Agent",
-          style: TextStyle(color: creamColor, fontSize: DM.p30),
+          style: TextStyle(color: secondaryColor, fontSize: DM.p30),
         ),
       ),
       body: Padding(

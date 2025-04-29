@@ -69,14 +69,14 @@ class _AdminUserState extends State<AdminUser> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   new CircularProgressIndicator(
-                    color: orangeColor,
+                    color: appTheme,
                   ),
                   SizedBox(
                     width: DM.p10,
                   ),
                   new Text(
                     "Loading, please wait...",
-                    style: TextStyle(color: orangeColor),
+                    style: TextStyle(color: appTheme),
                   ),
                 ],
               ),
@@ -144,15 +144,15 @@ class _AdminUserState extends State<AdminUser> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: creamColor,
-      appBar: AppBar(backgroundColor: orangeColor, actions: [
+      backgroundColor: secondaryColor,
+      appBar: AppBar(backgroundColor: appTheme, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
           width: DM.screenWidth,
           child: Text(
             "Admin User",
             textAlign: TextAlign.left,
-            style: TextStyle(color: creamColor, fontSize: DM.p30),
+            style: TextStyle(color: secondaryColor, fontSize: DM.p30),
           ),
         ),
       ]),
@@ -162,7 +162,7 @@ class _AdminUserState extends State<AdminUser> {
           child: Column(
             children: [
               Container(
-                  color: creamColor,
+                  color: secondaryColor,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -207,14 +207,14 @@ class _AdminUserState extends State<AdminUser> {
                                                 BorderRadius.circular(DM.p40),
                                             borderSide: BorderSide(
                                                 width: DM.p1,
-                                                color: orangeColor)),
+                                                color: appTheme)),
                                         enabledBorder: OutlineInputBorder(
                                           borderRadius:
                                               BorderRadius.circular(DM.p40),
                                           borderSide: BorderSide(
                                               width: DM.p1,
                                               color:
-                                                  orangeColor), //<-- SEE HERE
+                                                  appTheme), //<-- SEE HERE
                                         ),
                                         filled: true,
                                         fillColor: Colors.white,
@@ -323,7 +323,7 @@ class _AdminUserState extends State<AdminUser> {
                                                               shape:
                                                                   const StadiumBorder(),
                                                               color:
-                                                                  orangeColor,
+                                                                  appTheme,
                                                               child: Text(
                                                                 "Update",
                                                                 style: TextStyle(
@@ -338,7 +338,7 @@ class _AdminUserState extends State<AdminUser> {
                                                       IconButton(
                                                         padding:
                                                             EdgeInsets.zero,
-                                                        color: orangeColor,
+                                                        color: appTheme,
                                                         icon: Icon(
                                                           CupertinoIcons.delete,
                                                           size: DM.p25,
@@ -356,7 +356,7 @@ class _AdminUserState extends State<AdminUser> {
                                                                     child: Container(
                                                                         margin: EdgeInsets.all(DM.p10),
                                                                         height: DM.p250,
-                                                                        color: creamColor,
+                                                                        color: secondaryColor,
                                                                         child: Column(
                                                                           mainAxisAlignment:
                                                                               MainAxisAlignment.spaceBetween,
@@ -383,7 +383,7 @@ class _AdminUserState extends State<AdminUser> {
                                                                                     height: DM.p40,
                                                                                     minWidth: DM.p120,
                                                                                     shape: const StadiumBorder(),
-                                                                                    color: orangeColor,
+                                                                                    color: appTheme,
                                                                                     child: Text(
                                                                                       "Cancel",
                                                                                       style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
@@ -402,7 +402,7 @@ class _AdminUserState extends State<AdminUser> {
                                                                                     height: DM.p40,
                                                                                     minWidth: DM.p120,
                                                                                     shape: const StadiumBorder(),
-                                                                                    color: orangeColor,
+                                                                                    color: appTheme,
                                                                                     child: Text(
                                                                                       "Delete",
                                                                                       style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
@@ -441,7 +441,7 @@ class _AdminUserState extends State<AdminUser> {
                                   style: TextStyle(
                                       fontWeight: FontWeight.w400,
                                       fontSize: DM.p25,
-                                      color: orangeColor),
+                                      color: appTheme),
                                 ),
                               ),
                             ),
@@ -455,7 +455,7 @@ class _AdminUserState extends State<AdminUser> {
                           height: DM.p45,
                           minWidth: DM.p130,
                           shape: const StadiumBorder(),
-                          color: orangeColor,
+                          color: appTheme,
                           child: Text(
                             "Create User",
                             style: TextStyle(
