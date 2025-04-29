@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
-import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
+import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 
 import '../../../db/models/TestDataRequest.dart';
 import '../../../responsives/dimensions.dart';
@@ -21,7 +21,7 @@ class ConfirmationTestItem extends StatefulWidget {
 }
 
 class _ConfirmationTestItemState extends State<ConfirmationTestItem> {
-  CreateRequest_controller cr_controller = Get.put(CreateRequest_controller());
+  CreateRequestController cr_controller = Get.put(CreateRequestController());
   var totalCost = 0;
   var testCost = 0;
   var serviceCost = 0;

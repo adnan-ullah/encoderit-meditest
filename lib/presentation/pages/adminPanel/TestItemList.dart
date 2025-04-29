@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
-import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
+import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 
 import '../../../constants/app_info.dart';
 import '../../../db/models/TestData.dart';
@@ -140,7 +140,7 @@ class _TestItemListState extends State<TestItemList> {
     }
   }
 
-  CreateRequest_controller cr_controller = Get.put(CreateRequest_controller());
+  CreateRequestController cr_controller = Get.put(CreateRequestController());
 
   @override
   Widget build(BuildContext context) {

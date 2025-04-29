@@ -15,7 +15,7 @@ import '../../constants/app_info.dart';
 import '../../constants/colors.dart';
 import '../../db/models/TestDataRequest.dart';
 import '../../responsives/dimensions.dart';
-import '../../state_programming/Create_Request_Controller.dart';
+import '../../state_programming/CreateRequestController.dart';
 import 'Login_info.dart';
 
 class Prescription extends StatefulWidget {
@@ -26,8 +26,8 @@ class Prescription extends StatefulWidget {
 }
 
 class _PrescriptionState extends State<Prescription> {
-  CreateRequest_controller createReqController =
-      Get.put(CreateRequest_controller());
+  CreateRequestController createReqController =
+      Get.put(CreateRequestController());
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   var phone = TextEditingController();

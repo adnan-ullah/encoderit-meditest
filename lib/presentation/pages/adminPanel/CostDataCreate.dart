@@ -7,9 +7,9 @@ import 'package:uuid/uuid.dart';
 
 import '../../../constants/app_info.dart';
 import '../../../constants/colors.dart';
-import '../../../db/models/CategoryModel.dart';
 import '../../../db/models/CostModel.dart';
 import '../../../responsives/dimensions.dart';
+import '../../../state_programming/CostController.dart';
 import 'AdminUserData.dart';
 
 class CostDataCreate extends StatefulWidget {
@@ -355,35 +355,6 @@ class _CostDataCreateState extends State<CostDataCreate> {
         ),
       ),
     );
-  }
-}
-
-class CostController extends GetxController {
-  final categoryName = <String>[].obs;
-  final toCategory = <String, dynamic>{}.obs;
-
-  Future<void> fetchCategories() async {
-    final dbRef = FirebaseDatabase.instance.ref("$database_name/category");
-    final snapshot = await dbRef.get();
-    if (snapshot.exists) {
-      categoryName.clear();
-      toCategory.clear();
-      final categories = snapshot.value as Map;
-      categories.forEach((key, value) {
-        final category =
-            CategoryModel.fromJson(Map<String, dynamic>.from(value));
-        categoryName.add(category.name);
-        toCategory[category.name] = category.id;
-      });
-    }
-  }
-
-  Future<void> addCategory(String name, String type) async {
-    final dbRef = FirebaseDatabase.instance.ref("$database_name/category");
-    final newCategory =
-        CategoryModel(id: const Uuid().v4(), name: name, type: type);
-    await dbRef.child(newCategory.id).set(newCategory.toJson());
-    await fetchCategories();
   }
 }
 

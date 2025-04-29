@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
-import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
+import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 
 import '../../../responsives/dimensions.dart';
 
@@ -18,7 +18,7 @@ class TestItemDialogueBox extends StatefulWidget {
 }
 
 class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
-  late CreateRequest_controller cr_Controller;
+  late CreateRequestController cr_Controller;
 
   bool isClear = false;
 
@@ -51,7 +51,7 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
 
   @override
   void initState() {
-    cr_Controller = Get.put(CreateRequest_controller());
+    cr_Controller = Get.put(CreateRequestController());
     cr_Controller.filter_testItemList.clear();
     cr_Controller.filter_testItemList.addAll(cr_Controller.testItemList);
 

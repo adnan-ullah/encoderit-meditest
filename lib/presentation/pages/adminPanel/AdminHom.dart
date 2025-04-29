@@ -10,7 +10,7 @@ import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.da
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminSuperReport.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AgentReportList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/CollectionReportList.dart';
-import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
+import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../constants/app_info.dart';
@@ -26,7 +26,7 @@ class AdminHome extends StatefulWidget {
 }
 
 class _AdminHomeState extends State<AdminHome> {
-  final CreateRequest_controller cr_controller = Get.put(CreateRequest_controller());
+  final CreateRequestController cr_controller = Get.put(CreateRequestController());
   bool isLoading = false;
   String? type;
   String? phone;

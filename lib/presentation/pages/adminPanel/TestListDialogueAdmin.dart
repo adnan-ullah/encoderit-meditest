@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
-import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
+import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 
 import '../../../responsives/dimensions.dart';
 
@@ -21,7 +21,7 @@ class TestListDialogueAdmin extends StatefulWidget {
 }
 
 class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
-  late CreateRequest_controller cr_Controller;
+  late CreateRequestController cr_Controller;
   var filter_testItemList = [];
 
   bool isClear = false;
@@ -55,7 +55,7 @@ class _TestListDialogueAdminState extends State<TestListDialogueAdmin> {
 
   @override
   void initState() {
-    cr_Controller = Get.put(CreateRequest_controller());
+    cr_Controller = Get.put(CreateRequestController());
 
     filter_testItemList.addAll(widget.testItemList);
 

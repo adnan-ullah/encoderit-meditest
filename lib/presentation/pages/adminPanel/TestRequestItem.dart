@@ -22,7 +22,7 @@ import '../../../db/models/AdminUserModel.dart';
 import '../../../db/models/TestData.dart';
 import '../../../db/models/TestDataRequest.dart';
 import '../../../responsives/dimensions.dart';
-import '../../../state_programming/Create_Request_Controller.dart';
+import '../../../state_programming/CreateRequestController.dart';
 import '../../widgets/minorWidgets/PhotoViewImage.dart';
 import '../Invoice_pdf/api/pdf_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_api.dart';
@@ -997,8 +997,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     super.initState();
   }
 
-  CreateRequest_controller createReqController =
-      Get.put(CreateRequest_controller());
+  CreateRequestController createReqController =
+      Get.put(CreateRequestController());
 
   @override
   Widget build(BuildContext context) {

@@ -10,7 +10,7 @@ import 'package:uuid/uuid.dart';
 import '../../../constants/colors.dart';
 import '../../../db/models/TestData.dart';
 import '../../../responsives/dimensions.dart';
-import '../../../state_programming/Create_Request_Controller.dart';
+import '../../../state_programming/CreateRequestController.dart';
 import '../Login_info.dart';
 
 class TestDataCreate extends StatefulWidget {
@@ -138,8 +138,8 @@ class _TestDataCreateState extends State<TestDataCreate> {
 
   var newTestListData;
 
-  CreateRequest_controller createReqController =
-      Get.put(CreateRequest_controller());
+  CreateRequestController createReqController =
+      Get.put(CreateRequestController());
 
   @override
   Widget build(BuildContext context) {

@@ -8,7 +8,7 @@ import '../constants/colors.dart';
 import '../db/models/TestData.dart';
 import '../db/models/TestDataRequest.dart';
 
-class CreateRequest_controller extends GetxController {
+class CreateRequestController extends GetxController {
   RxString address = "".obs;
   RxString referredAddress = "".obs;
 

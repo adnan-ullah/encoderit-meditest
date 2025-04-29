@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/NotificationServices.dart';
-import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
+import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../constants/app_info.dart';
@@ -35,7 +35,7 @@ class _StatusRequestListState extends State<StatusRequestList>
     with TickerProviderStateMixin {
   int _selectedIndex = 0;
   late TabController tabController;
-  CreateRequest_controller cr_controller = Get.put(CreateRequest_controller());
+  CreateRequestController cr_controller = Get.put(CreateRequestController());
   var isLoading = true;
   dynamic status2;
   late DatabaseReference _dbref_testReqModel;
@@ -176,8 +176,8 @@ class _StatusRequestListState extends State<StatusRequestList>
 }
 
 Future<void> populateAllRequest() async {
-  CreateRequest_controller createRequestController =
-      Get.put(CreateRequest_controller());
+  CreateRequestController createRequestController =
+      Get.put(CreateRequestController());
   late DatabaseReference dbrefTestRequest;
   dbrefTestRequest =
       FirebaseDatabase.instance.ref("$database_name/testRequest/");

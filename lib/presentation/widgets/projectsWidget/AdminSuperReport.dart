@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
-import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
+import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,8 +41,8 @@ double totalDiscount = 0;
 var referrer_input = new TextEditingController();
 
 class _AdminSuperReportState extends State<AdminSuperReport> {
-  CreateRequest_controller createRequest_controller =
-      Get.put(CreateRequest_controller());
+  CreateRequestController createRequest_controller =
+      Get.put(CreateRequestController());
 
   void _onLoading(isClosed) {
     if (isClosed) {

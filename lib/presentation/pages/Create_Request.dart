@@ -21,7 +21,7 @@ import '../../db/models/AdminUserModel.dart';
 import '../../db/models/TestData.dart';
 import '../../db/models/TestDataRequest.dart';
 import '../../responsives/dimensions.dart';
-import '../../state_programming/Create_Request_Controller.dart';
+import '../../state_programming/CreateRequestController.dart';
 import '../widgets/projectsWidget/Notifications/NotificationServices.dart';
 import 'Login_info.dart';
 
@@ -38,8 +38,8 @@ class _CreateRequestState extends State<CreateRequest> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? latitude;
   String? longitude;
-  CreateRequest_controller createRequest_controller =
-      Get.put(CreateRequest_controller());
+  CreateRequestController createRequest_controller =
+      Get.put(CreateRequestController());
   void getGPS() async {
     LocationPermission permission = await Geolocator.checkPermission();
 
@@ -123,8 +123,8 @@ class _CreateRequestState extends State<CreateRequest> {
   UploadTask? uploadTask3;
   var urlDownload3;
 
-  CreateRequest_controller createReqController =
-      Get.put(CreateRequest_controller());
+  CreateRequestController createReqController =
+      Get.put(CreateRequestController());
 
   Future<void> getSharedData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1443,8 +1443,8 @@ String? validateAge(String? value) {
 }
 
 Future<void> getTestItemList() async {
-  CreateRequest_controller createRequest_controller =
-      Get.put(CreateRequest_controller());
+  CreateRequestController createRequest_controller =
+      Get.put(CreateRequestController());
   late DatabaseReference _dbref_testModel;
   _dbref_testModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);

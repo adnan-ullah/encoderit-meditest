@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_info.dart';
 import '../../constants/colors.dart';
 import '../../responsives/dimensions.dart';
-import '../../state_programming/Create_Request_Controller.dart';
+import '../../state_programming/CreateRequestController.dart';
 import 'Login_info.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,8 +22,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  CreateRequest_controller createReqController =
-      Get.put(CreateRequest_controller());
+  CreateRequestController createReqController =
+      Get.put(CreateRequestController());
 
   Future<void> resetSharedData() async {
     SharedPreferences refs = await SharedPreferences.getInstance();

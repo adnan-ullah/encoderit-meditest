@@ -5,7 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
-import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
+import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
@@ -52,8 +52,8 @@ var referrer_input = new TextEditingController(text: "0");
 
 class _AgentReportListState extends State<AgentReportList>
     with TickerProviderStateMixin {
-  CreateRequest_controller createRequest_controller =
-  Get.put(CreateRequest_controller());
+  CreateRequestController createRequest_controller =
+  Get.put(CreateRequestController());
 
   int _selectedIndex = 0;
 

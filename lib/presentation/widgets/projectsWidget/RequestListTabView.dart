@@ -8,7 +8,7 @@ import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItemTypeThree.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/NotificationServices.dart';
-import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
+import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,7 +36,7 @@ var type;
 var phone;
 
 class _RequestListTabViewState extends State<RequestListTabView> {
-  CreateRequest_controller createRequest_controller = Get.put(CreateRequest_controller());
+  CreateRequestController createRequest_controller = Get.put(CreateRequestController());
 
   void _onLoading(isClosed) {
     if (isClosed) {

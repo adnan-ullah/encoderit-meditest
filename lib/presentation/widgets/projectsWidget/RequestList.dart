@@ -4,7 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
-import 'package:healthcare_homelab/state_programming/Create_Request_Controller.dart';
+import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -103,8 +103,8 @@ class _RequestListState extends State<RequestList> {
     super.initState();
   }
 
-  CreateRequest_controller createRequest_controller =
-      Get.put(CreateRequest_controller());
+  CreateRequestController createRequest_controller =
+      Get.put(CreateRequestController());
 
   @override
   Widget build(BuildContext context) {
