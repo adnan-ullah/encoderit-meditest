@@ -5,6 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:healthcare_homelab/constants/api.dart';
 import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminHome.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -35,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> getAdminUserList() async {
     late DatabaseReference DbrefTestModel, superUserDatabase;
     DbrefTestModel =
-        FirebaseDatabase.instance.ref("$database_name/admin_user/");
+        FirebaseDatabase.instance.ref("$adminUserApi/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     DbrefTestModel.keepSynced(true);
 
@@ -47,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     });
 
-    superUserDatabase = FirebaseDatabase.instance.ref("$database_name/samrat/");
+    superUserDatabase = FirebaseDatabase.instance.ref("$samratApi/");
     superUserDatabase.onValue.listen((event) {
       for (DataSnapshot ds in event.snapshot.children) {
         superUser = ds.value.toString();

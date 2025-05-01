@@ -135,7 +135,7 @@ class _TestRequestCreateTypeThreeState
 
   Future<void> _getTestItemList() async {
     late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
+    DbrefTestModel = FirebaseDatabase.instance.ref("$testModelApi/");
 
     DbrefTestModel.onValue.listen((event) {
       testItemList.clear();
@@ -163,7 +163,7 @@ class _TestRequestCreateTypeThreeState
   Future<void> getAdminUserList() async {
     late DatabaseReference DbrefTestModel;
     DbrefTestModel =
-        FirebaseDatabase.instance.ref("$database_name/admin_user/");
+        FirebaseDatabase.instance.ref("$adminUserApi/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     DbrefTestModel.keepSynced(true);
 

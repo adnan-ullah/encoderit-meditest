@@ -5,6 +5,7 @@ import 'package:healthcare_homelab/presentation/pages/LoginScreen.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../constants/api.dart';
 import '../../../constants/app_info.dart';
 import '../../../constants/colors.dart';
 import '../../../db/models/CostModel.dart';
@@ -36,7 +37,7 @@ class _CostDataCreateState extends State<CostDataCreate> {
   }
 
   Future<void> insertNewCostItem() async {
-    final dbRef = FirebaseDatabase.instance.ref(database_name);
+    final dbRef = FirebaseDatabase.instance.ref("$costApi/");
     final newCostItem = CostModel(
       id: const Uuid().v4(),
       postingDate: postingDate!.toIso8601String(),

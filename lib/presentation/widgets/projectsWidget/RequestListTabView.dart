@@ -505,7 +505,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
 
 Future<void> getAdminNotification(phone, type, context) async {
   late DatabaseReference DbrefTestModel;
-  DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/admin_user/");
+  DbrefTestModel = FirebaseDatabase.instance.ref("$adminUserApi/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);
   DbrefTestModel.keepSynced(true);
 

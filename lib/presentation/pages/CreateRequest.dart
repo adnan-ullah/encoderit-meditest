@@ -1442,7 +1442,7 @@ Future<void> getTestItemList() async {
   CreateRequestController createRequest_controller =
       Get.put(CreateRequestController());
   late DatabaseReference _dbref_testModel;
-  _dbref_testModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
+  _dbref_testModel = FirebaseDatabase.instance.ref("$testModelApi/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);
   _dbref_testModel.keepSynced(true);
 
@@ -1465,7 +1465,7 @@ Future<void> getTestItemList() async {
 
 Future<void> getAdminNotification(phone, type, context) async {
   late DatabaseReference DbrefTestModel;
-  DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/admin_user/");
+  DbrefTestModel = FirebaseDatabase.instance.ref("$adminUserApi/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);
   DbrefTestModel.keepSynced(true);
 
