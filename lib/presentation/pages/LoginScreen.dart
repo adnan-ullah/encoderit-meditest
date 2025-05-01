@@ -27,16 +27,15 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   List<AdminUserModel> adminUserList = [];
-
   var type = "1";
   var commission = "0";
   var referrer_code = "0";
   var admin_password;
+  bool _isLoading = false;
 
   Future<void> getAdminUserList() async {
     late DatabaseReference DbrefTestModel, superUserDatabase;
-    DbrefTestModel =
-        FirebaseDatabase.instance.ref("$adminUserApi/");
+    DbrefTestModel = FirebaseDatabase.instance.ref("$adminUserApi/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     DbrefTestModel.keepSynced(true);
 
@@ -68,14 +67,12 @@ class _LoginScreenState extends State<LoginScreen> {
         returnType = true;
       }
     }).toList();
-
     return returnType;
   }
 
   CreateRequestController createReqController =
       Get.put(CreateRequestController());
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
   var phone = TextEditingController();
   var password = TextEditingController();
 
@@ -87,97 +84,74 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void updateCheck() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-
     int? update_version = sharedPreferences.getInt("update_version");
     String? update_details = sharedPreferences.getString("update_details");
 
-    // sharedPreferences.remove("update_version");
-    // sharedPreferences.remove("update_details");
-
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
-
     String build_Number = packageInfo.buildNumber;
-    if (update_version != null && update_details != null) if (update_version! >
-        int.parse(build_Number)) {
+
+    if (update_version != null &&
+        update_details != null &&
+        update_version > int.parse(build_Number)) {
       showDialog(
-          context: context,
-          builder: (context) {
-            return Scaffold(
-              backgroundColor: Colors.transparent,
-              body: Center(
-                child: Container(
-                    margin: EdgeInsets.all(DM.p10),
-                    height: DM.p200,
-                    color: secondaryColor,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(16),
-                          margin: EdgeInsets.all(16),
-                          child: Text(
-                            "${update_details}",
-                            style: TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 14,
-                                color: Color.fromARGB(255, 26, 1, 1)),
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              margin: EdgeInsets.symmetric(
-                                  horizontal: DM.p20, vertical: DM.p10),
-                              child: MaterialButton(
-                                onPressed: () {
-                                  Get.back();
-                                },
-                                height: DM.p40,
-                                minWidth: DM.p120,
-                                shape: const StadiumBorder(),
-                                color: appTheme,
-                                child: Text(
-                                  "Cancel",
-                                  style: TextStyle(
-                                      color: fullWhiteColor,
-                                      fontSize: DM.p15,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                            Container(
-                              margin: EdgeInsets.symmetric(
-                                  horizontal: DM.p20, vertical: DM.p10),
-                              child: MaterialButton(
-                                onPressed: () async {
-                                  final Uri _url = Uri.parse(
-                                      "https://play.google.com/store/apps/details?id=com.innova.meditest_new");
-                                  if (!await launchUrl(_url)) {
-                                    throw 'Could not launch $_url';
-                                  }
-                                },
-                                height: DM.p40,
-                                minWidth: DM.p120,
-                                shape: const StadiumBorder(),
-                                color: appTheme,
-                                child: Text(
-                                  "Update",
-                                  style: TextStyle(
-                                      color: fullWhiteColor,
-                                      fontSize: DM.p15,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      ],
-                    )),
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: secondaryColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(DM.p20),
+          ),
+          title: Text(
+            'Update Available',
+            style: TextStyle(
+              color: appTheme,
+              fontWeight: FontWeight.bold,
+              fontSize: DM.p20,
+            ),
+          ),
+          content: Text(
+            update_details,
+            style: TextStyle(
+              color: blackFontColor,
+              fontSize: DM.p16,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: appTheme,
+                  fontSize: DM.p16,
+                ),
               ),
-            );
-          });
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final Uri _url = Uri.parse(
+                    "https://play.google.com/store/apps/details?id=com.innova.meditest_new");
+                if (!await launchUrl(_url)) {
+                  Get.snackbar('Error', 'Could not launch URL',
+                      backgroundColor: redColor, colorText: whiteColor);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: appTheme,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(DM.p10),
+                ),
+              ),
+              child: Text(
+                'Update',
+                style: TextStyle(
+                  color: fullWhiteColor,
+                  fontSize: DM.p16,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -186,309 +160,291 @@ class _LoginScreenState extends State<LoginScreen> {
     getAdminUserList();
     updateCheck();
     getPhoneNumber();
-
-    // TODO: implement initState
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     chechkingInternet();
-
     return Scaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: AppBar(backgroundColor: appTheme, actions: [
-        Container(
-          alignment: Alignment.centerLeft,
-          padding: EdgeInsets.symmetric(horizontal: DM.p20),
-          width: DM.screenWidth,
-          child: Text(
-            "Login",
-            textAlign: TextAlign.left,
-            style: TextStyle(
-                color: secondaryColor,
-                fontWeight: FontWeight.bold,
-                fontSize: DM.p25),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              appTheme.withOpacity(0.1),
+              secondaryColor,
+            ],
           ),
         ),
-      ]),
-      backgroundColor: secondaryColor,
-      body: Form(
-        key: _formKey,
-        child: Container(
-          height: DM.screenHeight,
-          width: DM.screenWidth,
-          child: Column(
-            children: [
-              Expanded(
-                child: Container(
-                  width: DM.screenWidth,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Container(
+              height: DM.screenHeight,
+              padding:
+                  EdgeInsets.symmetric(horizontal: DM.p32, vertical: DM.p24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // App Name and Header
+                  Column(
                     children: [
-                      Center(
-                        child: Container(
-                          margin: EdgeInsets.all(DM.p30),
-                          child: Column(
-                            children: [
-                              Text(
-                                "Enter your phone number",
-                                textAlign: TextAlign.left,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: DM.p30,
-                                    color: appTheme),
-                              ),
-                            ],
-                          ),
+                      Text(
+                        'Healthcare HomeLab',
+                        style: TextStyle(
+                          fontSize: DM.p40,
+                          fontWeight: FontWeight.w900,
+                          color: appTheme,
+                          letterSpacing: 1.2,
                         ),
                       ),
+                      SizedBox(height: DM.p16),
+                      Icon(
+                        Icons.medical_services,
+                        size: DM.p64,
+                        color: appTheme,
+                      ),
+                      SizedBox(height: DM.p16),
+                      Text(
+                        'Welcome',
+                        style: TextStyle(
+                          fontSize: DM.p28,
+                          fontWeight: FontWeight.w600,
+                          color: blackFontColor,
+                        ),
+                      ),
+                      SizedBox(height: DM.p8),
+                      Text(
+                        'Sign in to continue',
+                        style: TextStyle(
+                          fontSize: DM.p16,
+                          color: blackFontColor.withOpacity(0.6),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: DM.p48),
 
-                      Container(
-                          child: Column(
+                  // Form Card
+                  Container(
+                    padding: EdgeInsets.all(DM.p24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(DM.p16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: DM.p16,
+                          offset: Offset(0, DM.p8),
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
                         children: [
-                          Padding(
-                            padding: EdgeInsets.all(DM.p10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: DM.p70,
-                                  child: Text(
-                                    "Phone",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: DM.p14,
-                                        color: blackFontColor),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: DM.p5,
-                                ),
-                                Text(":"),
-                                SizedBox(
-                                  width: DM.p10,
-                                ),
-                                Flexible(
-                                  child: Container(
-                                    height: DM.p50,
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.phone,
-                                      controller: phone,
-                                      inputFormatters: <TextInputFormatter>[
-                                        FilteringTextInputFormatter.digitsOnly
-                                      ],
-                                      validator: validateMobile,
-                                      onFieldSubmitted: ((value) {
-                                        _formKey.currentState?.validate();
-                                      }),
-                                      decoration: InputDecoration(
-                                          errorStyle:
-                                              TextStyle(fontSize: DM.p9),
-
-                                          // focusedErrorBorder:
-                                          //     OutlineInputBorder(
-                                          //         borderSide: BorderSide(
-                                          //             width: DM.p1,
-                                          //             color:
-                                          //                 orangeColor)),
-                                          focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  width: DM.p1,
-                                                  color: appTheme)),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                width: DM.p1,
-                                                color:
-                                                    appTheme), //<-- SEE HERE
-                                          ),
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          hintText: "Ex: 01888888888",
-                                          hintStyle: TextStyle(
-                                            color: Colors.grey,
-                                            fontSize: DM.p14,
-                                          )),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                          // Phone Number Field
+                          TextFormField(
+                            controller: phone,
+                            keyboardType: TextInputType.phone,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            validator: validateMobile,
+                            style: TextStyle(fontSize: DM.p16),
+                            decoration: InputDecoration(
+                              labelText: 'Phone Number',
+                              labelStyle:
+                                  TextStyle(color: appTheme.withOpacity(0.6)),
+                              prefixIcon: Icon(Icons.phone, color: appTheme),
+                              filled: true,
+                              fillColor: Colors.grey[100],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(DM.p12),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(DM.p12),
+                                borderSide:
+                                    BorderSide(color: Colors.grey[300]!),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(DM.p12),
+                                borderSide:
+                                    BorderSide(color: appTheme, width: DM.p2),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(DM.p12),
+                                borderSide: BorderSide(color: redColor),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(DM.p12),
+                                borderSide:
+                                    BorderSide(color: redColor, width: DM.p2),
+                              ),
                             ),
                           ),
-                          Padding(
-                            padding: EdgeInsets.all(DM.p10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: DM.p70,
-                                  child: Text(
-                                    "Password",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: DM.p14,
-                                        color: blackFontColor),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: DM.p5,
-                                ),
-                                Text(":"),
-                                SizedBox(
-                                  width: DM.p10,
-                                ),
-                                Flexible(
-                                  child: Container(
-                                    height: DM.p50,
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.name,
-                                      controller: password,
-                                      obscureText: true,
-                                      decoration: InputDecoration(
-                                          errorStyle:
-                                              TextStyle(fontSize: DM.p9),
+                          SizedBox(height: DM.p20),
 
-                                          // focusedErrorBorder:
-                                          //     OutlineInputBorder(
-                                          //         borderSide: BorderSide(
-                                          //             width: DM.p1,
-                                          //             color:
-                                          //                 orangeColor)),
-                                          focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  width: DM.p1,
-                                                  color: appTheme)),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                width: DM.p1,
-                                                color:
-                                                    appTheme), //<-- SEE HERE
-                                          ),
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          hintText: "Password",
-                                          hintStyle: TextStyle(
-                                            color: Colors.grey,
-                                            fontSize: DM.p14,
-                                          )),
+                          // Password Field
+                          TextFormField(
+                            controller: password,
+                            obscureText: true,
+                            style: TextStyle(fontSize: DM.p16),
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              labelStyle:
+                                  TextStyle(color: appTheme.withOpacity(0.6)),
+                              prefixIcon: Icon(Icons.lock, color: appTheme),
+                              filled: true,
+                              fillColor: Colors.grey[100],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(DM.p12),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(DM.p12),
+                                borderSide:
+                                    BorderSide(color: Colors.grey[300]!),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(DM.p12),
+                                borderSide:
+                                    BorderSide(color: appTheme, width: DM.p2),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(DM.p12),
+                                borderSide: BorderSide(color: redColor),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(DM.p12),
+                                borderSide:
+                                    BorderSide(color: redColor, width: DM.p2),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: DM.p32),
+
+                          // Login Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: DM.p56,
+                            child: AnimatedContainer(
+                              duration: Duration(milliseconds: 200),
+                              child: ElevatedButton(
+                                onPressed: _isLoading
+                                    ? null
+                                    : () async {
+                                        setState(() => _isLoading = true);
+                                        if (_formKey.currentState?.validate() ==
+                                                true &&
+                                            await chechkingInternet()) {
+                                          if (phone.text == "$superUser" ||
+                                              (checkUser(phone.text) == true &&
+                                                  password.text ==
+                                                      admin_password)) {
+                                            if (phone.text == "$superUser") {
+                                              savePhone(phone.text);
+                                              Get.to(AdminHome(
+                                                check_type: phone.text,
+                                                check_number: phone.text,
+                                              ));
+                                            } else if (checkUser(phone.text) ==
+                                                    true &&
+                                                type == '2') {
+                                              savePhone(phone.text);
+                                              Get.to(AdminHome(
+                                                check_type: "2",
+                                                check_number: phone.text,
+                                              ));
+                                            } else if (checkUser(phone.text) ==
+                                                    true &&
+                                                type == '1') {
+                                              savePhone(phone.text);
+                                              Get.to(AdminHome(
+                                                  check_type: "1",
+                                                  check_number: phone.text));
+                                            } else if (checkUser(phone.text) ==
+                                                    true &&
+                                                type == '7') {
+                                              savePhone(phone.text);
+                                              Get.to(AdminHome(
+                                                  check_type: "7",
+                                                  check_number: phone.text));
+                                            } else if (checkUser(phone.text) ==
+                                                    true &&
+                                                type == '3') {
+                                              savePhone(phone.text);
+                                              Get.to(AdminHome(
+                                                  check_type: "3",
+                                                  check_number: phone.text));
+                                            } else if (checkUser(phone.text) ==
+                                                    true &&
+                                                type == '4') {
+                                              savePhone(phone.text);
+                                              Get.to(AdminHome(
+                                                  check_type: "4",
+                                                  check_number: phone.text));
+                                            } else {
+                                              savePhone(phone.text);
+                                              Get.to(HomeScreen());
+                                            }
+                                          } else {
+                                            savePhone(phone.text);
+                                            Get.to(HomeScreen());
+                                          }
+                                        }
+                                        setState(() => _isLoading = false);
+                                      },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(DM.p12),
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                ),
+                                child: Ink(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        appTheme,
+                                        appTheme.withOpacity(0.8)
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
                                     ),
+                                    borderRadius: BorderRadius.circular(DM.p12),
+                                  ),
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    child: _isLoading
+                                        ? CircularProgressIndicator(
+                                            color: fullWhiteColor,
+                                            strokeWidth: DM.p3,
+                                          )
+                                        : Text(
+                                            'Sign In',
+                                            style: TextStyle(
+                                              color: fullWhiteColor,
+                                              fontSize: DM.p18,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         ],
-                      )),
-
-                      Container(
-                        margin: EdgeInsets.symmetric(
-                            horizontal: DM.p20, vertical: DM.p24),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: DM.p130,
-                              child: MaterialButton(
-                                onPressed: () async {
-                                  if (_formKey.currentState?.validate() ==
-                                          true &&
-                                      await chechkingInternet()) {
-                                    //client-app
-                                    // savePhone(phone.text);
-                                    // Get.to(HomeScreen());
-
-                                    //admin-app
-                                    if (phone.text == "$superUser" ||
-                                        (checkUser(phone.text) == true &&
-                                            password.text == admin_password)) {
-                                      if (phone.text == "$superUser") {
-                                        savePhone(phone.text);
-                                        Get.to(AdminHome(
-                                          check_type: phone.text,
-                                          check_number: phone.text,
-                                        ));
-                                      } else if (checkUser(phone.text) ==
-                                              true &&
-                                          type == '2') {
-                                        savePhone(phone.text);
-                                        Get.to(AdminHome(
-                                          check_type: "2",
-                                          check_number: phone.text,
-                                        ));
-                                      }
-                                      // else if (phone.text == "$superUser" ||
-                                      //     checkUser(phone.text) == true) {
-                                      //   savePhone(phone.text);
-                                      //   Get.to(AdminHome(check_type: 1 , check_number: phone.text));
-                                      // }
-                                      else if (checkUser(phone.text) == true &&
-                                          type == '1') {
-                                        savePhone(phone.text);
-                                        Get.to(AdminHome(
-                                            check_type: "1",
-                                            check_number: phone.text));
-                                      } else if (checkUser(phone.text) ==
-                                              true &&
-                                          type == '7') {
-                                        savePhone(phone.text);
-                                        Get.to(AdminHome(
-                                            check_type: "7",
-                                            check_number: phone.text));
-                                      } 
-                                       else if (checkUser(phone.text) == true &&
-                                          type == '3') {
-                                        savePhone(phone.text);
-                                        Get.to(AdminHome(
-                                            check_type: "3",
-                                            check_number: phone.text));
-                                      }
-                                      else if (checkUser(phone.text) == true &&
-                                          type == '4') {
-                                        savePhone(phone.text);
-                                        Get.to(AdminHome(
-                                            check_type: "4",
-                                            check_number: phone.text));
-                                      }
-                                      else {
-                                        savePhone(phone.text);
-                                        Get.to(HomeScreen());
-                                      }
-                                    } else {
-                                      savePhone(phone.text);
-                                      Get.to(HomeScreen());
-                                    }
-                                  }
-                                },
-                                height: DM.p50,
-                                shape: const StadiumBorder(),
-                                color: appTheme,
-                                child: Text(
-                                  "Login",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      color: fullWhiteColor,
-                                      fontSize: DM.p15,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                      Flexible(
-                          child: Container(height: DM.p20, child: TextField()))
-                      // #buttons(facebook & github)
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -511,13 +467,6 @@ String? validateMobile(String? value) {
     return null;
 }
 
-String? validateString(String? value) {
-  if (value?.length == 0)
-    return 'Please fill this form';
-  else
-    return null;
-}
-
 Future<bool> chechkingInternet() async {
   try {
     final result = await InternetAddress.lookup('example.com');
@@ -525,12 +474,14 @@ Future<bool> chechkingInternet() async {
       return true;
     }
   } on SocketException catch (_) {
-    Get.snackbar("Network Error!", "Check your internet connection",
-        margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
-        backgroundColor: redColor,
-        colorText: whiteColor);
+    Get.snackbar(
+      "Network Error!",
+      "Check your internet connection",
+      margin: EdgeInsets.symmetric(horizontal: DM.p70, vertical: DM.p60),
+      backgroundColor: redColor,
+      colorText: whiteColor,
+    );
     return false;
   }
-
   return false;
 }
