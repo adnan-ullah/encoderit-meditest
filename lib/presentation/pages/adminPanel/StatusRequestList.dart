@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:healthcare_homelab/constants/api.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/NotificationServices.dart';
@@ -93,7 +94,7 @@ class _StatusRequestListState extends State<StatusRequestList>
 
   Future<void> _getNotification(BuildContext context) async {
     _dbref_testReqModel =
-        await FirebaseDatabase.instance.ref("$database_name/testRequest/");
+        await FirebaseDatabase.instance.ref("$testRequestApi/");
 
     status2 = _dbref_testReqModel.onChildAdded.listen((event) async {
       SharedPreferences refs = await SharedPreferences.getInstance();
@@ -180,7 +181,7 @@ Future<void> populateAllRequest() async {
       Get.put(CreateRequestController());
   late DatabaseReference dbrefTestRequest;
   dbrefTestRequest =
-      FirebaseDatabase.instance.ref("$database_name/testRequest/");
+      FirebaseDatabase.instance.ref("$testRequestApi/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);
   dbrefTestRequest.keepSynced(true);
 

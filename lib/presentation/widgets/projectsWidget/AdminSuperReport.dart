@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:healthcare_homelab/constants/api.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:intl/intl.dart';
@@ -88,7 +89,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
     _onLoading(true);
     late DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel =
-        await FirebaseDatabase.instance.ref("$database_name/testRequest/");
+        await FirebaseDatabase.instance.ref("$testRequestApi/");
 
     _dbref_testReqModel.onValue.listen((event) async {
       _newTestRequestList.clear();
@@ -229,9 +230,9 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
 
   Future<void> removeRequestFromFirebase(TestDataRequest testReq) async {
     DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    DbrefTestReqModel = FirebaseDatabase.instance.ref("$testRequestApi/");
     if (testReq != null) {
-      await DbrefTestReqModel.child("testRequest")
+      await DbrefTestReqModel
           .child(testReq.mobile)
           .child(testReq.id)
           .remove();

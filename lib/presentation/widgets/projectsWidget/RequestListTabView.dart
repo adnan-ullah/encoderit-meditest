@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:healthcare_homelab/constants/api.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItem.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestRequestItemTypeThree.dart';
@@ -74,7 +75,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
   Future<void> _updateStatus(TestDataRequest requestItem) async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     late DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    DbrefTestReqModel = FirebaseDatabase.instance.ref("$testRequestApi/");
     TestDataRequest updateTestRequestItem;
     updateTestRequestItem = TestDataRequest(
       id: requestItem.id,
@@ -132,7 +133,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
     );
 
     if (updateTestRequestItem != null) {
-      await DbrefTestReqModel.child("testRequest")
+      await DbrefTestReqModel
           .child(updateTestRequestItem.mobile)
           .child(updateTestRequestItem.id)
           .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
@@ -147,7 +148,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
     phone = ref.getString("phoneNumber");
 
     late DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = await FirebaseDatabase.instance.ref("$database_name/testRequest/");
+    _dbref_testReqModel = await FirebaseDatabase.instance.ref("$testRequestApi/");
 
     _dbref_testReqModel.onValue.listen((event) async {
       _newTestRequestList.clear();

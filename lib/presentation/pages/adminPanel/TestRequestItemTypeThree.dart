@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:healthcare_homelab/constants/api.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestListDialogueAdmin.dart';
 import 'package:healthcare_homelab/presentation/widgets/majorWidgets/Custom_Dialog.dart';
 import 'package:image_picker/image_picker.dart';
@@ -469,7 +470,7 @@ class _TestRequestCreateTypeThreeState
     int currentTime = DateTime.now().millisecondsSinceEpoch;
 
     late DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    DbrefTestReqModel = FirebaseDatabase.instance.ref("$testRequestApi/");
 
     if (admin_discount.text == null || admin_discount.text.isEmpty) {
       admin_discount.text = "0";
@@ -556,7 +557,7 @@ class _TestRequestCreateTypeThreeState
     );
 
     if (updateTestRequestItem != null) {
-      await DbrefTestReqModel.child("testRequest")
+      await DbrefTestReqModel
           .child(updateTestRequestItem.mobile)
           .child(updateTestRequestItem.id)
           .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));

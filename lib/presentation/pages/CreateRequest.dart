@@ -15,6 +15,7 @@ import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListD
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../constants/api.dart';
 import '../../constants/app_info.dart';
 import '../../constants/colors.dart';
 import '../../db/models/AdminUserModel.dart';
@@ -266,7 +267,7 @@ class _CreateRequestState extends State<CreateRequest> {
     // String currentTime = DateFormat('dd-MMM-yyy').format(tsdate);
 
     late DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("$testRequestApi/");
 
     newRequestData = TestDataRequest(
         id: ((Random().nextInt(900000) + 100000).toString()),
@@ -318,7 +319,6 @@ class _CreateRequestState extends State<CreateRequest> {
 
     if (newRequestData != null) {
       await _dbref_testReqModel
-          .child("testRequest")
           .update({newRequestData.mobile.toString(): "125412"});
 
       Get.snackbar(
@@ -348,7 +348,7 @@ class _CreateRequestState extends State<CreateRequest> {
 
 
     late DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("$testRequestApi/");
 
     newRequestData = TestDataRequest(
       id: ((Random().nextInt(900000) + 100000).toString()),
@@ -400,13 +400,9 @@ class _CreateRequestState extends State<CreateRequest> {
         imageDiscountFile: urlDownload3
     );
 
-    // DatabaseEvent ds = await _dbref_testReqModel
-    //     .child("testRequest/${newRequestData.mobile.toString()}")
-    //     .once();
     //checking duplicate child && add data
     if (newRequestData != null) {
       await _dbref_testReqModel
-          .child("testRequest")
           .child(newRequestData.mobile.toString())
           .child(newRequestData.id)
           .set(newRequestData.toJson());
