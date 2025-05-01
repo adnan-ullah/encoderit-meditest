@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:get/get.dart';
-import 'package:healthcare_homelab/presentation/pages/Create_Prescription.dart';
-import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
+import 'package:healthcare_homelab/presentation/pages/CreatePrescription.dart';
+import 'package:healthcare_homelab/presentation/pages/CreateRequest.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/RequestList.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,7 +10,7 @@ import '../../constants/app_info.dart';
 import '../../constants/colors.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/CreateRequestController.dart';
-import 'Login_info.dart';
+import 'LoginScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   // static const String id = "sign_up_page";
@@ -98,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       child: MaterialButton(
                         onPressed: () async {
-                          if (await chechkingInternet()) Get.to(Prescription());
+                          if (await chechkingInternet()) Get.to(CreatePrescription());
                         },
                         height: DM.p50,
                         shape: const StadiumBorder(),

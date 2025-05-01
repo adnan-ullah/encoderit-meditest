@@ -16,16 +16,16 @@ import '../../constants/colors.dart';
 import '../../db/models/TestDataRequest.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/CreateRequestController.dart';
-import 'Login_info.dart';
+import 'LoginScreen.dart';
 
-class Prescription extends StatefulWidget {
-  const Prescription({Key? key}) : super(key: key);
+class CreatePrescription extends StatefulWidget {
+  const CreatePrescription({Key? key}) : super(key: key);
 
   @override
-  _PrescriptionState createState() => _PrescriptionState();
+  _CreatePrescriptionState createState() => _CreatePrescriptionState();
 }
 
-class _PrescriptionState extends State<Prescription> {
+class _CreatePrescriptionState extends State<CreatePrescription> {
   CreateRequestController createReqController =
       Get.put(CreateRequestController());
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();

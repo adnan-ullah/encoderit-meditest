@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
-import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminHom.dart';
+import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminHome.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';

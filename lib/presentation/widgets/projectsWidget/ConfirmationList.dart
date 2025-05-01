@@ -4,13 +4,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
-import 'package:healthcare_homelab/presentation/pages/Create_Request.dart';
+import 'package:healthcare_homelab/presentation/pages/CreateRequest.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../db/models/TestDataRequest.dart';
 import '../../../responsives/dimensions.dart';
-import '../../pages/Login_info.dart';
+import '../../pages/LoginScreen.dart';
 
 class ConfirmationList extends StatefulWidget {
 

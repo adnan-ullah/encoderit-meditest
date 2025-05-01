@@ -13,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../constants/app_info.dart';
 import '../../../db/models/TestDataRequest.dart';
 import '../../../responsives/dimensions.dart';
-import '../../pages/Login_info.dart';
+import '../../pages/LoginScreen.dart';
 
 class AdminSuperReport extends StatefulWidget {
   AdminSuperReport({

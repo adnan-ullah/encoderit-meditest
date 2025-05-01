@@ -5,7 +5,7 @@ import 'package:easy_splash_screen/easy_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
-import 'package:healthcare_homelab/presentation/pages/Login_info.dart';
+import 'package:healthcare_homelab/presentation/pages/LoginScreen.dart';
 
 import '../../../responsives/dimensions.dart';
 import '../../widgets/majorWidgets/MyScaffold.dart';

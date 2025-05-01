@@ -8,7 +8,7 @@ import 'package:healthcare_homelab/state_programming/CreateRequestController.dar
 
 import '../../../db/models/TestDataRequest.dart';
 import '../../../responsives/dimensions.dart';
-import '../../pages/Login_info.dart';
+import '../../pages/LoginScreen.dart';
 
 class ConfirmationTestItem extends StatefulWidget {
   VoidCallback addTestRequest;
