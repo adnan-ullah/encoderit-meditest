@@ -7,8 +7,9 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:healthcare_homelab/constants/api.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestListDialogueAdmin.dart';
-import 'package:healthcare_homelab/presentation/widgets/majorWidgets/Custom_Dialog.dart';
+import 'package:healthcare_homelab/presentation/widgets/otherWidgets/MyDialogView.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
@@ -22,7 +23,7 @@ import '../../../db/models/TestData.dart';
 import '../../../db/models/TestDataRequest.dart';
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/CreateRequestController.dart';
-import '../../widgets/minorWidgets/PhotoViewImage.dart';
+import '../../widgets/otherWidgets/PhotoViewImage.dart';
 import '../Invoice_pdf/api/pdf_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_no_customer.dart';
@@ -134,7 +135,7 @@ class _TestRequestCreateTypeThreeState
 
   Future<void> _getTestItemList() async {
     late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
+    DbrefTestModel = FirebaseDatabase.instance.ref("$testModelApi/");
 
     DbrefTestModel.onValue.listen((event) {
       testItemList.clear();
@@ -162,7 +163,7 @@ class _TestRequestCreateTypeThreeState
   Future<void> getAdminUserList() async {
     late DatabaseReference DbrefTestModel;
     DbrefTestModel =
-        FirebaseDatabase.instance.ref("$database_name/admin_user/");
+        FirebaseDatabase.instance.ref("$adminUserApi/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     DbrefTestModel.keepSynced(true);
 
@@ -469,7 +470,7 @@ class _TestRequestCreateTypeThreeState
     int currentTime = DateTime.now().millisecondsSinceEpoch;
 
     late DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    DbrefTestReqModel = FirebaseDatabase.instance.ref("$testRequestApi/");
 
     if (admin_discount.text == null || admin_discount.text.isEmpty) {
       admin_discount.text = "0";
@@ -556,7 +557,7 @@ class _TestRequestCreateTypeThreeState
     );
 
     if (updateTestRequestItem != null) {
-      await DbrefTestReqModel.child("testRequest")
+      await DbrefTestReqModel
           .child(updateTestRequestItem.mobile)
           .child(updateTestRequestItem.id)
           .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));

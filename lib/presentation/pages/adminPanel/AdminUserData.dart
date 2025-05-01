@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:healthcare_homelab/constants/api.dart';
 import 'package:healthcare_homelab/presentation/pages/CreateRequest.dart';
 
 import '../../../constants/app_info.dart';
@@ -45,7 +46,7 @@ class _AdminUserDataState extends State<AdminUserData> {
   Future<void> updateToFirebase() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     late DatabaseReference dbrefTestReqModel;
-    dbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    dbrefTestReqModel = FirebaseDatabase.instance.ref("$adminUserApi/");
 
     updatedTestItemData = AdminUserModel(
         name: name.text.toString(),
@@ -63,7 +64,6 @@ class _AdminUserDataState extends State<AdminUserData> {
 
     if (updatedTestItemData != null) {
       await dbrefTestReqModel
-          .child("admin_user")
           .child(updatedTestItemData.phone)
           .update(jsonDecode(jsonEncode(updatedTestItemData)));
     }
@@ -72,7 +72,7 @@ class _AdminUserDataState extends State<AdminUserData> {
   Future<void> insertNewTestItemMethod() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("$adminUserApi/");
 
     inserNewTestItem = AdminUserModel(
         name: name.text.toString(),
@@ -88,7 +88,6 @@ class _AdminUserDataState extends State<AdminUserData> {
          imagine_commission: imagine_commission.text.toString());
     if (inserNewTestItem != null) {
       await _dbref_testReqModel
-          .child("admin_user")
           .child(inserNewTestItem.phone)
           .set(inserNewTestItem.toJson());
     }

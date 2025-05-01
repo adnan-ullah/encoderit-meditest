@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:get/get.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:healthcare_homelab/constants/api.dart';
 import 'package:uuid/uuid.dart';
 
 import '../constants/app_info.dart';
@@ -11,7 +12,7 @@ class CostController extends GetxController {
   final toCategory = <String, dynamic>{}.obs;
 
   Future<void> fetchCategories() async {
-    final dbRef = FirebaseDatabase.instance.ref("$database_name/category");
+    final dbRef = FirebaseDatabase.instance.ref("$categoryApi/");
     final snapshot = await dbRef.get();
     if (snapshot.exists) {
       categoryName.clear();
@@ -27,7 +28,7 @@ class CostController extends GetxController {
   }
 
   Future<void> addCategory(String name, String type) async {
-    final dbRef = FirebaseDatabase.instance.ref("$database_name/category");
+    final dbRef = FirebaseDatabase.instance.ref("$categoryApi/");
     final newCategory =
         CategoryModel(id: const Uuid().v4(), name: name, type: type);
     await dbRef.child(newCategory.id).set(newCategory.toJson());

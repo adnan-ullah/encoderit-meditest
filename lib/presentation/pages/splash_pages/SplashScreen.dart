@@ -8,7 +8,7 @@ import 'package:healthcare_homelab/presentation/pages/HomeScreen.dart';
 import 'package:healthcare_homelab/presentation/pages/LoginScreen.dart';
 
 import '../../../responsives/dimensions.dart';
-import '../../widgets/majorWidgets/MyScaffold.dart';
+import '../../widgets/otherWidgets/MyScaffold.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});

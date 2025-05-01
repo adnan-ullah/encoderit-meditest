@@ -8,7 +8,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'presentation/pages/splash_pages/SplashScreen.dart';
-import 'presentation/widgets/majorWidgets/MyScaffold.dart';
+import 'presentation/widgets/otherWidgets/MyScaffold.dart';
 
 // void main() => runApp(const MyApp());
 

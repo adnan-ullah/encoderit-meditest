@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:healthcare_homelab/constants/api.dart';
 import 'package:healthcare_homelab/constants/app_info.dart';
 import 'package:healthcare_homelab/presentation/pages/CreateRequest.dart';
 import 'package:uuid/uuid.dart';
@@ -51,7 +52,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
   Future<void> updateToFirebase() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     late DatabaseReference dbrefTestReqModel;
-    dbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name");
+    dbrefTestReqModel = FirebaseDatabase.instance.ref("$testModelApi/");
 
     updatedTestItemData = TestData(
         id: widget.testItem!.id.toString(),
@@ -71,7 +72,6 @@ class _TestDataCreateState extends State<TestDataCreate> {
 
     if (updatedTestItemData != null) {
       await dbrefTestReqModel
-          .child("testModel")
           .child(updatedTestItemData.id)
           .update(jsonDecode(jsonEncode(updatedTestItemData)));
     }
@@ -80,7 +80,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
   Future<void> insertNewTestItemMethod() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name");
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("$testModelApi/");
 
     inserNewTestItem = TestData(
         id: Uuid().v4(),
@@ -99,7 +99,6 @@ class _TestDataCreateState extends State<TestDataCreate> {
         category: createReqController.toCategory[category]);
     if (inserNewTestItem != null) {
       await _dbref_testReqModel
-          .child("testModel")
           .child(inserNewTestItem.id)
           .set(inserNewTestItem.toJson());
     }

@@ -8,13 +8,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:healthcare_homelab/presentation/widgets/majorWidgets/Custom_Dialog.dart';
+import 'package:healthcare_homelab/presentation/widgets/otherWidgets/MyDialogView.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/ConfirmationList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListDialogueBox.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../constants/api.dart';
 import '../../constants/app_info.dart';
 import '../../constants/colors.dart';
 import '../../db/models/AdminUserModel.dart';
@@ -266,7 +267,7 @@ class _CreateRequestState extends State<CreateRequest> {
     // String currentTime = DateFormat('dd-MMM-yyy').format(tsdate);
 
     late DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("$testRequestApi/");
 
     newRequestData = TestDataRequest(
         id: ((Random().nextInt(900000) + 100000).toString()),
@@ -318,7 +319,6 @@ class _CreateRequestState extends State<CreateRequest> {
 
     if (newRequestData != null) {
       await _dbref_testReqModel
-          .child("testRequest")
           .update({newRequestData.mobile.toString(): "125412"});
 
       Get.snackbar(
@@ -348,7 +348,7 @@ class _CreateRequestState extends State<CreateRequest> {
 
 
     late DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("$testRequestApi/");
 
     newRequestData = TestDataRequest(
       id: ((Random().nextInt(900000) + 100000).toString()),
@@ -400,13 +400,9 @@ class _CreateRequestState extends State<CreateRequest> {
         imageDiscountFile: urlDownload3
     );
 
-    // DatabaseEvent ds = await _dbref_testReqModel
-    //     .child("testRequest/${newRequestData.mobile.toString()}")
-    //     .once();
     //checking duplicate child && add data
     if (newRequestData != null) {
       await _dbref_testReqModel
-          .child("testRequest")
           .child(newRequestData.mobile.toString())
           .child(newRequestData.id)
           .set(newRequestData.toJson());
@@ -1446,7 +1442,7 @@ Future<void> getTestItemList() async {
   CreateRequestController createRequest_controller =
       Get.put(CreateRequestController());
   late DatabaseReference _dbref_testModel;
-  _dbref_testModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
+  _dbref_testModel = FirebaseDatabase.instance.ref("$testModelApi/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);
   _dbref_testModel.keepSynced(true);
 
@@ -1469,7 +1465,7 @@ Future<void> getTestItemList() async {
 
 Future<void> getAdminNotification(phone, type, context) async {
   late DatabaseReference DbrefTestModel;
-  DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/admin_user/");
+  DbrefTestModel = FirebaseDatabase.instance.ref("$adminUserApi/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);
   DbrefTestModel.keepSynced(true);
 

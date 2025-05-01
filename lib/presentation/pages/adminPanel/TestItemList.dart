@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:healthcare_homelab/constants/api.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestData.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
@@ -26,7 +27,7 @@ class _TestItemListState extends State<TestItemList> {
   Future<void> getTestItemList() async {
     _onLoading(true);
     late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
+    DbrefTestModel = FirebaseDatabase.instance.ref("$testModelApi/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     DbrefTestModel.keepSynced(true);
 
@@ -132,11 +133,11 @@ class _TestItemListState extends State<TestItemList> {
 
   Future<void> removeFromFirebase(testItemId) async {
     DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    DbrefTestReqModel = FirebaseDatabase.instance.ref("$testModelApi/");
     
 
     if (testItemId != null) {
-      await DbrefTestReqModel.child("testModel").child(testItemId).remove();
+      await DbrefTestReqModel.child(testItemId).remove();
     }
   }
 
@@ -480,36 +481,3 @@ class _TestItemListState extends State<TestItemList> {
     );
   }
 }
-
-
-//radious
-//backgrounddd
-
-
-  // Future<void> getTestItemList() async {
-  //   _onLoading(true);
-  //   CreateRequest_controller createRequest_controller =
-  //       Get.put(CreateRequest_controller());
-  //   late DatabaseReference _dbref_testModel;
-  //   _dbref_testModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
-
-  //   createRequest_controller.testItemList.clear();
-
-  //   createRequest_controller.testItemListWithSelected.clear();
-  //   _dbref_testModel.onValue.listen((event) {
-  //     for (DataSnapshot ds in event.snapshot.children) {
-  //       TestData testData =
-  //           TestData.fromJson(json.decode(jsonEncode(ds.value)));
-
-  //       createRequest_controller.testItemList.add(testData);
-
-  //       createRequest_controller.testItemListWithSelected[testData.id] = false;
-  //       //false -> add button
-  //       //true -> remove button
-
-  //       print(testData.name);
-  //     }
-  //     cr_controller.filter_testItemList.addAll(cr_controller.testItemList);
-  //     if (createRequest_controller.testItemList != null) _onLoading(false);
-  //   });
-  // }

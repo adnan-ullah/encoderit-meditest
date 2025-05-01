@@ -7,7 +7,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:healthcare_homelab/presentation/widgets/majorWidgets/Custom_Dialog.dart';
+import 'package:healthcare_homelab/constants/api.dart';
+import 'package:healthcare_homelab/presentation/widgets/otherWidgets/MyDialogView.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestListDialogueAdmin.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/FormUserAge.dart';
 import 'package:image_picker/image_picker.dart';
@@ -23,7 +24,7 @@ import '../../../db/models/TestData.dart';
 import '../../../db/models/TestDataRequest.dart';
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/CreateRequestController.dart';
-import '../../widgets/minorWidgets/PhotoViewImage.dart';
+import '../../widgets/otherWidgets/PhotoViewImage.dart';
 import '../Invoice_pdf/api/pdf_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_no_customer.dart';
@@ -128,7 +129,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
   Future<void> _getTestItemList() async {
     late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("$database_name/testModel/");
+    DbrefTestModel = FirebaseDatabase.instance.ref("$testModelApi/");
 
     DbrefTestModel.onValue.listen((event) {
       testItemList.clear();
@@ -154,7 +155,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   Future<void> getAdminUserList() async {
     late DatabaseReference DbrefTestModel;
     DbrefTestModel =
-        FirebaseDatabase.instance.ref("$database_name/admin_user/");
+        FirebaseDatabase.instance.ref("$adminUserApi/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     DbrefTestModel.keepSynced(true);
 
@@ -491,7 +492,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
   Future<void> _updateRequest() async {
     final currentTime = DateTime.now().millisecondsSinceEpoch;
-    final dbRef = FirebaseDatabase.instance.ref("$database_name/");
+    final dbRef = FirebaseDatabase.instance.ref("$testRequestApi/");
 
     admin_discount.text =
         admin_discount.text.isEmpty ? "0" : admin_discount.text;
@@ -602,7 +603,6 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     }
 
     await dbRef
-        .child("testRequest")
         .child(updateTestRequestItem.mobile)
         .child(updateTestRequestItem.id)
         .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:healthcare_homelab/constants/api.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminSuperReport.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
@@ -95,7 +96,7 @@ class _CollectionReportListState extends State<CollectionReportList>
   Future<void> _updatePay(TestDataRequest requestItem) async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     late DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    DbrefTestReqModel = FirebaseDatabase.instance.ref("$testRequestApi/");
     TestDataRequest updateTestRequestItem;
     updateTestRequestItem = TestDataRequest(
         id: requestItem.id,
@@ -152,7 +153,7 @@ class _CollectionReportListState extends State<CollectionReportList>
     );
 
     if (updateTestRequestItem != null) {
-      await DbrefTestReqModel.child("testRequest")
+      await DbrefTestReqModel
           .child(updateTestRequestItem.mobile)
           .child(updateTestRequestItem.id)
           .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
@@ -172,7 +173,7 @@ class _CollectionReportListState extends State<CollectionReportList>
 
     late DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel =
-    await FirebaseDatabase.instance.ref("$database_name/testRequest/");
+    await FirebaseDatabase.instance.ref("$testRequestApi/");
 
     _dbref_testReqModel.onValue.listen((event) async {
       _newTestRequestList.clear();

@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:healthcare_homelab/constants/api.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -100,11 +101,10 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
         imageDiscountFile: urlDownload3)!;
 
     late DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = FirebaseDatabase.instance.ref("$database_name/");
+    _dbref_testReqModel = FirebaseDatabase.instance.ref("$testRequestApi/");
 
     if (newRequestData != null) {
       await _dbref_testReqModel
-          .child("testRequest")
           .child(newRequestData.mobile.toString())
           .child(newRequestData.id)
           .set(newRequestData.toJson());
