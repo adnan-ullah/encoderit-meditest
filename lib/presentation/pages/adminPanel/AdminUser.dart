@@ -7,470 +7,425 @@ import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/api.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminUserData.dart';
-import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 
 import '../../../constants/app_info.dart';
 import '../../../db/models/AdminUserModel.dart';
 import '../../../responsives/dimensions.dart';
 
-class AdminUser extends StatefulWidget {
-  AdminUser({super.key});
+class AdminUserController extends GetxController {
+  var adminUsers = <AdminUserModel>[].obs;
+  var filteredUsers = <AdminUserModel>[].obs;
+  var isLoading = false.obs;
+  var isClear = false.obs;
+  final searchController = TextEditingController();
 
   @override
-  State<AdminUser> createState() => _AdminUserState();
+  void onInit() {
+    super.onInit();
+    fetchAdminUsers();
+  }
+
+  void fetchAdminUsers() async {
+    try {
+      isLoading.value = true;
+      final dbRef = FirebaseDatabase.instance.ref("$adminUserApi/");
+      FirebaseDatabase.instance.setPersistenceEnabled(true);
+      dbRef.keepSynced(true);
+
+      dbRef.onValue.listen((event) {
+        adminUsers.clear();
+        filteredUsers.clear();
+        for (DataSnapshot ds in event.snapshot.children) {
+          final data = AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
+          adminUsers.add(data);
+          filteredUsers.add(data);
+        }
+        isLoading.value = false;
+      });
+    } catch (e) {
+      Get.snackbar("Error", "Failed to load admin users: $e",
+          backgroundColor: redColor, colorText: fullWhiteColor);
+      isLoading.value = false;
+    }
+  }
+
+  void filterUsers(String value) {
+    if (value.isNotEmpty) {
+      isClear.value = true;
+      filteredUsers.assignAll(
+        adminUsers.where((user) =>
+            user.phone.toLowerCase().contains(value.toLowerCase())).toList(),
+      );
+    } else {
+      isClear.value = false;
+      filteredUsers.assignAll(adminUsers);
+    }
+  }
+
+  Future<void> removeUser(String phoneNumber) async {
+    try {
+      final dbRef = FirebaseDatabase.instance.ref("$adminUserApi/$phoneNumber");
+      await dbRef.remove();
+      Get.snackbar("Success", "User deleted successfully",
+          backgroundColor: appTheme, colorText: fullWhiteColor);
+    } catch (e) {
+      Get.snackbar("Error", "Failed to delete user: $e",
+          backgroundColor: redColor, colorText: fullWhiteColor);
+    }
+  }
 }
 
-class _AdminUserState extends State<AdminUser> {
-  List<AdminUserModel> _testItemsListAdmin = [];
-  List<AdminUserModel> _filterTestItemsList = [];
+class AdminUser extends StatelessWidget {
+  AdminUser({super.key});
 
-  Future<void> getTestItemList() async {
-    _onLoading(true);
-    late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("$adminUserApi/");
-    FirebaseDatabase.instance.setPersistenceEnabled(true);
-    DbrefTestModel.keepSynced(true);
-
-    DbrefTestModel.onValue.listen((event) {
-      setState(() {
-        _testItemsListAdmin.clear();
-        _filterTestItemsList.clear();
-      });
-
-      for (DataSnapshot ds in event.snapshot.children) {
-        AdminUserModel testData =
-            AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
-
-        setState(() {
-          _testItemsListAdmin.add(testData);
-          _filterTestItemsList.add(testData);
-        });
-      }
-      if (_testItemsListAdmin != null) _onLoading(false);
-    });
-  }
-
-  bool isYes = false;
-  var isLoading = true;
-
-  void _onLoading(isClosed) {
-    if (isClosed) {
-      setState(() {
-        isLoading = true;
-      });
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return Dialog(
-            child: Container(
-              height: DM.p120,
-              padding: EdgeInsets.all(DM.p16),
-              child: new Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  new CircularProgressIndicator(
-                    color: appTheme,
-                  ),
-                  SizedBox(
-                    width: DM.p10,
-                  ),
-                  new Text(
-                    "Loading, please wait...",
-                    style: TextStyle(color: appTheme),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    } else if (!isClosed && isLoading) {
-      setState(() {
-        isLoading = false;
-      });
-      Navigator.pop(context);
-    }
-  }
-
-  @override
-  void initState() {
-    Future.delayed(Duration.zero, () {
-      this.getTestItemList();
-    });
-
-    // TODO: implement initState
-    super.initState();
-  }
-
-  bool isClear = false;
-  var searchingText = new TextEditingController();
-
-  void filterigTestItem(dynamic value) {
-    if (value.toString().isNotEmpty) {
-      setState(() {
-        _filterTestItemsList.clear();
-        isClear = true;
-      });
-
-      _testItemsListAdmin.map((element) {
-        if (element.phone
-            .toString()
-            .toLowerCase()
-            .contains(value.toString().toLowerCase())) {
-          _filterTestItemsList.add(element);
-        }
-      }).toList();
-    } else {
-      setState(() {
-        isClear = false;
-      });
-
-      _filterTestItemsList.clear();
-      _filterTestItemsList.addAll(_testItemsListAdmin);
-    }
-  }
-
-  Future<void> removeFromFirebase(phoneNumber) async {
-    DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("$adminUserApi/");
-
-    if (phoneNumber != null) {
-      await DbrefTestReqModel.child(phoneNumber).remove();
-    }
-  }
-
-  CreateRequestController cr_controller = Get.put(CreateRequestController());
+  final controller = Get.put(AdminUserController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: secondaryColor,
-      appBar: AppBar(backgroundColor: appTheme, actions: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
-          width: DM.screenWidth,
-          child: Text(
-            "Admin User",
-            textAlign: TextAlign.left,
-            style: TextStyle(color: secondaryColor, fontSize: DM.p30),
+      appBar: AppBar(
+        backgroundColor: appTheme,
+        actions: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
+            width: DM.screenWidth,
+            child: Text(
+              "Admin User",
+              textAlign: TextAlign.left,
+              style: TextStyle(color: secondaryColor, fontSize: DM.p30),
+            ),
           ),
-        ),
-      ]),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(DM.p8),
           child: Column(
             children: [
               Container(
-                  color: secondaryColor,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        margin: EdgeInsets.symmetric(vertical: DM.p10),
-                        child: Text(
-                          "Admin User List",
-                          style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: DM.p25,
-                              color: Color.fromARGB(255, 26, 1, 1)),
+                color: secondaryColor,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: DM.p10),
+                      child: Text(
+                        "Admin User List",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: DM.p25,
+                          color: Color.fromARGB(255, 26, 1, 1),
                         ),
                       ),
-                      Padding(
-                        padding: EdgeInsets.all(DM.p10),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(DM.p10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Obx(
+                                () => Flexible(
+                              child: Container(
+                                height: DM.p45,
+                                child: TextFormField(
+                                  keyboardType: TextInputType.text,
+                                  controller: controller.searchController,
+                                  onChanged: controller.filterUsers,
+                                  decoration: InputDecoration(
+                                    suffixIcon: controller.isClear.value
+                                        ? IconButton(
+                                      icon: Icon(Icons.clear,
+                                          color: appTheme),
+                                      onPressed: () {
+                                        controller.searchController
+                                            .clear();
+                                        controller.filterUsers("");
+                                      },
+                                    )
+                                        : Icon(Icons.search, color: appTheme),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(DM.p40),
+                                      borderSide:
+                                      BorderSide(width: DM.p1, color: appTheme),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(DM.p40),
+                                      borderSide:
+                                      BorderSide(width: DM.p1, color: appTheme),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    border: InputBorder.none,
+                                    hintText: "Search",
+                                    hintStyle: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: DM.p14,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Obx(
+                          () => controller.isLoading.value
+                          ? _buildLoadingDialog()
+                          : controller.filteredUsers.isNotEmpty
+                          ? Container(
+                        height: DM.screenHeight * 0.65,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
                           children: [
-                            Obx(
-                              () => Flexible(
+                            Expanded(
+                              child: Card(
                                 child: Container(
-                                  height: DM.p45,
-                                  child: TextFormField(
-                                    keyboardType: TextInputType.text,
-                                    controller: searchingText,
-                                    onChanged: ((value) {
-                                      filterigTestItem(value);
-                                    }),
-                                    decoration: InputDecoration(
-                                        suffixIcon: isClear
-                                            ? InkWell(
-                                                onTap: (() {
-                                                  filterigTestItem("");
-                                                  searchingText.text = "";
-                                                }),
-                                                child: cr_controller
-                                                    .clearBox.value)
-                                            : cr_controller.searchBox.value,
-                                        focusedBorder: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(DM.p40),
-                                            borderSide: BorderSide(
-                                                width: DM.p1,
-                                                color: appTheme)),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(DM.p40),
-                                          borderSide: BorderSide(
-                                              width: DM.p1,
-                                              color:
-                                                  appTheme), //<-- SEE HERE
-                                        ),
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        border: InputBorder.none,
-                                        hintText: "Search",
-                                        hintStyle: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: DM.p14,
-                                        )),
+                                  height: DM.screenHeight * 0.65,
+                                  width: DM.screenWidth * 1.2,
+                                  child: ListView.builder(
+                                    itemCount:
+                                    controller.filteredUsers.length,
+                                    itemBuilder: (context, index) {
+                                      final user =
+                                      controller.filteredUsers[index];
+                                      return _buildUserItem(
+                                          context, user);
+                                    },
                                   ),
                                 ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                      _filterTestItemsList != null
-                          ? Container(
-                              height: DM.screenHeight * 0.65,
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                children: [
-                                  Expanded(
-                                    child: Card(
-                                        child: Container(
-                                      height: DM.screenHeight * 0.65,
-                                      width: DM.screenWidth * 1.2,
-                                      child: ListView.builder(
-                                        itemCount: _filterTestItemsList.length,
-                                        itemBuilder: (context, index) {
-                                          return Container(
-                                            color: whiteColor,
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: DM.p10,
-                                                vertical: DM.p10),
-                                            margin: EdgeInsets.symmetric(
-                                                vertical: DM.p5),
-                                            child: Row(
-                                              children: [
-                                                SizedBox(
-                                                  width: DM.p150,
-                                                  child: Text(
-                                                    " ${_filterTestItemsList[index].surname}_${_filterTestItemsList[index].phone.substring(8)}_${_filterTestItemsList[index].short_address}",
-                                                    overflow:
-                                                        TextOverflow.visible,
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p12,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width: DM.p60,
-                                                  child: Text(
-                                                    "Active: " +
-                                                        _filterTestItemsList[
-                                                                index]
-                                                            .active
-                                                            .toString(),
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p12,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width: DM.p50,
-                                                  child: Text(
-                                                    "Type: " +
-                                                        _filterTestItemsList[
-                                                                index]
-                                                            .type
-                                                            .toString(),
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p12,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                                ),
-                                                Container(
-                                                  margin: EdgeInsets.only(
-                                                      left: DM.p10),
-                                                  child: Row(
-                                                    children: [
-                                                      SizedBox(
-                                                          height: DM.p45,
-                                                          width: DM.p70,
-                                                          child: MaterialButton(
-                                                              onPressed: () {
-                                                                Get.to(AdminUserData(
-                                                                        testItem:
-                                                                            _filterTestItemsList[
-                                                                                index]))!
-                                                                    .then((value) =>
-                                                                        setState(
-                                                                            () {}));
-
-                                                                // deleteFromStore(snapshot.key);
-                                                              },
-                                                              shape:
-                                                                  const StadiumBorder(),
-                                                              color:
-                                                                  appTheme,
-                                                              child: Text(
-                                                                "Update",
-                                                                style: TextStyle(
-                                                                    color:
-                                                                        fullWhiteColor,
-                                                                    fontSize:
-                                                                        DM.p10,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                              ))),
-                                                      IconButton(
-                                                        padding:
-                                                            EdgeInsets.zero,
-                                                        color: appTheme,
-                                                        icon: Icon(
-                                                          CupertinoIcons.delete,
-                                                          size: DM.p25,
-                                                        ),
-                                                        onPressed: () {
-                                                          showDialog(
-                                                              context: context,
-                                                              builder:
-                                                                  (context) {
-                                                                return Scaffold(
-                                                                  backgroundColor:
-                                                                      Colors
-                                                                          .transparent,
-                                                                  body: Center(
-                                                                    child: Container(
-                                                                        margin: EdgeInsets.all(DM.p10),
-                                                                        height: DM.p250,
-                                                                        color: secondaryColor,
-                                                                        child: Column(
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.spaceBetween,
-                                                                          crossAxisAlignment:
-                                                                              CrossAxisAlignment.center,
-                                                                          children: [
-                                                                            Container(
-                                                                              padding: EdgeInsets.all(16),
-                                                                              margin: EdgeInsets.all(16),
-                                                                              child: Text(
-                                                                                "Do you want to delete test item \"${_filterTestItemsList[index].phone}?",
-                                                                                style: TextStyle(fontWeight: FontWeight.w400, fontSize: DM.p20, color: Color.fromARGB(255, 26, 1, 1)),
-                                                                              ),
-                                                                            ),
-                                                                            Row(
-                                                                              mainAxisAlignment: MainAxisAlignment.center,
-                                                                              children: [
-                                                                                Container(
-                                                                                  margin: EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p10),
-                                                                                  child: MaterialButton(
-                                                                                    onPressed: () {
-                                                                                      Get.back();
-                                                                                    },
-                                                                                    height: DM.p40,
-                                                                                    minWidth: DM.p120,
-                                                                                    shape: const StadiumBorder(),
-                                                                                    color: appTheme,
-                                                                                    child: Text(
-                                                                                      "Cancel",
-                                                                                      style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
-                                                                                    ),
-                                                                                  ),
-                                                                                ),
-                                                                                Container(
-                                                                                  margin: EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p10),
-                                                                                  child: MaterialButton(
-                                                                                    onPressed: () async {
-                                                                                      removeFromFirebase(_filterTestItemsList[index].phone);
-
-                                                                                      //cr_controller.filter_testItemList.removeAt(index);
-                                                                                      Get.back();
-                                                                                    },
-                                                                                    height: DM.p40,
-                                                                                    minWidth: DM.p120,
-                                                                                    shape: const StadiumBorder(),
-                                                                                    color: appTheme,
-                                                                                    child: Text(
-                                                                                      "Delete",
-                                                                                      style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
-                                                                                    ),
-                                                                                  ),
-                                                                                )
-                                                                              ],
-                                                                            ),
-                                                                          ],
-                                                                        )),
-                                                                  ),
-                                                                );
-                                                              });
-                                                        },
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    )),
-                                  ),
-                                ],
-                              ),
-                            )
+                      )
                           : Container(
-                              height: DM.screenHeight * 0.60,
-                              margin: EdgeInsets.symmetric(vertical: DM.p16),
-                              color: whiteColor,
-                              child: Center(
-                                child: Text(
-                                  "Request list empty",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: DM.p25,
-                                      color: appTheme),
-                                ),
-                              ),
-                            ),
-                      Container(
-                        margin: EdgeInsets.symmetric(vertical: DM.p10),
-                        child: MaterialButton(
-                          onPressed: () {
-                            Get.to(AdminUserData())!
-                                .then((value) => setState(() {}));
-                          },
-                          height: DM.p45,
-                          minWidth: DM.p130,
-                          shape: const StadiumBorder(),
-                          color: appTheme,
+                        height: DM.screenHeight * 0.60,
+                        margin: EdgeInsets.symmetric(vertical: DM.p16),
+                        color: whiteColor,
+                        child: Center(
                           child: Text(
-                            "Create User",
+                            "Request list empty",
                             style: TextStyle(
-                                color: fullWhiteColor,
-                                fontSize: DM.p15,
-                                fontWeight: FontWeight.bold),
+                              fontWeight: FontWeight.w400,
+                              fontSize: DM.p25,
+                              color: appTheme,
+                            ),
                           ),
                         ),
-                      )
-                    ],
-                  )),
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: DM.p10),
+                      child: MaterialButton(
+                        onPressed: () {
+                          Get.to(() => AdminUserData())!
+                              .then((value) => controller.fetchAdminUsers());
+                        },
+                        height: DM.p45,
+                        minWidth: DM.p130,
+                        shape: const StadiumBorder(),
+                        color: appTheme,
+                        child: Text(
+                          "Create User",
+                          style: TextStyle(
+                            color: fullWhiteColor,
+                            fontSize: DM.p15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingDialog() {
+    return Dialog(
+      child: Container(
+        height: DM.p120,
+        padding: EdgeInsets.all(DM.p16),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(color: appTheme),
+            SizedBox(width: DM.p10),
+            Text(
+              "Loading, please wait...",
+              style: TextStyle(color: appTheme),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserItem(BuildContext context, AdminUserModel user) {
+    return Container(
+      color: whiteColor,
+      padding: EdgeInsets.symmetric(horizontal: DM.p10, vertical: DM.p10),
+      margin: EdgeInsets.symmetric(vertical: DM.p5),
+      child: Row(
+        children: [
+          SizedBox(
+            width: DM.p150,
+            child: Text(
+              " ${user.surname}_${user.phone.substring(8)}_${user.short_address}",
+              overflow: TextOverflow.visible,
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: DM.p12,
+                color: Color.fromARGB(255, 26, 1, 1),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: DM.p60,
+            child: Text(
+              "Active: ${user.active}",
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: DM.p12,
+                color: Color.fromARGB(255, 26, 1, 1),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: DM.p50,
+            child: Text(
+              "Type: ${user.type}",
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: DM.p12,
+                color: Color.fromARGB(255, 26, 1, 1),
+              ),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(left: DM.p10),
+            child: Row(
+              children: [
+                SizedBox(
+                  height: DM.p45,
+                  width: DM.p70,
+                  child: MaterialButton(
+                    onPressed: () {
+                      Get.to(() => AdminUserData(testItem: user))!
+                          .then((value) => controller.fetchAdminUsers());
+                    },
+                    shape: const StadiumBorder(),
+                    color: appTheme,
+                    child: Text(
+                      "Update",
+                      style: TextStyle(
+                        color: fullWhiteColor,
+                        fontSize: DM.p10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  color: appTheme,
+                  icon: Icon(
+                    CupertinoIcons.delete,
+                    size: DM.p25,
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => Scaffold(
+                        backgroundColor: Colors.transparent,
+                        body: Center(
+                          child: Container(
+                            margin: EdgeInsets.all(DM.p10),
+                            height: DM.p250,
+                            color: secondaryColor,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.all(16),
+                                  margin: EdgeInsets.all(16),
+                                  child: Text(
+                                    "Do you want to delete test item \"${user.phone}\"?",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: DM.p20,
+                                      color: Color.fromARGB(255, 26, 1, 1),
+                                    ),
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.symmetric(
+                                          horizontal: DM.p20, vertical: DM.p10),
+                                      child: MaterialButton(
+                                        onPressed: () => Get.back(),
+                                        height: DM.p40,
+                                        minWidth: DM.p120,
+                                        shape: const StadiumBorder(),
+                                        color: appTheme,
+                                        child: Text(
+                                          "Cancel",
+                                          style: TextStyle(
+                                            color: fullWhiteColor,
+                                            fontSize: DM.p15,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.symmetric(
+                                          horizontal: DM.p20, vertical: DM.p10),
+                                      child: MaterialButton(
+                                        onPressed: () async {
+                                          await controller.removeUser(user.phone);
+                                          Get.back();
+                                        },
+                                        height: DM.p40,
+                                        minWidth: DM.p120,
+                                        shape: const StadiumBorder(),
+                                        color: appTheme,
+                                        child: Text(
+                                          "Delete",
+                                          style: TextStyle(
+                                            color: fullWhiteColor,
+                                            fontSize: DM.p15,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
