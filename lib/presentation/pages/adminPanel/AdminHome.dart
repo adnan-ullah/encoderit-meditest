@@ -52,15 +52,24 @@ class _AdminHomeState extends State<AdminHome> {
         context: context,
         barrierDismissible: false,
         builder: (_) => Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DM.p12)),
           child: Container(
-            height: DM.p120,
+            height: DM.p100,
             padding: EdgeInsets.all(DM.p16),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 CircularProgressIndicator(color: appTheme),
-                SizedBox(width: DM.p10),
-                Text("Loading, please wait...", style: TextStyle(color: appTheme)),
+                SizedBox(width: DM.p16),
+                Text(
+                  "Loading...",
+                  style: TextStyle(
+                    color: appTheme,
+                    fontSize: DM.p16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
@@ -72,22 +81,47 @@ class _AdminHomeState extends State<AdminHome> {
     }
   }
 
-  Widget _buildButton(String title, VoidCallback onPressed, {double width = 0.4}) {
-    return Container(
-      height: DM.p180,
-      width: DM.screenWidth * width,
-      margin: EdgeInsets.symmetric(vertical: DM.p25, horizontal: DM.p10),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(horizontal: DM.p30, vertical: DM.p20),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DM.p10)),
-          backgroundColor: appTheme,
+  Widget _buildButton({
+    required String title,
+    required VoidCallback onPressed,
+    required IconData icon,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 200),
+        margin: EdgeInsets.all(DM.p10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(DM.p12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: DM.p8,
+              spreadRadius: DM.p1,
+              offset: Offset(0, DM.p2),
+            ),
+          ],
         ),
-        onPressed: onPressed,
-        child: Text(
-          title,
-          textAlign: TextAlign.center,
-          style: TextStyle(color: fullWhiteColor, fontSize: DM.p15, fontWeight: FontWeight.bold),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: DM.p36,
+              color: appTheme,
+            ),
+            SizedBox(height: DM.p12),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: blackFontColor,
+                fontSize: DM.p16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -101,96 +135,122 @@ class _AdminHomeState extends State<AdminHome> {
     final isReportUser = widget.check_type == "2";
 
     return Scaffold(
-      backgroundColor: secondaryColor,
+      backgroundColor: Color(0xFFF5F7FA), // Light health-themed background
       appBar: AppBar(
         backgroundColor: appTheme,
+        elevation: 2,
         title: Text(
-          isAdmin || phone == superUser ? "Admin" : "Agent",
-          style: TextStyle(color: secondaryColor, fontSize: DM.p30),
+          isAdmin || phone == superUser ? "Admin Dashboard" : "Agent Dashboard",
+          style: TextStyle(
+            color: fullWhiteColor,
+            fontSize: DM.p24,
+            fontWeight: FontWeight.w700,
+          ),
         ),
+        centerTitle: true,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(DM.p8),
+      body: SafeArea(
         child: SingleChildScrollView(
+          padding: EdgeInsets.all(DM.p16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (isAdmin || isAgent)
-                Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (isAdmin)
-                          _buildButton("Test Item", () async {
-                            final ref = await SharedPreferences.getInstance();
-                            if (ref.getString("phoneNumber") == superUser || ref.getString("type") == "7") {
-                              Get.to(() => TestItemList());
-                            }
-                          }),
-                        _buildButton("Test Request", () {
-                          if (widget.check_type == "3") {
-                            Get.to(() => StatusRequestList(
-                              statusIndices: [1, 2, 8, 3, 4, 5, 6, 7],
-                              isButtonList: [false, false, false, true, true, true, false, false],
-                            ));
-                          } else if (widget.check_type == "4") {
-                            Get.to(() => StatusRequestList(
-                              statusIndices: [2, 8, 3],
-                              isButtonList: [false, false, false],
-                            ));
-                          } else {
-                            Get.to(() => StatusRequestList(
-                              statusIndices: [1, 2, 8, 3, 4, 5, 6, 7],
-                              isButtonList: [false, false, false, true, true, true, false, false],
-                            ));
-                          }
-                        }),
-                      ],
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                crossAxisSpacing: DM.p16,
+                mainAxisSpacing: DM.p16,
+                childAspectRatio: 1.0,
+                children: [
+                  if (isAdmin)
+                    _buildButton(
+                      title: "Test Item",
+                      icon: Icons.science,
+                      onPressed: () async {
+                        final ref = await SharedPreferences.getInstance();
+                        if (ref.getString("phoneNumber") == superUser || ref.getString("type") == "7") {
+                          Get.to(() => TestItemList());
+                        }
+                      },
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (isSuperUser)
-                          _buildButton("Admin User", () async {
-                            final ref = await SharedPreferences.getInstance();
-                            if (ref.getString("phoneNumber") == superUser) {
-                              Get.to(() => AdminUser());
-                            }
-                          }),
-                        if (isSuperUser || widget.check_type == "4")
-                          _buildButton("Report", () async {
-                            final ref = await SharedPreferences.getInstance();
-                            if (ref.getString("phoneNumber") == superUser) {
-                              Get.to(() => AdminSuperReport());
-                            } else if (widget.check_type == "4") {
-                              Get.to(() => CollectionReportList());
-                            }
-                          }),
-                      ],
+                  if (isAdmin || isAgent)
+                    _buildButton(
+                      title: "Test Request",
+                      icon: Icons.assignment,
+                      onPressed: () {
+                        if (widget.check_type == "3") {
+                          Get.to(() => StatusRequestList(
+                            statusIndices: [1, 2, 8, 3, 4, 5, 6, 7],
+                            isButtonList: [false, false, false, true, true, true, false, false],
+                          ));
+                        } else if (widget.check_type == "4") {
+                          Get.to(() => StatusRequestList(
+                            statusIndices: [2, 8, 3],
+                            isButtonList: [false, false, false],
+                          ));
+                        } else {
+                          Get.to(() => StatusRequestList(
+                            statusIndices: [1, 2, 8, 3, 4, 5, 6, 7],
+                            isButtonList: [false, false, false, true, true, true, false, false],
+                          ));
+                        }
+                      },
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (isAdmin)
-                          _buildButton("Agent Report", () async {
-                            final ref = await SharedPreferences.getInstance();
-                            if (ref.getString("phoneNumber") == superUser || ref.getString("type") == "7") {
-                              Get.to(() => AgentReportList());
-                            }
-                          }),
-                        if (isSuperUser)
-                          _buildButton("Cost", () async {
-                            final ref = await SharedPreferences.getInstance();
-                            if (ref.getString("phoneNumber") == superUser || ref.getString("type") == "7") {
-                              Get.to(() => CostDataCreate());
-                            }
-                          }),
-                      ],
+                  if (isSuperUser)
+                    _buildButton(
+                      title: "Admin User",
+                      icon: Icons.admin_panel_settings,
+                      onPressed: () async {
+                        final ref = await SharedPreferences.getInstance();
+                        if (ref.getString("phoneNumber") == superUser) {
+                          Get.to(() => AdminUser());
+                        }
+                      },
                     ),
-                  ],
-                )
-              else if (isReportUser)
-                _buildButton("Daily Report", () => Get.to(() => AgentReportList())),
+                  if (isSuperUser || widget.check_type == "4")
+                    _buildButton(
+                      title: "Report",
+                      icon: Icons.bar_chart,
+                      onPressed: () async {
+                        final ref = await SharedPreferences.getInstance();
+                        if (ref.getString("phoneNumber") == superUser) {
+                          Get.to(() => AdminSuperReport());
+                        } else if (widget.check_type == "4") {
+                          Get.to(() => CollectionReportList());
+                        }
+                      },
+                    ),
+                  if (isAdmin)
+                    _buildButton(
+                      title: "Agent Report",
+                      icon: Icons.people,
+                      onPressed: () async {
+                        final ref = await SharedPreferences.getInstance();
+                        if (ref.getString("phoneNumber") == superUser || ref.getString("type") == "7") {
+                          Get.to(() => AgentReportList());
+                        }
+                      },
+                    ),
+                  if (isSuperUser)
+                    _buildButton(
+                      title: "Cost",
+                      icon: Icons.monetization_on,
+                      onPressed: () async {
+                        final ref = await SharedPreferences.getInstance();
+                        if (ref.getString("phoneNumber") == superUser || ref.getString("type") == "7") {
+                          Get.to(() => CostDataCreate());
+                        }
+                      },
+                    ),
+                  if (isReportUser)
+                    _buildButton(
+                      title: "Daily Report",
+                      icon: Icons.today,
+                      onPressed: () => Get.to(() => AgentReportList()),
+                    ),
+                ],
+              ),
             ],
           ),
         ),
