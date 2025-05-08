@@ -1,17 +1,17 @@
-
 class AdminUserModel {
   AdminUserModel(
       {required this.name,
-        required this.phone,
-        required this.password,
-        required this.active,
-        required this.type,
-        required this.referrer_code,
-        required this.pathology_commission,
-        required this.address,
-        required this.surname,
-        required this.short_address,
-        required this.imagine_commission});
+      required this.phone,
+      required this.password,
+      required this.active,
+      required this.type,
+      required this.referrer_code,
+      required this.pathology_commission,
+      required this.address,
+      required this.surname,
+      required this.short_address,
+      required this.imagine_commission,
+      required this.percentage});
 
   final dynamic name;
   final dynamic phone;
@@ -24,20 +24,22 @@ class AdminUserModel {
   final dynamic surname;
   final dynamic short_address;
   final dynamic imagine_commission;
+  final dynamic percentage;
 
   Map toJson() => {
-    'name': name,
-    'phone': phone,
-    'password': password,
-    'active': active,
-    'type': type,
-    'referrer_code': referrer_code,
-    'pathology_commission': pathology_commission,
-    'address': address,
-    'surname': surname,
-    'short_address': short_address,
-    'imagine_commission': imagine_commission,
-  };
+        'name': name,
+        'phone': phone,
+        'password': password,
+        'active': active,
+        'type': type,
+        'referrer_code': referrer_code,
+        'pathology_commission': pathology_commission,
+        'address': address,
+        'surname': surname,
+        'short_address': short_address,
+        'imagine_commission': imagine_commission,
+        'percentage': percentage
+      };
 
   factory AdminUserModel.fromJson(Map<String, dynamic> parsedJson) {
     return AdminUserModel(
@@ -51,6 +53,7 @@ class AdminUserModel {
         address: parsedJson['address'],
         surname: parsedJson['surname'],
         short_address: parsedJson['short_address'],
-        imagine_commission: parsedJson['imagine_commission']);
+        imagine_commission: parsedJson['imagine_commission'],
+        percentage: parsedJson['percentage']);
   }
 }

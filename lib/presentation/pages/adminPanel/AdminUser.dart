@@ -320,7 +320,7 @@ class AdminUser extends StatelessWidget {
                   width: DM.p70,
                   child: MaterialButton(
                     onPressed: () {
-                      Get.to(() => AdminUserData(testItem: user))!
+                      Get.to(() => AdminUserData(adminUser: user))!
                           .then((value) => controller.fetchAdminUsers());
                     },
                     shape: const StadiumBorder(),

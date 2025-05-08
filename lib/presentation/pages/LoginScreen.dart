@@ -58,12 +58,18 @@ class _LoginScreenState extends State<LoginScreen> {
   bool checkUser(phone) {
     bool returnType = false;
     adminUserList.map((e) {
-      if (e.phone.toString() == (phone.toString()) &&
+      if (e.phone.toString() == phone.toString() &&
           e.active.toString() == "1") {
         type = e.type;
-        commission = e.pathology_commission;
-        referrer_code = e.referrer_code;
-        admin_password = e.password;
+        if (e.pathology_commission != null) {
+          commission = e.pathology_commission;
+        }
+        if (e.referrer_code != null) {
+          referrer_code = e.referrer_code;
+        }
+        if (e.password != null) {
+          admin_password = e.password;
+        }
         returnType = true;
       }
     }).toList();
@@ -387,7 +393,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                               Get.to(AdminHome(
                                                   check_type: "4",
                                                   check_number: phone.text));
-                                            } else {
+                                            }
+                                            else if (checkUser(phone.text) ==
+                                                true &&
+                                                type == '8') {
+                                              savePhone(phone.text);
+                                              Get.to(AdminHome(
+                                                  check_type: "8",
+                                                  check_number: phone.text));
+                                            }
+                                            else {
                                               savePhone(phone.text);
                                               Get.to(HomeScreen());
                                             }
