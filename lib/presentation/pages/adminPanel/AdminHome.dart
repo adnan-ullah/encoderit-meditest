@@ -15,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../constants/app_info.dart';
 import '../../../responsives/dimensions.dart';
+import '../../widgets/projectsWidget/ShareHolderReport.dart';
 
 class AdminHome extends StatefulWidget {
   final String check_type;
@@ -133,6 +134,7 @@ class _AdminHomeState extends State<AdminHome> {
     final isAdmin = isSuperUser || widget.check_type == "7";
     final isAgent = widget.check_type == "1" || widget.check_type == "3" || widget.check_type == "4";
     final isReportUser = widget.check_type == "2";
+    final isShareHolder = widget.check_type == "8";
 
     return Scaffold(
       backgroundColor: Color(0xFFF5F7FA), // Light health-themed background
@@ -218,6 +220,17 @@ class _AdminHomeState extends State<AdminHome> {
                           Get.to(() => AdminSuperReport());
                         } else if (widget.check_type == "4") {
                           Get.to(() => CollectionReportList());
+                        }
+                      },
+                    ),
+                  if (isShareHolder)
+                    _buildButton(
+                      title: "Shareholder Report",
+                      icon: Icons.people,
+                      onPressed: () async {
+                        final ref = await SharedPreferences.getInstance();
+                        if (ref.getString("phoneNumber") == superUser || ref.getString("type") == "8") {
+                          Get.to(() => ShareholderReportList());
                         }
                       },
                     ),
