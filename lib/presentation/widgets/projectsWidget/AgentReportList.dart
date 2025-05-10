@@ -8,6 +8,8 @@ import 'package:healthcare_homelab/constants/api.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:intl/intl.dart';
+import 'package:open_file/open_file.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -307,101 +309,101 @@ class _AgentReportListState extends State<AgentReportList> {
     }
   }
 
-  // Export filtered data to PDF
   Future<void> _exportToPdf() async {
-    final pdf = pw.Document();
-    pdf.addPage(
-      pw.MultiPage(
-        margin: pw.EdgeInsets.all(32),
-        build: (pw.Context context) {
-          return [
-            pw.Header(
-              level: 0,
-              child: pw.Text('Agent Report', style: pw.TextStyle(fontSize: 24)),
-            ),
-            pw.SizedBox(height: 20),
-            pw.Table.fromTextArray(
-              headers: [
-                'Invoice Call',
-                type == "2" && superUser != phone
-                    ? 'Patient Name'
-                    : 'Agent Name',
-                if (type != "2" || superUser == phone) 'Agent Code',
-                'Pathology Total',
-                'Radiology Total',
-                'Total Cost',
-                'Commission',
-                'Discount',
-                'Earning',
-                'Status',
-                'Payment Date',
-                'Last Payment Date',
-                'Collection',
-              ],
-              data: _newTestRequestList.asMap().entries.map((entry) {
-                final item = entry.value;
-                return [
-                  '#${item.invoice_call}',
-                  item.name,
-                  if (type != "2" || superUser == phone) item.id,
-                  item.teststatus != 1
-                      ? item.total_payable_pathology_cost.toString()
-                      : 'Processing',
-                  item.teststatus != 1
-                      ? item.total_payable_imagine_cost.toString()
-                      : 'Processing',
-                  item.teststatus != 1
-                      ? item.total_payable.toString()
-                      : 'Processing',
-                  item.teststatus != 1
-                      ? item.agent_commission.toString()
-                      : 'Processing',
-                  item.teststatus != 1
-                      ? item.total_agent_discount.toString()
-                      : 'Processing',
-                  item.teststatus == 6
-                      ? (item.agent_commission - item.total_agent_discount)
-                      .toString()
-                      : 'Processing',
-                  createRequestController.status[item.teststatus].toString(),
-                  item.payment_date == 0
-                      ? 'NA'
-                      : DateFormat('dd-MMM-yyyy').format(
-                      DateTime.fromMillisecondsSinceEpoch(
-                          item.payment_date)),
-                  lastPaymentDate[item] == 0
-                      ? 'NA'
-                      : DateFormat('dd-MMM-yyyy').format(
-                      DateTime.fromMillisecondsSinceEpoch(
-                          lastPaymentDate[item]!)),
-                  item.is_paid ? 'Paid' : 'Not Paid',
-                ];
-              }).toList(),
-              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-              cellAlignment: pw.Alignment.center,
-            ),
-            pw.SizedBox(height: 20),
-            pw.Text('Total Test Cost = $totalTestCost',
-                style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-            pw.Text(
-                'Total Earning = $totalEarning/- Total Paid = $totalPaidAmount',
-                style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-          ];
-        },
-      ),
-    );
+    try {
+      final pdf = pw.Document();
 
-    final baseDir = Directory(
-        '/storage/emulated/0/Documents/Health Care Homelab report/agent report');
-    await baseDir.create(recursive: true);
-    final agentName = referrerCode.replaceAll(RegExp(r'[^\w\s-]'), '_');
-    final file = File('${baseDir.path}/$agentName.pdf');
-    await file.writeAsBytes(await pdf.save());
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4.landscape,
+          margin: const pw.EdgeInsets.all(16),
+          build: (pw.Context context) {
+            return [
+              pw.Header(
+                level: 0,
+                child: pw.Text('Agent Report', style: pw.TextStyle(fontSize: 22)),
+              ),
+              pw.SizedBox(height: 10),
+              pw.Table.fromTextArray(
+                headers: [
+                  'Invoice',
+                  type == "2" && superUser != phone ? 'Patient' : 'Agent',
+                  if (type != "2" || superUser == phone) 'Code',
+                  'Path.',
+                  'Radio.',
+                  'Total',
+                  'Comm.',
+                  'Disc.',
+                  'Earn.',
+                  'Status',
+                  'Pay Date',
+                  'Last Pay',
+                  'Collect',
+                ],
+                data: _newTestRequestList.map((item) {
+                  return [
+                    '#${item.invoice_call}',
+                    item.name,
+                    if (type != "2" || superUser == phone) item.id,
+                    item.teststatus != 1 ? item.total_payable_pathology_cost.toString() : 'Processing',
+                    item.teststatus != 1 ? item.total_payable_imagine_cost.toString() : 'Processing',
+                    item.teststatus != 1 ? item.total_payable.toString() : 'Processing',
+                    item.teststatus != 1 ? item.agent_commission.toString() : 'Processing',
+                    item.teststatus != 1 ? item.total_agent_discount.toString() : 'Processing',
+                    item.teststatus == 6
+                        ? (item.agent_commission - item.total_agent_discount).toString()
+                        : 'Processing',
+                    createRequestController.status[item.teststatus].toString(),
+                    item.payment_date == 0
+                        ? 'NA'
+                        : DateFormat('dd-MMM-yyyy').format(
+                        DateTime.fromMillisecondsSinceEpoch(item.payment_date)),
+                    lastPaymentDate[item] == 0
+                        ? 'NA'
+                        : DateFormat('dd-MMM-yyyy').format(
+                        DateTime.fromMillisecondsSinceEpoch(lastPaymentDate[item]!)),
+                    item.is_paid ? 'Paid' : 'Unpaid',
+                  ];
+                }).toList(),
+                cellStyle: pw.TextStyle(fontSize: 9),
+                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+                cellAlignment: pw.Alignment.center,
+              ),
+              pw.SizedBox(height: 10),
+              pw.Text('Total Invoice Quantity = ${_newTestRequestList.length}'),
+              pw.Text('Total Test Cost = $totalTestCost'),
+              pw.Text('Total Earning = $totalEarning/-  Total Paid = $totalPaidAmount'),
+            ];
+          },
+        ),
+      );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('PDF saved to ${file.path}')),
-    );
+      final baseDir = Directory(
+          '/storage/emulated/0/Documents/Health Care Homelab report/agent report');
+      await baseDir.create(recursive: true);
+
+      final agentName = referrerCode.replaceAll(RegExp(r'[^\w\s-]'), '_');
+      final file = File('${baseDir.path}/$agentName.pdf');
+      await file.writeAsBytes(await pdf.save());
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('PDF saved to ${file.path}')),
+      );
+
+      // Open the file automatically
+      final result = await OpenFile.open(file.path);
+      if (result.type != ResultType.done) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open the PDF. Please open it manually.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error exporting PDF: $e')),
+      );
+    }
   }
+
 
   Future<void> permissionNeed() async {
     if (await Permission.storage.request() == true) {}
