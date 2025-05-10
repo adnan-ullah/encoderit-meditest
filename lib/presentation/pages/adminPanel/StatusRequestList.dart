@@ -43,6 +43,7 @@ class _StatusRequestListState extends State<StatusRequestList>
 
   @override
   void initState() {
+    populateAllRequest();
     tabController = TabController(
       length: widget.statusIndices.length,
       vsync: this,

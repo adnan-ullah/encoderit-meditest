@@ -3877,7 +3877,8 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
         tube_cost: tubeCost,
         deliveryDate: testDataRequest.delivery_date,
         reciever_name: testDataRequest.reciever_name,
-        last_modifier: testDataRequest.last_modifier),
+        last_modifier: testDataRequest.last_modifier,
+        prepared_by: testDataRequest.prepared_by),
 
     info: InvoiceInfo(
       date: DateTime.now(),
@@ -3892,32 +3893,6 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
                 " (${testDataRequest.testlist![index].diagnostic_center})",
             testPrice: testDataRequest.testlist![index].testprice,
             serialNumber: index + 1))
-
-    // InvoiceItem(
-    //   testName: 'Coffee',
-    //   quantity: 3,
-    //   testPrice: 5.999999,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Water',
-    //   quantity: 8,
-    //   testPrice: 0.99,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Orange',
-    //   quantity: 3,
-    //   testPrice: 2.99,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Apple',
-    //   quantity: 8,
-    //   testPrice: 3.99,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Mango',
-    //   quantity: 1,
-    //   testPrice: 1.59,
-    // ),
     ,
   );
 
