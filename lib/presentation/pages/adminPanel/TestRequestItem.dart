@@ -800,7 +800,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     total_discount.text = totalDiscount.toString();
 
     adminUserList.map((e) {
-      if (e.referrer_code.contains(referrer.text.toString())) {
+      if (e.referrer_code !=null && e.referrer_code.contains(referrer.text.toString())) {
         var pathology_commision = 0;
         var imagine_commission = 0;
 
@@ -927,7 +927,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
           imagine_commission = int.parse(e.imagine_commission);
         }
 
-        if (e.referrer_code.contains(referrer.text.toString())) {
+        if (e.referrer_code !=null && e.referrer_code.contains(referrer.text.toString())) {
           agent_commission.text =
               ((((total_payable_pathology) * pathology_commision) / 100) +
                       (((total_payable_imaging) * imagine_commission) / 100))
@@ -3445,6 +3445,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         //   value: "0",
                         //   activate: false,
                         // ),
+                        widget.testEachRequest?.teststatus<=5?
                         Padding(
                           padding: EdgeInsets.all(DM.p5),
                           child: Row(
@@ -3509,7 +3510,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                               ),
                             ],
                           ),
-                        ),
+                        ):SizedBox(),
                         widget.testEachRequest!.assigning == phoneNumber ||
                                 phoneNumber == superUser ||
                                 typeUser == "7" ||

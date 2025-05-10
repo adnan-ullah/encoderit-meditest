@@ -245,7 +245,7 @@ class _AdminHomeState extends State<AdminHome> {
                         }
                       },
                     ),
-                  if (isSuperUser)
+                  if (isAdmin)
                     _buildButton(
                       title: "Cost",
                       icon: Icons.monetization_on,

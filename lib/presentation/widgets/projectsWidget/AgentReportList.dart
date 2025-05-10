@@ -17,318 +17,299 @@ import '../../../db/models/TestDataRequest.dart';
 import '../../../responsives/dimensions.dart';
 
 class AgentReportList extends StatefulWidget {
-  AgentReportList({
-    super.key,
-  });
+  const AgentReportList({super.key});
 
   @override
   State<AgentReportList> createState() => _AgentReportListState();
 }
 
-var isLoading = false;
-var referrer_code = "0";
-var commission;
-
-var end_datetime = DateTime(DateTime.now().year, DateTime.now().month,
-    DateTime.now().day, 23, 59, 59)
-    .millisecondsSinceEpoch;
-
-var start_datetime = DateTime(DateTime.now().year, DateTime.now().month, 1)
-    .millisecondsSinceEpoch;
-double totalEarning = 0;
-double totalTestCost = 0;
-double totalPaidAmount = 0;
-List<TestDataRequest> _newTestRequestList = [];
-List<TestDataRequest> _allRequestListAdmin = [];
-List<String> paidStatusList = ["PAID", "UNPAID", "BOTH"];
-
-late TabController tabController;
-
-var type = "0";
-var phone = "0";
-var paidStatus = "BOTH";
-
-Map<dynamic, int> lastPaymentDate = {};
-var referrer_input = new TextEditingController(text: "0");
-
-class _AgentReportListState extends State<AgentReportList>
-    with TickerProviderStateMixin {
-  CreateRequestController createRequest_controller =
+class _AgentReportListState extends State<AgentReportList> {
+  final CreateRequestController createRequestController =
   Get.put(CreateRequestController());
+  final TextEditingController referrerInput = TextEditingController(text: "0");
+  bool isLoading = false;
+  String referrerCode = "0";
+  String? commission;
+  String type = "0";
+  String phone = "0";
+  String paidStatus = "BOTH";
+  int startDatetime =
+      DateTime(DateTime.now().year, DateTime.now().month, 1, 0, 0, 1)
+          .millisecondsSinceEpoch;
+  int endDatetime = DateTime(DateTime.now().year, DateTime.now().month,
+      DateTime.now().day, 23, 59, 59)
+      .millisecondsSinceEpoch;
+  double totalEarning = 0;
+  double totalTestCost = 0;
+  double totalPaidAmount = 0;
+  final List<TestDataRequest> _newTestRequestList = [];
+  final List<TestDataRequest> _allRequestListAdmin = [];
+  final List<String> paidStatusList = ["PAID", "UNPAID", "BOTH"];
+  final Map<TestDataRequest, int> lastPaymentDate = {};
 
-  int _selectedIndex = 0;
-
-  void _onLoading(isClosed) {
-    if (isClosed) {
-      setState(() {
-        isLoading = true;
-      });
+  // Show or hide loading dialog
+  void _showLoading(bool show) {
+    if (show == isLoading) return;
+    setState(() {
+      isLoading = show;
+    });
+    if (show) {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (BuildContext context) {
-          return Dialog(
-            child: Container(
-              height: DM.p120,
-              padding: EdgeInsets.all(DM.p16),
-              child: new Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  new CircularProgressIndicator(
-                    color: appTheme,
-                  ),
-                  SizedBox(
-                    width: DM.p10,
-                  ),
-                  new Text(
-                    "Loading, please wait...",
-                    style: TextStyle(color: appTheme),
-                  ),
-                ],
-              ),
+        builder: (context) => Dialog(
+          child: Container(
+            height: DM.p120,
+            padding: EdgeInsets.all(DM.p16),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: appTheme),
+                SizedBox(width: DM.p10),
+                Text(
+                  "Loading, please wait...",
+                  style: TextStyle(color: appTheme),
+                ),
+              ],
             ),
-          );
-        },
+          ),
+        ),
       );
-    } else if (!isClosed && isLoading) {
-      setState(() {
-        isLoading = false;
-      });
+    } else {
       Navigator.pop(context);
     }
   }
 
-  Future<void> _updatePay(TestDataRequest requestItem) async {
-    int currentTime = DateTime.now().millisecondsSinceEpoch;
-    late DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("$testRequestApi/");
-    TestDataRequest updateTestRequestItem;
-    updateTestRequestItem = TestDataRequest(
-      id: requestItem.id,
-      name: requestItem.name,
-      gender: requestItem.gender,
-      mobile: requestItem.mobile,
-      age: requestItem.age,
-      testlist: requestItem.testlist,
-      totalprice: requestItem.totalprice,
-      servicecharge: requestItem.servicecharge,
-      address: requestItem.address,
-      referrer: requestItem.referrer,
-      lastupdate: currentTime,
-      dateofcreated: requestItem.dateofcreated,
-      softdelete: requestItem.softdelete,
-      latitude: requestItem.latitude,
-      longitude: requestItem.longitude,
-      teststatus: requestItem.teststatus,
-      invoice_call: requestItem.invoice_call,
-      type: requestItem.type,
-      image_one: requestItem.image_one,
-      image_two: requestItem.image_two,
-      comments: requestItem.comments,
-      total_payable_imagine_cost: requestItem.total_payable_imagine_cost,
-      total_payable_pathology_cost: requestItem.total_payable_pathology_cost,
-      total_payable: requestItem.total_payable,
-      total_unpayable: requestItem.total_unpayable,
-      admin_pathology_discount: requestItem.admin_pathology_discount,
-      admin_radiology_discount: requestItem.admin_radiology_discount,
-      agent_commission: requestItem.agent_commission,
-      agent_pathology_discount: requestItem.agent_pathology_discount,
-      agent_radiology_discount: requestItem.agent_radiology_discount,
-      area: requestItem.area,
-      assigning: requestItem.assigning,
-      assigning_commission: requestItem.assigning_commission,
-      advanced: requestItem.advanced,
-      delivery_date: requestItem.delivery_date,
-      due_amount: requestItem.due_amount,
-      test_item_cost: requestItem.test_item_cost,
-      test_item_discount: requestItem.test_item_discount,
-      total_admin_discount: requestItem.total_admin_discount,
-      total_agent_discount: requestItem.total_agent_discount,
-      total_discount: requestItem.total_discount,
-      is_paid: true,
-      total_unpayable_pathology: requestItem.total_unpayable_pathology,
-      total_unpayable_imagine: requestItem.total_unpayable_imagine,
-      payment_date: currentTime,
-      pathology_done: requestItem.pathology_done,
-      radiology_done: requestItem.radiology_done,
-      radiology_assigning: requestItem.radiology_assigning,
-      radiology_assigning_commission:
-      requestItem.radiology_assigning_commission,
-      imageDiscountFile: requestItem.imageDiscountFile,
-    );
+  // Generate list of year/month paths to query based on date range
+  List<String> _getYearMonthPaths() {
+    final start = DateTime.fromMillisecondsSinceEpoch(startDatetime);
+    final end = DateTime.fromMillisecondsSinceEpoch(endDatetime);
+    final paths = <String>[];
+    final formatter = DateFormat('MMMM');
 
-    if (updateTestRequestItem != null) {
-      await DbrefTestReqModel
-          .child(updateTestRequestItem.mobile)
-          .child(updateTestRequestItem.id)
-          .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
+    var current = DateTime(start.year, start.month, 1);
+    while (current.isBefore(end) ||
+        (current.year == end.year && current.month == end.month)) {
+      final year = current.year;
+      final monthName = formatter.format(current);
+      paths.add("$database_name/testRequest/$year/$monthName");
+      current = DateTime(current.year, current.month + 1, 1);
     }
-
-    setState(() {
-      filterStatusDateTime(referrer_input.text);
-    });
+    return paths;
   }
 
-  Future<void> getStatusData() async {
-    _onLoading(true);
-
-    SharedPreferences ref = await SharedPreferences.getInstance();
-    phone = ref.getString('phoneNumber')!;
-    type = ref.getString("type")!;
-    if (phone != "$superUser" && type != "7") {
-      commission = ref.getString("commission");
-      referrer_code = ref.getString("referrer_code")!;
-    }
-
-    late DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel =
-    await FirebaseDatabase.instance.ref("$testRequestApi/");
-
-    _dbref_testReqModel.onValue.listen((event) async {
-      _newTestRequestList.clear();
-      _allRequestListAdmin.clear();
-
-      for (DataSnapshot ds in event.snapshot.children) {
-        for (DataSnapshot dsLater in ds.children) {
-          TestDataRequest testData =
-          TestDataRequest.fromJson(json.decode(jsonEncode(dsLater.value)));
-          _allRequestListAdmin.add(testData);
-        }
-      }
-
-      setState(() {
-        if (referrer_input.text == "0") {
-          _allRequestListAdmin.map((element) {
-            if (paidStatus == "BOTH") {
-              _newTestRequestList.add(element);
-            } else if (paidStatus == "PAID") {
-              if (element.is_paid == true) _newTestRequestList.add(element);
-            } else if (paidStatus == "UNPAID") {
-              if (element.is_paid == false) _newTestRequestList.add(element);
-            }
-
-//last date
-
-            if (lastPaymentDate[element] == null) lastPaymentDate[element] = 0;
-            if (element.is_paid == true) if (element.payment_date >
-                lastPaymentDate[element]) {
-              lastPaymentDate[element] = element.payment_date;
-              print("lastPaymentDate" + lastPaymentDate[element].toString());
-            }
-          }).toList();
-        }
-
-        if (type == "2") {
-          _newTestRequestList = _allRequestListAdmin
-              .where((element) =>
-          element.referrer.toString() == referrer_code.toString())
-              .toList();
-        }
-      });
-
-      totalEarning = 0;
-      totalTestCost = 0;
-      totalPaidAmount = 0;
-
-      _newTestRequestList.map((e) {
-        if (e.teststatus == 6) {
-          totalEarning =
-              totalEarning + e.agent_commission - e.total_agent_discount;
-
-          totalTestCost = totalTestCost + e.total_payable;
-
-          if (e.is_paid) {
-            totalPaidAmount =
-                totalPaidAmount + e.agent_commission - e.total_agent_discount;
-          }
-        }
-      }).toList();
-    });
-
-    if (_newTestRequestList != null) _onLoading(false);
-
-//Get.back();
-  }
-
-  Future<void> filterStatusDateTime(var referrer) async {
+  // Fetch data from Firebase for all year/month paths
+  Future<void> _fetchData() async {
+    // _showLoading(true);
+    _allRequestListAdmin.clear();
     _newTestRequestList.clear();
-// _newTestRequestList.addAll(_allRequestListAdmin);
-
-    if (type == "2") {
-      referrer = referrer_code;
-    }
-    var last_payment = 0;
-    _allRequestListAdmin.map((element) {
-      if (referrer.isNotEmpty && referrer != "0") {
-        if (element.referrer.toString() == referrer &&
-            (start_datetime <= element.dateofcreated &&
-                element.dateofcreated <= end_datetime)) {
-          if (paidStatus == "BOTH") {
-            _newTestRequestList.add(element);
-          } else if (paidStatus == "PAID") {
-            if (element.is_paid == true) _newTestRequestList.add(element);
-          } else if (paidStatus == "UNPAID") {
-            if (element.is_paid == false) _newTestRequestList.add(element);
-          }
-        }
-      } else {
-        if ((start_datetime <= element.dateofcreated &&
-            element.dateofcreated <= end_datetime)) {
-          if (paidStatus == "BOTH") {
-            _newTestRequestList.add(element);
-          } else if (paidStatus == "PAID") {
-            if (element.is_paid == true) _newTestRequestList.add(element);
-          } else if (paidStatus == "UNPAID") {
-            if (element.is_paid == false) _newTestRequestList.add(element);
-          }
-        }
-      }
-
-//last date
-      if (lastPaymentDate[element] == null) lastPaymentDate[element] = 0;
-      if (element.is_paid == true) if (element.payment_date >
-          lastPaymentDate[element]) {
-        lastPaymentDate[element] = element.payment_date;
-        print("lastPaymentDate" + lastPaymentDate[element].toString());
-      }
-    }).toList();
-
     totalEarning = 0;
     totalTestCost = 0;
     totalPaidAmount = 0;
+    lastPaymentDate.clear();
 
-    _newTestRequestList.map((e) {
-      if (e.teststatus == 6) {
-        totalEarning =
-            totalEarning + e.agent_commission - e.total_agent_discount;
+    final prefs = await SharedPreferences.getInstance();
+    phone = prefs.getString('phoneNumber') ?? "0";
+    type = prefs.getString("type") ?? "0";
+    if (phone != superUser && type != "7") {
+      commission = prefs.getString("commission");
+      referrerCode = prefs.getString("referrer_code") ?? "0";
+    }
 
-        totalTestCost = totalTestCost + e.total_payable;
+    final paths = _getYearMonthPaths();
+    final ref = FirebaseDatabase.instance;
 
-        if (e.is_paid) {
-          totalPaidAmount =
-              totalPaidAmount + e.agent_commission - e.total_agent_discount;
+    try {
+      for (var path in paths) {
+        final snapshot = await ref.ref(path).get();
+        if (snapshot.exists) {
+          for (var ds in snapshot.children) {
+            for (var dsLater in ds.children) {
+              try {
+                final data = TestDataRequest.fromJson(
+                    json.decode(jsonEncode(dsLater.value)));
+                if (!_allRequestListAdmin
+                    .any((r) => r.id == data.id && r.mobile == data.mobile)) {
+                  _allRequestListAdmin.add(data);
+                }
+              } catch (e) {
+                print(
+                    "Error parsing TestDataRequest: $e for JSON: ${jsonEncode(dsLater.value)}");
+              }
+            }
+          }
         }
       }
-    }).toList();
-  }
-
-  Future getStoragePermission() async {
-    PermissionStatus status = await Permission.storage.request();
-//PermissionStatus status1 = await Permission.accessMediaLocation.request();
-    PermissionStatus status2 = await Permission.manageExternalStorage.request();
-    print('status $status   -> $status2');
-    if (status.isGranted && status2.isGranted) {
-      return true;
-    } else if (status.isPermanentlyDenied || status2.isPermanentlyDenied) {
-      await openAppSettings();
-    } else if (status.isDenied) {
-      print('Permission Denied');
+      print("Fetched ${_allRequestListAdmin.length} requests from Firebase");
+      await _filterData(referrerInput.text);
+    } catch (e) {
+      print("Error fetching test requests: $e");
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
-  Future<void> exportToPdf() async {
-    final pdf = pw.Document();
+  // Filter data by referrer, date range, and paid status, calculate metrics
+  Future<void> _filterData(String referrer) async {
+    _newTestRequestList.clear();
+    totalEarning = 0;
+    totalTestCost = 0;
+    totalPaidAmount = 0;
+    lastPaymentDate.clear();
 
+    if (type == "2") {
+      referrer = referrerCode;
+    }
+
+    for (var element in _allRequestListAdmin) {
+      bool matchesReferrer = referrer.isNotEmpty && referrer != "0"
+          ? element.referrer.toString() == referrer
+          : true;
+      bool matchesDate = startDatetime <= (element.dateofcreated ?? 0) &&
+          (element.dateofcreated ?? 0) <= endDatetime;
+      bool matchesPaidStatus = paidStatus == "BOTH" ||
+          (paidStatus == "PAID" && element.is_paid == true) ||
+          (paidStatus == "UNPAID" && element.is_paid == false);
+
+      if (matchesReferrer && matchesDate && matchesPaidStatus) {
+        _newTestRequestList.add(element);
+      }
+
+      // Update last payment date
+      if (lastPaymentDate[element] == null) lastPaymentDate[element] = 0;
+      if (element.is_paid == true &&
+          element.payment_date > lastPaymentDate[element]!) {
+        lastPaymentDate[element] = element.payment_date;
+      }
+    }
+
+    for (var e in _newTestRequestList) {
+      if (e.teststatus == 6) {
+        totalEarning += e.agent_commission - e.total_agent_discount;
+        totalTestCost += e.total_payable;
+        if (e.is_paid) {
+          totalPaidAmount += e.agent_commission - e.total_agent_discount;
+        }
+      }
+    }
+
+    print("Filtered ${_newTestRequestList.length} requests");
+    if (mounted) setState(() {});
+  }
+
+  // Update payment status in Firebase and refresh UI
+  Future<void> _updatePay(TestDataRequest requestItem) async {
+    if (requestItem.dateofcreated == null || requestItem.dateofcreated == 0) {
+      print("Error: Invalid dateofcreated for request ${requestItem.id}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Cannot update payment: Invalid creation date")),
+      );
+      return;
+    }
+
+    try {
+      final date = DateTime.fromMillisecondsSinceEpoch(requestItem.dateofcreated!);
+      final year = date.year;
+      final monthName = DateFormat('MMMM').format(date);
+      final path = "$database_name/testRequest/$year/$monthName/${requestItem.mobile}/${requestItem.id}";
+      final ref = FirebaseDatabase.instance.ref(path);
+
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      final updateTestRequestItem = TestDataRequest(
+        id: requestItem.id,
+        name: requestItem.name,
+        gender: requestItem.gender,
+        mobile: requestItem.mobile,
+        age: requestItem.age,
+        testlist: requestItem.testlist,
+        totalprice: requestItem.totalprice,
+        servicecharge: requestItem.servicecharge,
+        address: requestItem.address,
+        referrer: requestItem.referrer,
+        lastupdate: currentTime,
+        dateofcreated: requestItem.dateofcreated,
+        softdelete: requestItem.softdelete,
+        latitude: requestItem.latitude,
+        longitude: requestItem.longitude,
+        teststatus: requestItem.teststatus,
+        invoice_call: requestItem.invoice_call,
+        type: requestItem.type,
+        image_one: requestItem.image_one,
+        image_two: requestItem.image_two,
+        comments: requestItem.comments,
+        total_payable_imagine_cost: requestItem.total_payable_imagine_cost,
+        total_payable_pathology_cost: requestItem.total_payable_pathology_cost,
+        total_payable: requestItem.total_payable,
+        total_unpayable: requestItem.total_unpayable,
+        admin_pathology_discount: requestItem.admin_pathology_discount,
+        admin_radiology_discount: requestItem.admin_radiology_discount,
+        agent_commission: requestItem.agent_commission,
+        agent_pathology_discount: requestItem.agent_pathology_discount,
+        agent_radiology_discount: requestItem.agent_radiology_discount,
+        area: requestItem.area,
+        assigning: requestItem.assigning,
+        assigning_commission: requestItem.assigning_commission,
+        advanced: requestItem.advanced,
+        delivery_date: requestItem.delivery_date,
+        due_amount: requestItem.due_amount,
+        test_item_cost: requestItem.test_item_cost,
+        test_item_discount: requestItem.test_item_discount,
+        total_admin_discount: requestItem.total_admin_discount,
+        total_agent_discount: requestItem.total_agent_discount,
+        total_discount: requestItem.total_discount,
+        is_paid: true,
+        total_unpayable_pathology: requestItem.total_unpayable_pathology,
+        total_unpayable_imagine: requestItem.total_unpayable_imagine,
+        payment_date: currentTime,
+        pathology_done: requestItem.pathology_done,
+        radiology_done: requestItem.radiology_done,
+        radiology_assigning: requestItem.radiology_assigning,
+        radiology_assigning_commission:
+        requestItem.radiology_assigning_commission,
+        imageDiscountFile: requestItem.imageDiscountFile,
+      );
+
+      // Update Firebase
+      await ref.update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
+
+      // Update local list to reflect the change immediately
+      final index = _newTestRequestList.indexWhere(
+              (item) => item.id == requestItem.id && item.mobile == requestItem.mobile);
+      if (index != -1) {
+        _newTestRequestList[index] = updateTestRequestItem;
+        // Update lastPaymentDate
+        lastPaymentDate[updateTestRequestItem] = currentTime;
+        // Recalculate metrics
+        totalEarning = 0;
+        totalTestCost = 0;
+        totalPaidAmount = 0;
+        for (var e in _newTestRequestList) {
+          if (e.teststatus == 6) {
+            totalEarning += e.agent_commission - e.total_agent_discount;
+            totalTestCost += e.total_payable;
+            if (e.is_paid) {
+              totalPaidAmount += e.agent_commission - e.total_agent_discount;
+            }
+          }
+        }
+        setState(() {});
+      }
+
+      // Refresh data from Firebase
+      await _fetchData();
+    } catch (e) {
+      print("Error updating payment for request ${requestItem.id}: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to update payment: $e")),
+      );
+    }
+  }
+
+  // Export filtered data to PDF
+  Future<void> _exportToPdf() async {
+    final pdf = pw.Document();
     pdf.addPage(
       pw.MultiPage(
         margin: pw.EdgeInsets.all(32),
@@ -342,7 +323,9 @@ class _AgentReportListState extends State<AgentReportList>
             pw.Table.fromTextArray(
               headers: [
                 'Invoice Call',
-                type == "2" && superUser != phone ? 'Patient Name' : 'Agent Name',
+                type == "2" && superUser != phone
+                    ? 'Patient Name'
+                    : 'Agent Name',
                 if (type != "2" || superUser == phone) 'Agent Code',
                 'Pathology Total',
                 'Radiology Total',
@@ -356,7 +339,6 @@ class _AgentReportListState extends State<AgentReportList>
                 'Collection',
               ],
               data: _newTestRequestList.asMap().entries.map((entry) {
-                final index = entry.key;
                 final item = entry.value;
                 return [
                   '#${item.invoice_call}',
@@ -378,17 +360,20 @@ class _AgentReportListState extends State<AgentReportList>
                       ? item.total_agent_discount.toString()
                       : 'Processing',
                   item.teststatus == 6
-                      ? (item.agent_commission - item.total_agent_discount).toString()
+                      ? (item.agent_commission - item.total_agent_discount)
+                      .toString()
                       : 'Processing',
-                  createRequest_controller.status[item.teststatus].toString(),
+                  createRequestController.status[item.teststatus].toString(),
                   item.payment_date == 0
                       ? 'NA'
-                      : DateFormat('dd-MMM-yyyy')
-                      .format(DateTime.fromMillisecondsSinceEpoch(item.payment_date)),
+                      : DateFormat('dd-MMM-yyyy').format(
+                      DateTime.fromMillisecondsSinceEpoch(
+                          item.payment_date)),
                   lastPaymentDate[item] == 0
                       ? 'NA'
-                      : DateFormat('dd-MMM-yyyy')
-                      .format(DateTime.fromMillisecondsSinceEpoch(lastPaymentDate[item]!)),
+                      : DateFormat('dd-MMM-yyyy').format(
+                      DateTime.fromMillisecondsSinceEpoch(
+                          lastPaymentDate[item]!)),
                   item.is_paid ? 'Paid' : 'Not Paid',
                 ];
               }).toList(),
@@ -398,20 +383,19 @@ class _AgentReportListState extends State<AgentReportList>
             pw.SizedBox(height: 20),
             pw.Text('Total Test Cost = $totalTestCost',
                 style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-            pw.Text('Total Earning = $totalEarning/- Total Paid = $totalPaidAmount',
+            pw.Text(
+                'Total Earning = $totalEarning/- Total Paid = $totalPaidAmount',
                 style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
           ];
         },
       ),
     );
 
-    // Use public Documents directory
-    final baseDir = Directory('/storage/emulated/0/Documents/Health Care Homelab report/agent report');
-    // Create directories if they don't exist
+    final baseDir = Directory(
+        '/storage/emulated/0/Documents/Health Care Homelab report/agent report');
     await baseDir.create(recursive: true);
-    // Use agent name (referrer_code) for the file name, sanitized to remove invalid characters
-    final agentName = referrer_code.replaceAll(RegExp(r'[^\w\s-]'), '_');
-    final file = File('${baseDir.path}/${agentName}.pdf');
+    final agentName = referrerCode.replaceAll(RegExp(r'[^\w\s-]'), '_');
+    final file = File('${baseDir.path}/$agentName.pdf');
     await file.writeAsBytes(await pdf.save());
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -420,116 +404,92 @@ class _AgentReportListState extends State<AgentReportList>
   }
 
   Future<void> permissionNeed() async {
-    // final status = await Permission.request();
-
-    // var state = await Permission.manageExternalStorage.request();
-    //var state2 = await Permission.storage.status;
-
     if (await Permission.storage.request() == true) {}
   }
 
   @override
   void initState() {
     permissionNeed();
-    referrer_input.text = "0";
-    tabController = TabController(length: 0, vsync: this, initialIndex: 0);
-
-    _selectedIndex = tabController.index;
-
-    Future.delayed(Duration.zero, () {
-      this.getStatusData();
-    });
-
-// TODO: implement initState
     super.initState();
+    Future.delayed(Duration.zero, _fetchData);
+  }
+
+  @override
+  void dispose() {
+    referrerInput.dispose();
+    if (isLoading) {
+      Navigator.pop(context);
+    }
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: secondaryColor,
-      appBar: AppBar(backgroundColor: appTheme, actions: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
-          width: DM.screenWidth,
-          child: Text(
-            "Report",
-            textAlign: TextAlign.left,
-            style: TextStyle(color: secondaryColor, fontSize: DM.p30),
-          ),
+      appBar: AppBar(
+        backgroundColor: appTheme,
+        title: Text(
+          "Report",
+          style: TextStyle(color: secondaryColor, fontSize: DM.p30),
         ),
-      ]),
+      ),
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            type == "7" || phone == "$superUser"
-                ? Padding(
-              padding: EdgeInsets.all(DM.p10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: DM.p70,
-                    child: Text(
-                      "Referrer Code",
-                      style: TextStyle(
+            // Referrer code input for superusers
+            if (type == "7" || phone == superUser)
+              Padding(
+                padding: EdgeInsets.all(DM.p10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: DM.p70,
+                      child: Text(
+                        "Referrer Code",
+                        style: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: DM.p14,
-                          color: blackFontColor),
+                          color: blackFontColor,
+                        ),
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    width: DM.p5,
-                  ),
-                  Text(":"),
-                  SizedBox(
-                    width: DM.p10,
-                  ),
-                  Flexible(
-                    child: Container(
-                      height: DM.p50,
-                      child: TextFormField(
-                        keyboardType: TextInputType.name,
-                        controller: referrer_input,
-// inputFormatters: <TextInputFormatter>[
-//   FilteringTextInputFormatter.digitsOnly
-// ],
-// validator: validateMobile,
-                        onEditingComplete: (() {
-                          setState(() {
-                            filterStatusDateTime(
-                                referrer_input.text.toString());
-                          });
-
-//_formKey.currentState?.validate();
-                        }),
-                        decoration: InputDecoration(
+                    SizedBox(width: DM.p5),
+                    Text(":"),
+                    SizedBox(width: DM.p10),
+                    Flexible(
+                      child: Container(
+                        height: DM.p50,
+                        child: TextFormField(
+                          keyboardType: TextInputType.name,
+                          controller: referrerInput,
+                          onChanged: (value) => _filterData(value),
+                          decoration: InputDecoration(
                             errorStyle: TextStyle(fontSize: DM.p9),
                             focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                    width: DM.p1, color: appTheme)),
+                              borderSide:
+                              BorderSide(width: DM.p1, color: appTheme),
+                            ),
                             enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  width: DM.p1,
-                                  color: appTheme), //<-- SEE HERE
+                              borderSide:
+                              BorderSide(width: DM.p1, color: appTheme),
                             ),
                             filled: true,
                             fillColor: Colors.white,
-                            border: InputBorder.none,
                             hintText: "0",
-                            hintStyle: TextStyle(
-                              color: Colors.grey,
-                              fontSize: DM.p14,
-                            )),
+                            hintStyle:
+                            TextStyle(color: Colors.grey, fontSize: DM.p14),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            )
-                : SizedBox(),
+            // Date filter buttons
             Padding(
               padding: EdgeInsets.all(DM.p15),
               child: Row(
@@ -544,88 +504,67 @@ class _AgentReportListState extends State<AgentReportList>
                             backgroundColor: appTheme, elevation: 0),
                         onPressed: () async {
                           final DateTime? picked = await showDatePicker(
-                              context: context,
-                              initialDate: start_datetime == null
-                                  ? DateTime(DateTime.now().year,
-                                  DateTime.now().month, 1, 0, 0, 1)
-                                  : DateTime.fromMillisecondsSinceEpoch(
-                                  start_datetime),
-                              initialDatePickerMode: DatePickerMode.day,
-                              firstDate: DateTime.fromMillisecondsSinceEpoch(
-                                  1669831200000),
-                              lastDate: DateTime.fromMillisecondsSinceEpoch(
-                                  1922292000000));
-                          if (picked != null)
+                            context: context,
+                            initialDate: DateTime.fromMillisecondsSinceEpoch(
+                                startDatetime),
+                            firstDate: DateTime(2022, 11),
+                            lastDate: DateTime(2030, 7),
+                          );
+                          if (picked != null) {
                             setState(() {
-// end_datetime =
-//     DateFormat.yMMMd().format(picked);
-
-//start_datetime = picked.millisecondsSinceEpoch;
-                              DateTime? start = DateTime(picked.year,
-                                  picked.month, picked.day, 0, 0, 1);
-
-                              start_datetime = start.millisecondsSinceEpoch;
-
-                              filterStatusDateTime(
-                                  referrer_input.text.toString());
+                              startDatetime = DateTime(picked.year,
+                                  picked.month, picked.day, 0, 0, 1)
+                                  .millisecondsSinceEpoch;
+                              _fetchData();
                             });
+                          }
                         },
                         child: Text(
-                          "Pick a first date time ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(start_datetime))}",
+                          "First: ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(startDatetime))}",
                           textAlign: TextAlign.center,
+                          style:
+                          TextStyle(color: Colors.white, fontSize: DM.p12),
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: DM.p15,
-                  ),
+                  SizedBox(width: DM.p15),
                   Flexible(
                     child: Container(
                       height: DM.p60,
                       child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: appTheme, elevation: 0),
-                          onPressed: () async {
-                            final DateTime? picked_end = await showDatePicker(
-                                context: context,
-                                initialDate: end_datetime == null
-                                    ? DateTime.fromMillisecondsSinceEpoch(
-                                    1669831200000)
-                                    : DateTime.fromMillisecondsSinceEpoch(
-                                    end_datetime),
-                                initialDatePickerMode: DatePickerMode.day,
-                                firstDate: DateTime.fromMillisecondsSinceEpoch(
-                                    1669831200000),
-                                lastDate: DateTime.fromMillisecondsSinceEpoch(
-                                    1922292000000));
-                            if (picked_end != null)
-                              setState(() {
-// end_datetime =
-//     DateFormat.yMMMd().format(picked);
-                                DateTime? end = DateTime(
-                                    picked_end.year,
-                                    picked_end.month,
-                                    picked_end.day,
-                                    23,
-                                    59,
-                                    59);
-
-                                end_datetime = end.millisecondsSinceEpoch;
-
-                                filterStatusDateTime(
-                                    referrer_input.text.toString());
-                              });
-                          },
-                          child: Text(
-                            "Pick a last date time \n ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(end_datetime))}",
-                            textAlign: TextAlign.center,
-                          )),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: appTheme, elevation: 0),
+                        onPressed: () async {
+                          final DateTime? picked = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.fromMillisecondsSinceEpoch(
+                                endDatetime),
+                            firstDate: DateTime(2022, 11),
+                            lastDate: DateTime(2030, 7),
+                          );
+                          if (picked != null) {
+                            setState(() {
+                              endDatetime = DateTime(picked.year, picked.month,
+                                  picked.day, 23, 59, 59)
+                                  .millisecondsSinceEpoch;
+                              _fetchData();
+                            });
+                          }
+                        },
+                        child: Text(
+                          "Last: ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(endDatetime))}",
+                          textAlign: TextAlign.center,
+                          style:
+                          TextStyle(color: Colors.white, fontSize: DM.p12),
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
+            // Paid status dropdown and export button
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -638,30 +577,22 @@ class _AgentReportListState extends State<AgentReportList>
                         child: Text(
                           "Paid Status:",
                           style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: DM.p14,
-                              color: Color.fromARGB(255, 26, 1, 1)),
+                            fontWeight: FontWeight.w500,
+                            fontSize: DM.p14,
+                            color: Color.fromARGB(255, 26, 1, 1),
+                          ),
                         ),
                       ),
-                      SizedBox(
-                        width: DM.p5,
-                      ),
+                      SizedBox(width: DM.p5),
                       Text(":"),
-                      SizedBox(
-                        width: DM.p10,
-                      ),
+                      SizedBox(width: DM.p10),
                       DropdownButton<String>(
-                        hint: Text(
-                          "${paidStatus}",
-                          style: TextStyle(color: blackFontColor),
-                        ),
-                        items: paidStatusList.map((
-                            String value,
-                            ) {
+                        value: paidStatus,
+                        items: paidStatusList.map((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
                             child: Text(
-                              "${value}",
+                              value,
                               style: TextStyle(color: blackFontColor),
                             ),
                           );
@@ -669,14 +600,13 @@ class _AgentReportListState extends State<AgentReportList>
                         onChanged: (newValue) {
                           setState(() {
                             paidStatus = newValue!;
-                            filterStatusDateTime(referrer_input.text);
+                            _filterData(referrerInput.text);
                           });
                         },
                       ),
                     ],
                   ),
                 ),
-                // Add Export to PDF button
                 Padding(
                   padding: EdgeInsets.all(DM.p10),
                   child: ElevatedButton(
@@ -686,9 +616,7 @@ class _AgentReportListState extends State<AgentReportList>
                       padding: EdgeInsets.symmetric(
                           horizontal: DM.p20, vertical: DM.p15),
                     ),
-                    onPressed: () async {
-                      await exportToPdf();
-                    },
+                    onPressed: _exportToPdf,
                     child: Text(
                       'Export',
                       style: TextStyle(
@@ -701,6 +629,7 @@ class _AgentReportListState extends State<AgentReportList>
                 ),
               ],
             ),
+            // Request list
             Container(
               height: DM.screenHeight * 0.62,
               margin: EdgeInsets.symmetric(horizontal: DM.p5),
@@ -718,829 +647,514 @@ class _AgentReportListState extends State<AgentReportList>
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Container(
-                              width: DM.p80,
-                              child: Text(
-                                "Invoice Call",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p10,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                            ),
-                            type == "2" && superUser != phone
-                                ? Container(
-                              width: DM.p80,
-                              child: Text(
-                                "Patient Name",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p10,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                            )
-                                : Row(
-                              children: [
-                                Container(
-                                  width: DM.p80,
-                                  child: Text(
-                                    "Agent Name",
+                                width: DM.p80,
+                                child: Text("Invoice Call",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                         fontWeight: FontWeight.w900,
                                         fontSize: DM.p10,
-                                        color: Color.fromARGB(
-                                            255, 26, 1, 1)),
-                                  ),
-                                ),
-                                Container(
+                                        color: Color.fromARGB(255, 26, 1, 1)))),
+                            if (type == "2" && superUser != phone)
+                              Container(
                                   width: DM.p80,
-                                  child: Text(
-                                    "Agent Code",
+                                  child: Text("Patient Name",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: DM.p10,
+                                          color:
+                                          Color.fromARGB(255, 26, 1, 1))))
+                            else
+                              Row(
+                                children: [
+                                  Container(
+                                      width: DM.p80,
+                                      child: Text("Agent Name",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: DM.p10,
+                                              color: Color.fromARGB(
+                                                  255, 26, 1, 1)))),
+                                  Container(
+                                      width: DM.p80,
+                                      child: Text("Agent Code",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: DM.p10,
+                                              color: Color.fromARGB(
+                                                  255, 26, 1, 1)))),
+                                ],
+                              ),
+                            Container(
+                                width: DM.p80,
+                                child: Text("Pathology Total",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                         fontWeight: FontWeight.w900,
                                         fontSize: DM.p10,
-                                        color: Color.fromARGB(
-                                            255, 26, 1, 1)),
-                                  ),
-                                ),
-                              ],
-                            ),
+                                        color: Color.fromARGB(255, 1, 1, 1)))),
                             Container(
-                              width: DM.p80,
-                              child: Text(
-                                "Pathology Total",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p10,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                            ),
+                                width: DM.p80,
+                                child: Text("Radiology Total",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: DM.p10,
+                                        color: Color.fromARGB(255, 1, 1, 1)))),
                             Container(
-                              width: DM.p80,
-                              child: Text(
-                                "Radiology Total",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p10,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                            ),
+                                width: DM.p80,
+                                child: Text("Total Cost",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: DM.p10,
+                                        color: Color.fromARGB(255, 1, 1, 1)))),
                             Container(
-                              width: DM.p80,
-                              child: Text(
-                                "Total Cost",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p10,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                            ),
+                                width: DM.p80,
+                                child: Text("Commission",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: DM.p10,
+                                        color: Color.fromARGB(255, 1, 1, 1)))),
                             Container(
-                              width: DM.p80,
-                              child: Text(
-                                "Commission",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p10,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                            ),
+                                width: DM.p80,
+                                child: Text("Discount",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: DM.p10,
+                                        color: Color.fromARGB(255, 1, 1, 1)))),
                             Container(
-                              width: DM.p80,
-                              child: Text(
-                                "Discount",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p10,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                            ),
+                                width: DM.p80,
+                                child: Text("Earning",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: DM.p10,
+                                        color: Color.fromARGB(255, 1, 1, 1)))),
                             Container(
-                              width: DM.p80,
-                              child: Text(
-                                "Earning",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p10,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                            ),
+                                width: DM.p80,
+                                child: Text("Status",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: DM.p10,
+                                        color: Color.fromARGB(255, 1, 1, 1)))),
                             Container(
-                              width: DM.p80,
-                              child: Text(
-                                "Status",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p10,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                            ),
+                                width: DM.p80,
+                                child: Text("Payment Date",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: DM.p10,
+                                        color: Color.fromARGB(255, 1, 1, 1)))),
                             Container(
-                              width: DM.p80,
-                              child: Text(
-                                "Payment Date",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p10,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                            ),
+                                width: DM.p80,
+                                child: Text("Last Payment Date",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: DM.p10,
+                                        color: Color.fromARGB(255, 1, 1, 1)))),
                             Container(
-                              width: DM.p80,
-                              child: Text(
-                                "Last Payment Date",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p10,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                            ),
-                            Container(
-                              width: DM.p80,
-                              child: Text(
-                                "Collection",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p10,
-                                    color: Color.fromARGB(255, 26, 1, 1)),
-                              ),
-                            ),
+                                width: DM.p80,
+                                child: Text("Collection",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: DM.p10,
+                                        color: Color.fromARGB(255, 1, 1, 1)))),
                           ],
                         ),
                       ),
+                      Divider(thickness: DM.p2, color: Colors.black),
                       Expanded(
-                        child: isLoading == false
-                            ? Container(
-                            height: DM.screenHeight * 0.50,
-                            width: DM.screenWidth * 2.7,
-                            child: _newTestRequestList.isNotEmpty
-                                ? Container(
-                              height: DM.p100,
-                              child: Column(
-                                children: [
-                                  Divider(
-                                    thickness: DM.p2,
-                                    color: Colors.black,
-                                  ),
-                                  Container(
-                                    height: DM.screenHeight * 0.50,
-                                    width: DM.screenWidth * 2.7,
-                                    child: ListView.builder(
-                                      shrinkWrap: true,
-                                      itemCount:
-                                      _newTestRequestList.length,
-                                      itemBuilder: (context, index) {
-                                        return Container(
-                                          decoration: BoxDecoration(
-                                            color: whiteColor,
-                                            borderRadius:
-                                            BorderRadius.circular(
-                                                DM.p10),
-                                          ),
-                                          margin:
-                                          EdgeInsets.symmetric(
-                                              vertical: DM.p5),
-                                          height: DM.p60,
-                                          child: Row(
-                                            mainAxisAlignment:
-                                            MainAxisAlignment
-                                                .spaceBetween,
-                                            children: [
-                                              Container(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  "#${_newTestRequestList[index].invoice_call.toString()}",
-                                                  textAlign: TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize:
-                                                      DM.p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              ),
-                                              type == "2" &&
-                                                  superUser !=
-                                                      phone
-                                                  ? Container(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  "${_newTestRequestList[index].name.toString()}",
+                        child: Container(
+                          height: DM.screenHeight * 0.50,
+                          width: DM.screenWidth * 2.7,
+                          child: _newTestRequestList.isNotEmpty
+                              ? ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: _newTestRequestList.length,
+                            itemBuilder: (context, index) {
+                              final request = _newTestRequestList[index];
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: whiteColor,
+                                  borderRadius:
+                                  BorderRadius.circular(DM.p10),
+                                ),
+                                margin:
+                                EdgeInsets.symmetric(vertical: DM.p5),
+                                height: DM.p60,
+                                child: Row(
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                        width: DM.p80,
+                                        child: Text(
+                                            "#${request.invoice_call}",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)))),
+                                    if (type == "2" && superUser != phone)
+                                      Container(
+                                          width: DM.p80,
+                                          child: Text("${request.name}",
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                  fontWeight:
+                                                  FontWeight.w900,
+                                                  fontSize: DM.p10,
+                                                  color: Color.fromARGB(
+                                                      255, 26, 1, 1))))
+                                    else
+                                      Row(
+                                        children: [
+                                          Container(
+                                              width: DM.p80,
+                                              child: Text(
+                                                  "${request.name}",
                                                   textAlign:
-                                                  TextAlign
-                                                      .center,
+                                                  TextAlign.center,
                                                   style: TextStyle(
                                                       fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
+                                                      FontWeight.w900,
+                                                      fontSize: DM.p10,
+                                                      color:
+                                                      Color.fromARGB(
                                                           255,
                                                           26,
                                                           1,
-                                                          1)),
-                                                ),
-                                              )
-                                                  : Row(
-                                                children: [
-                                                  Container(
-                                                    width:
-                                                    DM.p80,
-                                                    child: Text(
-                                                      "${_newTestRequestList[index].name.toString()}",
-                                                      textAlign:
-                                                      TextAlign
-                                                          .center,
-                                                      style: TextStyle(
-                                                          fontWeight: FontWeight
-                                                              .w900,
-                                                          fontSize: DM
-                                                              .p10,
-                                                          color: Color.fromARGB(
-                                                              255,
-                                                              26,
-                                                              1,
-                                                              1)),
-                                                    ),
-                                                  ),
-                                                  Container(
-                                                    width:
-                                                    DM.p80,
-                                                    child: Text(
-                                                      "${_newTestRequestList[index].id.toString()}",
-                                                      textAlign:
-                                                      TextAlign
-                                                          .center,
-                                                      style: TextStyle(
-                                                          fontWeight: FontWeight
-                                                              .w900,
-                                                          fontSize: DM
-                                                              .p10,
-                                                          color: Color.fromARGB(
-                                                              255,
-                                                              26,
-                                                              1,
-                                                              1)),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              _newTestRequestList[
-                                              index]
-                                                  .teststatus !=
-                                                  1
-                                                  ? SizedBox(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  "${(_newTestRequestList[index].total_payable_pathology_cost).toString()}",
+                                                          1)))),
+                                          Container(
+                                              width: DM.p80,
+                                              child: Text("${request.id}",
                                                   textAlign:
-                                                  TextAlign
-                                                      .center,
+                                                  TextAlign.center,
                                                   style: TextStyle(
                                                       fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
+                                                      FontWeight.w900,
+                                                      fontSize: DM.p10,
+                                                      color:
+                                                      Color.fromARGB(
                                                           255,
                                                           26,
                                                           1,
-                                                          1)),
-                                                ),
-                                              )
-                                                  : SizedBox(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  "Processing",
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              ),
-                                              _newTestRequestList[
-                                              index]
-                                                  .teststatus !=
-                                                  1
-                                                  ? SizedBox(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  "${(_newTestRequestList[index].total_payable_imagine_cost).toString()}",
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              )
-                                                  : SizedBox(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  "Processing",
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              ),
-                                              _newTestRequestList[
-                                              index]
-                                                  .teststatus !=
-                                                  1
-                                                  ? SizedBox(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  "${(_newTestRequestList[index].total_payable).toString()}",
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              )
-                                                  : SizedBox(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  "Processing",
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              ),
-                                              _newTestRequestList[
-                                              index]
-                                                  .teststatus !=
-                                                  1
-                                                  ? SizedBox(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  _newTestRequestList[
-                                                  index]
-                                                      .agent_commission
-                                                      .toString(),
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              )
-                                                  : SizedBox(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  "Processing",
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              ),
-                                              _newTestRequestList[
-                                              index]
-                                                  .teststatus !=
-                                                  1
-                                                  ? SizedBox(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  _newTestRequestList[
-                                                  index]
-                                                      .total_agent_discount
-                                                      .toString(),
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              )
-                                                  : SizedBox(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  "Processing",
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              ),
-                                              _newTestRequestList[
-                                              index]
-                                                  .teststatus ==
-                                                  6
-                                                  ? SizedBox(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  (_newTestRequestList[index]
-                                                      .agent_commission -
-                                                      _newTestRequestList[index]
-                                                          .total_agent_discount)
-                                                      .toString(),
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              )
-                                                  : SizedBox(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  "Processing",
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                width: DM.p80,
-                                                child: Text(
-                                                  createRequest_controller
-                                                      .status[_newTestRequestList[
-                                                  index]
-                                                      .teststatus]
-                                                      .toString(),
-                                                  textAlign: TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize:
-                                                      DM.p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                width: DM.p80,
-                                                child: _newTestRequestList[
-                                                index]
-                                                    .payment_date ==
-                                                    0
-                                                    ? Text(
-                                                  "NA",
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                )
-                                                    : Text(
-                                                  (DateFormat('dd-MMM-yyyy')
-                                                      .format(
-                                                      DateTime.fromMillisecondsSinceEpoch(_newTestRequestList[index].payment_date)))
-                                                      .toString(),
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                width: DM.p80,
-                                                child: _newTestRequestList[
-                                                index]
-                                                    .payment_date ==
-                                                    0
-                                                    ? Text(
-                                                  "NA",
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                )
-                                                    : Text(
-                                                  (DateFormat('dd-MMM-yyyy')
-                                                      .format(
-                                                      DateTime.fromMillisecondsSinceEpoch(lastPaymentDate[_newTestRequestList[index]]!)))
-                                                      .toString(),
-                                                  textAlign:
-                                                  TextAlign
-                                                      .center,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w900,
-                                                      fontSize: DM
-                                                          .p10,
-                                                      color: Color
-                                                          .fromARGB(
-                                                          255,
-                                                          26,
-                                                          1,
-                                                          1)),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                  width: DM.p80,
-                                                  child: _newTestRequestList[
-                                                  index]
-                                                      .is_paid
-                                                      ? Text(
-                                                    "Paid",
-                                                    textAlign:
-                                                    TextAlign
-                                                        .center,
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                        FontWeight
-                                                            .w900,
-                                                        fontSize: DM
-                                                            .p10,
-                                                        color: Color.fromARGB(
-                                                            255,
-                                                            26,
-                                                            1,
-                                                            1)),
-                                                  )
-                                                      : (type == "7" ||
-                                                      phone ==
-                                                          "$superUser")
-                                                      ? MaterialButton(
-                                                    onPressed:
-                                                        () async {
-                                                      _updatePay(
-                                                          _newTestRequestList[index]);
-                                                    },
-                                                    height:
-                                                    DM.p40,
-                                                    shape:
-                                                    const StadiumBorder(),
-                                                    color:
-                                                    appTheme,
-                                                    child:
-                                                    Text(
-                                                      "Pay",
-                                                      textAlign:
-                                                      TextAlign.center,
-                                                      style: TextStyle(
-                                                          color: fullWhiteColor,
-                                                          fontSize: DM.p13,
-                                                          fontWeight: FontWeight.bold),
-                                                    ),
-                                                  )
-                                                      : Text(
-                                                    "Not Paid",
-                                                    textAlign:
-                                                    TextAlign.center,
-                                                    style: TextStyle(
-                                                        fontWeight: FontWeight
-                                                            .w900,
-                                                        fontSize: DM
-                                                            .p10,
-                                                        color: Color.fromARGB(
-                                                            255,
-                                                            26,
-                                                            1,
-                                                            1)),
-                                                  ))
-                                            ],
-                                          ),
-                                        );
-                                      },
+                                                          1)))),
+                                        ],
+                                      ),
+                                    request.teststatus != 1
+                                        ? SizedBox(
+                                        width: DM.p80,
+                                        child: Text(
+                                            "${request.total_payable_pathology_cost}",
+                                            textAlign:
+                                            TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1))))
+                                        : SizedBox(
+                                        width: DM.p80,
+                                        child: Text("Processing",
+                                            textAlign:
+                                            TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)))),
+                                    request.teststatus != 1
+                                        ? SizedBox(
+                                        width: DM.p80,
+                                        child: Text(
+                                            "${request.total_payable_imagine_cost}",
+                                            textAlign:
+                                            TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1))))
+                                        : SizedBox(
+                                        width: DM.p80,
+                                        child: Text("Processing",
+                                            textAlign:
+                                            TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)))),
+                                    request.teststatus != 1
+                                        ? SizedBox(
+                                        width: DM.p80,
+                                        child: Text(
+                                            "${request.total_payable}",
+                                            textAlign:
+                                            TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1))))
+                                        : SizedBox(
+                                        width: DM.p80,
+                                        child: Text("Processing",
+                                            textAlign:
+                                            TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)))),
+                                    request.teststatus != 1
+                                        ? SizedBox(
+                                        width: DM.p80,
+                                        child: Text(
+                                            "${request.agent_commission}",
+                                            textAlign:
+                                            TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1))))
+                                        : SizedBox(
+                                        width: DM.p80,
+                                        child: Text("Processing",
+                                            textAlign:
+                                            TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)))),
+                                    request.teststatus != 1
+                                        ? SizedBox(
+                                        width: DM.p80,
+                                        child: Text(
+                                            "${request.total_agent_discount}",
+                                            textAlign:
+                                            TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1))))
+                                        : SizedBox(
+                                        width: DM.p80,
+                                        child: Text("Processing",
+                                            textAlign:
+                                            TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)))),
+                                    request.teststatus == 6
+                                        ? SizedBox(
+                                        width: DM.p80,
+                                        child: Text(
+                                            "${request.agent_commission - request.total_agent_discount}",
+                                            textAlign:
+                                            TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1))))
+                                        : SizedBox(
+                                        width: DM.p80,
+                                        child: Text("Processing",
+                                            textAlign:
+                                            TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)))),
+                                    SizedBox(
+                                        width: DM.p80,
+                                        child: Text(
+                                            createRequestController
+                                                .status[
+                                            request.teststatus]
+                                                .toString(),
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)))),
+                                    SizedBox(
+                                      width: DM.p80,
+                                      child: request.payment_date == 0
+                                          ? Text("NA",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontWeight:
+                                              FontWeight.w900,
+                                              fontSize: DM.p10,
+                                              color: Color.fromARGB(
+                                                  255, 26, 1, 1)))
+                                          : Text(
+                                          DateFormat('dd-MMM-yyyy').format(
+                                              DateTime.fromMillisecondsSinceEpoch(
+                                                  request
+                                                      .payment_date)),
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: DM.p10,
+                                              color: Color.fromARGB(255, 26, 1, 1))),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            )
-                                : Container(
-                                height: DM.screenHeight * 0.65,
-                                margin: EdgeInsets.symmetric(
-                                    vertical: DM.p16),
-                                child: Text(
-                                  "Request list empty ",
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: DM.p25,
-                                      color: appTheme),
-                                )))
-                            : SizedBox(),
-                      )
+                                    SizedBox(
+                                      width: DM.p80,
+                                      child: lastPaymentDate[request] == 0
+                                          ? Text("NA",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontWeight:
+                                              FontWeight.w900,
+                                              fontSize: DM.p10,
+                                              color: Color.fromARGB(
+                                                  255, 26, 1, 1)))
+                                          : Text(DateFormat('dd-MMM-yyyy').format(DateTime.fromMillisecondsSinceEpoch(lastPaymentDate[request]!)),
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontWeight:
+                                              FontWeight.w900,
+                                              fontSize: DM.p10,
+                                              color: Color.fromARGB(
+                                                  255, 26, 1, 1))),
+                                    ),
+                                    SizedBox(
+                                      width: DM.p80,
+                                      child: request.is_paid
+                                          ? Text("Paid",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontWeight:
+                                              FontWeight.w900,
+                                              fontSize: DM.p10,
+                                              color: Color.fromARGB(
+                                                  255, 26, 1, 1)))
+                                          : (type == "7" ||
+                                          phone == superUser)
+                                          ? MaterialButton(
+                                        onPressed: () async =>
+                                        await _updatePay(
+                                            request),
+                                        height: DM.p40,
+                                        shape:
+                                        const StadiumBorder(),
+                                        color: appTheme,
+                                        child: Text(
+                                          "Pay",
+                                          textAlign:
+                                          TextAlign.center,
+                                          style: TextStyle(
+                                              color:
+                                              fullWhiteColor,
+                                              fontSize: DM.p13,
+                                              fontWeight:
+                                              FontWeight
+                                                  .bold),
+                                        ),
+                                      )
+                                          : Text("Not Paid",
+                                          textAlign:
+                                          TextAlign.center,
+                                          style: TextStyle(
+                                              fontWeight:
+                                              FontWeight.w900,
+                                              fontSize: DM.p10,
+                                              color:
+                                              Color.fromARGB(
+                                                  255,
+                                                  26,
+                                                  1,
+                                                  1))),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          )
+                              : Center(
+                            child: Text(
+                              "Request list empty",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: DM.p25,
+                                  color: appTheme),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
+            // Summary metrics
             Container(
               margin: EdgeInsets.symmetric(horizontal: DM.p10),
               child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Divider(
-                      thickness: DM.p1,
-                      color: blackFontColor,
-                    ),
-                    Text(
-                      "Total Test Cost =  ${totalTestCost}",
-                      style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: DM.p15,
-                          color: Color.fromARGB(255, 26, 1, 1)),
-                    ),
-                  ]),
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: DM.p10),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Divider(
-                      thickness: DM.p1,
-                      color: blackFontColor,
-                    ),
-                    Text(
-                      "Total Earning =  ${totalEarning}/- Total Paid = ${totalPaidAmount}",
-                      style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: DM.p15,
-                          color: Color.fromARGB(255, 26, 1, 1)),
-                    ),
-                  ]),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Divider(thickness: DM.p1, color: blackFontColor),
+                  Text(
+                    "Total Invoice Quantity: ${_newTestRequestList.length}",
+                    style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: DM.p15,
+                        color: Color.fromARGB(255, 26, 1, 1)),
+                  ),
+                  Text(
+                    "Total Test Cost: $totalTestCost",
+                    style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: DM.p15,
+                        color: Color.fromARGB(255, 26, 1, 1)),
+                  ),
+                  Text(
+                    "Total Earning: $totalEarning / Total Paid: $totalPaidAmount",
+                    style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: DM.p15,
+                        color: Color.fromARGB(255, 26, 1, 1)),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
   }
-
-//Return String
 }
