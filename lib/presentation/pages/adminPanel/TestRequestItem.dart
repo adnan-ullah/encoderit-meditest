@@ -128,29 +128,31 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   bool radiologyDone = false;
 
   Future<void> _getTestItemList() async {
-    late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("$testModelApi/");
+    testItemList.clear();
+    testItemListWithSelected.clear();
 
-    DbrefTestModel.onValue.listen((event) {
-      testItemList.clear();
-      // testItemListWithSelected.clear();
+    List<String> paths = getLastSixMonthTestDataPaths();
 
-      for (DataSnapshot ds in event.snapshot.children) {
-        TestData testData =
-            TestData.fromJson(json.decode(jsonEncode(ds.value)));
+    for (String path in paths) {
+      DatabaseReference dbRef = FirebaseDatabase.instance.ref(path);
 
-        setState(() {
-          testItemList.add(testData);
-          if (testItemListWithSelected[testData.id] != true)
-            testItemListWithSelected[testData.id] = false;
-        });
-        print("HEREEEE");
+      final snapshot = await dbRef.get();
 
-        //false -> add button
-        //true -> remove button
+      if (snapshot.exists) {
+        for (DataSnapshot ds in snapshot.children) {
+          TestData testData = TestData.fromJson(json.decode(jsonEncode(ds.value)));
+
+          setState(() {
+            testItemList.add(testData);
+            testItemListWithSelected[testData.id] ??= false;
+          });
+        }
       }
-    });
+    }
+
+    print("Loaded ${testItemList.length} items from the last 6 months");
   }
+
 
   Future<void> getAdminUserList() async {
     late DatabaseReference DbrefTestModel;
@@ -491,8 +493,15 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   }
 
   Future<void> _updateRequest() async {
-    final currentTime = DateTime.now().millisecondsSinceEpoch;
-    final dbRef = FirebaseDatabase.instance.ref("$testRequestApi/");
+    int currentTime = DateTime.now().millisecondsSinceEpoch;
+
+    // Extract the year/month from the `dateofcreated` field
+    DateTime createdDate = DateTime.fromMillisecondsSinceEpoch(widget.testEachRequest?.dateofcreated ?? currentTime);
+    String year = createdDate.year.toString();
+    String month = getMonthName(createdDate.month);
+
+    String path = "$database_name/testRequest/$year/$month";
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref(path);
 
     admin_discount.text =
         admin_discount.text.isEmpty ? "0" : admin_discount.text;

@@ -25,30 +25,47 @@ class _TestItemListState extends State<TestItemList> {
   List<TestData> _filterTestItemsList = [];
 
   Future<void> getTestItemList() async {
-    _onLoading(true);
-    late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("$testModelApi/");
+    _onLoading(true);  // Show loading indicator
+
+    // Clear the lists before adding new data
+    _testItemsListAdmin.clear();
+    _filterTestItemsList.clear();
+
+    // Enable Firebase persistence for offline data
     FirebaseDatabase.instance.setPersistenceEnabled(true);
-    DbrefTestModel.keepSynced(true);
 
-    DbrefTestModel.onValue.listen((event) {
-      setState(() {
-        _testItemsListAdmin.clear();
-        _filterTestItemsList.clear();
-      });
+    // Get the paths for the last six months
+    List<String> paths = getLastSixMonthTestDataPaths();
 
-      for (DataSnapshot ds in event.snapshot.children) {
-        TestData testData =
-            TestData.fromJson(json.decode(jsonEncode(ds.value)));
+    try {
+      // Use Future.wait to fetch all months in parallel
+      await Future.wait(paths.map((path) async {
+        final dbRef = FirebaseDatabase.instance.ref(path);
+        dbRef.keepSynced(true);
 
-        setState(() {
-          _testItemsListAdmin.add(testData);
-          _filterTestItemsList.add(testData);
-        });
-      }
-      if (_testItemsListAdmin != null) _onLoading(false);
-    });
+        // Fetch data for each path
+        final snapshot = await dbRef.get();
+        if (snapshot.exists) {
+          for (DataSnapshot ds in snapshot.children) {
+            final testData = TestData.fromJson(json.decode(jsonEncode(ds.value)));
+
+            // Add data to lists
+            _testItemsListAdmin.add(testData);
+            _filterTestItemsList.add(testData);
+          }
+        }
+      }));
+
+      // Once all data is fetched, call setState() to update the UI
+      setState(() {});
+    } catch (e) {
+      // Handle errors in the process
+      print("Error fetching test items: $e");
+    } finally {
+      _onLoading(false);  // Hide loading indicator after fetching is complete
+    }
   }
+
 
   bool isYes = false;
   var isLoading = true;
@@ -131,15 +148,22 @@ class _TestItemListState extends State<TestItemList> {
     }
   }
 
-  Future<void> removeFromFirebase(testItemId) async {
-    DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("$testModelApi/");
-    
+  Future<void> removeFromFirebase(String testItemId) async {
+    List<String> paths = getLastSixMonthTestDataPaths();
 
-    if (testItemId != null) {
-      await DbrefTestReqModel.child(testItemId).remove();
+    for (String path in paths) {
+      DatabaseReference dbRef = FirebaseDatabase.instance.ref(path);
+
+      final snapshot = await dbRef.child(testItemId).get();
+
+      if (snapshot.exists) {
+        await dbRef.child(testItemId).remove();
+        print("Removed $testItemId from $path");
+        break; // Exit after removing from the first match
+      }
     }
   }
+
 
   CreateRequestController cr_controller = Get.put(CreateRequestController());
 

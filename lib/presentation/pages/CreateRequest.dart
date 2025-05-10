@@ -1440,28 +1440,33 @@ String? validateAge(String? value) {
 
 Future<void> getTestItemList() async {
   CreateRequestController createRequest_controller =
-      Get.put(CreateRequestController());
+  Get.put(CreateRequestController());
+
   late DatabaseReference _dbref_testModel;
-  _dbref_testModel = FirebaseDatabase.instance.ref("$testModelApi/");
+  List<String> paths = getLastSixMonthTestDataPaths();
+
   FirebaseDatabase.instance.setPersistenceEnabled(true);
-  _dbref_testModel.keepSynced(true);
 
-  createRequest_controller.testItemList.clear();
+  for (String path in paths) {
+    _dbref_testModel = FirebaseDatabase.instance.ref(path);
+    _dbref_testModel.keepSynced(true);
 
-  createRequest_controller.testItemListWithSelected.clear();
-  _dbref_testModel.onValue.listen((event) {
-    for (DataSnapshot ds in event.snapshot.children) {
-      TestData testData = TestData.fromJson(json.decode(jsonEncode(ds.value)));
+    createRequest_controller.testItemList.clear();
+    createRequest_controller.testItemListWithSelected.clear();
 
-      createRequest_controller.testItemList.add(testData);
-      createRequest_controller.testItemListWithSelected[testData.id] = false;
-      //false -> add button
-      //true -> remove button
+    _dbref_testModel.onValue.listen((event) {
+      for (DataSnapshot ds in event.snapshot.children) {
+        TestData testData = TestData.fromJson(json.decode(jsonEncode(ds.value)));
 
-      print(testData.name);
-    }
-  });
+        createRequest_controller.testItemList.add(testData);
+        createRequest_controller.testItemListWithSelected[testData.id] = false;
+
+        print(testData.name);
+      }
+    });
+  }
 }
+
 
 Future<void> getAdminNotification(phone, type, context) async {
   late DatabaseReference DbrefTestModel;
