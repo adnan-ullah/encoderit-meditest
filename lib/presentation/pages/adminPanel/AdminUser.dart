@@ -182,21 +182,19 @@ class AdminUser extends StatelessWidget {
                         child: ListView(
                           scrollDirection: Axis.horizontal,
                           children: [
-                            Expanded(
-                              child: Card(
-                                child: Container(
-                                  height: DM.screenHeight * 0.65,
-                                  width: DM.screenWidth * 1.2,
-                                  child: ListView.builder(
-                                    itemCount:
-                                    controller.filteredUsers.length,
-                                    itemBuilder: (context, index) {
-                                      final user =
-                                      controller.filteredUsers[index];
-                                      return _buildUserItem(
-                                          context, user);
-                                    },
-                                  ),
+                            Card(
+                              child: Container(
+                                height: DM.screenHeight * 0.65,
+                                width: DM.screenWidth * 1.2,
+                                child: ListView.builder(
+                                  itemCount:
+                                  controller.filteredUsers.length,
+                                  itemBuilder: (context, index) {
+                                    final user =
+                                    controller.filteredUsers[index];
+                                    return _buildUserItem(
+                                        context, user);
+                                  },
                                 ),
                               ),
                             ),
