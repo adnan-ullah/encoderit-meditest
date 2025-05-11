@@ -466,8 +466,8 @@ class _TestRequestCreateTypeThreeState
 
     final SharedPreferences pref = await SharedPreferences.getInstance();
 
-    final path1 = "files/${phone.text}/${imageFile1}";
-    final path2 = "files/${phone.text}/${imageFile2}";
+    final path1 = "$storageFiles/${phone.text}/${imageFile1}";
+    final path2 = "$storageFiles/${phone.text}/${imageFile2}";
 
     final ref1 = FirebaseStorage.instance.ref().child(path1);
     final ref2 = FirebaseStorage.instance.ref().child(path2);

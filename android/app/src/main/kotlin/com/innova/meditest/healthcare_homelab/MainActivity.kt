@@ -1,4 +1,4 @@
-package com.innova.meditest_new.healthcare_homelab
+package com.innova.meditest.healthcare_homelab
 
 import io.flutter.embedding.android.FlutterActivity
 

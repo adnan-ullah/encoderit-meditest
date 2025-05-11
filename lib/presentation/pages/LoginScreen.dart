@@ -34,21 +34,32 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   Future<void> getAdminUserList() async {
-    late DatabaseReference DbrefTestModel, superUserDatabase;
-    DbrefTestModel = FirebaseDatabase.instance.ref("$adminUserApi/");
-    FirebaseDatabase.instance.setPersistenceEnabled(true);
-    DbrefTestModel.keepSynced(true);
+    final dbRef = FirebaseDatabase.instance;
 
-    DbrefTestModel.onValue.listen((event) {
+    final adminUserRef = dbRef.ref("$database_name/admin_user");
+     FirebaseDatabase.instance.setPersistenceEnabled(true);
+    adminUserRef.keepSynced(true);
+    final adminUserEvent = await adminUserRef.once();
+    if (!adminUserEvent.snapshot.exists) {
+      await adminUserRef.set({});
+    }
+    adminUserRef.onValue.listen((event) {
+      adminUserList.clear(); // Optional
       for (DataSnapshot ds in event.snapshot.children) {
         AdminUserModel testData =
-            AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
+        AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
         adminUserList.add(testData);
       }
     });
 
-    superUserDatabase = FirebaseDatabase.instance.ref("$samratApi/");
-    superUserDatabase.onValue.listen((event) {
+    final superUserRef = dbRef.ref("$database_name/samrat");
+    final superUserEvent = await superUserRef.once();
+    if (!superUserEvent.snapshot.exists) {
+      await superUserRef.set({
+        "superUser": "111000222999"
+      });
+    }
+    superUserRef.onValue.listen((event) {
       for (DataSnapshot ds in event.snapshot.children) {
         superUser = ds.value.toString();
       }
@@ -135,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ElevatedButton(
               onPressed: () async {
                 final Uri _url = Uri.parse(
-                    "https://play.google.com/store/apps/details?id=com.innova.meditest_new");
+                    "https://play.google.com/store/apps/details?id=com.innova.meditest");
                 if (!await launchUrl(_url)) {
                   Get.snackbar('Error', 'Could not launch URL',
                       backgroundColor: redColor, colorText: whiteColor);

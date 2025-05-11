@@ -50,3 +50,7 @@ final adminUserApi =  "$database_name/admin_user";
 final categoryApi = "$database_name/category/";
 final costApi = "$database_name/cost/$currentYear/$monthName";
 final samratApi = "$database_name/samrat";
+
+
+//storage api
+const storageFiles = "new_files";
