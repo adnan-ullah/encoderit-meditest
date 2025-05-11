@@ -135,6 +135,10 @@ class _RequestListTabViewState extends State<RequestListTabView> {
       imageDiscountFile: requestItem.imageDiscountFile,
       prepared_by: requestItem.prepared_by,
       last_modifier: requestItem.last_modifier,
+      due_recieved:  requestItem.due_recieved,
+      due_recieve_date:  requestItem.due_recieve_date,
+      total_cash_recieve:  requestItem.total_cash_recieve,
+      reciever_name:  requestItem.reciever_name,
     );
 
     await dbRefTestReqModel

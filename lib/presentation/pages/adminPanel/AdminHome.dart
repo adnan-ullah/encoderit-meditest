@@ -9,6 +9,7 @@ import 'package:healthcare_homelab/presentation/pages/adminPanel/StatusRequestLi
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminSuperReport.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AgentReportList.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/CashReport.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/CollectionReportList.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -242,6 +243,17 @@ class _AdminHomeState extends State<AdminHome> {
                         final ref = await SharedPreferences.getInstance();
                         if (ref.getString("phoneNumber") == superUser || ref.getString("type") == "7") {
                           Get.to(() => AgentReportList());
+                        }
+                      },
+                    ),
+                  if (isAdmin)
+                    _buildButton(
+                      title: "Cash Report",
+                      icon: Icons.people,
+                      onPressed: () async {
+                        final ref = await SharedPreferences.getInstance();
+                        if (ref.getString("phoneNumber") == superUser || ref.getString("type") == "7") {
+                          Get.to(() => CashReportList());
                         }
                       },
                     ),

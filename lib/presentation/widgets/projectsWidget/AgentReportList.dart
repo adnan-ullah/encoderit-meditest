@@ -650,6 +650,14 @@ class _AgentReportListState extends State<AgentReportList> {
                           children: [
                             Container(
                                 width: DM.p80,
+                                child: Text("Date",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: DM.p10,
+                                        color: Color.fromARGB(255, 26, 1, 1)))),
+                            Container(
+                                width: DM.p80,
                                 child: Text("Invoice Call",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
@@ -796,6 +804,18 @@ class _AgentReportListState extends State<AgentReportList> {
                                   mainAxisAlignment:
                                   MainAxisAlignment.spaceBetween,
                                   children: [
+                                    Container(
+                                        width: DM.p80,
+                                        child: Text(
+                                            DateFormat('dd-MMM-yyyy').format(
+                                            DateTime.fromMillisecondsSinceEpoch(request.dateofcreated)),
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight.w900,
+                                                fontSize: DM.p10,
+                                                color: Color.fromARGB(
+                                                    255, 26, 1, 1)))),
                                     Container(
                                         width: DM.p80,
                                         child: Text(

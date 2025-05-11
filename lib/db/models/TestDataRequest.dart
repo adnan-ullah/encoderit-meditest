@@ -57,6 +57,8 @@ class TestDataRequest {
         this.last_modifier,
         this.due_recieved,
         this.prepared_by,
+        this.due_recieve_date,
+        this.total_cash_recieve
 
 
 
@@ -87,6 +89,8 @@ class TestDataRequest {
   final dynamic reciever_name;
   final dynamic last_modifier;
   final dynamic prepared_by;
+  final dynamic due_recieve_date;
+  final dynamic total_cash_recieve;
 
   dynamic due_recieved;
   dynamic advanced;
@@ -178,6 +182,9 @@ class TestDataRequest {
     'last_modifier':last_modifier,
     'due_recieved':due_recieved,
     'prepared_by':prepared_by,
+    'due_recieve_date':due_recieve_date,
+    'total_cash_recieve':total_cash_recieve,
+
   };
 
   factory TestDataRequest.fromJson(Map<String, dynamic> parsedJson) {
@@ -243,8 +250,8 @@ class TestDataRequest {
       last_modifier: parsedJson['last_modifier'],
       due_recieved: parsedJson['due_recieved'],
       prepared_by: parsedJson['prepared_by'],
-
-
+      due_recieve_date: parsedJson['due_recieve_date'],
+      total_cash_recieve: parsedJson['total_cash_recieve'],
     );
   }
 }
