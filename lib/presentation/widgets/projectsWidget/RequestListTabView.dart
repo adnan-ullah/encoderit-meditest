@@ -151,68 +151,78 @@ class _RequestListTabViewState extends State<RequestListTabView> {
     type = ref.getString("type");
     phone = ref.getString("phoneNumber");
 
-    _newTestRequestList.clear();
-    testStatusRequestList.clear();
+    List<String> paths = getLastThreeMonthTestRequestPaths();
 
-    List<String> lastThreeMonthsPaths = getLastThreeMonthTestRequestPaths();
+    for (String path in paths) {
+      DatabaseReference dbRef = FirebaseDatabase.instance.ref(path);
 
-    for (String path in lastThreeMonthsPaths) {
-      DatabaseReference _dbref_testReqModel = FirebaseDatabase.instance.ref(path);
-
-      await _dbref_testReqModel.once().then((DatabaseEvent event) {
-        if (!event.snapshot.exists) return;
-
-        for (DataSnapshot ds in event.snapshot.children) {
-          for (DataSnapshot dsLater in ds.children) {
-            TestDataRequest testData = TestDataRequest.fromJson(json.decode(jsonEncode(dsLater.value)));
-
-            /// DO NOT CHANGE THIS BUSINESS LOGIC BELOW
-            if (type == "4" && phone != superUser) {
-              if (testData.assigning == phone || testData.radiology_assigning == phone) {
-                if (widget.statusKey.toString() == "PRECOLLECTED") {
-                  if ((testData.pathology_done == true && testData.radiology_done == false) ||
-                      (testData.pathology_done == false && testData.radiology_done == true)) {
-                    testStatusRequestList.add(testData);
-                  }
-                } else if (widget.statusKey.toString() == "RECIEVED") {
-                  if (testData.pathology_done == false || testData.radiology_done == false) {
-                    testStatusRequestList.add(testData);
-                  }
-                } else {
-                  if (widget.statusKey.toString() == "COLLECTED") {
-                    if (testData.pathology_done == true && testData.radiology_done == true) {
-                      testStatusRequestList.add(testData);
-                    }
-                  } else {
-                    testStatusRequestList.add(testData);
-                  }
-                }
-              }
-            } else if (type == "3" && phone != superUser) {
-              if (widget.statusKey.toString() == "PRECOLLECTED") {
-                if ((testData.assigning != "" && testData.assigning != null && testData.assigning != "null") ||
-                    (testData.radiology_assigning != "" && testData.radiology_assigning != null && testData.radiology_assigning != "null")) {
-                  if (!(testData.pathology_done && testData.radiology_done))
-                    testStatusRequestList.add(testData);
-                }
-              } else if (widget.statusKey.toString() == "COLLECTED") {
-                if (testData.pathology_done != null && testData.radiology_done != null) {
-                  if (testData.pathology_done && testData.radiology_done) testStatusRequestList.add(testData);
-                }
-              } else {
-                testStatusRequestList.add(testData);
-              }
-            } else {
-              testStatusRequestList.add(testData);
-            }
-          }
-        }
-      });
+      if (path == paths.first) {
+        dbRef.onValue.listen((event) async{
+          testStatusRequestList.clear();
+          parseTestDataFromSnapshot(event.snapshot);
+        });
+      } else {
+        DataSnapshot snapshot = await dbRef.get();
+        parseTestDataFromSnapshot(snapshot);
+      }
     }
 
-    tabStatusList();
     _onLoading(false);
   }
+
+  void parseTestDataFromSnapshot(DataSnapshot snapshot) {
+    List<TestDataRequest> tempList = [];
+
+    for (DataSnapshot ds in snapshot.children) {
+      for (DataSnapshot dsLater in ds.children) {
+        TestDataRequest testData = TestDataRequest.fromJson(
+          json.decode(jsonEncode(dsLater.value)),
+        );
+
+        if (type == "4" && phone != superUser) {
+          if (testData.assigning == phone || testData.radiology_assigning == phone) {
+            if (widget.statusKey == "PRECOLLECTED") {
+              if ((testData.pathology_done == true && testData.radiology_done == false) ||
+                  (testData.pathology_done == false && testData.radiology_done == true)) {
+                tempList.add(testData);
+              }
+            } else if (widget.statusKey == "RECIEVED") {
+              if (!testData.pathology_done || !testData.radiology_done) {
+                tempList.add(testData);
+              }
+            } else if (widget.statusKey == "COLLECTED") {
+              if (testData.pathology_done && testData.radiology_done) {
+                tempList.add(testData);
+              }
+            } else {
+              tempList.add(testData);
+            }
+          }
+        } else if (type == "3" && phone != superUser) {
+          if (widget.statusKey == "PRECOLLECTED") {
+            if ((testData.assigning?.isNotEmpty == true && testData.assigning != "null") ||
+                (testData.radiology_assigning?.isNotEmpty == true && testData.radiology_assigning != "null")) {
+              if (!(testData.pathology_done && testData.radiology_done)) {
+                tempList.add(testData);
+              }
+            }
+          } else if (widget.statusKey == "COLLECTED") {
+            if (testData.pathology_done && testData.radiology_done) {
+              tempList.add(testData);
+            }
+          } else {
+            tempList.add(testData);
+          }
+        } else {
+          tempList.add(testData);
+        }
+      }
+    }
+
+    testStatusRequestList.addAll(tempList);
+    tabStatusList();
+  }
+
 
 
   Future getStoragePermission() async {

@@ -24,34 +24,43 @@ class RequestList extends StatefulWidget {
 
 class _RequestListState extends State<RequestList> {
   List<TestDataRequest> testDataEach = [];
-  late DatabaseReference _dbref_testReqModel;
   String? phoneNumber;
+  late DatabaseReference _dbref_testReqModel;
 
   Future<void> getPhoneData() async {
     _onLoading(true);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     phoneNumber = prefs.getString("phoneNumber")!;
+    List<String> monthPaths = getLastThreeMonthTestRequestPaths();
 
     setState(() {
       testDataEach.clear();
     });
+    List<DatabaseReference> refs = [];
+    for (String path in monthPaths) {
+      _dbref_testReqModel = FirebaseDatabase.instance.ref("$path/$phoneNumber/");
+      refs.add(_dbref_testReqModel);
 
-    List<String> lastThreeMonths = getLastThreeMonthTestRequestPaths();
-
-    for (String monthPath in lastThreeMonths) {
-      final dbRef = FirebaseDatabase.instance.ref("$monthPath/$phoneNumber/");
-      final snapshot = await dbRef.get();
-
-      if (snapshot.exists) {
-        for (DataSnapshot ds in snapshot.children) {
-          final testData = TestDataRequest.fromJson(json.decode(jsonEncode(ds.value)));
-          setState(() {
-            testDataEach.add(testData);
-          });
+      _dbref_testReqModel.onValue.listen((event) async {
+        List<TestDataRequest> tempData = [];
+        for (DataSnapshot ds in event.snapshot.children) {
+          try {
+            TestDataRequest testData =
+            TestDataRequest.fromJson(json.decode(jsonEncode(ds.value)));
+            tempData.add(testData);
+          } catch (e) {
+            print("Error parsing data: $e");
+          }
         }
-      }
+        setState(() {
+          testDataEach.removeWhere((item) => tempData.any((newItem) {
+            return item.toString() == newItem.toString();
+          }));
+          testDataEach.addAll(tempData);
+        });
+      });
     }
-
+    await Future.delayed(Duration(milliseconds: 500));
     _onLoading(false);
   }
 
@@ -291,12 +300,11 @@ class _RequestListState extends State<RequestList> {
 
 Future<void> _updateStatus(TestDataRequest requestItem) async {
   int currentTime = DateTime.now().millisecondsSinceEpoch;
-  List<String> paths = getLastThreeMonthTestRequestPaths();
-
-  if (requestItem.dateofcreated < DateTime.now().subtract(Duration(days: 90)).millisecondsSinceEpoch) {
-    print("This item is older than 3 months, update will not be performed.");
-    return;
-  }
+  DateTime createdDate = DateTime.fromMillisecondsSinceEpoch(requestItem.dateofcreated ?? currentTime);
+  String year = createdDate.year.toString();
+  String month = getMonthName(createdDate.month);
+  String path = "$database_name/testRequest/$year/$month";
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref(path);
 
   TestDataRequest updateTestRequestItem = TestDataRequest(
     id: requestItem.id,
@@ -351,23 +359,9 @@ Future<void> _updateStatus(TestDataRequest requestItem) async {
     imageDiscountFile: requestItem.imageDiscountFile,
   );
 
-  await Future.wait(paths.map((path) async {
-    final dbRef = FirebaseDatabase.instance.ref(path);
-    dbRef.keepSynced(true);
-
-    final snapshot = await dbRef.get();
-    if (snapshot.exists) {
-      for (DataSnapshot ds in snapshot.children) {
-        if (ds.key == updateTestRequestItem.id) {
-          await dbRef
-              .child(updateTestRequestItem.id)
-              .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
-          print("Updated item with ID: ${updateTestRequestItem.id}");
-        }
-      }
-    }
-  }));
-
-  print("Update performed successfully for ${updateTestRequestItem.id}");
+  await dbRef
+      .child(updateTestRequestItem.mobile)
+      .child(updateTestRequestItem.id)
+      .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
 }
 
