@@ -8,8 +8,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/api.dart';
-import 'package:healthcare_homelab/presentation/widgets/otherWidgets/MyDialogView.dart';
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestListDialogueAdmin.dart';
+import 'package:healthcare_homelab/presentation/widgets/otherWidgets/MyDialogView.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/FormUserAge.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -92,7 +92,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   List<AdminUserModel> adminUserList = [];
   List<TestData> testData_updated = [];
 
-  final Map<String, bool> testItemListWithSelected = {};
+  Map<String, bool> testItemListWithSelected = {};
   var totalTestCost = 0;
   var totalCost = 0;
   var serviceCost = 0;
@@ -132,27 +132,27 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     testItemListWithSelected.clear();
 
     List<String> paths = getLastSixMonthTestDataPaths();
+    List<TestData> allItems = [];
 
     for (String path in paths) {
-      DatabaseReference dbRef = FirebaseDatabase.instance.ref(path);
-
+      final dbRef = FirebaseDatabase.instance.ref(path);
       final snapshot = await dbRef.get();
 
       if (snapshot.exists) {
         for (DataSnapshot ds in snapshot.children) {
-          TestData testData = TestData.fromJson(json.decode(jsonEncode(ds.value)));
-
-          setState(() {
-            testItemList.add(testData);
-            testItemListWithSelected[testData.id] ??= false;
-          });
+          Map<String, dynamic> json = jsonDecode(jsonEncode(ds.value));
+          json['id'] = ds.key;
+          final item = TestData.fromJson(json);
+          if (!allItems.any((e) => e.id == item.id)) {
+            setState(() {
+              testItemList.add(item);
+              testItemListWithSelected[item.id] ??= false;
+            });
+          }
         }
       }
     }
-
-    print("Loaded ${testItemList.length} items from the last 6 months");
   }
-
 
   Future<void> getAdminUserList() async {
     late DatabaseReference DbrefTestModel;

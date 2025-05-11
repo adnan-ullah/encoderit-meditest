@@ -92,7 +92,7 @@ class _TestRequestCreateTypeThreeState
   List<AdminUserModel> adminUserList = [];
   List<TestData> testData_updated = [];
 
-  final Map<String, bool> testItemListWithSelected = {};
+   Map<String, bool> testItemListWithSelected = {};
 
   var totalTestCost = 0;
 
@@ -138,25 +138,28 @@ class _TestRequestCreateTypeThreeState
   Future<void> _getTestItemList() async {
     testItemList.clear();
     testItemListWithSelected.clear();
+
     List<String> paths = getLastSixMonthTestDataPaths();
+    List<TestData> allItems = [];
 
     for (String path in paths) {
-      DatabaseReference dbRef = FirebaseDatabase.instance.ref(path);
-
+      final dbRef = FirebaseDatabase.instance.ref(path);
       final snapshot = await dbRef.get();
 
       if (snapshot.exists) {
         for (DataSnapshot ds in snapshot.children) {
-          TestData testData = TestData.fromJson(json.decode(jsonEncode(ds.value)));
-
-          setState(() {
-            testItemList.add(testData);
-            testItemListWithSelected[testData.id] ??= false;
-          });
+          Map<String, dynamic> json = jsonDecode(jsonEncode(ds.value));
+          json['id'] = ds.key;
+          final item = TestData.fromJson(json);
+          if (!allItems.any((e) => e.id == item.id)) {
+            setState(() {
+              testItemList.add(item);
+              testItemListWithSelected[item.id] ??= false;
+            });
+          }
         }
       }
     }
-    print("Loaded ${testItemList.length} items from the last 6 months");
   }
 
 

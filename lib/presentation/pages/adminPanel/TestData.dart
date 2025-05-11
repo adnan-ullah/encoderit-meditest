@@ -50,43 +50,41 @@ class _TestDataCreateState extends State<TestDataCreate> {
   }
 
   Future<void> updateToFirebase() async {
-    int currentTime = DateTime.now().millisecondsSinceEpoch;
-    late DatabaseReference dbrefTestReqModel;
-
-    // Get the last 6 months' paths for updating the data.
-    List<String> paths = getLastSixMonthTestDataPaths();
-
-    // Create the updated TestData object.
-    updatedTestItemData = TestData(
-      id: widget.testItem!.id.toString(),
-      name: name.text.toString(),
-      servicecharge: servicecharge.text.toString(),
-      lastupdate: currentTime.toString(),
-      softdelete: softdelete.text.toString(),
-      diagnostic_center: diagnostic_center.text.toString(),
-      discount: discount.text.toString(),
-      niddle_cost: niddle_cost.text.toString(),
-      testkitprice: testkitprice.text.toString(),
-      testprice: testprice.text.toString(),
-      transport_cost: transport_cost.text.toString(),
+    // Create the updated TestData object
+    final updatedTestItemData = TestData(
+      id: widget.testItem!.id,
+      name: name.text,
+      servicecharge: servicecharge.text,
+      lastupdate: DateTime.now().millisecondsSinceEpoch.toString(),
+      softdelete: softdelete.text,
+      diagnostic_center: diagnostic_center.text,
+      discount: discount.text,
+      niddle_cost: niddle_cost.text,
+      testkitprice: testkitprice.text,
+      testprice: testprice.text,
+      transport_cost: transport_cost.text,
       b2b_cost: b2b_cost.text,
       is_payable: is_payable,
       category: createReqController.toCategory[category]!,
     );
 
-    // Loop through paths to update in the correct path.
-    for (String path in paths) {
-      dbrefTestReqModel = FirebaseDatabase.instance.ref(path);
+    List<String> paths = getLastSixMonthTestDataPaths();
+    bool updated = false;
 
-      // Update the TestData item in the corresponding path.
-      await dbrefTestReqModel
-          .child(updatedTestItemData.id)
-          .update(jsonDecode(jsonEncode(updatedTestItemData)))
-          .then((_) {
-        print("Updated test item at path: $path");
-      }).catchError((error) {
-        print("Failed to update test item: $error");
-      });
+    for (String path in paths) {
+      DatabaseReference dbRef = FirebaseDatabase.instance.ref("$path/${updatedTestItemData.id}");
+
+      // Check if the item exists
+      final snapshot = await dbRef.get();
+      if (snapshot.exists) {
+        await dbRef.update(jsonDecode(jsonEncode(updatedTestItemData)));
+        print("Updated test item at path: $path/${updatedTestItemData.id}");
+        updated = true;
+      }
+    }
+
+    if (!updated) {
+      print("No test item with ID ${updatedTestItemData.id} found in any path");
     }
   }
 
@@ -94,8 +92,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
   Future<void> insertNewTestItemMethod() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     DatabaseReference _dbrefTestModel;
-
-    List<String> paths = getLastSixMonthTestDataPaths();
+    _dbrefTestModel = FirebaseDatabase.instance.ref("$testModelApi/");
 
     TestData inserNewTestItem = TestData(
       id: Uuid().v4(),
@@ -114,18 +111,13 @@ class _TestDataCreateState extends State<TestDataCreate> {
       category: createReqController.toCategory[category],
     );
 
-    for (String path in paths) {
-      _dbrefTestModel = FirebaseDatabase.instance.ref(path);
-
       await _dbrefTestModel
           .child(inserNewTestItem.id)
           .set(inserNewTestItem.toJson())
           .then((_) {
-        print("Inserted new test item at path: $path");
       }).catchError((error) {
         print("Failed to insert new test item: $error");
       });
-    }
   }
 
   @override
