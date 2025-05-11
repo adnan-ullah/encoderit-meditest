@@ -338,7 +338,7 @@ class _AgentReportListState extends State<AgentReportList> {
                   'Status',
                   'Pay Date',
                   'Last Pay',
-                  'Collect',
+                  'Payment',
                 ],
                 data: _newTestRequestList.map((item) {
                   return [
@@ -771,7 +771,7 @@ class _AgentReportListState extends State<AgentReportList> {
                                         color: Color.fromARGB(255, 1, 1, 1)))),
                             Container(
                                 width: DM.p80,
-                                child: Text("Collection",
+                                child: Text("Payment",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                         fontWeight: FontWeight.w900,
