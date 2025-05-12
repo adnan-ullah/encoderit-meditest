@@ -246,13 +246,13 @@ class _AdminHomeState extends State<AdminHome> {
                         }
                       },
                     ),
-                  if (isAdmin)
+                  if (isAdmin || isAgent)
                     _buildButton(
                       title: "Cash Report",
                       icon: Icons.people,
                       onPressed: () async {
                         final ref = await SharedPreferences.getInstance();
-                        if (ref.getString("phoneNumber") == superUser || ref.getString("type") == "7") {
+                        if (ref.getString("phoneNumber") == superUser || ref.getString("type") == "3" || ref.getString("type") == "4" || ref.getString("type") == "7" ) {
                           Get.to(() => CashReportList());
                         }
                       },

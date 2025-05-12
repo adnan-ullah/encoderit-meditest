@@ -112,10 +112,13 @@ class _TestRequestCreateTypeThreeState
   var total_payable_item = 0;
   var total_unpayable_item = 0;
 
+  var totalCashRecieve = 0;
+
   var urlDownload1;
   var urlDownload2;
 
   var newRequestData;
+  var paymentDate;
 
   bool isFromNetwork1 = false;
   bool isFromNetwork2 = false;
@@ -516,8 +519,14 @@ class _TestRequestCreateTypeThreeState
         teststatus.text = (pathologyDone && radiologyDone) ? "3" : "8";
       }
 
-      TestDataRequest buildRequest(
-          {String? receiverName, String? preparedBy, String? lastModifier}) {
+      TestDataRequest buildRequest({
+        String? due_recieved_by,
+        String? advance_recieved_by,
+        String? preparedBy,
+        String? lastModifier,
+        int? dueReceivedDate,
+        int? paymentDate,
+      })  {
         return TestDataRequest(
           id: widget.testEachRequest!.id!,
           name: name.text,
@@ -561,7 +570,7 @@ class _TestRequestCreateTypeThreeState
           is_paid: false,
           total_unpayable_imagine: total_unpayable_imaging,
           total_unpayable_pathology: total_unpayable_pathology,
-          payment_date: 0,
+          payment_date: paymentDate ?? widget.testEachRequest?.payment_date,
           pathology_done: pathologyDone,
           radiology_done: radiologyDone,
           assigning: pathologyAssigningPhone.toString(),
@@ -569,10 +578,16 @@ class _TestRequestCreateTypeThreeState
           assigning_commission: int.parse(assigning_commission.text),
           radiology_assigning_commission:
           int.parse(radiology_assigning_commission.text),
-          reciever_name: receiverName ?? widget.testEachRequest?.reciever_name,
+          due_recieved_by:
+          due_recieved_by ?? widget.testEachRequest?.due_recieved_by,
+          advance_recieved_by:
+          advance_recieved_by ?? widget.testEachRequest?.advance_recieved_by,
           prepared_by: preparedBy ?? widget.testEachRequest?.prepared_by,
           due_recieved: int.tryParse(due_recieved.text.trim()) ?? 0,
           last_modifier: lastModifier ?? widget.testEachRequest?.last_modifier,
+          due_recieve_date:
+          dueReceivedDate ?? widget.testEachRequest?.due_recieve_date,
+          total_cash_recieve: totalCashRecieve,
         );
       }
 
@@ -581,9 +596,38 @@ class _TestRequestCreateTypeThreeState
 
       String? preparedBy = widget.testEachRequest!.prepared_by;
       String? lastModifier = widget.testEachRequest!.last_modifier;
-      String? receiverName = widget.testEachRequest!.reciever_name;
+      final testStatus = widget.testEachRequest!.teststatus;
+      final isCollectingPage = testStatus == 2 || testStatus == 8;
 
-// update preparedBy or lastModifier first
+      final originalPaymentDate = widget.testEachRequest!.payment_date ?? 0;
+      final originalDueReceivedDate =
+          widget.testEachRequest!.due_recieve_date ?? 0;
+
+      final updatedAdvanced = int.tryParse(advanced.text) ?? 0;
+      final updatedDueReceived = int.tryParse(due_recieved.text) ?? 0;
+
+      int tempPaymentDate = originalPaymentDate;
+      int tempDueReceivedDate = originalDueReceivedDate;
+
+      String? advanceReceiverName = widget.testEachRequest!.advance_recieved_by;
+      String? dueReceiverName = widget.testEachRequest!.due_recieved_by;
+      ;
+
+      final isAdvanceReceiverUntracked =
+          (widget.testEachRequest!.payment_date == null ||
+              widget.testEachRequest!.payment_date == 0) &&
+              updatedAdvanced > 0;
+
+      if (isCollectingPage && isAdvanceReceiverUntracked) {
+        tempPaymentDate = currentTime;
+        advanceReceiverName = phoneNumber;
+      }
+
+      if (isCollectingPage && updatedDueReceived > 0) {
+        tempDueReceivedDate = currentTime;
+        dueReceiverName = phoneNumber;
+      }
+
       if (widget.testEachRequest!.prepared_by == null ||
           widget.testEachRequest!.prepared_by!.isEmpty) {
         preparedBy = loggedUserName;
@@ -591,23 +635,25 @@ class _TestRequestCreateTypeThreeState
           widget.testEachRequest!, updateTestRequestItem)) {
         lastModifier = loggedUserName;
       }
+      //
+      // if (widget.testEachRequest?.teststatus != 1 &&
+      //     (widget.testEachRequest?.teststatus ?? 0) <= 5 ||
+      //     widget.testEachRequest?.teststatus == 8) {
+      //   dueRecieverName = loggedUserName;
+      // }
 
-// update receiverName if teststatus == 2
-      if (widget.testEachRequest!.teststatus == 2) {
-        receiverName = loggedUserName;
-      }
-
-// finally build once
       updateTestRequestItem = buildRequest(
         preparedBy: preparedBy,
         lastModifier: lastModifier,
-        receiverName: receiverName,
+        advance_recieved_by: advanceReceiverName,
+        due_recieved_by: dueReceiverName,
+        dueReceivedDate: tempDueReceivedDate,
+        paymentDate: tempPaymentDate,
       );
 
-// print invoice if needed
-      if (widget.testEachRequest!.teststatus == 2) {
+      if (testStatus == 2 || testStatus == 8) {
         InvoicePrint(
-            updateTestRequestItem, totalDiscount, due_amount, advanced, tubeCost);
+            updateTestRequestItem, totalDiscount, due_amount, advanced, tubeCost,assigningMapping);
       }
 
       await dbRef
@@ -618,69 +664,71 @@ class _TestRequestCreateTypeThreeState
       Get.back();
     }
 
-    bool isTestRequestModified(
-        TestDataRequest oldRequest, TestDataRequest newRequest) {
-      return oldRequest.name != newRequest.name ||
-          oldRequest.gender != newRequest.gender ||
-          oldRequest.mobile != newRequest.mobile ||
-          oldRequest.age != newRequest.age ||
-          oldRequest.testlist != newRequest.testlist ||
-          oldRequest.totalprice != newRequest.totalprice ||
-          oldRequest.servicecharge != newRequest.servicecharge ||
-          oldRequest.address != newRequest.address ||
-          oldRequest.referrer != newRequest.referrer ||
-          oldRequest.lastupdate != newRequest.lastupdate ||
-          oldRequest.softdelete != newRequest.softdelete ||
-          oldRequest.latitude != newRequest.latitude ||
-          oldRequest.longitude != newRequest.longitude ||
-          // teststatus is intentionally skipped
-          oldRequest.invoice_call != newRequest.invoice_call ||
-          oldRequest.type != newRequest.type ||
-          oldRequest.image_one != newRequest.image_one ||
-          oldRequest.image_two != newRequest.image_two ||
-          oldRequest.delivery_date != newRequest.delivery_date ||
-          oldRequest.comments != newRequest.comments ||
-          oldRequest.advanced != newRequest.advanced ||
-          oldRequest.due_amount != newRequest.due_amount ||
-          oldRequest.total_admin_discount != newRequest.total_admin_discount ||
-          oldRequest.total_agent_discount != newRequest.total_agent_discount ||
-          oldRequest.test_item_cost != newRequest.test_item_cost ||
-          oldRequest.test_item_discount != newRequest.test_item_discount ||
-          oldRequest.total_discount != newRequest.total_discount ||
-          oldRequest.total_payable_imagine_cost !=
-              newRequest.total_payable_imagine_cost ||
-          oldRequest.total_payable_pathology_cost !=
-              newRequest.total_payable_pathology_cost ||
-          oldRequest.total_payable != newRequest.total_payable ||
-          oldRequest.total_unpayable != newRequest.total_unpayable ||
-          oldRequest.admin_pathology_discount !=
-              newRequest.admin_pathology_discount ||
-          oldRequest.admin_radiology_discount !=
-              newRequest.admin_radiology_discount ||
-          oldRequest.agent_commission != newRequest.agent_commission ||
-          oldRequest.agent_pathology_discount !=
-              newRequest.agent_pathology_discount ||
-          oldRequest.agent_radiology_discount !=
-              newRequest.agent_radiology_discount ||
-          oldRequest.area != newRequest.area ||
-          oldRequest.is_paid != newRequest.is_paid ||
-          oldRequest.total_unpayable_imagine !=
-              newRequest.total_unpayable_imagine ||
-          oldRequest.total_unpayable_pathology !=
-              newRequest.total_unpayable_pathology ||
-          oldRequest.payment_date != newRequest.payment_date ||
-          oldRequest.pathology_done != newRequest.pathology_done ||
-          oldRequest.radiology_done != newRequest.radiology_done ||
-          oldRequest.assigning != newRequest.assigning ||
-          oldRequest.radiology_assigning != newRequest.radiology_assigning ||
-          oldRequest.assigning_commission != newRequest.assigning_commission ||
-          oldRequest.radiology_assigning_commission !=
-              newRequest.radiology_assigning_commission ||
-          oldRequest.imageDiscountFile != newRequest.imageDiscountFile ||
-          oldRequest.reciever_name != newRequest.reciever_name ||
-          oldRequest.last_modifier != newRequest.last_modifier ||
-          oldRequest.due_recieved != newRequest.due_recieved;
-    }
+  bool isTestRequestModified(
+      TestDataRequest oldRequest, TestDataRequest newRequest) {
+    return oldRequest.name != newRequest.name ||
+        oldRequest.gender != newRequest.gender ||
+        oldRequest.mobile != newRequest.mobile ||
+        oldRequest.age != newRequest.age ||
+        oldRequest.testlist != newRequest.testlist ||
+        oldRequest.totalprice != newRequest.totalprice ||
+        oldRequest.servicecharge != newRequest.servicecharge ||
+        oldRequest.address != newRequest.address ||
+        oldRequest.referrer != newRequest.referrer ||
+        oldRequest.lastupdate != newRequest.lastupdate ||
+        oldRequest.softdelete != newRequest.softdelete ||
+        oldRequest.latitude != newRequest.latitude ||
+        oldRequest.longitude != newRequest.longitude ||
+        // teststatus is intentionally skipped
+        oldRequest.invoice_call != newRequest.invoice_call ||
+        oldRequest.type != newRequest.type ||
+        oldRequest.image_one != newRequest.image_one ||
+        oldRequest.image_two != newRequest.image_two ||
+        oldRequest.delivery_date != newRequest.delivery_date ||
+        oldRequest.comments != newRequest.comments ||
+        oldRequest.advanced != newRequest.advanced ||
+        oldRequest.due_amount != newRequest.due_amount ||
+        oldRequest.total_admin_discount != newRequest.total_admin_discount ||
+        oldRequest.total_agent_discount != newRequest.total_agent_discount ||
+        oldRequest.test_item_cost != newRequest.test_item_cost ||
+        oldRequest.test_item_discount != newRequest.test_item_discount ||
+        oldRequest.total_discount != newRequest.total_discount ||
+        oldRequest.total_payable_imagine_cost !=
+            newRequest.total_payable_imagine_cost ||
+        oldRequest.total_payable_pathology_cost !=
+            newRequest.total_payable_pathology_cost ||
+        oldRequest.total_payable != newRequest.total_payable ||
+        oldRequest.total_unpayable != newRequest.total_unpayable ||
+        oldRequest.admin_pathology_discount !=
+            newRequest.admin_pathology_discount ||
+        oldRequest.admin_radiology_discount !=
+            newRequest.admin_radiology_discount ||
+        oldRequest.agent_commission != newRequest.agent_commission ||
+        oldRequest.agent_pathology_discount !=
+            newRequest.agent_pathology_discount ||
+        oldRequest.agent_radiology_discount !=
+            newRequest.agent_radiology_discount ||
+        oldRequest.area != newRequest.area ||
+        oldRequest.is_paid != newRequest.is_paid ||
+        oldRequest.total_unpayable_imagine !=
+            newRequest.total_unpayable_imagine ||
+        oldRequest.total_unpayable_pathology !=
+            newRequest.total_unpayable_pathology ||
+        oldRequest.payment_date != newRequest.payment_date ||
+        oldRequest.pathology_done != newRequest.pathology_done ||
+        oldRequest.radiology_done != newRequest.radiology_done ||
+        oldRequest.assigning != newRequest.assigning ||
+        oldRequest.radiology_assigning != newRequest.radiology_assigning ||
+        oldRequest.assigning_commission != newRequest.assigning_commission ||
+        oldRequest.radiology_assigning_commission !=
+            newRequest.radiology_assigning_commission ||
+        oldRequest.imageDiscountFile != newRequest.imageDiscountFile ||
+        oldRequest.due_recieved_by != newRequest.due_recieved_by ||
+        oldRequest.last_modifier != newRequest.last_modifier ||
+        oldRequest.due_recieved != newRequest.due_recieved ||
+        oldRequest.due_recieve_date != newRequest.due_recieve_date ||
+        oldRequest.total_cash_recieve != newRequest.total_cash_recieve;
+  }
 
   void calculationProcess() {
     totalTestCost = 0;
@@ -715,7 +763,8 @@ class _TestRequestCreateTypeThreeState
         .toString();
 
     totalDiscount = totalDiscount + int.parse(admin_discount.text.toString());
-    totalDueRecieved = totalDueRecieved + int.parse(due_recieved.text.toString());
+    totalDueRecieved =totalDueRecieved + int.parse(due_recieved.text.toString());
+
 
     //agent
 
@@ -779,7 +828,9 @@ class _TestRequestCreateTypeThreeState
       }
     }).toList();
 
-    totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount + totalDueRecieved;
+    totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
+
+
 
     //totalCost = totalTestCost  + serviceCost - totalDiscount;
 
@@ -789,9 +840,11 @@ class _TestRequestCreateTypeThreeState
     total_payable_item = total_payable_pathology + total_payable_imaging;
     total_unpayable_item = total_unpayable_pathology + total_unpayable_imaging;
 
-    if (advanced.text != null && advanced.text.isNotEmpty) {
-      due_amount.text =
-          (totalCost - int.parse(advanced.text.toString())).toString();
+    if (advanced.text.isNotEmpty || due_recieved.text.isNotEmpty) {
+      due_amount.text = (totalCost -
+          int.parse(advanced.text.toString()) -
+          int.parse(due_recieved.text.toString()))
+          .toString();
     }
     if (testData_updated.length == 0) {
       totalDiscount = 0;
@@ -800,6 +853,8 @@ class _TestRequestCreateTypeThreeState
     }
 
     total_discount.text = totalDiscount.toString();
+    totalCashRecieve = totalDueRecieved + int.parse(advanced.text.toString());
+
 
     adminUserList.map((e) {
       if (e.referrer_code !=null && e.referrer_code.contains(referrer.text.toString())) {
@@ -885,7 +940,7 @@ class _TestRequestCreateTypeThreeState
             test_item_discount + int.parse(testItem.discount.toString());
       }).toList();
 
-      totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount + totalDueRecieved;
+      totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
       // totalCost = totalTestCost  + tubeCost ;
       //totalCost = totalTestCost  + serviceCost - totalDiscount;
 
@@ -893,8 +948,10 @@ class _TestRequestCreateTypeThreeState
       //totaltestprice.text = totalTestCost.toString();
       servicecharge.text = serviceCost.toString();
       test_item_cost = totalTestCost;
-      due_amount.text =
-          (totalCost - int.parse(advanced.text.toString())).toString();
+      due_amount.text = (totalCost -
+          int.parse(advanced.text.toString()) -
+          int.parse(due_recieved.text.toString()))
+          .toString();
 
       if (testData_updated.length == 0) {
         totalDiscount = 0;
@@ -903,6 +960,8 @@ class _TestRequestCreateTypeThreeState
       }
 
       total_discount.text = totalDiscount.toString();
+      totalCashRecieve = totalDueRecieved + int.parse(advanced.text.toString());
+
 
       adminUserList.map((e) {
         if (e.referrer_code !=null && e.referrer_code.contains(referrer.text.toString())) {
@@ -2824,13 +2883,16 @@ class _TestRequestCreateTypeThreeState
                                   child: TextFormField(
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
-                                      if (advanced.text != null &&
-                                          advanced.text.isNotEmpty) {
-                                        due_amount.text = (totalCost -
-                                                int.parse(
-                                                    advanced.text.toString()))
-                                            .toString();
-                                      }
+                                      int advance = advanced.text.isNotEmpty
+                                          ? int.parse(advanced.text)
+                                          : 0;
+                                      int dueRecieved =
+                                      due_recieved.text.isNotEmpty
+                                          ? int.parse(due_recieved.text)
+                                          : 0;
+                                      due_amount.text =
+                                          (totalCost - advance - dueRecieved)
+                                              .toString();
                                     },
                                     controller: advanced,
                                     decoration: InputDecoration(
@@ -2867,7 +2929,7 @@ class _TestRequestCreateTypeThreeState
                           textInputType: TextInputType.name,
                           controller: due_amount,
                           title: "Due Amount",
-                          value: "${totalCost - int.parse(advanced.text)}",
+                          value:   "${totalCost - int.parse(advanced.text) - int.parse(due_recieved.text)}",
                           activate: true,
                         ),
 
@@ -2879,7 +2941,10 @@ class _TestRequestCreateTypeThreeState
                           value: "0",
                           activate: true,
                         ),
-                        widget.testEachRequest?.teststatus<=5?
+                        widget.testEachRequest?.teststatus != 1 &&
+                            (widget.testEachRequest?.teststatus <= 5 ||
+                                widget.testEachRequest?.teststatus == 8)
+                            ?
                         Padding(
                           padding: EdgeInsets.all(DM.p5),
                           child: Row(
@@ -2909,12 +2974,18 @@ class _TestRequestCreateTypeThreeState
                                   child: TextFormField(
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
-                                      if (due_recieved.text.isNotEmpty) {
-                                        totalprice.text = (totalCost +
-                                            int.parse(due_recieved.text
-                                                .toString()))
-                                            .toString();
-                                      }
+                                      int advance =
+                                      advanced.text.isNotEmpty
+                                          ? int.parse(advanced.text)
+                                          : 0;
+                                      int dueRecieved = due_recieved
+                                          .text.isNotEmpty
+                                          ? int.parse(due_recieved.text)
+                                          : 0;
+                                      due_amount.text = (totalCost -
+                                          advance -
+                                          dueRecieved)
+                                          .toString();
                                     },
                                     controller: due_recieved,
                                     decoration: InputDecoration(
@@ -3309,7 +3380,7 @@ class _TestRequestCreateTypeThreeState
                     onPressed: () async {
                       if (_formKey.currentState?.validate() == true) {
                         if (await chechkingInternet()) {
-                          if (widget.testEachRequest!.teststatus == 2) {
+                          if (widget.testEachRequest!.teststatus == 2 ||  widget.testEachRequest!.teststatus == 8) {
                             showDialog(
                                 context: context,
                                 builder: (context) {
@@ -3853,7 +3924,7 @@ String? validateString(String? value) {
 }
 
 Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
-    due_amount, advanced, tubeCost) async {
+    due_amount, advanced, tubeCost, assigningMapping) async {
   final date = DateTime.now().millisecondsSinceEpoch;
 
   final invoice = Invoice(
@@ -3879,9 +3950,10 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
         collection_charge: testDataRequest.servicecharge,
         tube_cost: tubeCost,
         deliveryDate: testDataRequest.delivery_date,
-        reciever_name: testDataRequest.reciever_name,
+        reciever_name: assigningMapping[testDataRequest.due_recieved_by],
         last_modifier: testDataRequest.last_modifier,
-        prepared_by: testDataRequest.prepared_by),
+        prepared_by: testDataRequest.prepared_by,
+        totalCashRecieved: testDataRequest.total_cash_recieve),
 
     info: InvoiceInfo(
       date: DateTime.now(),

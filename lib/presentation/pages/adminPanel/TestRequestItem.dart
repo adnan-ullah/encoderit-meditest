@@ -107,10 +107,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   var total_unpayable_imaging = 0;
   var total_payable_item = 0;
   var total_unpayable_item = 0;
+  var totalCashRecieve = 0;
   var urlDownload1;
   var urlDownload2;
   var urlDownload3;
   var newRequestData;
+  var paymentDate;
   bool isFromNetwork1 = false;
   bool isFromNetwork2 = false;
   bool isFromNetwork_discount = false;
@@ -156,8 +158,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
   Future<void> getAdminUserList() async {
     late DatabaseReference DbrefTestModel;
-    DbrefTestModel =
-        FirebaseDatabase.instance.ref("$adminUserApi/");
+    DbrefTestModel = FirebaseDatabase.instance.ref("$adminUserApi/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
     DbrefTestModel.keepSynced(true);
 
@@ -495,8 +496,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   Future<void> _updateRequest() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
 
-    // Extract the year/month from the `dateofcreated` field
-    DateTime createdDate = DateTime.fromMillisecondsSinceEpoch(widget.testEachRequest?.dateofcreated ?? currentTime);
+    DateTime createdDate = DateTime.fromMillisecondsSinceEpoch(
+        widget.testEachRequest?.dateofcreated ?? currentTime);
     String year = createdDate.year.toString();
     String month = getMonthName(createdDate.month);
 
@@ -516,8 +517,14 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       teststatus.text = (pathologyDone && radiologyDone) ? "3" : "8";
     }
 
-    TestDataRequest buildRequest(
-        {String? receiverName, String? preparedBy, String? lastModifier}) {
+    TestDataRequest buildRequest({
+      String? due_recieved_by,
+      String? advance_recieved_by,
+      String? preparedBy,
+      String? lastModifier,
+      int? dueReceivedDate,
+      int? paymentDate,
+    }) {
       return TestDataRequest(
         id: widget.testEachRequest!.id!,
         name: name.text,
@@ -561,7 +568,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         is_paid: false,
         total_unpayable_imagine: total_unpayable_imaging,
         total_unpayable_pathology: total_unpayable_pathology,
-        payment_date: 0,
+        payment_date: paymentDate ?? widget.testEachRequest?.payment_date,
         pathology_done: pathologyDone,
         radiology_done: radiologyDone,
         assigning: pathologyAssigningPhone.toString(),
@@ -570,10 +577,16 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         radiology_assigning_commission:
             int.parse(radiology_assigning_commission.text),
         imageDiscountFile: image_discount_card.text,
-        reciever_name: receiverName ?? widget.testEachRequest?.reciever_name,
+        due_recieved_by:
+            due_recieved_by ?? widget.testEachRequest?.due_recieved_by,
+        advance_recieved_by:
+            advance_recieved_by ?? widget.testEachRequest?.advance_recieved_by,
         prepared_by: preparedBy ?? widget.testEachRequest?.prepared_by,
         due_recieved: int.tryParse(due_recieved.text.trim()) ?? 0,
         last_modifier: lastModifier ?? widget.testEachRequest?.last_modifier,
+        due_recieve_date:
+            dueReceivedDate ?? widget.testEachRequest?.due_recieve_date,
+        total_cash_recieve: totalCashRecieve,
       );
     }
 
@@ -582,9 +595,39 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
     String? preparedBy = widget.testEachRequest!.prepared_by;
     String? lastModifier = widget.testEachRequest!.last_modifier;
-    String? receiverName = widget.testEachRequest!.reciever_name;
 
-// update preparedBy or lastModifier first
+    final testStatus = widget.testEachRequest!.teststatus;
+    final isCollectingPage = testStatus == 2 || testStatus == 8;
+
+    final originalPaymentDate = widget.testEachRequest!.payment_date ?? 0;
+    final originalDueReceivedDate =
+        widget.testEachRequest!.due_recieve_date ?? 0;
+
+    final updatedAdvanced = int.tryParse(advanced.text) ?? 0;
+    final updatedDueReceived = int.tryParse(due_recieved.text) ?? 0;
+
+    int tempPaymentDate = originalPaymentDate;
+    int tempDueReceivedDate = originalDueReceivedDate;
+
+    String? advanceReceiverName = widget.testEachRequest!.advance_recieved_by;
+    String? dueReceiverName = widget.testEachRequest!.due_recieved_by;
+    ;
+
+    final isAdvanceReceiverUntracked =
+        (widget.testEachRequest!.payment_date == null ||
+                widget.testEachRequest!.payment_date == 0) &&
+            updatedAdvanced > 0;
+
+    if (isCollectingPage && isAdvanceReceiverUntracked) {
+      tempPaymentDate = currentTime;
+      advanceReceiverName = phoneNumber;
+    }
+
+    if (isCollectingPage && updatedDueReceived > 0) {
+      tempDueReceivedDate = currentTime;
+      dueReceiverName = phoneNumber;
+    }
+
     if (widget.testEachRequest!.prepared_by == null ||
         widget.testEachRequest!.prepared_by!.isEmpty) {
       preparedBy = loggedUserName;
@@ -592,23 +635,25 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         widget.testEachRequest!, updateTestRequestItem)) {
       lastModifier = loggedUserName;
     }
+    //
+    // if (widget.testEachRequest?.teststatus != 1 &&
+    //     (widget.testEachRequest?.teststatus ?? 0) <= 5 ||
+    //     widget.testEachRequest?.teststatus == 8) {
+    //   dueRecieverName = loggedUserName;
+    // }
 
-// update receiverName if teststatus == 2
-    if (widget.testEachRequest!.teststatus == 2) {
-      receiverName = loggedUserName;
-    }
-
-// finally build once
     updateTestRequestItem = buildRequest(
       preparedBy: preparedBy,
       lastModifier: lastModifier,
-      receiverName: receiverName,
+      advance_recieved_by: advanceReceiverName,
+      due_recieved_by: dueReceiverName,
+      dueReceivedDate: tempDueReceivedDate,
+      paymentDate: tempPaymentDate,
     );
 
-// print invoice if needed
-    if (widget.testEachRequest!.teststatus == 2) {
+    if (testStatus == 2 || testStatus == 8) {
       InvoicePrint(
-          updateTestRequestItem, totalDiscount, due_amount, advanced, tubeCost);
+          updateTestRequestItem, totalDiscount, due_amount, advanced, tubeCost,assigningMapping);
     }
 
     await dbRef
@@ -678,9 +723,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         oldRequest.radiology_assigning_commission !=
             newRequest.radiology_assigning_commission ||
         oldRequest.imageDiscountFile != newRequest.imageDiscountFile ||
-        oldRequest.reciever_name != newRequest.reciever_name ||
+        oldRequest.due_recieved_by != newRequest.due_recieved_by ||
         oldRequest.last_modifier != newRequest.last_modifier ||
-        oldRequest.due_recieved != newRequest.due_recieved;
+        oldRequest.due_recieved != newRequest.due_recieved ||
+        oldRequest.due_recieve_date != newRequest.due_recieve_date ||
+        oldRequest.total_cash_recieve != newRequest.total_cash_recieve;
   }
 
   Future<void> calculationProcess() async {
@@ -716,9 +763,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         .toString();
 
     totalDiscount = totalDiscount + int.parse(admin_discount.text.toString());
-    totalDueRecieved =
-        totalDueRecieved + int.parse(due_recieved.text.toString());
-    ;
+    totalDueRecieved =totalDueRecieved + int.parse(due_recieved.text.toString());
 
     //agent
 
@@ -782,11 +827,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       }
     }).toList();
 
-    totalCost = totalTestCost +
-        serviceCost +
-        tubeCost -
-        totalDiscount +
-        totalDueRecieved;
+    totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
 
     //totalCost = totalTestCost  + serviceCost - totalDiscount;
 
@@ -796,9 +837,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     total_payable_item = total_payable_pathology + total_payable_imaging;
     total_unpayable_item = total_unpayable_pathology + total_unpayable_imaging;
 
-    if (advanced.text != null && advanced.text.isNotEmpty) {
-      due_amount.text =
-          (totalCost - int.parse(advanced.text.toString())).toString();
+    if (advanced.text.isNotEmpty || due_recieved.text.isNotEmpty) {
+      due_amount.text = (totalCost -
+              int.parse(advanced.text.toString()) -
+              int.parse(due_recieved.text.toString()))
+          .toString();
     }
     if (testData_updated.length == 0) {
       totalDiscount = 0;
@@ -808,8 +851,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
     total_discount.text = totalDiscount.toString();
 
+    totalCashRecieve = totalDueRecieved + int.parse(advanced.text.toString());
+
     adminUserList.map((e) {
-      if (e.referrer_code !=null && e.referrer_code.contains(referrer.text.toString())) {
+      if (e.referrer_code != null &&
+          e.referrer_code.contains(referrer.text.toString())) {
         var pathology_commision = 0;
         var imagine_commission = 0;
 
@@ -897,11 +943,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
             test_item_discount + int.parse(testItem.discount.toString());
       }).toList();
 
-      totalCost = totalTestCost +
-          serviceCost +
-          tubeCost -
-          totalDiscount +
-          totalDueRecieved;
+      totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
       // totalCost = totalTestCost  + tubeCost ;
       //totalCost = totalTestCost  + serviceCost - totalDiscount;
 
@@ -909,8 +951,10 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       //totaltestprice.text = totalTestCost.toString();
       servicecharge.text = serviceCost.toString();
       test_item_cost = totalTestCost;
-      due_amount.text =
-          (totalCost - int.parse(advanced.text.toString())).toString();
+      due_amount.text = (totalCost -
+              int.parse(advanced.text.toString()) -
+              int.parse(due_recieved.text.toString()))
+          .toString();
 
       if (testData_updated.length == 0) {
         totalDiscount = 0;
@@ -919,6 +963,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       }
 
       total_discount.text = totalDiscount.toString();
+
+      totalCashRecieve = totalDueRecieved + int.parse(advanced.text.toString());
 
       adminUserList.map((e) {
         var pathology_commision = 0;
@@ -936,7 +982,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
           imagine_commission = int.parse(e.imagine_commission);
         }
 
-        if (e.referrer_code !=null && e.referrer_code.contains(referrer.text.toString())) {
+        if (e.referrer_code != null &&
+            e.referrer_code.contains(referrer.text.toString())) {
           agent_commission.text =
               ((((total_payable_pathology) * pathology_commision) / 100) +
                       (((total_payable_imaging) * imagine_commission) / 100))
@@ -1146,7 +1193,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           ),
                         ),
                         FormUserAge(
-                          ageController: age, // Controller to collect the combined age string
+                          ageController: age,
+                          // Controller to collect the combined age string
                           initialAge: age.text, // The initial value
                         ),
                         Padding(
@@ -1198,13 +1246,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                         //                 orangeColor)),
                                         focusedBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
-                                                width: DM.p1,
-                                                color: appTheme)),
+                                                width: DM.p1, color: appTheme)),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                               width: DM.p1,
-                                              color:
-                                                  appTheme), //<-- SEE HERE
+                                              color: appTheme), //<-- SEE HERE
                                         ),
                                         filled: true,
                                         fillColor: fullWhiteColor,
@@ -1259,13 +1305,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                         errorStyle: TextStyle(fontSize: DM.p9),
                                         focusedBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
-                                                width: DM.p1,
-                                                color: appTheme)),
+                                                width: DM.p1, color: appTheme)),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                               width: DM.p1,
-                                              color:
-                                                  appTheme), //<-- SEE HERE
+                                              color: appTheme), //<-- SEE HERE
                                         ),
                                         filled: true,
                                         fillColor: Colors.white,
@@ -2764,8 +2808,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                       OutlineInputBorder(
                                                           borderSide: BorderSide(
                                                               width: DM.p1,
-                                                              color:
-                                                                  appTheme)),
+                                                              color: appTheme)),
                                                   enabledBorder:
                                                       OutlineInputBorder(
                                                     borderSide: BorderSide(
@@ -2837,8 +2880,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                       OutlineInputBorder(
                                                           borderSide: BorderSide(
                                                               width: DM.p1,
-                                                              color:
-                                                                  appTheme)),
+                                                              color: appTheme)),
                                                   enabledBorder:
                                                       OutlineInputBorder(
                                                     borderSide: BorderSide(
@@ -2910,8 +2952,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                       OutlineInputBorder(
                                                           borderSide: BorderSide(
                                                               width: DM.p1,
-                                                              color:
-                                                                  appTheme)),
+                                                              color: appTheme)),
                                                   enabledBorder:
                                                       OutlineInputBorder(
                                                     borderSide: BorderSide(
@@ -2983,8 +3024,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                       OutlineInputBorder(
                                                           borderSide: BorderSide(
                                                               width: DM.p1,
-                                                              color:
-                                                                  appTheme)),
+                                                              color: appTheme)),
                                                   enabledBorder:
                                                       OutlineInputBorder(
                                                     borderSide: BorderSide(
@@ -3056,8 +3096,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                       OutlineInputBorder(
                                                           borderSide: BorderSide(
                                                               width: DM.p1,
-                                                              color:
-                                                                  appTheme)),
+                                                              color: appTheme)),
                                                   enabledBorder:
                                                       OutlineInputBorder(
                                                     borderSide: BorderSide(
@@ -3129,8 +3168,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                       OutlineInputBorder(
                                                           borderSide: BorderSide(
                                                               width: DM.p1,
-                                                              color:
-                                                                  appTheme)),
+                                                              color: appTheme)),
                                                   enabledBorder:
                                                       OutlineInputBorder(
                                                     borderSide: BorderSide(
@@ -3391,26 +3429,27 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                   child: TextFormField(
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
-                                      if (advanced.text != null &&
-                                          advanced.text.isNotEmpty) {
-                                        due_amount.text = (totalCost -
-                                                int.parse(
-                                                    advanced.text.toString()))
-                                            .toString();
-                                      }
+                                      int advance = advanced.text.isNotEmpty
+                                          ? int.parse(advanced.text)
+                                          : 0;
+                                      int dueRecieved =
+                                          due_recieved.text.isNotEmpty
+                                              ? int.parse(due_recieved.text)
+                                              : 0;
+                                      due_amount.text =
+                                          (totalCost - advance - dueRecieved)
+                                              .toString();
                                     },
                                     controller: advanced,
                                     decoration: InputDecoration(
                                         errorStyle: TextStyle(fontSize: DM.p9),
                                         focusedBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
-                                                width: DM.p1,
-                                                color: appTheme)),
+                                                width: DM.p1, color: appTheme)),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                               width: DM.p1,
-                                              color:
-                                                  appTheme), //<-- SEE HERE
+                                              color: appTheme), //<-- SEE HERE
                                         ),
                                         filled: true,
                                         fillColor: fullWhiteColor,
@@ -3434,7 +3473,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           textInputType: TextInputType.name,
                           controller: due_amount,
                           title: "Due Amount",
-                          value: "${totalCost - int.parse(advanced.text)}",
+                          value:
+                              "${totalCost - int.parse(advanced.text) - int.parse(due_recieved.text)}",
                           activate: phoneNumber == superUser ? false : true,
                         ),
 
@@ -3454,72 +3494,83 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         //   value: "0",
                         //   activate: false,
                         // ),
-                        widget.testEachRequest?.teststatus<=5?
-                        Padding(
-                          padding: EdgeInsets.all(DM.p5),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: DM.p100,
-                                child: Text(
-                                  "Due Received",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: DM.p14,
-                                      color: blackFontColor),
-                                ),
-                              ),
-                              SizedBox(
-                                width: DM.p5,
-                              ),
-                              Text(":"),
-                              SizedBox(
-                                width: DM.p10,
-                              ),
-                              Flexible(
-                                child: Container(
-                                  height: DM.p42,
-                                  child: TextFormField(
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (value) {
-                                      if (due_recieved.text.isNotEmpty) {
-                                        totalprice.text = (totalCost +
-                                                int.parse(due_recieved.text
-                                                    .toString()))
-                                            .toString();
-                                      }
-                                    },
-                                    controller: due_recieved,
-                                    decoration: InputDecoration(
-                                        errorStyle: TextStyle(fontSize: DM.p9),
-                                        focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                width: DM.p1,
-                                                color: appTheme)),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              width: DM.p1,
-                                              color:
-                                                  appTheme), //<-- SEE HERE
+                        widget.testEachRequest?.teststatus != 1 &&
+                                (widget.testEachRequest?.teststatus <= 5 ||
+                                    widget.testEachRequest?.teststatus == 8)
+                            ? Padding(
+                                padding: EdgeInsets.all(DM.p5),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: DM.p100,
+                                      child: Text(
+                                        "Due Received",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: DM.p14,
+                                            color: blackFontColor),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: DM.p5,
+                                    ),
+                                    Text(":"),
+                                    SizedBox(
+                                      width: DM.p10,
+                                    ),
+                                    Flexible(
+                                      child: Container(
+                                        height: DM.p42,
+                                        child: TextFormField(
+                                          keyboardType: TextInputType.number,
+                                          onChanged: (value) {
+                                            int advance =
+                                                advanced.text.isNotEmpty
+                                                    ? int.parse(advanced.text)
+                                                    : 0;
+                                            int dueRecieved = due_recieved
+                                                    .text.isNotEmpty
+                                                ? int.parse(due_recieved.text)
+                                                : 0;
+                                            due_amount.text = (totalCost -
+                                                    advance -
+                                                    dueRecieved)
+                                                .toString();
+                                          },
+                                          controller: due_recieved,
+                                          decoration: InputDecoration(
+                                              errorStyle:
+                                                  TextStyle(fontSize: DM.p9),
+                                              focusedBorder: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      width: DM.p1,
+                                                      color: appTheme)),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    width: DM.p1,
+                                                    color:
+                                                        appTheme), //<-- SEE HERE
+                                              ),
+                                              filled: true,
+                                              fillColor: fullWhiteColor,
+                                              contentPadding:
+                                                  EdgeInsets.symmetric(
+                                                      horizontal: DM.p10),
+                                              border: InputBorder.none,
+                                              hintText: "0",
+                                              hintStyle: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: DM.p14,
+                                              )),
                                         ),
-                                        filled: true,
-                                        fillColor: fullWhiteColor,
-                                        contentPadding: EdgeInsets.symmetric(
-                                            horizontal: DM.p10),
-                                        border: InputBorder.none,
-                                        hintText: "0",
-                                        hintStyle: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: DM.p14,
-                                        )),
-                                  ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
-                        ):SizedBox(),
+                              )
+                            : SizedBox(),
                         widget.testEachRequest!.assigning == phoneNumber ||
                                 phoneNumber == superUser ||
                                 typeUser == "7" ||
@@ -3873,7 +3924,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                     onPressed: () async {
                       if (_formKey.currentState?.validate() == true) {
                         if (await chechkingInternet()) {
-                          if (widget.testEachRequest!.teststatus == 2) {
+                          if (widget.testEachRequest!.teststatus == 2 ||
+                              widget.testEachRequest!.teststatus == 8) {
                             showDialog(
                                 context: context,
                                 builder: (context) {
@@ -4378,14 +4430,12 @@ class FormUserInfo extends StatelessWidget {
                 decoration: InputDecoration(
                     errorStyle: TextStyle(fontSize: DM.p9),
                     disabledBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(width: DM.p1, color: appTheme)),
+                        borderSide: BorderSide(width: DM.p1, color: appTheme)),
                     // focusedErrorBorder: OutlineInputBorder(
                     //     borderSide:
                     //         BorderSide(width: DM.p1, color: orangeColor)),
                     focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(width: DM.p1, color: appTheme)),
+                        borderSide: BorderSide(width: DM.p1, color: appTheme)),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(
                           width: DM.p1, color: appTheme), //<-- SEE HERE
@@ -4423,7 +4473,7 @@ String? validateString(String? value) {
 }
 
 Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
-    due_amount, advanced, tubeCost) async {
+    due_amount, advanced, tubeCost,assigningMapping) async {
   final date = DateTime.now().millisecondsSinceEpoch;
 
   final invoice = Invoice(
@@ -4444,9 +4494,10 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
           collection_charge: testDataRequest.servicecharge,
           tube_cost: tubeCost,
           deliveryDate: testDataRequest.delivery_date,
-          reciever_name: testDataRequest.reciever_name,
+          reciever_name: assigningMapping[testDataRequest.due_recieved_by],
           last_modifier: testDataRequest.last_modifier,
-          prepared_by: testDataRequest.prepared_by),
+          prepared_by: testDataRequest.prepared_by,
+          totalCashRecieved: testDataRequest.total_cash_recieve),
       info: InvoiceInfo(
         date: DateTime.now(),
         description: 'My description...',

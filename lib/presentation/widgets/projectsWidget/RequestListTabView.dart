@@ -138,7 +138,8 @@ class _RequestListTabViewState extends State<RequestListTabView> {
       due_recieved:  requestItem.due_recieved,
       due_recieve_date:  requestItem.due_recieve_date,
       total_cash_recieve:  requestItem.total_cash_recieve,
-      reciever_name:  requestItem.reciever_name,
+      due_recieved_by:  requestItem.due_recieved_by,
+      advance_recieved_by: requestItem.advance_recieved_by
     );
 
     await dbRefTestReqModel
@@ -266,8 +267,8 @@ class _RequestListTabViewState extends State<RequestListTabView> {
   @override
   Widget build(BuildContext context) {
     // Check if any item has non-null prepared_by or last_modifier for statusKey 1 or 2
-    bool showChangedByColumn = (createRequest_controller.toStatus[widget.statusKey] == 1 ||
-        createRequest_controller.toStatus[widget.statusKey] == 2) &&
+    bool showChangedByColumn = (createRequest_controller.toStatus[widget.statusKey]! <= 6 ||
+        createRequest_controller.toStatus[widget.statusKey] == 8) &&
         _newTestRequestList.any((item) => item.prepared_by != null || item.last_modifier != null);
 
     return Padding(
@@ -320,7 +321,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                       Flexible(
                         flex: 3,
                         child: Container(
-                          width: DM.p120,
+                          width: DM.p50,
                           child: Text(
                             "Date",
                             style: TextStyle(fontWeight: FontWeight.w900, fontSize: DM.p14, color: Color.fromARGB(255, 26, 1, 1)),
@@ -430,7 +431,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                               Flexible(
                                 flex: 3,
                                 child: Container(
-                                  width: DM.p120,
+                                  width: DM.p50,
                                   child: Text(
                                     (DateFormat('dd-MMM HH:mm')
                                         .format(DateTime.fromMillisecondsSinceEpoch(_newTestRequestList[index].dateofcreated)))
@@ -460,9 +461,9 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                 ),
                               widget.isButton && (createRequest_controller.toStatus[widget.statusKey]! < 5)
                                   ? Flexible(
-                                flex: 2,
+                                flex: 3,
                                 child: Container(
-                                  width: DM.p65,
+                                  width: DM.p120,
                                   child: MaterialButton(
                                     onPressed: () async {
                                       _updateStatus(_newTestRequestList[index]);

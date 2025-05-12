@@ -167,36 +167,32 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
     _onLoading(true);
 
     final SharedPreferences pref = await SharedPreferences.getInstance();
+    final phonePath = phone.text;
 
-    final path1 = "$storageFiles/${phone.text}/${imageFile1}";
-    final path2 = "$storageFiles/${phone.text}/${imageFile2}";
-    final path3 = "$storageFiles/${phone.text}/${imageDiscountFile}";
+    final path1 = "$storageFiles/$phonePath/${imageFile1?.path.split('/').last}";
+    final path2 = "$storageFiles/$phonePath/${imageFile2?.path.split('/').last}";
+    final path3 = "$storageFiles/$phonePath/${imageDiscountFile?.path.split('/').last}";
 
-    final ref1 = FirebaseStorage.instance.ref().child(path1);
-    final ref2 = FirebaseStorage.instance.ref().child(path2);
-    final ref3 = FirebaseStorage.instance.ref().child(path3);
+    final ref1 = imageFile1 != null ? FirebaseStorage.instance.ref().child(path1) : null;
+    final ref2 = imageFile2 != null ? FirebaseStorage.instance.ref().child(path2) : null;
+    final ref3 = imageDiscountFile != null ? FirebaseStorage.instance.ref().child(path3) : null;
 
-    var urlDownload1;
-    var urlDownload2;
-    var urlDownload3;
-
-    if (imageFile1 != null) {
-      uploadTask1 = ref1.putFile(imageFile1!);
-      final snapshot1 = await uploadTask1!.whenComplete(() {});
-      urlDownload1 = await snapshot1.ref.getDownloadURL();
+    Future<String?> uploadFile(File? file, Reference? ref) async {
+      if (file == null || ref == null) return null;
+      final task = ref.putFile(file);
+      final snapshot = await task.whenComplete(() {});
+      return await snapshot.ref.getDownloadURL();
     }
 
-    if (imageFile2 != null) {
-      uploadTask2 = ref2.putFile(imageFile2!);
-      final snapshot2 = await uploadTask2!.whenComplete(() {});
-      urlDownload2 = await snapshot2.ref.getDownloadURL();
-    }
+    final results = await Future.wait([
+      uploadFile(imageFile1, ref1),
+      uploadFile(imageFile2, ref2),
+      uploadFile(imageDiscountFile, ref3),
+    ]);
 
-    if (imageDiscountFile != null) {
-      uploadTask3 = ref3.putFile(imageDiscountFile!);
-      final snapshot3 = await uploadTask3!.whenComplete(() {});
-      urlDownload3 = await snapshot3.ref.getDownloadURL();
-    }
+    final urlDownload1 = results[0];
+    final urlDownload2 = results[1];
+    final urlDownload3 = results[2];
 
     addImages(urlDownload1, urlDownload2, urlDownload3);
     Get.back();

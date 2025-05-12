@@ -84,7 +84,7 @@ class _CollectionReportListState extends State<CollectionReportList> {
 
   // Fetch data from Firebase for all year/month paths
   Future<void> _fetchData() async {
-    _showLoading(true);
+   // _showLoading(true);
     _allRequestListAdmin.clear();
     _newTestRequestList.clear();
     totalEarning = 0;
