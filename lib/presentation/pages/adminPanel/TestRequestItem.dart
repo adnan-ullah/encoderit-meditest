@@ -611,19 +611,28 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
     String? advanceReceiverName = widget.testEachRequest!.advance_recieved_by;
     String? dueReceiverName = widget.testEachRequest!.due_recieved_by;
-    ;
+    int? originalAdvance = widget.testEachRequest!.advanced??0;
+    int? originalDue = widget.testEachRequest!.due_recieved??0;
+    //int? orignalDueRecieve = int.parse(widget.testEachRequest!.due_recieved)??0;
+
+
 
     final isAdvanceReceiverUntracked =
         (widget.testEachRequest!.payment_date == null ||
                 widget.testEachRequest!.payment_date == 0) &&
-            updatedAdvanced > 0;
+            updatedAdvanced > 0 && originalAdvance!=updatedAdvanced;
 
     if (isCollectingPage && isAdvanceReceiverUntracked) {
       tempPaymentDate = currentTime;
       advanceReceiverName = phoneNumber;
     }
 
-    if (isCollectingPage && updatedDueReceived > 0) {
+    final isDueUntracked =
+        (widget.testEachRequest!.due_recieved == null ||
+            widget.testEachRequest!.due_recieved == 0) &&
+            updatedDueReceived > 0 && originalDue!=updatedDueReceived;
+
+    if (isCollectingPage && isDueUntracked) {
       tempDueReceivedDate = currentTime;
       dueReceiverName = phoneNumber;
     }
@@ -3468,6 +3477,84 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           ),
                         ),
 
+                        widget.testEachRequest?.teststatus != 1 &&
+                            (widget.testEachRequest?.teststatus <= 5 ||
+                                widget.testEachRequest?.teststatus == 8)
+                            ? Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Due Received",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      int advance =
+                                      advanced.text.isNotEmpty
+                                          ? int.parse(advanced.text)
+                                          : 0;
+                                      int dueRecieved = due_recieved
+                                          .text.isNotEmpty
+                                          ? int.parse(due_recieved.text)
+                                          : 0;
+                                      due_amount.text = (totalCost -
+                                          advance -
+                                          dueRecieved)
+                                          .toString();
+                                    },
+                                    controller: due_recieved,
+                                    decoration: InputDecoration(
+                                        errorStyle:
+                                        TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: appTheme)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                              appTheme), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding:
+                                        EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                            : SizedBox(),
+
                         FormUserInfo(
                           formKey: _formKey,
                           textInputType: TextInputType.name,
@@ -3494,83 +3581,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         //   value: "0",
                         //   activate: false,
                         // ),
-                        widget.testEachRequest?.teststatus != 1 &&
-                                (widget.testEachRequest?.teststatus <= 5 ||
-                                    widget.testEachRequest?.teststatus == 8)
-                            ? Padding(
-                                padding: EdgeInsets.all(DM.p5),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: DM.p100,
-                                      child: Text(
-                                        "Due Received",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: DM.p14,
-                                            color: blackFontColor),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: DM.p5,
-                                    ),
-                                    Text(":"),
-                                    SizedBox(
-                                      width: DM.p10,
-                                    ),
-                                    Flexible(
-                                      child: Container(
-                                        height: DM.p42,
-                                        child: TextFormField(
-                                          keyboardType: TextInputType.number,
-                                          onChanged: (value) {
-                                            int advance =
-                                                advanced.text.isNotEmpty
-                                                    ? int.parse(advanced.text)
-                                                    : 0;
-                                            int dueRecieved = due_recieved
-                                                    .text.isNotEmpty
-                                                ? int.parse(due_recieved.text)
-                                                : 0;
-                                            due_amount.text = (totalCost -
-                                                    advance -
-                                                    dueRecieved)
-                                                .toString();
-                                          },
-                                          controller: due_recieved,
-                                          decoration: InputDecoration(
-                                              errorStyle:
-                                                  TextStyle(fontSize: DM.p9),
-                                              focusedBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                      width: DM.p1,
-                                                      color: appTheme)),
-                                              enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    width: DM.p1,
-                                                    color:
-                                                        appTheme), //<-- SEE HERE
-                                              ),
-                                              filled: true,
-                                              fillColor: fullWhiteColor,
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                      horizontal: DM.p10),
-                                              border: InputBorder.none,
-                                              hintText: "0",
-                                              hintStyle: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: DM.p14,
-                                              )),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : SizedBox(),
+
                         widget.testEachRequest!.assigning == phoneNumber ||
                                 phoneNumber == superUser ||
                                 typeUser == "7" ||

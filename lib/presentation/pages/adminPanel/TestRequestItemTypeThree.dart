@@ -613,17 +613,28 @@ class _TestRequestCreateTypeThreeState
       String? dueReceiverName = widget.testEachRequest!.due_recieved_by;
       ;
 
+      int? originalAdvance = widget.testEachRequest!.advanced??0;
+      int? originalDue = widget.testEachRequest!.due_recieved??0;
+      //int? orignalDueRecieve = int.parse(widget.testEachRequest!.due_recieved)??0;
+
+
+
       final isAdvanceReceiverUntracked =
           (widget.testEachRequest!.payment_date == null ||
               widget.testEachRequest!.payment_date == 0) &&
-              updatedAdvanced > 0;
+              updatedAdvanced > 0 && originalAdvance!=updatedAdvanced;
 
       if (isCollectingPage && isAdvanceReceiverUntracked) {
         tempPaymentDate = currentTime;
         advanceReceiverName = phoneNumber;
       }
 
-      if (isCollectingPage && updatedDueReceived > 0) {
+      final isDueUntracked =
+          (widget.testEachRequest!.due_recieved == null ||
+              widget.testEachRequest!.due_recieved == 0) &&
+              updatedDueReceived > 0 && originalDue!=updatedDueReceived;
+
+      if (isCollectingPage && isDueUntracked) {
         tempDueReceivedDate = currentTime;
         dueReceiverName = phoneNumber;
       }
@@ -2923,24 +2934,6 @@ class _TestRequestCreateTypeThreeState
                             ],
                           ),
                         ),
-
-                        FormUserInfo(
-                          formKey: _formKey,
-                          textInputType: TextInputType.name,
-                          controller: due_amount,
-                          title: "Due Amount",
-                          value:   "${totalCost - int.parse(advanced.text) - int.parse(due_recieved.text)}",
-                          activate: true,
-                        ),
-
-                        FormUserInfo(
-                          formKey: _formKey,
-                          textInputType: TextInputType.number,
-                          controller: total_discount,
-                          title: "Total Discount",
-                          value: "0",
-                          activate: true,
-                        ),
                         widget.testEachRequest?.teststatus != 1 &&
                             (widget.testEachRequest?.teststatus <= 5 ||
                                 widget.testEachRequest?.teststatus == 8)
@@ -3016,6 +3009,24 @@ class _TestRequestCreateTypeThreeState
                             ],
                           ),
                         ):SizedBox(),
+                        FormUserInfo(
+                          formKey: _formKey,
+                          textInputType: TextInputType.name,
+                          controller: due_amount,
+                          title: "Due Amount",
+                          value:   "${totalCost - int.parse(advanced.text) - int.parse(due_recieved.text)}",
+                          activate: true,
+                        ),
+
+                        FormUserInfo(
+                          formKey: _formKey,
+                          textInputType: TextInputType.number,
+                          controller: total_discount,
+                          title: "Total Discount",
+                          value: "0",
+                          activate: true,
+                        ),
+
                         // FormUserInfo(
                         //   formKey: _formKey,
                         //   textInputType: TextInputType.number,

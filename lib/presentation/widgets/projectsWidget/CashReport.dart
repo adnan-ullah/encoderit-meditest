@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:healthcare_homelab/constants/api.dart';
 import 'package:healthcare_homelab/constants/app_info.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
-import 'package:healthcare_homelab/db/models/TestDataRequest.dart';
 import 'package:healthcare_homelab/db/models/AdminUserModel.dart';
+import 'package:healthcare_homelab/db/models/TestDataRequest.dart';
 import 'package:healthcare_homelab/responsives/dimensions.dart';
 import 'package:intl/intl.dart';
 
@@ -23,10 +23,11 @@ class _CashReportListState extends State<CashReportList> {
   Map<String, List<TestDataRequest>> userRequests = {};
 
   // Date filter variables
-  int startDate = DateTime(DateTime.now().year, DateTime.now().month, 1, 0, 0, 1)
-      .millisecondsSinceEpoch;
+  int startDate =
+      DateTime(DateTime.now().year, DateTime.now().month, 1, 0, 0, 1)
+          .millisecondsSinceEpoch;
   int endDate = DateTime(DateTime.now().year, DateTime.now().month,
-      DateTime.now().day, 23, 59, 59)
+          DateTime.now().day, 23, 59, 59)
       .millisecondsSinceEpoch;
 
   // Summary variables
@@ -54,7 +55,8 @@ class _CashReportListState extends State<CashReportList> {
       if (userSnapshot.exists) {
         for (var ds in userSnapshot.children) {
           try {
-            final data = AdminUserModel.fromJson(json.decode(json.encode(ds.value)));
+            final data =
+                AdminUserModel.fromJson(json.decode(json.encode(ds.value)));
             allUsers.add(data);
           } catch (e) {
             print("Error parsing AdminUserModel: $e");
@@ -76,9 +78,12 @@ class _CashReportListState extends State<CashReportList> {
       print("Processed ${userRequests.length} users with requests");
 
       // Filter users with matching requests
-      usersWithRequests = allUsers.where((user) => userRequests[user.phone]?.isNotEmpty ?? false).toList();
+      usersWithRequests = allUsers
+          .where((user) => userRequests[user.phone]?.isNotEmpty ?? false)
+          .toList();
 
-      print("Filtered ${usersWithRequests.length} users with matching requests");
+      print(
+          "Filtered ${usersWithRequests.length} users with matching requests");
     } catch (e) {
       print("Error fetching cash report data: $e");
     } finally {
@@ -95,7 +100,8 @@ class _CashReportListState extends State<CashReportList> {
     var current = DateTime(start.year, start.month, 1);
     while (current.isBefore(end) ||
         (current.year == end.year && current.month == end.month)) {
-      paths.add("$database_name/testRequest/${current.year}/${formatter.format(current)}");
+      paths.add(
+          "$database_name/testRequest/${current.year}/${formatter.format(current)}");
       current = DateTime(current.year, current.month + 1, 1);
     }
     return paths;
@@ -105,24 +111,48 @@ class _CashReportListState extends State<CashReportList> {
     for (var ds in snapshot.children) {
       for (var dsLater in ds.children) {
         try {
-          final data = TestDataRequest.fromJson(json.decode(json.encode(dsLater.value)));
-          if (data.payment_date == null || data.total_cash_recieve == null || data.total_cash_recieve == 0) continue;
+          final data =
+          TestDataRequest.fromJson(json.decode(json.encode(dsLater.value)));
+          if (data.payment_date == null ||
+              data.total_cash_recieve == null ||
+              data.total_cash_recieve == 0) continue;
 
-          final filterDate = (data.due_recieved != null && data.due_recieved! > 0)
+          final filterDate =
+          (data.due_recieved != null && data.due_recieved! > 0)
               ? data.due_recieve_date!
               : data.payment_date!;
 
           if (startDate <= filterDate && filterDate <= endDate) {
+            bool isCountedForQuantity = false;
+
             for (var user in users) {
-              if (data.advance_recieved_by == user.phone || data.due_recieved_by == user.phone) {
-                userRequests.putIfAbsent(user.phone, () => []);
-                if (!userRequests[user.phone]!.any((r) => r.id == data.id && r.mobile == data.mobile)) {
-                  userRequests[user.phone]!.add(data);
-                  totalQuantity++;
-                  totalCashReceived += data.total_cash_recieve ?? 0;
-                  totalAdvanced += data.advanced ?? 0;
-                  totalDueReceived += data.due_recieved ?? 0;
-                }
+              final handledAdvance = data.advance_recieved_by == user.phone;
+              final handledDue = data.due_recieved_by == user.phone;
+
+              if (!handledAdvance && !handledDue) continue;
+
+              // Add to user's list only once
+              userRequests.putIfAbsent(user.phone, () => []);
+              if (!userRequests[user.phone]!
+                  .any((r) => r.id == data.id && r.mobile == data.mobile)) {
+                userRequests[user.phone]!.add(data);
+              }
+
+              // Count advanced only if this user handled advance
+              if (handledAdvance) {
+                totalAdvanced += data.advanced ?? 0;
+              }
+
+              // Count due only if this user handled due
+              if (handledDue) {
+                totalDueReceived += data.due_recieved ?? 0;
+              }
+
+              // Only count quantity and totalCash once globally
+              if (!isCountedForQuantity) {
+                totalQuantity++;
+                // totalCashReceived += data.total_cash_recieve ?? 0;
+                isCountedForQuantity = true;
               }
             }
           }
@@ -163,17 +193,20 @@ class _CashReportListState extends State<CashReportList> {
                     child: Container(
                       height: DM.p60,
                       child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: appTheme, elevation: 0),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: appTheme, elevation: 0),
                         onPressed: () async {
                           final picked = await showDatePicker(
                             context: context,
-                            initialDate: DateTime.fromMillisecondsSinceEpoch(startDate),
+                            initialDate:
+                                DateTime.fromMillisecondsSinceEpoch(startDate),
                             firstDate: DateTime(2022, 11),
                             lastDate: DateTime(2030, 7),
                           );
                           if (picked != null) {
                             setState(() {
-                              startDate = DateTime(picked.year, picked.month, picked.day, 0, 0, 1)
+                              startDate = DateTime(picked.year, picked.month,
+                                      picked.day, 0, 0, 1)
                                   .millisecondsSinceEpoch;
                               _fetchData();
                             });
@@ -192,17 +225,20 @@ class _CashReportListState extends State<CashReportList> {
                     child: Container(
                       height: DM.p60,
                       child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: appTheme, elevation: 0),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: appTheme, elevation: 0),
                         onPressed: () async {
                           final picked = await showDatePicker(
                             context: context,
-                            initialDate: DateTime.fromMillisecondsSinceEpoch(endDate),
+                            initialDate:
+                                DateTime.fromMillisecondsSinceEpoch(endDate),
                             firstDate: DateTime(2022, 11),
                             lastDate: DateTime(2030, 7),
                           );
                           if (picked != null) {
                             setState(() {
-                              endDate = DateTime(picked.year, picked.month, picked.day, 23, 59, 59)
+                              endDate = DateTime(picked.year, picked.month,
+                                      picked.day, 23, 59, 59)
                                   .millisecondsSinceEpoch;
                               _fetchData();
                             });
@@ -228,34 +264,37 @@ class _CashReportListState extends State<CashReportList> {
                   _buildHeaderRow(),
                   Expanded(
                     child: isLoading
-                        ? Center(child: CircularProgressIndicator(color: appTheme))
+                        ? Center(
+                            child: CircularProgressIndicator(color: appTheme))
                         : usersWithRequests.isNotEmpty
-                        ? Column(
-                      children: [
-                        Divider(thickness: DM.p2, color: Colors.black),
-                        Expanded(
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: usersWithRequests.length,
-                            itemBuilder: (_, index) => _buildRequestRow(index),
-                          ),
-                        ),
-                      ],
-                    )
-                        : Container(
-                      height: DM.screenHeight * 0.65,
-                      margin: EdgeInsets.symmetric(vertical: DM.p16),
-                      child: Center(
-                        child: Text(
-                          "Cash report list empty",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w400,
-                            fontSize: DM.p25,
-                            color: appTheme,
-                          ),
-                        ),
-                      ),
-                    ),
+                            ? Column(
+                                children: [
+                                  Divider(
+                                      thickness: DM.p2, color: Colors.black),
+                                  Expanded(
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: usersWithRequests.length,
+                                      itemBuilder: (_, index) =>
+                                          _buildRequestRow(index),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Container(
+                                height: DM.screenHeight * 0.65,
+                                margin: EdgeInsets.symmetric(vertical: DM.p16),
+                                child: Center(
+                                  child: Text(
+                                    "Cash report list empty",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: DM.p25,
+                                      color: appTheme,
+                                    ),
+                                  ),
+                                ),
+                              ),
                   ),
                   // Summary Section
                   Container(
@@ -264,16 +303,16 @@ class _CashReportListState extends State<CashReportList> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(height: DM.p15),
+                        // Text(
+                        //   "Users: $totalQuantity",
+                        //   style: TextStyle(
+                        //     fontWeight: FontWeight.w600,
+                        //     fontSize: DM.p14,
+                        //     color: Colors.black,
+                        //   ),
+                        // ),
                         Text(
-                          "Users: $totalQuantity",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: DM.p14,
-                            color: Colors.black,
-                          ),
-                        ),
-                        Text(
-                          "Total Cashed Received: ${totalCashReceived.toStringAsFixed(2)}",
+                          "Total Cashed Received: ${(totalAdvanced+totalDueReceived).toStringAsFixed(2)}",
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: DM.p14,
@@ -317,16 +356,16 @@ class _CashReportListState extends State<CashReportList> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: ["User Name", "Total Cash", "Advance", "Due Received"]
             .map((text) => Expanded(
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              fontSize: DM.p12,
-              color: Color.fromARGB(255, 26, 1, 1),
-            ),
-          ),
-        ))
+                  child: Text(
+                    text,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: DM.p12,
+                      color: Color.fromARGB(255, 26, 1, 1),
+                    ),
+                  ),
+                ))
             .toList(),
       ),
     );
@@ -335,12 +374,26 @@ class _CashReportListState extends State<CashReportList> {
   Widget _buildRequestRow(int index) {
     final user = usersWithRequests[index];
     final requests = userRequests[user.phone]!;
-    double userTotalCash = requests.fold(0, (sum, r) => sum + (r.total_cash_recieve ?? 0));
-    double userDueReceived = requests.fold(0, (sum, r) => sum + (r.due_recieved ?? 0));
-    double userAdvanced = requests.fold(0, (sum, r) => sum + (r.advanced ?? 0));
+
+    double userAdvanced = requests.fold(
+      0,
+          (sum, r) => r.advance_recieved_by == user.phone
+          ? sum + (r.advanced ?? 0)
+          : sum,
+    );
+
+    double userDueReceived = requests.fold(
+      0,
+          (sum, r) => r.due_recieved_by == user.phone
+          ? sum + (r.due_recieved ?? 0)
+          : sum,
+    );
+
+    double userTotalCash = userAdvanced + userDueReceived;
 
     return Container(
-      decoration: BoxDecoration(color: whiteColor, borderRadius: BorderRadius.circular(DM.p10)),
+      decoration: BoxDecoration(
+          color: whiteColor, borderRadius: BorderRadius.circular(DM.p10)),
       margin: EdgeInsets.symmetric(vertical: DM.p5, horizontal: DM.p5),
       height: DM.p60,
       padding: EdgeInsets.symmetric(horizontal: DM.p5),
@@ -355,16 +408,16 @@ class _CashReportListState extends State<CashReportList> {
             .asMap()
             .entries
             .map((entry) => Expanded(
-          child: Text(
-            entry.value,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: DM.p12,
-              color: Color.fromARGB(255, 26, 1, 1),
-            ),
-          ),
-        ))
+                  child: Text(
+                    entry.value,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: DM.p12,
+                      color: Color.fromARGB(255, 26, 1, 1),
+                    ),
+                  ),
+                ))
             .toList(),
       ),
     );

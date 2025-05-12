@@ -246,7 +246,7 @@ class _AdminHomeState extends State<AdminHome> {
                         }
                       },
                     ),
-                  if (isAdmin || isAgent)
+                  if (isAdmin)
                     _buildButton(
                       title: "Cash Report",
                       icon: Icons.people,

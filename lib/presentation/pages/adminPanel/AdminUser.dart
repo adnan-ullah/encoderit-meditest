@@ -52,15 +52,18 @@ class AdminUserController extends GetxController {
   void filterUsers(String value) {
     if (value.isNotEmpty) {
       isClear.value = true;
+      final lowerValue = value.toLowerCase();
       filteredUsers.assignAll(
         adminUsers.where((user) =>
-            user.phone.toLowerCase().contains(value.toLowerCase())).toList(),
+        user.phone.toLowerCase().contains(lowerValue) ||
+            user.surname.toLowerCase().contains(lowerValue)).toList(),
       );
     } else {
       isClear.value = false;
       filteredUsers.assignAll(adminUsers);
     }
   }
+
 
   Future<void> removeUser(String phoneNumber) async {
     try {

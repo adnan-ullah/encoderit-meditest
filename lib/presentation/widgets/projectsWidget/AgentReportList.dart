@@ -326,6 +326,7 @@ class _AgentReportListState extends State<AgentReportList> {
               pw.SizedBox(height: 10),
               pw.Table.fromTextArray(
                 headers: [
+                  'Date',
                   'Invoice',
                   type == "2" && superUser != phone ? 'Patient' : 'Agent',
                   if (type != "2" || superUser == phone) 'Code',
@@ -342,6 +343,10 @@ class _AgentReportListState extends State<AgentReportList> {
                 ],
                 data: _newTestRequestList.map((item) {
                   return [
+                    item.payment_date == 0
+                        ? 'NA'
+                        : DateFormat('dd-MMM-yyyy').format(
+                        DateTime.fromMillisecondsSinceEpoch(item.dateofcreated)),
                     '#${item.invoice_call}',
                     item.name,
                     if (type != "2" || superUser == phone) item.id,
