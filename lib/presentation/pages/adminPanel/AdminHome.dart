@@ -135,7 +135,7 @@ class _AdminHomeState extends State<AdminHome> {
     final isAdmin = isSuperUser || widget.check_type == "7";
     final isAgent = widget.check_type == "1" || widget.check_type == "3" || widget.check_type == "4";
     final isReportUser = widget.check_type == "2";
-    final isShareHolder = widget.check_type == "8";
+    final isShareHolder = isSuperUser ||  widget.check_type == "8";
 
     return Scaffold(
       backgroundColor: Color(0xFFF5F7FA), // Light health-themed background

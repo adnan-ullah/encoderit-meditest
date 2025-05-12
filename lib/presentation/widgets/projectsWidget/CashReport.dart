@@ -117,10 +117,11 @@ class _CashReportListState extends State<CashReportList> {
               data.total_cash_recieve == null ||
               data.total_cash_recieve == 0) continue;
 
-          final filterDate =
-          (data.due_recieved != null && data.due_recieved! > 0)
-              ? data.due_recieve_date!
-              : data.payment_date!;
+          dynamic filterDate = (data.due_recieved != null &&
+              data.due_recieved! > 0 &&
+              data.due_recieve_date != null && data.due_recieved_by!=null)
+              ? data.due_recieve_date
+              : data.payment_date;
 
           if (startDate <= filterDate && filterDate <= endDate) {
             bool isCountedForQuantity = false;

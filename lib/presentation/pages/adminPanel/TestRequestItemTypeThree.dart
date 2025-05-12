@@ -24,6 +24,7 @@ import '../../../db/models/TestDataRequest.dart';
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/CreateRequestController.dart';
 import '../../widgets/otherWidgets/PhotoViewImage.dart';
+import '../../widgets/projectsWidget/FormUserAge.dart';
 import '../Invoice_pdf/api/pdf_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_no_customer.dart';
@@ -597,7 +598,7 @@ class _TestRequestCreateTypeThreeState
       String? preparedBy = widget.testEachRequest!.prepared_by;
       String? lastModifier = widget.testEachRequest!.last_modifier;
       final testStatus = widget.testEachRequest!.teststatus;
-      final isCollectingPage = testStatus == 2 || testStatus == 8;
+      final isCollectingPage = (testStatus <= 5 || testStatus == 8);
 
       final originalPaymentDate = widget.testEachRequest!.payment_date ?? 0;
       final originalDueReceivedDate =
@@ -1198,14 +1199,9 @@ class _TestRequestCreateTypeThreeState
                             ],
                           ),
                         ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateString,
-                          textInputType: TextInputType.number,
-                          controller: age,
-                          title: "Age",
-                          value: "0",
-                          activate: false,
+                        FormUserAge(
+                          ageController: age,
+                          initialAge: age.text,
                         ),
                         Padding(
                           padding: EdgeInsets.all(DM.p5),
@@ -2934,9 +2930,9 @@ class _TestRequestCreateTypeThreeState
                             ],
                           ),
                         ),
-                        widget.testEachRequest?.teststatus != 1 &&
-                            (widget.testEachRequest?.teststatus <= 5 ||
-                                widget.testEachRequest?.teststatus == 8)
+
+                            widget.testEachRequest?.teststatus <= 5 ||
+                                widget.testEachRequest?.teststatus == 8
                             ?
                         Padding(
                           padding: EdgeInsets.all(DM.p5),

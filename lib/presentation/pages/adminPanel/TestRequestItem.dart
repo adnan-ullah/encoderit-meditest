@@ -597,7 +597,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     String? lastModifier = widget.testEachRequest!.last_modifier;
 
     final testStatus = widget.testEachRequest!.teststatus;
-    final isCollectingPage = testStatus == 2 || testStatus == 8;
+    final isCollectingPage = (testStatus <= 5 || testStatus == 8);
 
     final originalPaymentDate = widget.testEachRequest!.payment_date ?? 0;
     final originalDueReceivedDate =
@@ -3477,9 +3477,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           ),
                         ),
 
-                        widget.testEachRequest?.teststatus != 1 &&
-                            (widget.testEachRequest?.teststatus <= 5 ||
-                                widget.testEachRequest?.teststatus == 8)
+                            widget.testEachRequest?.teststatus <= 5 ||
+                                widget.testEachRequest?.teststatus == 8
                             ? Padding(
                           padding: EdgeInsets.all(DM.p5),
                           child: Row(
