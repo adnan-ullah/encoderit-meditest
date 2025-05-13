@@ -227,6 +227,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
       }
     }
 
+    tempList.sort((a, b) => (b.lastupdate ?? 0).compareTo(a.lastupdate ?? 0));
     testStatusRequestList.addAll(tempList);
     tabStatusList();
   }
