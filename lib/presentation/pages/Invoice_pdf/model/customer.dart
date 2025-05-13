@@ -11,6 +11,8 @@ class Customer {
   final dynamic totalDiscount;
   final dynamic deliveryDate;
   final dynamic deliveryTime;
+  final dynamic dueRecieveOne;
+  final dynamic dueRecieveTwo;
   final dynamic dueAmount;
   final dynamic advance;
     final dynamic testItems;
@@ -37,6 +39,8 @@ class Customer {
     this.deliveryTime,
     this.name,
     this.address,
+    this.dueRecieveOne,
+    this.dueRecieveTwo,
     this.dueAmount,
     this.advance,
     this.testItems,

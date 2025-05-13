@@ -812,9 +812,11 @@ class _TestRequestCreateTypeThreeState
         .toString();
 
     totalDiscount = totalDiscount + int.parse(admin_discount.text.toString());
-    totalDueRecievedOne =totalDueRecievedOne + int.parse(due_recieved_one.text.toString());
-    totalDueRecievedTwo =totalDueRecievedTwo + int.parse(due_recieved_two.text.toString());
+    int valueOne = int.tryParse(due_recieved_one.text.toString()) ?? 0;
+    int valueTwo = int.tryParse(due_recieved_two.text.toString()) ?? 0;
 
+    totalDueRecievedOne += valueOne;
+    totalDueRecievedTwo += valueTwo;
 
     //agent
 
@@ -890,12 +892,15 @@ class _TestRequestCreateTypeThreeState
     total_payable_item = total_payable_pathology + total_payable_imaging;
     total_unpayable_item = total_unpayable_pathology + total_unpayable_imaging;
 
-    if (advanced.text.isNotEmpty || due_recieved_two.text.isNotEmpty || due_recieved_one.text.isNotEmpty) {
-      due_amount.text = (totalCost -
-          int.parse(advanced.text.toString()) -
-          int.parse(due_recieved_two.text.toString()) - int.parse(due_recieved_one.text.toString()))
-          .toString();
+    int advancedValue = int.tryParse(advanced.text) ?? 0;
+    int dueOneValue = int.tryParse(due_recieved_one.text) ?? 0;
+    int dueTwoValue = int.tryParse(due_recieved_two.text) ?? 0;
+
+    if (advancedValue != 0 || dueOneValue != 0 || dueTwoValue != 0) {
+      due_amount.text = (totalCost - advancedValue - dueOneValue - dueTwoValue).toString();
     }
+
+
     if (testData_updated.length == 0) {
       totalDiscount = 0;
       agent_discount.text = "0";
@@ -903,7 +908,7 @@ class _TestRequestCreateTypeThreeState
     }
 
     total_discount.text = totalDiscount.toString();
-    totalCashRecieve = totalDueRecievedOne + totalDueRecievedTwo + int.parse(advanced.text.toString());
+    totalCashRecieve = totalDueRecievedOne + totalDueRecievedTwo + (int.tryParse(advanced.text) ?? 0);
 
 
     adminUserList.map((e) {
@@ -998,11 +1003,15 @@ class _TestRequestCreateTypeThreeState
       //totaltestprice.text = totalTestCost.toString();
       servicecharge.text = serviceCost.toString();
       test_item_cost = totalTestCost;
-      due_amount.text = (totalCost -
-          int.parse(advanced.text.toString()) -
-          int.parse(due_recieved_two.text.toString()) -  int.parse(due_recieved_one.text.toString()))
-          .toString();
 
+
+      int advancedValue = int.tryParse(advanced.text) ?? 0;
+      int dueOneValue = int.tryParse(due_recieved_one.text) ?? 0;
+      int dueTwoValue = int.tryParse(due_recieved_two.text) ?? 0;
+
+      if (advancedValue != 0 || dueOneValue != 0 || dueTwoValue != 0) {
+        due_amount.text = (totalCost - advancedValue - dueOneValue - dueTwoValue).toString();
+      }
 
       if (testData_updated.length == 0) {
         totalDiscount = 0;
@@ -1011,7 +1020,7 @@ class _TestRequestCreateTypeThreeState
       }
 
       total_discount.text = totalDiscount.toString();
-      totalCashRecieve = totalDueRecievedOne + totalDueRecievedTwo + int.parse(advanced.text.toString());
+      totalCashRecieve = totalDueRecievedOne + totalDueRecievedTwo + (int.tryParse(advanced.text) ?? 0);
 
 
       adminUserList.map((e) {
@@ -4078,6 +4087,8 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
         totalAmount: testDataRequest.totalprice,
         advance: advanced.text.toString(),
         dueAmount: due_amount.text.toString(),
+        dueRecieveOne: testDataRequest.due_recieved_one,
+        dueRecieveTwo: testDataRequest.due_recieved_two,
         totalDiscount: totalDiscount,
         testItems: testDataRequest.testlist,
         collection_charge: testDataRequest.servicecharge,
