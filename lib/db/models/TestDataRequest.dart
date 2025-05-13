@@ -53,12 +53,12 @@ class TestDataRequest {
         this.pathology_done,
         this.radiology_done,
         this.imageDiscountFile,
-        this.due_recieved_by,
+        this.due_recieved_two_by,
         this.advance_recieved_by,
         this.last_modifier,
-        this.due_recieved,
+        this.due_recieved_two,
         this.prepared_by,
-        this.due_recieve_date,
+        this.due_recieve_two_date,
         this.total_cash_recieve
 
 
@@ -87,14 +87,14 @@ class TestDataRequest {
   final dynamic image_two;
   final dynamic comments;
   final dynamic delivery_date;
-  final dynamic due_recieved_by;
+  final dynamic due_recieved_two_by;
   final dynamic advance_recieved_by;
   final dynamic last_modifier;
   final dynamic prepared_by;
-  final dynamic due_recieve_date;
+  final dynamic due_recieve_two_date;
   final dynamic total_cash_recieve;
 
-  dynamic due_recieved;
+  dynamic due_recieved_two;
   dynamic advanced;
   dynamic due_amount;
   dynamic total_admin_discount;
@@ -180,12 +180,12 @@ class TestDataRequest {
     'pathology_done': pathology_done,
     'radiology_done': radiology_done,
     'imageDiscountFile':imageDiscountFile,
-    'due_recieved_by':due_recieved_by,
+    'due_recieved_two_by':due_recieved_two_by,
     'advance_recieved_by':advance_recieved_by,
     'last_modifier':last_modifier,
-    'due_recieved':due_recieved,
+    'due_recieved_two':due_recieved_two,
     'prepared_by':prepared_by,
-    'due_recieve_date':due_recieve_date,
+    'due_recieve_two_date':due_recieve_two_date,
     'total_cash_recieve':total_cash_recieve,
 
   };
@@ -249,12 +249,12 @@ class TestDataRequest {
       radiology_done: parsedJson['radiology_done'],
 
       imageDiscountFile:parsedJson['imageDiscountFile'],
-      due_recieved_by:parsedJson['due_recieved_by'],
+      due_recieved_two_by:parsedJson['due_recieved_two_by'],
       advance_recieved_by:parsedJson['advance_recieved_by'],
       last_modifier: parsedJson['last_modifier'],
-      due_recieved: parsedJson['due_recieved'],
+      due_recieved_two: parsedJson['due_recieved_two'],
       prepared_by: parsedJson['prepared_by'],
-      due_recieve_date: parsedJson['due_recieve_date'],
+      due_recieve_two_date: parsedJson['due_recieve_two_date'],
       total_cash_recieve: parsedJson['total_cash_recieve'],
     );
   }

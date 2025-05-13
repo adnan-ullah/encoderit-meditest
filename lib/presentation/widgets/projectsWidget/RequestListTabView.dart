@@ -135,10 +135,10 @@ class _RequestListTabViewState extends State<RequestListTabView> {
       imageDiscountFile: requestItem.imageDiscountFile,
       prepared_by: requestItem.prepared_by,
       last_modifier: requestItem.last_modifier,
-      due_recieved:  requestItem.due_recieved,
-      due_recieve_date:  requestItem.due_recieve_date,
+      due_recieved_two:  requestItem.due_recieved_two,
+      due_recieve_two_date:  requestItem.due_recieve_two_date,
       total_cash_recieve:  requestItem.total_cash_recieve,
-      due_recieved_by:  requestItem.due_recieved_by,
+      due_recieved_two_by:  requestItem.due_recieved_two_by,
       advance_recieved_by: requestItem.advance_recieved_by
     );
 
