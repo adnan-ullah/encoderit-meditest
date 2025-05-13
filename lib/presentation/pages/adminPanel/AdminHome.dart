@@ -9,6 +9,7 @@ import 'package:healthcare_homelab/presentation/pages/adminPanel/StatusRequestLi
 import 'package:healthcare_homelab/presentation/pages/adminPanel/TestItemList.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AdminSuperReport.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/AgentReportList.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/CashReport.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/CollectionReportList.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -134,7 +135,7 @@ class _AdminHomeState extends State<AdminHome> {
     final isAdmin = isSuperUser || widget.check_type == "7";
     final isAgent = widget.check_type == "1" || widget.check_type == "3" || widget.check_type == "4";
     final isReportUser = widget.check_type == "2";
-    final isShareHolder = widget.check_type == "8";
+    final isShareHolder = isSuperUser ||  widget.check_type == "8";
 
     return Scaffold(
       backgroundColor: Color(0xFFF5F7FA), // Light health-themed background
@@ -245,7 +246,18 @@ class _AdminHomeState extends State<AdminHome> {
                         }
                       },
                     ),
-                  if (isSuperUser)
+                  if (isAdmin)
+                    _buildButton(
+                      title: "Cash Report",
+                      icon: Icons.people,
+                      onPressed: () async {
+                        final ref = await SharedPreferences.getInstance();
+                        if (ref.getString("phoneNumber") == superUser || ref.getString("type") == "3" || ref.getString("type") == "4" || ref.getString("type") == "7" ) {
+                          Get.to(() => CashReportList());
+                        }
+                      },
+                    ),
+                  if (isAdmin)
                     _buildButton(
                       title: "Cost",
                       icon: Icons.monetization_on,

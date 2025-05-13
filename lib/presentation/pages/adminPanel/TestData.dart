@@ -50,58 +50,74 @@ class _TestDataCreateState extends State<TestDataCreate> {
   }
 
   Future<void> updateToFirebase() async {
-    int currentTime = DateTime.now().millisecondsSinceEpoch;
-    late DatabaseReference dbrefTestReqModel;
-    dbrefTestReqModel = FirebaseDatabase.instance.ref("$testModelApi/");
+    // Create the updated TestData object
+    final updatedTestItemData = TestData(
+      id: widget.testItem!.id,
+      name: name.text,
+      servicecharge: servicecharge.text,
+      lastupdate: DateTime.now().millisecondsSinceEpoch.toString(),
+      softdelete: softdelete.text,
+      diagnostic_center: diagnostic_center.text,
+      discount: discount.text,
+      niddle_cost: niddle_cost.text,
+      testkitprice: testkitprice.text,
+      testprice: testprice.text,
+      transport_cost: transport_cost.text,
+      b2b_cost: b2b_cost.text,
+      is_payable: is_payable,
+      category: createReqController.toCategory[category]!,
+    );
 
-    updatedTestItemData = TestData(
-        id: widget.testItem!.id.toString(),
-        name: name.text.toString(),
-        servicecharge: servicecharge.text.toString(),
-        lastupdate: currentTime.toString(),
-        softdelete: softdelete.text.toString(),
-        diagnostic_center: diagnostic_center.text.toString(),
-        discount: discount.text.toString(),
-        niddle_cost: niddle_cost.text.toString(),
-        testkitprice: testkitprice.text.toString(),
-        testprice: testprice.text.toString(),
-        transport_cost: transport_cost.text.toString(),
-        b2b_cost: b2b_cost.text,
-        is_payable: is_payable,
-        category: createReqController.toCategory[category]!);
+    List<String> paths = getLastSixMonthTestDataPaths();
+    bool updated = false;
 
-    if (updatedTestItemData != null) {
-      await dbrefTestReqModel
-          .child(updatedTestItemData.id)
-          .update(jsonDecode(jsonEncode(updatedTestItemData)));
+    for (String path in paths) {
+      DatabaseReference dbRef = FirebaseDatabase.instance.ref("$path/${updatedTestItemData.id}");
+
+      // Check if the item exists
+      final snapshot = await dbRef.get();
+      if (snapshot.exists) {
+        await dbRef.update(jsonDecode(jsonEncode(updatedTestItemData)));
+        print("Updated test item at path: $path/${updatedTestItemData.id}");
+        updated = true;
+      }
+    }
+
+    if (!updated) {
+      print("No test item with ID ${updatedTestItemData.id} found in any path");
     }
   }
 
+
   Future<void> insertNewTestItemMethod() async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
-    DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = FirebaseDatabase.instance.ref("$testModelApi/");
+    DatabaseReference _dbrefTestModel;
+    _dbrefTestModel = FirebaseDatabase.instance.ref("$testModelApi/");
 
-    inserNewTestItem = TestData(
-        id: Uuid().v4(),
-        name: name.text,
-        servicecharge: servicecharge.text,
-        lastupdate: currentTime,
-        softdelete: softdelete.text,
-        diagnostic_center: diagnostic_center.text,
-        discount: discount.text,
-        niddle_cost: niddle_cost.text,
-        testkitprice: testkitprice.text,
-        testprice: testprice.text,
-        transport_cost: transport_cost.text,
-        b2b_cost: b2b_cost.text,
-        is_payable: is_payable,
-        category: createReqController.toCategory[category]);
-    if (inserNewTestItem != null) {
-      await _dbref_testReqModel
+    TestData inserNewTestItem = TestData(
+      id: Uuid().v4(),
+      name: name.text,
+      servicecharge: servicecharge.text,
+      lastupdate: currentTime,
+      softdelete: softdelete.text,
+      diagnostic_center: diagnostic_center.text,
+      discount: discount.text,
+      niddle_cost: niddle_cost.text,
+      testkitprice: testkitprice.text,
+      testprice: testprice.text,
+      transport_cost: transport_cost.text,
+      b2b_cost: b2b_cost.text,
+      is_payable: is_payable,
+      category: createReqController.toCategory[category],
+    );
+
+      await _dbrefTestModel
           .child(inserNewTestItem.id)
-          .set(inserNewTestItem.toJson());
-    }
+          .set(inserNewTestItem.toJson())
+          .then((_) {
+      }).catchError((error) {
+        print("Failed to insert new test item: $error");
+      });
   }
 
   @override

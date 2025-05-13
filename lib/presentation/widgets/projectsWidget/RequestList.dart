@@ -24,33 +24,44 @@ class RequestList extends StatefulWidget {
 
 class _RequestListState extends State<RequestList> {
   List<TestDataRequest> testDataEach = [];
-  late DatabaseReference _dbref_testReqModel;
   String? phoneNumber;
+  late DatabaseReference _dbref_testReqModel;
 
   Future<void> getPhoneData() async {
     _onLoading(true);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     phoneNumber = prefs.getString("phoneNumber")!;
+    List<String> monthPaths = getLastThreeMonthTestRequestPaths();
 
-    _dbref_testReqModel = await FirebaseDatabase.instance
-        .ref("$testRequestApi/$phoneNumber/");
-
-    _dbref_testReqModel.onValue.listen((event) {
-      setState(() {
-        testDataEach.clear();
-      });
-      for (DataSnapshot ds in event.snapshot.children) {
-        TestDataRequest testData =
-            TestDataRequest.fromJson(json.decode(jsonEncode(ds.value)));
-
-        setState(() {
-          testDataEach.add(testData);
-        });
-      }
-
-      if (testDataEach != null) _onLoading(false);
-      //Get.back();
+    setState(() {
+      testDataEach.clear();
     });
+    List<DatabaseReference> refs = [];
+    for (String path in monthPaths) {
+      _dbref_testReqModel = FirebaseDatabase.instance.ref("$path/$phoneNumber/");
+      refs.add(_dbref_testReqModel);
+
+      _dbref_testReqModel.onValue.listen((event) async {
+        List<TestDataRequest> tempData = [];
+        for (DataSnapshot ds in event.snapshot.children) {
+          try {
+            TestDataRequest testData =
+            TestDataRequest.fromJson(json.decode(jsonEncode(ds.value)));
+            tempData.add(testData);
+          } catch (e) {
+            print("Error parsing data: $e");
+          }
+        }
+        setState(() {
+          testDataEach.removeWhere((item) => tempData.any((newItem) {
+            return item.toString() == newItem.toString();
+          }));
+          testDataEach.addAll(tempData);
+        });
+      });
+    }
+    await Future.delayed(Duration(milliseconds: 500));
+    _onLoading(false);
   }
 
   var isLoading = true;
@@ -243,17 +254,17 @@ class _RequestListState extends State<RequestList> {
                                                             255, 26, 1, 1)),
                                                   ),
                                             Text(
-                                              (DateFormat('dd-MMM-yyy').format(DateTime
-                                                      .fromMillisecondsSinceEpoch(
-                                                          testDataEach[index]
-                                                              .dateofcreated)))
-                                                  .toString(),
+                                              testDataEach[index].dateofcreated != null
+                                                  ? DateFormat('dd-MMM-yyyy').format(
+                                                  DateTime.fromMillisecondsSinceEpoch(testDataEach[index].dateofcreated!))
+                                                  : "No Date",
                                               style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: DM.p12,
-                                                  color: Color.fromARGB(
-                                                      255, 26, 1, 1)),
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: DM.p12,
+                                                color: Color.fromARGB(255, 26, 1, 1),
+                                              ),
                                             ),
+
                                           ],
                                         ),
                                       );
@@ -289,67 +300,68 @@ class _RequestListState extends State<RequestList> {
 
 Future<void> _updateStatus(TestDataRequest requestItem) async {
   int currentTime = DateTime.now().millisecondsSinceEpoch;
-  late DatabaseReference DbrefTestReqModel;
-  DbrefTestReqModel = FirebaseDatabase.instance.ref("$testRequestApi/");
-  TestDataRequest updateTestRequestItem;
-  updateTestRequestItem = TestDataRequest(
-       id: requestItem.id,
-        name: requestItem.name,
-        gender: requestItem.gender,
-        mobile: requestItem.mobile,
-        age: requestItem.age,
-        testlist: requestItem.testlist,
-        totalprice: requestItem.totalprice,
-        servicecharge: requestItem.servicecharge,
-        address: requestItem.address,
-        referrer: requestItem.referrer,
-        lastupdate: currentTime,
-        dateofcreated: requestItem.dateofcreated,
-        softdelete: requestItem.softdelete,
-        latitude: requestItem.latitude,
-        longitude: requestItem.longitude,
-        teststatus: requestItem.teststatus + 1,
-        invoice_call: requestItem.invoice_call,
-        type: requestItem.type,
-        image_one: requestItem.image_one,
-        image_two: requestItem.image_two,
-        comments: requestItem.comments,
-        total_payable_imagine_cost: requestItem.total_payable_imagine_cost,
-        total_payable_pathology_cost: requestItem.total_payable_pathology_cost,
-        total_payable: requestItem.total_payable,
-        total_unpayable: requestItem.total_unpayable,
-        admin_pathology_discount: requestItem.admin_pathology_discount,
-        admin_radiology_discount: requestItem.admin_radiology_discount,
-        agent_commission: requestItem.agent_commission,
-        agent_pathology_discount: requestItem.agent_pathology_discount,
-        agent_radiology_discount: requestItem.agent_radiology_discount,
-        area: requestItem.area,
-        assigning: requestItem.assigning,
-        assigning_commission: requestItem.assigning_commission,
-        advanced: requestItem.advanced,
-        delivery_date: requestItem.delivery_date,
-        due_amount: requestItem.due_amount,
-        test_item_cost: requestItem.test_item_cost,
-        test_item_discount: requestItem.test_item_discount,
-        total_admin_discount: requestItem.total_admin_discount,
-        total_agent_discount: requestItem.total_agent_discount,
-        total_discount: requestItem.total_discount,
-        is_paid: requestItem.is_paid,
-        total_unpayable_pathology: requestItem.total_unpayable_pathology,
-        total_unpayable_imagine: requestItem.total_unpayable_imagine,
-        payment_date: requestItem.payment_date,
-        pathology_done: requestItem.pathology_done,
-        radiology_done: requestItem.radiology_done,
-        radiology_assigning: requestItem.radiology_assigning,
-        radiology_assigning_commission: requestItem.radiology_assigning_commission,
-        imageDiscountFile: requestItem.imageDiscountFile,
+  DateTime createdDate = DateTime.fromMillisecondsSinceEpoch(requestItem.dateofcreated ?? currentTime);
+  String year = createdDate.year.toString();
+  String month = getMonthName(createdDate.month);
+  String path = "$database_name/testRequest/$year/$month";
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref(path);
 
+  TestDataRequest updateTestRequestItem = TestDataRequest(
+    id: requestItem.id,
+    name: requestItem.name,
+    gender: requestItem.gender,
+    mobile: requestItem.mobile,
+    age: requestItem.age,
+    testlist: requestItem.testlist,
+    totalprice: requestItem.totalprice,
+    servicecharge: requestItem.servicecharge,
+    address: requestItem.address,
+    referrer: requestItem.referrer,
+    lastupdate: currentTime,
+    dateofcreated: requestItem.dateofcreated,
+    softdelete: requestItem.softdelete,
+    latitude: requestItem.latitude,
+    longitude: requestItem.longitude,
+    teststatus: requestItem.teststatus + 1,
+    invoice_call: requestItem.invoice_call,
+    type: requestItem.type,
+    image_one: requestItem.image_one,
+    image_two: requestItem.image_two,
+    comments: requestItem.comments,
+    total_payable_imagine_cost: requestItem.total_payable_imagine_cost,
+    total_payable_pathology_cost: requestItem.total_payable_pathology_cost,
+    total_payable: requestItem.total_payable,
+    total_unpayable: requestItem.total_unpayable,
+    admin_pathology_discount: requestItem.admin_pathology_discount,
+    admin_radiology_discount: requestItem.admin_radiology_discount,
+    agent_commission: requestItem.agent_commission,
+    agent_pathology_discount: requestItem.agent_pathology_discount,
+    agent_radiology_discount: requestItem.agent_radiology_discount,
+    area: requestItem.area,
+    assigning: requestItem.assigning,
+    assigning_commission: requestItem.assigning_commission,
+    advanced: requestItem.advanced,
+    delivery_date: requestItem.delivery_date,
+    due_amount: requestItem.due_amount,
+    test_item_cost: requestItem.test_item_cost,
+    test_item_discount: requestItem.test_item_discount,
+    total_admin_discount: requestItem.total_admin_discount,
+    total_agent_discount: requestItem.total_agent_discount,
+    total_discount: requestItem.total_discount,
+    is_paid: requestItem.is_paid,
+    total_unpayable_pathology: requestItem.total_unpayable_pathology,
+    total_unpayable_imagine: requestItem.total_unpayable_imagine,
+    payment_date: requestItem.payment_date,
+    pathology_done: requestItem.pathology_done,
+    radiology_done: requestItem.radiology_done,
+    radiology_assigning: requestItem.radiology_assigning,
+    radiology_assigning_commission: requestItem.radiology_assigning_commission,
+    imageDiscountFile: requestItem.imageDiscountFile,
   );
 
-  if (updateTestRequestItem != null) {
-    await DbrefTestReqModel
-        .child(updateTestRequestItem.mobile)
-        .child(updateTestRequestItem.id)
-        .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
-  }
+  await dbRef
+      .child(updateTestRequestItem.mobile)
+      .child(updateTestRequestItem.id)
+      .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
 }
+

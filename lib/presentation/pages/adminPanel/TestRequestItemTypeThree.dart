@@ -24,6 +24,7 @@ import '../../../db/models/TestDataRequest.dart';
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/CreateRequestController.dart';
 import '../../widgets/otherWidgets/PhotoViewImage.dart';
+import '../../widgets/projectsWidget/FormUserAge.dart';
 import '../Invoice_pdf/api/pdf_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_no_customer.dart';
@@ -73,6 +74,7 @@ class _TestRequestCreateTypeThreeState
 
   var advanced = new TextEditingController();
   var due_amount = new TextEditingController();
+  var due_recieved = new TextEditingController();
   var admin_discount = new TextEditingController();
 
   var agent_discount = new TextEditingController();
@@ -91,7 +93,7 @@ class _TestRequestCreateTypeThreeState
   List<AdminUserModel> adminUserList = [];
   List<TestData> testData_updated = [];
 
-  final Map<String, bool> testItemListWithSelected = {};
+   Map<String, bool> testItemListWithSelected = {};
 
   var totalTestCost = 0;
 
@@ -99,6 +101,7 @@ class _TestRequestCreateTypeThreeState
   var serviceCost = 0;
   var tubeCost = 0;
   var totalDiscount = 0;
+  var totalDueRecieved = 0;
   var test_item_cost = 0;
   var test_item_discount = 0;
 
@@ -110,10 +113,13 @@ class _TestRequestCreateTypeThreeState
   var total_payable_item = 0;
   var total_unpayable_item = 0;
 
+  var totalCashRecieve = 0;
+
   var urlDownload1;
   var urlDownload2;
 
   var newRequestData;
+  var paymentDate;
 
   bool isFromNetwork1 = false;
   bool isFromNetwork2 = false;
@@ -134,31 +140,32 @@ class _TestRequestCreateTypeThreeState
   var typeUser = "";
 
   Future<void> _getTestItemList() async {
-    late DatabaseReference DbrefTestModel;
-    DbrefTestModel = FirebaseDatabase.instance.ref("$testModelApi/");
+    testItemList.clear();
+    testItemListWithSelected.clear();
 
-    DbrefTestModel.onValue.listen((event) {
-      testItemList.clear();
-      // testItemListWithSelected.clear();
+    List<String> paths = getLastSixMonthTestDataPaths();
+    List<TestData> allItems = [];
 
-      for (DataSnapshot ds in event.snapshot.children) {
-        TestData testData =
-            TestData.fromJson(json.decode(jsonEncode(ds.value)));
+    for (String path in paths) {
+      final dbRef = FirebaseDatabase.instance.ref(path);
+      final snapshot = await dbRef.get();
 
-     setState(() {
-       testItemList.add(testData);
-       if (testItemListWithSelected[testData.id] != true)
-         testItemListWithSelected[testData.id] = false;
-     });
-
-        print("HEREEEE");
-
-        //false -> add button
-        //true -> remove button
-
+      if (snapshot.exists) {
+        for (DataSnapshot ds in snapshot.children) {
+          Map<String, dynamic> json = jsonDecode(jsonEncode(ds.value));
+          json['id'] = ds.key;
+          final item = TestData.fromJson(json);
+          if (!allItems.any((e) => e.id == item.id)) {
+            setState(() {
+              testItemList.add(item);
+              testItemListWithSelected[item.id] ??= false;
+            });
+          }
+        }
       }
-    });
+    }
   }
+
 
   Future<void> getAdminUserList() async {
     late DatabaseReference DbrefTestModel;
@@ -182,6 +189,22 @@ class _TestRequestCreateTypeThreeState
         adminUserList.add(testData);
       }
     });
+  }
+
+  Future<String?> getLoggedUserName() async {
+    final refs = await SharedPreferences.getInstance();
+    final phoneNumber = refs.getString("phoneNumber");
+    final typeUser = refs.getString("type");
+
+    if(phoneNumber=="$superUser") return "Super User";
+
+    if (phoneNumber == null || typeUser == null) {
+      return null;
+    }
+    final matchingUser = adminUserList.firstWhere(
+            (user) => user.phone == phoneNumber && user.type == typeUser
+    );
+    return matchingUser.name;
   }
 
   Future<void> openMap(double latitude, double longitude) async {
@@ -266,6 +289,11 @@ class _TestRequestCreateTypeThreeState
       due_amount.text = widget.testEachRequest!.due_amount.toString();
     else
       due_amount.text = totalprice.text.toString();
+
+    if (widget.testEachRequest!.due_recieved != null)
+      due_recieved.text = widget.testEachRequest!.due_recieved.toString();
+    else
+      due_recieved.text = "0";
 
     if (widget.testEachRequest!.testlist != null) {
       widget.testEachRequest!.testlist!.map((e) {
@@ -442,8 +470,8 @@ class _TestRequestCreateTypeThreeState
 
     final SharedPreferences pref = await SharedPreferences.getInstance();
 
-    final path1 = "files/${phone.text}/${imageFile1}";
-    final path2 = "files/${phone.text}/${imageFile2}";
+    final path1 = "$storageFiles/${phone.text}/${imageFile1}";
+    final path2 = "$storageFiles/${phone.text}/${imageFile2}";
 
     final ref1 = FirebaseStorage.instance.ref().child(path1);
     final ref2 = FirebaseStorage.instance.ref().child(path2);
@@ -466,109 +494,252 @@ class _TestRequestCreateTypeThreeState
     _onLoading(false);
   }
 
-  Future<void> _updateRequest() async {
-    int currentTime = DateTime.now().millisecondsSinceEpoch;
 
-    late DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("$testRequestApi/");
 
-    if (admin_discount.text == null || admin_discount.text.isEmpty) {
-      admin_discount.text = "0";
-    }
-    if (agent_discount.text == null || agent_discount.text.isEmpty) {
-      agent_discount.text = "0";
-    }
 
-    //uploadImage();
+    Future<void> _updateRequest() async {
+      int currentTime = DateTime.now().millisecondsSinceEpoch;
 
-    if (urlDownload1 != null) {
-      image_one.text = urlDownload1.toString();
-    }
-    if (urlDownload2 != null) {
-      image_two.text = urlDownload2.toString();
-    }
+      DateTime createdDate = DateTime.fromMillisecondsSinceEpoch(widget.testEachRequest?.dateofcreated ?? currentTime);
+      String year = createdDate.year.toString();
+      String month = getMonthName(createdDate.month);
 
-// pre collected modification
-//     if (pathologyDone && radiologyDone) {
-//       teststatus.text = "7";
-//     }
+      String path = "$database_name/testRequest/$year/$month";
+      DatabaseReference dbRef = FirebaseDatabase.instance.ref(path);
 
-    updateTestRequestItem = TestDataRequest(
-      id: widget.testEachRequest!.id.toString(),
-      name: name.text.toString(),
-      gender: gender.toString(),
-      mobile: phone.text.toString(),
-      age: age.text,
-      testlist: testData_updated,
-      totalprice: totalCost,
-      servicecharge: serviceCost,
-      address: address.text.toString(),
-      referrer: referrer.text.toString(),
-      lastupdate: currentTime,
-      dateofcreated: widget.testEachRequest!.dateofcreated,
-      softdelete: 0,
-      latitude: widget.testEachRequest!.latitude,
-      longitude: widget.testEachRequest!.longitude,
-      teststatus: int.parse(teststatus.text),
-      invoice_call: invoice_call.text.toString(),
-      type: createReqController.toType[type.text.toString()],
-      image_one: image_one.text.toString() == "empty"
-          ? null
-          : image_one.text.toString(),
-      image_two: image_two.text.toString() == "empty"
-          ? null
-          : image_two.text.toString(),
-      delivery_date: dateTime_delivery,
-      comments: comments.text.toString(),
-      advanced: int.parse(advanced.text.toString()),
-      due_amount: int.parse(due_amount.text.toString()),
-      total_admin_discount: int.parse(admin_discount.text.toString()),
-      total_agent_discount: int.parse(agent_discount.text.toString()),
-      test_item_cost: test_item_cost,
-      test_item_discount: test_item_discount,
-      total_discount: totalDiscount,
-      total_payable_imagine_cost: total_payable_imaging,
-      total_payable_pathology_cost: total_payable_pathology,
-      total_payable: total_payable_item,
-      total_unpayable: total_unpayable_item,
-      admin_pathology_discount:
-          int.parse(admin_pathology_discount.text.toString()),
-      admin_radiology_discount:
-          int.parse(admin_radiology_discount.text.toString()),
-      agent_commission: int.parse(agent_commission.text.toString()),
-      agent_pathology_discount:
-          int.parse(agent_pathology_discount.text.toString()),
-      agent_radiology_discount:
-          int.parse(agent_radiology_discount.text.toString()),
-      area: "",
-      is_paid: false,
-      total_unpayable_imagine: total_unpayable_imaging,
-      total_unpayable_pathology: total_unpayable_pathology,
-      payment_date: 0,
-      pathology_done: pathologyDone,
-      radiology_done: radiologyDone,
-      assigning: pathologyAssigningPhone.toString(),
-      radiology_assigning: radiologyAssigningPhone.toString(),
-      assigning_commission: int.parse(assigning_commission.text.toString()),
-      radiology_assigning_commission:
-          int.parse(radiology_assigning_commission.text.toString()),
+      admin_discount.text =
+      admin_discount.text.isEmpty ? "0" : admin_discount.text;
+      agent_discount.text =
+      agent_discount.text.isEmpty ? "0" : agent_discount.text;
 
-        imageDiscountFile: widget.testEachRequest!.imageDiscountFile
-    );
+      if (urlDownload1 != null) image_one.text = urlDownload1!;
+      if (urlDownload2 != null) image_two.text = urlDownload2!;
 
-    if (updateTestRequestItem != null) {
-      await DbrefTestReqModel
+
+      if (typeUser == "4") {
+        teststatus.text = (pathologyDone && radiologyDone) ? "3" : "8";
+      }
+
+      TestDataRequest buildRequest({
+        String? due_recieved_by,
+        String? advance_recieved_by,
+        String? preparedBy,
+        String? lastModifier,
+        int? dueReceivedDate,
+        int? paymentDate,
+      })  {
+        return TestDataRequest(
+          id: widget.testEachRequest!.id!,
+          name: name.text,
+          gender: gender,
+          mobile: phone.text,
+          age: age.text,
+          testlist: testData_updated,
+          totalprice: totalCost,
+          servicecharge: serviceCost,
+          address: address.text,
+          referrer: referrer.text,
+          lastupdate: currentTime,
+          dateofcreated: widget.testEachRequest!.dateofcreated,
+          softdelete: 0,
+          latitude: widget.testEachRequest!.latitude,
+          longitude: widget.testEachRequest!.longitude,
+          teststatus: int.parse(teststatus.text),
+          invoice_call: invoice_call.text,
+          type: createReqController.toType[type.text] ?? 0,
+          image_one: image_one.text == "empty" ? null : image_one.text,
+          image_two: image_two.text == "empty" ? null : image_two.text,
+          delivery_date: dateTime_delivery,
+          comments: comments.text,
+          advanced: int.parse(advanced.text),
+          due_amount: int.parse(due_amount.text),
+          total_admin_discount: int.parse(admin_discount.text),
+          total_agent_discount: int.parse(agent_discount.text),
+          test_item_cost: test_item_cost,
+          test_item_discount: test_item_discount,
+          total_discount: totalDiscount,
+          total_payable_imagine_cost: total_payable_imaging,
+          total_payable_pathology_cost: total_payable_pathology,
+          total_payable: total_payable_item,
+          total_unpayable: total_unpayable_item,
+          admin_pathology_discount: int.parse(admin_pathology_discount.text),
+          admin_radiology_discount: int.parse(admin_radiology_discount.text),
+          agent_commission: int.parse(agent_commission.text),
+          agent_pathology_discount: int.parse(agent_pathology_discount.text),
+          agent_radiology_discount: int.parse(agent_radiology_discount.text),
+          area: "",
+          is_paid: false,
+          total_unpayable_imagine: total_unpayable_imaging,
+          total_unpayable_pathology: total_unpayable_pathology,
+          payment_date: paymentDate ?? widget.testEachRequest?.payment_date,
+          pathology_done: pathologyDone,
+          radiology_done: radiologyDone,
+          assigning: pathologyAssigningPhone.toString(),
+          radiology_assigning: radiologyAssigningPhone.toString(),
+          assigning_commission: int.parse(assigning_commission.text),
+          radiology_assigning_commission:
+          int.parse(radiology_assigning_commission.text),
+          due_recieved_by:
+          due_recieved_by ?? widget.testEachRequest?.due_recieved_by,
+          advance_recieved_by:
+          advance_recieved_by ?? widget.testEachRequest?.advance_recieved_by,
+          prepared_by: preparedBy ?? widget.testEachRequest?.prepared_by,
+          due_recieved: int.tryParse(due_recieved.text.trim()) ?? 0,
+          last_modifier: lastModifier ?? widget.testEachRequest?.last_modifier,
+          due_recieve_date:
+          dueReceivedDate ?? widget.testEachRequest?.due_recieve_date,
+          total_cash_recieve: totalCashRecieve,
+        );
+      }
+
+      var updateTestRequestItem = buildRequest();
+      final loggedUserName = await getLoggedUserName();
+
+      String? preparedBy = widget.testEachRequest!.prepared_by;
+      String? lastModifier = widget.testEachRequest!.last_modifier;
+      final testStatus = widget.testEachRequest!.teststatus;
+      final isCollectingPage = (testStatus <= 5 || testStatus == 8);
+
+      final originalPaymentDate = widget.testEachRequest!.payment_date ?? 0;
+      final originalDueReceivedDate =
+          widget.testEachRequest!.due_recieve_date ?? 0;
+
+      final updatedAdvanced = int.tryParse(advanced.text) ?? 0;
+      final updatedDueReceived = int.tryParse(due_recieved.text) ?? 0;
+
+      int tempPaymentDate = originalPaymentDate;
+      int tempDueReceivedDate = originalDueReceivedDate;
+
+      String? advanceReceiverName = widget.testEachRequest!.advance_recieved_by;
+      String? dueReceiverName = widget.testEachRequest!.due_recieved_by;
+      ;
+
+      int? originalAdvance = widget.testEachRequest!.advanced??0;
+      int? originalDue = widget.testEachRequest!.due_recieved??0;
+      //int? orignalDueRecieve = int.parse(widget.testEachRequest!.due_recieved)??0;
+
+
+
+      final isAdvanceReceiverUntracked =
+          (widget.testEachRequest!.payment_date == null ||
+              widget.testEachRequest!.payment_date == 0) &&
+              updatedAdvanced > 0 && originalAdvance!=updatedAdvanced;
+
+      if (isCollectingPage && isAdvanceReceiverUntracked) {
+        tempPaymentDate = currentTime;
+        advanceReceiverName = phoneNumber;
+      }
+
+      final isDueUntracked =
+          (widget.testEachRequest!.due_recieved == null ||
+              widget.testEachRequest!.due_recieved == 0) &&
+              updatedDueReceived > 0 && originalDue!=updatedDueReceived;
+
+      if (isCollectingPage && isDueUntracked) {
+        tempDueReceivedDate = currentTime;
+        dueReceiverName = phoneNumber;
+      }
+
+      if (widget.testEachRequest!.prepared_by == null ||
+          widget.testEachRequest!.prepared_by!.isEmpty) {
+        preparedBy = loggedUserName;
+      } else if (isTestRequestModified(
+          widget.testEachRequest!, updateTestRequestItem)) {
+        lastModifier = loggedUserName;
+      }
+      //
+      // if (widget.testEachRequest?.teststatus != 1 &&
+      //     (widget.testEachRequest?.teststatus ?? 0) <= 5 ||
+      //     widget.testEachRequest?.teststatus == 8) {
+      //   dueRecieverName = loggedUserName;
+      // }
+
+      updateTestRequestItem = buildRequest(
+        preparedBy: preparedBy,
+        lastModifier: lastModifier,
+        advance_recieved_by: advanceReceiverName,
+        due_recieved_by: dueReceiverName,
+        dueReceivedDate: tempDueReceivedDate,
+        paymentDate: tempPaymentDate,
+      );
+
+      if (testStatus == 2 || testStatus == 8) {
+        InvoicePrint(
+            updateTestRequestItem, totalDiscount, due_amount, advanced, tubeCost,assigningMapping);
+      }
+
+      await dbRef
           .child(updateTestRequestItem.mobile)
           .child(updateTestRequestItem.id)
           .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
 
-      if (widget.testEachRequest!.teststatus == 2) {
-        InvoicePrint(updateTestRequestItem, totalDiscount, due_amount, advanced,
-            tubeCost);
-      }
+      Get.back();
     }
 
-    Get.back();
+  bool isTestRequestModified(
+      TestDataRequest oldRequest, TestDataRequest newRequest) {
+    return oldRequest.name != newRequest.name ||
+        oldRequest.gender != newRequest.gender ||
+        oldRequest.mobile != newRequest.mobile ||
+        oldRequest.age != newRequest.age ||
+        oldRequest.testlist != newRequest.testlist ||
+        oldRequest.totalprice != newRequest.totalprice ||
+        oldRequest.servicecharge != newRequest.servicecharge ||
+        oldRequest.address != newRequest.address ||
+        oldRequest.referrer != newRequest.referrer ||
+        oldRequest.lastupdate != newRequest.lastupdate ||
+        oldRequest.softdelete != newRequest.softdelete ||
+        oldRequest.latitude != newRequest.latitude ||
+        oldRequest.longitude != newRequest.longitude ||
+        // teststatus is intentionally skipped
+        oldRequest.invoice_call != newRequest.invoice_call ||
+        oldRequest.type != newRequest.type ||
+        oldRequest.image_one != newRequest.image_one ||
+        oldRequest.image_two != newRequest.image_two ||
+        oldRequest.delivery_date != newRequest.delivery_date ||
+        oldRequest.comments != newRequest.comments ||
+        oldRequest.advanced != newRequest.advanced ||
+        oldRequest.due_amount != newRequest.due_amount ||
+        oldRequest.total_admin_discount != newRequest.total_admin_discount ||
+        oldRequest.total_agent_discount != newRequest.total_agent_discount ||
+        oldRequest.test_item_cost != newRequest.test_item_cost ||
+        oldRequest.test_item_discount != newRequest.test_item_discount ||
+        oldRequest.total_discount != newRequest.total_discount ||
+        oldRequest.total_payable_imagine_cost !=
+            newRequest.total_payable_imagine_cost ||
+        oldRequest.total_payable_pathology_cost !=
+            newRequest.total_payable_pathology_cost ||
+        oldRequest.total_payable != newRequest.total_payable ||
+        oldRequest.total_unpayable != newRequest.total_unpayable ||
+        oldRequest.admin_pathology_discount !=
+            newRequest.admin_pathology_discount ||
+        oldRequest.admin_radiology_discount !=
+            newRequest.admin_radiology_discount ||
+        oldRequest.agent_commission != newRequest.agent_commission ||
+        oldRequest.agent_pathology_discount !=
+            newRequest.agent_pathology_discount ||
+        oldRequest.agent_radiology_discount !=
+            newRequest.agent_radiology_discount ||
+        oldRequest.area != newRequest.area ||
+        oldRequest.is_paid != newRequest.is_paid ||
+        oldRequest.total_unpayable_imagine !=
+            newRequest.total_unpayable_imagine ||
+        oldRequest.total_unpayable_pathology !=
+            newRequest.total_unpayable_pathology ||
+        oldRequest.payment_date != newRequest.payment_date ||
+        oldRequest.pathology_done != newRequest.pathology_done ||
+        oldRequest.radiology_done != newRequest.radiology_done ||
+        oldRequest.assigning != newRequest.assigning ||
+        oldRequest.radiology_assigning != newRequest.radiology_assigning ||
+        oldRequest.assigning_commission != newRequest.assigning_commission ||
+        oldRequest.radiology_assigning_commission !=
+            newRequest.radiology_assigning_commission ||
+        oldRequest.imageDiscountFile != newRequest.imageDiscountFile ||
+        oldRequest.due_recieved_by != newRequest.due_recieved_by ||
+        oldRequest.last_modifier != newRequest.last_modifier ||
+        oldRequest.due_recieved != newRequest.due_recieved ||
+        oldRequest.due_recieve_date != newRequest.due_recieve_date ||
+        oldRequest.total_cash_recieve != newRequest.total_cash_recieve;
   }
 
   void calculationProcess() {
@@ -577,6 +748,7 @@ class _TestRequestCreateTypeThreeState
     serviceCost = 0;
     tubeCost = 0;
     totalDiscount = 0;
+    totalDueRecieved = 0;
     test_item_discount = 0;
     total_payable_pathology = 0;
     total_payable_imaging = 0;
@@ -603,6 +775,8 @@ class _TestRequestCreateTypeThreeState
         .toString();
 
     totalDiscount = totalDiscount + int.parse(admin_discount.text.toString());
+    totalDueRecieved =totalDueRecieved + int.parse(due_recieved.text.toString());
+
 
     //agent
 
@@ -668,6 +842,8 @@ class _TestRequestCreateTypeThreeState
 
     totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
 
+
+
     //totalCost = totalTestCost  + serviceCost - totalDiscount;
 
     totalprice.text = totalCost.toString();
@@ -676,9 +852,11 @@ class _TestRequestCreateTypeThreeState
     total_payable_item = total_payable_pathology + total_payable_imaging;
     total_unpayable_item = total_unpayable_pathology + total_unpayable_imaging;
 
-    if (advanced.text != null && advanced.text.isNotEmpty) {
-      due_amount.text =
-          (totalCost - int.parse(advanced.text.toString())).toString();
+    if (advanced.text.isNotEmpty || due_recieved.text.isNotEmpty) {
+      due_amount.text = (totalCost -
+          int.parse(advanced.text.toString()) -
+          int.parse(due_recieved.text.toString()))
+          .toString();
     }
     if (testData_updated.length == 0) {
       totalDiscount = 0;
@@ -687,9 +865,11 @@ class _TestRequestCreateTypeThreeState
     }
 
     total_discount.text = totalDiscount.toString();
+    totalCashRecieve = totalDueRecieved + int.parse(advanced.text.toString());
+
 
     adminUserList.map((e) {
-      if (e.referrer_code.contains(referrer.text.toString())) {
+      if (e.referrer_code !=null && e.referrer_code.contains(referrer.text.toString())) {
         var pathology_commision = 0;
         var imagine_commission = 0;
 
@@ -780,8 +960,10 @@ class _TestRequestCreateTypeThreeState
       //totaltestprice.text = totalTestCost.toString();
       servicecharge.text = serviceCost.toString();
       test_item_cost = totalTestCost;
-      due_amount.text =
-          (totalCost - int.parse(advanced.text.toString())).toString();
+      due_amount.text = (totalCost -
+          int.parse(advanced.text.toString()) -
+          int.parse(due_recieved.text.toString()))
+          .toString();
 
       if (testData_updated.length == 0) {
         totalDiscount = 0;
@@ -790,9 +972,11 @@ class _TestRequestCreateTypeThreeState
       }
 
       total_discount.text = totalDiscount.toString();
+      totalCashRecieve = totalDueRecieved + int.parse(advanced.text.toString());
+
 
       adminUserList.map((e) {
-        if (e.referrer_code.contains(referrer.text.toString())) {
+        if (e.referrer_code !=null && e.referrer_code.contains(referrer.text.toString())) {
           var pathology_commision = 0;
           var imagine_commission = 0;
 
@@ -1015,14 +1199,9 @@ class _TestRequestCreateTypeThreeState
                             ],
                           ),
                         ),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          validatorField: validateString,
-                          textInputType: TextInputType.number,
-                          controller: age,
-                          title: "Age",
-                          value: "0",
-                          activate: false,
+                        FormUserAge(
+                          ageController: age,
+                          initialAge: age.text,
                         ),
                         Padding(
                           padding: EdgeInsets.all(DM.p5),
@@ -2711,13 +2890,16 @@ class _TestRequestCreateTypeThreeState
                                   child: TextFormField(
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
-                                      if (advanced.text != null &&
-                                          advanced.text.isNotEmpty) {
-                                        due_amount.text = (totalCost -
-                                                int.parse(
-                                                    advanced.text.toString()))
-                                            .toString();
-                                      }
+                                      int advance = advanced.text.isNotEmpty
+                                          ? int.parse(advanced.text)
+                                          : 0;
+                                      int dueRecieved =
+                                      due_recieved.text.isNotEmpty
+                                          ? int.parse(due_recieved.text)
+                                          : 0;
+                                      due_amount.text =
+                                          (totalCost - advance - dueRecieved)
+                                              .toString();
                                     },
                                     controller: advanced,
                                     decoration: InputDecoration(
@@ -2749,12 +2931,86 @@ class _TestRequestCreateTypeThreeState
                           ),
                         ),
 
+                            widget.testEachRequest?.teststatus <= 5 ||
+                                widget.testEachRequest?.teststatus == 8
+                            ?
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Due Received",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      int advance =
+                                      advanced.text.isNotEmpty
+                                          ? int.parse(advanced.text)
+                                          : 0;
+                                      int dueRecieved = due_recieved
+                                          .text.isNotEmpty
+                                          ? int.parse(due_recieved.text)
+                                          : 0;
+                                      due_amount.text = (totalCost -
+                                          advance -
+                                          dueRecieved)
+                                          .toString();
+                                    },
+                                    controller: due_recieved,
+                                    decoration: InputDecoration(
+                                        errorStyle: TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: appTheme)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                              appTheme), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ):SizedBox(),
                         FormUserInfo(
                           formKey: _formKey,
                           textInputType: TextInputType.name,
                           controller: due_amount,
                           title: "Due Amount",
-                          value: "${totalCost - int.parse(advanced.text)}",
+                          value:   "${totalCost - int.parse(advanced.text) - int.parse(due_recieved.text)}",
                           activate: true,
                         ),
 
@@ -3131,7 +3387,7 @@ class _TestRequestCreateTypeThreeState
                     onPressed: () async {
                       if (_formKey.currentState?.validate() == true) {
                         if (await chechkingInternet()) {
-                          if (widget.testEachRequest!.teststatus == 2) {
+                          if (widget.testEachRequest!.teststatus == 2 ||  widget.testEachRequest!.teststatus == 8) {
                             showDialog(
                                 context: context,
                                 builder: (context) {
@@ -3675,7 +3931,7 @@ String? validateString(String? value) {
 }
 
 Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
-    due_amount, advanced, tubeCost) async {
+    due_amount, advanced, tubeCost, assigningMapping) async {
   final date = DateTime.now().millisecondsSinceEpoch;
 
   final invoice = Invoice(
@@ -3700,7 +3956,11 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
         testItems: testDataRequest.testlist,
         collection_charge: testDataRequest.servicecharge,
         tube_cost: tubeCost,
-        deliveryDate: testDataRequest.delivery_date),
+        deliveryDate: testDataRequest.delivery_date,
+        reciever_name: assigningMapping[testDataRequest.due_recieved_by],
+        last_modifier: testDataRequest.last_modifier,
+        prepared_by: testDataRequest.prepared_by,
+        totalCashRecieved: testDataRequest.total_cash_recieve),
 
     info: InvoiceInfo(
       date: DateTime.now(),
@@ -3715,32 +3975,6 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
                 " (${testDataRequest.testlist![index].diagnostic_center})",
             testPrice: testDataRequest.testlist![index].testprice,
             serialNumber: index + 1))
-
-    // InvoiceItem(
-    //   testName: 'Coffee',
-    //   quantity: 3,
-    //   testPrice: 5.999999,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Water',
-    //   quantity: 8,
-    //   testPrice: 0.99,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Orange',
-    //   quantity: 3,
-    //   testPrice: 2.99,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Apple',
-    //   quantity: 8,
-    //   testPrice: 3.99,
-    // ),
-    // InvoiceItem(
-    //   testName: 'Mango',
-    //   quantity: 1,
-    //   testPrice: 1.59,
-    // ),
     ,
   );
 

@@ -43,6 +43,7 @@ class _StatusRequestListState extends State<StatusRequestList>
 
   @override
   void initState() {
+    populateAllRequest();
     tabController = TabController(
       length: widget.statusIndices.length,
       vsync: this,
@@ -93,15 +94,18 @@ class _StatusRequestListState extends State<StatusRequestList>
   }
 
   Future<void> _getNotification(BuildContext context) async {
-    _dbref_testReqModel =
-        await FirebaseDatabase.instance.ref("$testRequestApi/");
+    List<String> lastThreeMonthsPaths = getLastThreeMonthTestRequestPaths();
 
-    status2 = _dbref_testReqModel.onChildAdded.listen((event) async {
-      SharedPreferences refs = await SharedPreferences.getInstance();
-      var phoneNumber = refs.getString("phoneNumber");
-      var type_admin = refs.getString("type");
-      getAdminNotification(phoneNumber, type_admin, context);
-    });
+    for (String path in lastThreeMonthsPaths) {
+      DatabaseReference dbref = FirebaseDatabase.instance.ref(path);
+
+      dbref.onChildAdded.listen((event) async {
+        SharedPreferences refs = await SharedPreferences.getInstance();
+        var phoneNumber = refs.getString("phoneNumber");
+        var type_admin = refs.getString("type");
+        getAdminNotification(phoneNumber, type_admin, context);
+      });
+    }
   }
 
   @override
@@ -177,20 +181,25 @@ class _StatusRequestListState extends State<StatusRequestList>
 }
 
 Future<void> populateAllRequest() async {
-  CreateRequestController createRequestController =
-      Get.put(CreateRequestController());
-  late DatabaseReference dbrefTestRequest;
-  dbrefTestRequest =
-      FirebaseDatabase.instance.ref("$testRequestApi/");
+  CreateRequestController createRequestController = Get.put(CreateRequestController());
   FirebaseDatabase.instance.setPersistenceEnabled(true);
-  dbrefTestRequest.keepSynced(true);
 
   createRequestController.testItemList.clear();
   createRequestController.testItemListWithSelected.clear();
 
-  dbrefTestRequest.onValue.listen((event) {
-    print("\n\n\n\n");
-  });
+  List<String> lastThreeMonthsPaths = getLastThreeMonthTestRequestPaths();
+
+  for (String path in lastThreeMonthsPaths) {
+    DatabaseReference dbrefTestRequest = FirebaseDatabase.instance.ref(path);
+    dbrefTestRequest.keepSynced(true);
+
+    dbrefTestRequest.onValue.listen((event) {
+      if (event.snapshot.exists) {
+        // Your logic to parse and add data
+        print("Data from $path: ${event.snapshot.value}");
+      }
+    });
+  }
 }
 
 Future<void> getAdminNotification(

@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,6 +11,8 @@ import 'package:healthcare_homelab/responsives/dimensions.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../constants/app_info.dart';
 
 class ShareholderReportList extends StatefulWidget {
   const ShareholderReportList({super.key});
@@ -26,11 +29,19 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
   double percentage = 0;
   List<TestDataRequest> requests = [];
   int totalQuantity = 0;
-  double totalSellWithoutDue = 0, totalCost = 0, companyEarning = 0, reporterEarning = 0;
+  double totalSellWithoutDue = 0,
+      totalCost = 0,
+      companyEarning = 0,
+      reporterEarning = 0;
 
-  final now = DateTime.now();
-  // late final int startDate = DateTime(now.year, now.month, 1, 0, 0, 1).millisecondsSinceEpoch;
-  // late final int endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59).millisecondsSinceEpoch;
+  // Date filter variables
+  int startDate =
+      DateTime(DateTime.now().year, DateTime.now().month, 1, 0, 0, 1)
+          .millisecondsSinceEpoch;
+  int endDate = DateTime(DateTime.now().year, DateTime.now().month,
+          DateTime.now().day, 23, 59, 59)
+      .millisecondsSinceEpoch;
+
   final GlobalKey _dialogKey = GlobalKey();
 
   void _showLoading(bool show) {
@@ -78,7 +89,8 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
     final snapshot = await ref.get();
     if (snapshot.exists) {
       try {
-        final user = AdminUserModel.fromJson(json.decode(json.encode(snapshot.value)));
+        final user =
+            AdminUserModel.fromJson(json.decode(json.encode(snapshot.value)));
         percentage = double.tryParse(user.percentage ?? "0") ?? 0;
         print("Fetched percentage: $percentage for phone: $phone");
       } catch (e) {
@@ -87,25 +99,48 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
     }
   }
 
+  // Generate list of year/month paths to query based on date range
+  List<String> _getYearMonthPaths() {
+    final start = DateTime.fromMillisecondsSinceEpoch(startDate);
+    final end = DateTime.fromMillisecondsSinceEpoch(endDate);
+    final paths = <String>[];
+    final formatter = DateFormat('MMMM'); // Month name (e.g., January)
+
+    // Iterate through each month in the date range
+    var current = DateTime(start.year, start.month, 1);
+    while (current.isBefore(end) ||
+        (current.year == end.year && current.month == end.month)) {
+      final year = current.year;
+      final monthName = formatter.format(current);
+      paths.add("$database_name/testRequest/$year/$monthName");
+      // Move to next month
+      current = DateTime(current.year, current.month + 1, 1);
+    }
+
+    return paths;
+  }
+
   Future<void> _fetchData() async {
+    // _showLoading(true);
     await _fetchPercentage();
 
-    final ref = FirebaseDatabase.instance.ref(testRequestApi);
-    try {
-      final snapshot = await ref.get();
-      _processSnapshot(snapshot);
+    requests.clear();
+    totalQuantity = 0;
+    totalSellWithoutDue = 0;
+    totalCost = 0;
+    companyEarning = 0;
 
-      ref.onValue.listen((event) {
-        try {
-          _processSnapshot(event.snapshot);
-        } finally {
-          if (mounted) {
-            setState(() {
-              isLoading = false;
-            });
-          }
+    final paths = _getYearMonthPaths();
+    final ref = FirebaseDatabase.instance;
+
+    try {
+      // Fetch data for all paths
+      for (var path in paths) {
+        final snapshot = await ref.ref(path).get();
+        if (snapshot.exists) {
+          _processSnapshot(snapshot);
         }
-      });
+      }
     } catch (e) {
       print("Error fetching test requests: $e");
     } finally {
@@ -116,33 +151,38 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
   }
 
   void _processSnapshot(DataSnapshot snapshot) {
-    requests.clear();
-    totalQuantity = 0;
-    totalSellWithoutDue = 0;
-    totalCost = 0;
-    companyEarning = 0;
-
     for (var ds in snapshot.children) {
       for (var dsLater in ds.children) {
         try {
-          final data = TestDataRequest.fromJson(json.decode(json.encode(dsLater.value)));
+          final data =
+              TestDataRequest.fromJson(json.decode(json.encode(dsLater.value)));
           if (data.dateofcreated == null || data.teststatus != 6) {
             continue;
           }
-            requests.add(data);
-            totalQuantity++;
-            final payable = data.total_payable ?? 0;
-            final due = data.due_amount ?? 0;
-            if (data.is_paid == true || due == 0) totalSellWithoutDue += payable;
-            totalCost += data.totalprice;
-            companyEarning = totalSellWithoutDue - totalCost;
+          if (startDate <= data.dateofcreated! &&
+              data.dateofcreated! <= endDate) {
+            // Avoid duplicate requests by checking if already in list
+            if (!requests
+                .any((r) => r.id == data.id && r.mobile == data.mobile)) {
+              requests.add(data);
+              totalQuantity++;
+              final payable = data.total_payable ?? 0;
+              final due = data.due_amount ?? 0;
+              if (data.is_paid == true || due == 0)
+                totalSellWithoutDue += payable;
+              totalCost += data.totalprice ?? 0;
+              companyEarning = totalSellWithoutDue - totalCost;
+            }
+          }
         } catch (e) {
-          print("Error parsing TestDataRequest: $e for JSON: ${json.encode(dsLater.value)}");
+          print(
+              "Error parsing TestDataRequest: $e for JSON: ${json.encode(dsLater.value)}");
         }
       }
     }
 
     reporterEarning = companyEarning * (percentage / 100);
+    if (mounted) setState(() {});
   }
 
   @override
@@ -175,6 +215,82 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            // Date filter buttons
+            Padding(
+              padding: EdgeInsets.all(DM.p15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Container(
+                      height: DM.p60,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: appTheme,
+                          elevation: 0,
+                        ),
+                        onPressed: () async {
+                          final DateTime? picked = await showDatePicker(
+                            context: context,
+                            initialDate:
+                                DateTime.fromMillisecondsSinceEpoch(startDate),
+                            firstDate: DateTime(2022, 11),
+                            lastDate: DateTime(2030, 7),
+                          );
+                          if (picked != null) {
+                            setState(() {
+                              startDate = DateTime(picked.year, picked.month,
+                                      picked.day, 0, 0, 1)
+                                  .millisecondsSinceEpoch;
+                              _fetchData();
+                            });
+                          }
+                        },
+                        child: Text(
+                          "First: ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(startDate))}",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: DM.p15),
+                  Flexible(
+                    child: Container(
+                      height: DM.p60,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: appTheme,
+                          elevation: 0,
+                        ),
+                        onPressed: () async {
+                          final DateTime? picked = await showDatePicker(
+                            context: context,
+                            initialDate:
+                                DateTime.fromMillisecondsSinceEpoch(endDate),
+                            firstDate: DateTime(2022, 11),
+                            lastDate: DateTime(2030, 7),
+                          );
+                          if (picked != null) {
+                            setState(() {
+                              endDate = DateTime(picked.year, picked.month,
+                                      picked.day, 23, 59, 59)
+                                  .millisecondsSinceEpoch;
+                              _fetchData();
+                            });
+                          }
+                        },
+                        child: Text(
+                          "Last: ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(endDate))}",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             Container(
               height: DM.screenHeight * 0.62,
               margin: EdgeInsets.symmetric(horizontal: DM.p10, vertical: DM.p5),
@@ -186,35 +302,39 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
                     child: isLoading
                         ? const SizedBox()
                         : Container(
-                      width: DM.screenWidth - DM.p20,
-                      child: requests.isNotEmpty
-                          ? Column(
-                        children: [
-                          Divider(thickness: DM.p2, color: Colors.black),
-                          Expanded(
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: requests.length,
-                              itemBuilder: (_, index) => _buildRequestRow(index),
-                            ),
+                            width: DM.screenWidth - DM.p20,
+                            child: requests.isNotEmpty
+                                ? Column(
+                                    children: [
+                                      Divider(
+                                          thickness: DM.p2,
+                                          color: Colors.black),
+                                      Expanded(
+                                        child: ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: requests.length,
+                                          itemBuilder: (_, index) =>
+                                              _buildRequestRow(index),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Container(
+                                    height: DM.screenHeight * 0.65,
+                                    margin:
+                                        EdgeInsets.symmetric(vertical: DM.p16),
+                                    child: Center(
+                                      child: Text(
+                                        "Request list empty",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: DM.p25,
+                                          color: appTheme,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                           ),
-                        ],
-                      )
-                          : Container(
-                        height: DM.screenHeight * 0.65,
-                        margin: EdgeInsets.symmetric(vertical: DM.p16),
-                        child: Center(
-                          child: Text(
-                            "Request list empty",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w400,
-                              fontSize: DM.p25,
-                              color: appTheme,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -223,7 +343,8 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
             _buildSummaryRow("Total Sell (Without Due) = $totalSellWithoutDue"),
             _buildSummaryRow("Total Cost = $totalCost"),
             _buildSummaryRow("Company Total Earning = $companyEarning"),
-            _buildSummaryRow("Reporter Earning ($percentage%) = $reporterEarning"),
+            _buildSummaryRow(
+                "Reporter Earning ($percentage%) = $reporterEarning"),
           ],
         ),
       ),
@@ -237,17 +358,19 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
       padding: EdgeInsets.symmetric(horizontal: DM.p5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: ["Invoice Id", "Name", "Date", "Sell"].map((text) => Expanded(
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              fontSize: DM.p12,
-              color: Color.fromARGB(255, 26, 1, 1),
-            ),
-          ),
-        )).toList(),
+        children: ["Invoice Id", "Name", "Date", "Sell"]
+            .map((text) => Expanded(
+                  child: Text(
+                    text,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: DM.p12,
+                      color: Color.fromARGB(255, 26, 1, 1),
+                    ),
+                  ),
+                ))
+            .toList(),
       ),
     );
   }
@@ -269,19 +392,24 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
           request.name ?? "N/A",
           request.dateofcreated == null
               ? "N/A"
-              : DateFormat('dd-MMM-yyyy').format(DateTime.fromMillisecondsSinceEpoch(request.dateofcreated!)),
+              : DateFormat('dd-MMM-yyyy').format(
+                  DateTime.fromMillisecondsSinceEpoch(request.dateofcreated!)),
           "${request.total_payable ?? 0}",
-        ].asMap().entries.map((entry) => Expanded(
-          child: Text(
-            entry.value,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: DM.p12,
-              color: Color.fromARGB(255, 26, 1, 1),
-            ),
-          ),
-        )).toList(),
+        ]
+            .asMap()
+            .entries
+            .map((entry) => Expanded(
+                  child: Text(
+                    entry.value,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: DM.p12,
+                      color: Color.fromARGB(255, 26, 1, 1),
+                    ),
+                  ),
+                ))
+            .toList(),
       ),
     );
   }

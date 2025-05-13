@@ -19,6 +19,7 @@ class Customer {
     final dynamic prepared_by;
     final dynamic reciever_name;
   final dynamic last_modifier;
+  final dynamic totalCashRecieved;
 
 
 
@@ -44,7 +45,8 @@ class Customer {
 
     this.prepared_by,
     this.reciever_name,
-    this.last_modifier
+    this.last_modifier,
+    this.totalCashRecieved
 
     
 

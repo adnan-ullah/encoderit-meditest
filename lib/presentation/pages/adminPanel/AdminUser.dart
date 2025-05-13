@@ -52,15 +52,20 @@ class AdminUserController extends GetxController {
   void filterUsers(String value) {
     if (value.isNotEmpty) {
       isClear.value = true;
+      final lowerValue = value.toLowerCase();
       filteredUsers.assignAll(
         adminUsers.where((user) =>
-            user.phone.toLowerCase().contains(value.toLowerCase())).toList(),
+        (user.phone != null && user.phone!.toLowerCase().contains(lowerValue)) ||
+            (user.surname != null && user.surname!.toLowerCase().contains(lowerValue))
+        ).toList(),
       );
     } else {
       isClear.value = false;
       filteredUsers.assignAll(adminUsers);
     }
   }
+
+
 
   Future<void> removeUser(String phoneNumber) async {
     try {
@@ -182,21 +187,19 @@ class AdminUser extends StatelessWidget {
                         child: ListView(
                           scrollDirection: Axis.horizontal,
                           children: [
-                            Expanded(
-                              child: Card(
-                                child: Container(
-                                  height: DM.screenHeight * 0.65,
-                                  width: DM.screenWidth * 1.2,
-                                  child: ListView.builder(
-                                    itemCount:
-                                    controller.filteredUsers.length,
-                                    itemBuilder: (context, index) {
-                                      final user =
-                                      controller.filteredUsers[index];
-                                      return _buildUserItem(
-                                          context, user);
-                                    },
-                                  ),
+                            Card(
+                              child: Container(
+                                height: DM.screenHeight * 0.65,
+                                width: DM.screenWidth * 1.2,
+                                child: ListView.builder(
+                                  itemCount:
+                                  controller.filteredUsers.length,
+                                  itemBuilder: (context, index) {
+                                    final user =
+                                    controller.filteredUsers[index];
+                                    return _buildUserItem(
+                                        context, user);
+                                  },
                                 ),
                               ),
                             ),

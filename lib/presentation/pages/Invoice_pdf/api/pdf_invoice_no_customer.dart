@@ -252,91 +252,74 @@ class PdfInvoiceApiNoCustomer {
             style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: DM.p30),
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(
-              "Prepared by: ${invoice.customer.prepared_by}",
-              style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              "Received by: ${invoice.customer.reciever_name}",
-              style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              "Modified by: ${invoice.customer.last_modifier}",
-              style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
-            ),
-          ]),
         ]),
-        Column(children: [
-          Container(
-            width: PdfPageFormat.inch * 1.3,
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: PdfPageFormat.inch * 1.3,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Total Amount:",
-                    style: TextStyle(fontSize: 8),
+                  Text("Prepared by: ", style: TextStyle(fontSize: 8)),
+                  SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      "${invoice.customer.prepared_by ?? ''}",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
+                      textAlign: TextAlign.right,
+                      softWrap: true,
+                      maxLines: 2,
+                    ),
                   ),
-                  Text(
-                    "",
-                    textAlign: TextAlign.right,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
+                ],
+              ),
+            ),
+            SizedBox(height: 4),
+            Container(
+              width: PdfPageFormat.inch * 1.3,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Received by: ", style: TextStyle(fontSize: 8)),
+                  SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      "${invoice.customer.reciever_name ?? ''}",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
+                      textAlign: TextAlign.right,
+                      softWrap: true,
+                      maxLines: 2,
+                    ),
                   ),
-                ]),
-          ),
-          Container(
+                ],
+              ),
+            ),
+            SizedBox(height: 4),
+            Container(
               width: PdfPageFormat.inch * 1.3,
               child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "Discount:",
-                      style: TextStyle(fontSize: 8),
-                    ),
-                    Text(
-                      "",
-                      textAlign: TextAlign.right,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Modified by: ", style: TextStyle(fontSize: 8)),
+                  SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      "${invoice.customer.last_modifier ?? ''}",
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
-                    )
-                  ])),
-          Container(
-              width: PdfPageFormat.inch * 1.3,
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "Advance:",
-                      style: TextStyle(fontSize: 8),
-                    ),
-                    Text(
-                      "",
                       textAlign: TextAlign.right,
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
-                    )
-                  ])),
-          Container(
-              width: PdfPageFormat.inch * 1.3,
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "Due Amount Total:",
-                      style: TextStyle(fontSize: 8),
+                      softWrap: true,
+                      maxLines: 2,
                     ),
-                    Text(
-                      "",
-                      textAlign: TextAlign.right,
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
-                    )
-                  ])),
-        ]),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        )
       ]));
 
   static Widget buildHeadInfo() => Container(

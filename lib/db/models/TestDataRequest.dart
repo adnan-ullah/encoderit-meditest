@@ -53,10 +53,13 @@ class TestDataRequest {
         this.pathology_done,
         this.radiology_done,
         this.imageDiscountFile,
-        this.reciever_name,
+        this.due_recieved_by,
+        this.advance_recieved_by,
         this.last_modifier,
         this.due_recieved,
         this.prepared_by,
+        this.due_recieve_date,
+        this.total_cash_recieve
 
 
 
@@ -84,9 +87,12 @@ class TestDataRequest {
   final dynamic image_two;
   final dynamic comments;
   final dynamic delivery_date;
-  final dynamic reciever_name;
+  final dynamic due_recieved_by;
+  final dynamic advance_recieved_by;
   final dynamic last_modifier;
   final dynamic prepared_by;
+  final dynamic due_recieve_date;
+  final dynamic total_cash_recieve;
 
   dynamic due_recieved;
   dynamic advanced;
@@ -174,10 +180,14 @@ class TestDataRequest {
     'pathology_done': pathology_done,
     'radiology_done': radiology_done,
     'imageDiscountFile':imageDiscountFile,
-    'reciever_name':reciever_name,
+    'due_recieved_by':due_recieved_by,
+    'advance_recieved_by':advance_recieved_by,
     'last_modifier':last_modifier,
     'due_recieved':due_recieved,
     'prepared_by':prepared_by,
+    'due_recieve_date':due_recieve_date,
+    'total_cash_recieve':total_cash_recieve,
+
   };
 
   factory TestDataRequest.fromJson(Map<String, dynamic> parsedJson) {
@@ -239,12 +249,13 @@ class TestDataRequest {
       radiology_done: parsedJson['radiology_done'],
 
       imageDiscountFile:parsedJson['imageDiscountFile'],
-      reciever_name:parsedJson['reciever_name'],
+      due_recieved_by:parsedJson['due_recieved_by'],
+      advance_recieved_by:parsedJson['advance_recieved_by'],
       last_modifier: parsedJson['last_modifier'],
       due_recieved: parsedJson['due_recieved'],
       prepared_by: parsedJson['prepared_by'],
-
-
+      due_recieve_date: parsedJson['due_recieve_date'],
+      total_cash_recieve: parsedJson['total_cash_recieve'],
     );
   }
 }

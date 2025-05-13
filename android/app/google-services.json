@@ -1,22 +1,31 @@
 {
   "project_info": {
-    "project_number": "931036564647",
-    "firebase_url": "https://meditest-new-default-rtdb.firebaseio.com",
-    "project_id": "meditest-new",
-    "storage_bucket": "meditest-new.firebasestorage.app"
+    "project_number": "503892071126",
+    "firebase_url": "https://meditest-fe4a5-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "meditest-fe4a5",
+    "storage_bucket": "meditest-fe4a5.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:931036564647:android:414ceb38809b4cfd351f82",
+        "mobilesdk_app_id": "1:503892071126:android:cf6fa9289c8dea98652f77",
         "android_client_info": {
-          "package_name": "com.innova.meditest_new"
+          "package_name": "com.innova.meditest"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "503892071126-2u0kad5e8pb29c5k08pv7698m2d0sch2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.innova.meditest",
+            "certificate_hash": "37b9dbe6095ddc3b4b071122a634e09350443e15"
+          }
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyBaIT7LlcNx4ivFCFrquyVw6cDkgl6ehHY"
+          "current_key": "AIzaSyChsQEuBLsAXD5Hy9dAwK1yBR9Rj7d47m4"
         }
       ],
       "services": {

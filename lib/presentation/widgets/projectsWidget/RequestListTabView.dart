@@ -74,10 +74,15 @@ class _RequestListTabViewState extends State<RequestListTabView> {
 
   Future<void> _updateStatus(TestDataRequest requestItem) async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
-    late DatabaseReference DbrefTestReqModel;
-    DbrefTestReqModel = FirebaseDatabase.instance.ref("$testRequestApi/");
-    TestDataRequest updateTestRequestItem;
-    updateTestRequestItem = TestDataRequest(
+
+    DateTime createdDate = DateTime.fromMillisecondsSinceEpoch(requestItem.dateofcreated ?? currentTime);
+    String year = createdDate.year.toString();
+    String month = getMonthName(createdDate.month);
+
+    String path = "$database_name/testRequest/$year/$month";
+    DatabaseReference dbRefTestReqModel = FirebaseDatabase.instance.ref(path);
+
+    TestDataRequest updateTestRequestItem = TestDataRequest(
       id: requestItem.id,
       name: requestItem.name,
       gender: requestItem.gender,
@@ -130,15 +135,19 @@ class _RequestListTabViewState extends State<RequestListTabView> {
       imageDiscountFile: requestItem.imageDiscountFile,
       prepared_by: requestItem.prepared_by,
       last_modifier: requestItem.last_modifier,
+      due_recieved:  requestItem.due_recieved,
+      due_recieve_date:  requestItem.due_recieve_date,
+      total_cash_recieve:  requestItem.total_cash_recieve,
+      due_recieved_by:  requestItem.due_recieved_by,
+      advance_recieved_by: requestItem.advance_recieved_by
     );
 
-    if (updateTestRequestItem != null) {
-      await DbrefTestReqModel
-          .child(updateTestRequestItem.mobile)
-          .child(updateTestRequestItem.id)
-          .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
-    }
+    await dbRefTestReqModel
+        .child(updateTestRequestItem.mobile)
+        .child(updateTestRequestItem.id)
+        .update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
   }
+
 
   Future<void> getStatusData(context) async {
     _onLoading(true);
@@ -147,63 +156,79 @@ class _RequestListTabViewState extends State<RequestListTabView> {
     type = ref.getString("type");
     phone = ref.getString("phoneNumber");
 
-    late DatabaseReference _dbref_testReqModel;
-    _dbref_testReqModel = await FirebaseDatabase.instance.ref("$testRequestApi/");
+    List<String> paths = getLastThreeMonthTestRequestPaths();
 
-    _dbref_testReqModel.onValue.listen((event) async {
-      _newTestRequestList.clear();
-      testStatusRequestList.clear();
+    for (String path in paths) {
+      DatabaseReference dbRef = FirebaseDatabase.instance.ref(path);
 
-      for (DataSnapshot ds in event.snapshot.children) {
-        for (DataSnapshot dsLater in ds.children) {
-          TestDataRequest testData = TestDataRequest.fromJson(json.decode(jsonEncode(dsLater.value)));
+      if (path == paths.first) {
+        dbRef.onValue.listen((event) async{
+          testStatusRequestList.clear();
+          parseTestDataFromSnapshot(event.snapshot);
+        });
+      } else {
+        DataSnapshot snapshot = await dbRef.get();
+        parseTestDataFromSnapshot(snapshot);
+      }
+    }
 
-          if (type == "4" && phone != superUser) {
-            if (testData.assigning == phone || testData.radiology_assigning == phone) {
-              if (widget.statusKey.toString() == "PRECOLLECTED") {
-                if ((testData.pathology_done == true && testData.radiology_done == false) ||
-                    (testData.pathology_done == false && testData.radiology_done == true)) {
-                  testStatusRequestList.add(testData);
-                }
-              } else if (widget.statusKey.toString() == "RECIEVED") {
-                if (testData.pathology_done == false || testData.radiology_done == false) {
-                  testStatusRequestList.add(testData);
-                }
-              } else {
-                if (widget.statusKey.toString() == "COLLECTED") {
-                  if (testData.pathology_done == true && testData.radiology_done == true) {
-                    testStatusRequestList.add(testData);
-                  }
-                } else {
-                  testStatusRequestList.add(testData);
-                }
+    _onLoading(false);
+  }
+
+  void parseTestDataFromSnapshot(DataSnapshot snapshot) {
+    List<TestDataRequest> tempList = [];
+
+    for (DataSnapshot ds in snapshot.children) {
+      for (DataSnapshot dsLater in ds.children) {
+        TestDataRequest testData = TestDataRequest.fromJson(
+          json.decode(jsonEncode(dsLater.value)),
+        );
+
+        if (type == "4" && phone != superUser) {
+          if (testData.assigning == phone || testData.radiology_assigning == phone) {
+            if (widget.statusKey == "PRECOLLECTED") {
+              if ((testData.pathology_done == true && testData.radiology_done == false) ||
+                  (testData.pathology_done == false && testData.radiology_done == true)) {
+                tempList.add(testData);
               }
-            }
-          } else if (type == "3" && phone != superUser) {
-            if (widget.statusKey.toString() == "PRECOLLECTED") {
-              if ((testData.assigning != "" && testData.assigning != null && testData.assigning != "null") ||
-                  (testData.radiology_assigning != "" && testData.radiology_assigning != null && testData.radiology_assigning != "null")) {
-                if (!(testData.pathology_done && testData.radiology_done))
-                  testStatusRequestList.add(testData);
+            } else if (widget.statusKey == "RECIEVED") {
+              if (!testData.pathology_done || !testData.radiology_done) {
+                tempList.add(testData);
               }
-            } else if (widget.statusKey.toString() == "COLLECTED") {
-              if (testData.pathology_done != null && testData.radiology_done != null) {
-                if (testData.pathology_done && testData.radiology_done) testStatusRequestList.add(testData);
+            } else if (widget.statusKey == "COLLECTED") {
+              if (testData.pathology_done && testData.radiology_done) {
+                tempList.add(testData);
               }
             } else {
-              testStatusRequestList.add(testData);
+              tempList.add(testData);
+            }
+          }
+        } else if (type == "3" && phone != superUser) {
+          if (widget.statusKey == "PRECOLLECTED") {
+            if ((testData.assigning?.isNotEmpty == true && testData.assigning != "null") ||
+                (testData.radiology_assigning?.isNotEmpty == true && testData.radiology_assigning != "null")) {
+              if (!(testData.pathology_done && testData.radiology_done)) {
+                tempList.add(testData);
+              }
+            }
+          } else if (widget.statusKey == "COLLECTED") {
+            if (testData.pathology_done && testData.radiology_done) {
+              tempList.add(testData);
             }
           } else {
-            testStatusRequestList.add(testData);
+            tempList.add(testData);
           }
+        } else {
+          tempList.add(testData);
         }
       }
+    }
 
-      tabStatusList();
-
-      if (testStatusRequestList != null) _onLoading(false);
-    });
+    testStatusRequestList.addAll(tempList);
+    tabStatusList();
   }
+
+
 
   Future getStoragePermission() async {
     PermissionStatus status = await Permission.storage.request();
@@ -242,8 +267,8 @@ class _RequestListTabViewState extends State<RequestListTabView> {
   @override
   Widget build(BuildContext context) {
     // Check if any item has non-null prepared_by or last_modifier for statusKey 1 or 2
-    bool showChangedByColumn = (createRequest_controller.toStatus[widget.statusKey] == 1 ||
-        createRequest_controller.toStatus[widget.statusKey] == 2) &&
+    bool showChangedByColumn = (createRequest_controller.toStatus[widget.statusKey]! <= 6 ||
+        createRequest_controller.toStatus[widget.statusKey] == 8) &&
         _newTestRequestList.any((item) => item.prepared_by != null || item.last_modifier != null);
 
     return Padding(
@@ -296,7 +321,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                       Flexible(
                         flex: 3,
                         child: Container(
-                          width: DM.p120,
+                          width: DM.p50,
                           child: Text(
                             "Date",
                             style: TextStyle(fontWeight: FontWeight.w900, fontSize: DM.p14, color: Color.fromARGB(255, 26, 1, 1)),
@@ -406,7 +431,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                               Flexible(
                                 flex: 3,
                                 child: Container(
-                                  width: DM.p120,
+                                  width: DM.p50,
                                   child: Text(
                                     (DateFormat('dd-MMM HH:mm')
                                         .format(DateTime.fromMillisecondsSinceEpoch(_newTestRequestList[index].dateofcreated)))
@@ -436,9 +461,9 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                 ),
                               widget.isButton && (createRequest_controller.toStatus[widget.statusKey]! < 5)
                                   ? Flexible(
-                                flex: 2,
+                                flex: 3,
                                 child: Container(
-                                  width: DM.p65,
+                                  width: DM.p120,
                                   child: MaterialButton(
                                     onPressed: () async {
                                       _updateStatus(_newTestRequestList[index]);
@@ -504,14 +529,20 @@ class _RequestListTabViewState extends State<RequestListTabView> {
 }
 
 Future<void> getAdminNotification(phone, type, context) async {
-  late DatabaseReference DbrefTestModel;
-  DbrefTestModel = FirebaseDatabase.instance.ref("$adminUserApi/");
   FirebaseDatabase.instance.setPersistenceEnabled(true);
-  DbrefTestModel.keepSynced(true);
 
-  DbrefTestModel.onValue.listen((event) async {
+  List<String> lastThreeMonthsPaths = getLastThreeMonthTestRequestPaths();
+
+  for (String path in lastThreeMonthsPaths) {
+    DatabaseReference dbRefTestModel = FirebaseDatabase.instance.ref(path);
+    dbRefTestModel.keepSynced(true);
+
+    final event = await dbRefTestModel.once();
+    if (!event.snapshot.exists) continue;
+
     for (DataSnapshot ds in event.snapshot.children) {
-      AdminUserModel testData = AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
+      AdminUserModel testData =
+      AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
 
       if (testData.phone == phone || phone == "$superUser") {
         if (type == "1" || type == "7" || phone == "$superUser") {
@@ -520,8 +551,9 @@ Future<void> getAdminNotification(phone, type, context) async {
         }
       }
     }
-  });
+  }
 }
+
 
 String getFirstName(String name) {
   String firstName;

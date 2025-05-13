@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.innova.meditest_new" "\0"
+            VALUE "CompanyName", "com.innova.meditest" "\0"
             VALUE "FileDescription", "healthcare_homelab" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "healthcare_homelab" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2022 com.innova.meditest_new. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2022 com.innova.meditest. All rights reserved." "\0"
             VALUE "OriginalFilename", "healthcare_homelab.exe" "\0"
             VALUE "ProductName", "healthcare_homelab" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
