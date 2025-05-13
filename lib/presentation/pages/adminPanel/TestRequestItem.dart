@@ -614,18 +614,24 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     final isCollectingPage = (testStatus <= 5 || testStatus == 8);
 
     final originalPaymentDate = widget.testEachRequest!.payment_date ?? 0;
+    final originalDueReceivedOneDate =
+        widget.testEachRequest!.due_recieve_one_date ?? 0;
     final originalDueReceivedTwoDate =
         widget.testEachRequest!.due_recieve_two_date ?? 0;
 
     final updatedAdvanced = int.tryParse(advanced.text) ?? 0;
+    final updatedDueReceivedOne = int.tryParse(due_recieved_one.text) ?? 0;
     final updatedDueReceivedTwo = int.tryParse(due_recieved_two.text) ?? 0;
 
     int tempPaymentDate = originalPaymentDate;
+    int tempDueReceivedOneDate = originalDueReceivedOneDate;
     int tempDueReceivedTwoDate = originalDueReceivedTwoDate;
 
     String? advanceReceiverName = widget.testEachRequest!.advance_recieved_by;
+    String? dueReceiverOneName = widget.testEachRequest!.due_recieved_one_by;
     String? dueReceiverTwoName = widget.testEachRequest!.due_recieved_two_by;
     int? originalAdvance = widget.testEachRequest!.advanced??0;
+    int? originalDueOne = widget.testEachRequest!.due_recieved_one??0;
     int? originalDueTwo = widget.testEachRequest!.due_recieved_two??0;
     //int? orignalDueRecieve = int.parse(widget.testEachRequest!.due_recieved)??0;
 
@@ -639,6 +645,16 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     if (isCollectingPage && isAdvanceReceiverUntracked) {
       tempPaymentDate = currentTime;
       advanceReceiverName = phoneNumber;
+    }
+
+    final isDueOneUntracked =
+        (widget.testEachRequest!.due_recieved_one == null ||
+            widget.testEachRequest!.due_recieved_one == 0) &&
+            updatedDueReceivedOne > 0 && originalDueOne!=updatedDueReceivedOne;
+
+    if (isCollectingPage && isDueOneUntracked) {
+      tempDueReceivedOneDate = currentTime;
+      dueReceiverOneName = phoneNumber;
     }
 
     final isDueTwoUntracked =
@@ -666,6 +682,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     // }
 
     updateTestRequestItem = buildRequest(
+      due_recieved_one_by: dueReceiverOneName,
+      dueReceivedOneDate:tempDueReceivedOneDate ,
       preparedBy: preparedBy,
       lastModifier: lastModifier,
       advance_recieved_by: advanceReceiverName,
@@ -3455,6 +3473,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 child: Container(
                                   height: DM.p42,
                                   child: TextFormField(
+                                    readOnly: (widget.testEachRequest?.advanced ?? 0) > 0,
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
                                       int advance = advanced.text.isNotEmpty
@@ -3499,6 +3518,85 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                             ],
                           ),
                         ),
+                        widget.testEachRequest?.teststatus <= 5 ||
+                            widget.testEachRequest?.teststatus == 8
+                            ? Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Due Received One",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    readOnly: (widget.testEachRequest?.due_recieved_one ?? 0) > 0,
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      int advance = advanced.text.isNotEmpty
+                                          ? int.parse(advanced.text)
+                                          : 0;
+                                      int dueRecievedOne =
+                                      due_recieved_one.text.isNotEmpty
+                                          ? int.parse(due_recieved_one.text)
+                                          : 0;
+                                      int dueRecievedTwo =
+                                      due_recieved_two.text.isNotEmpty
+                                          ? int.parse(due_recieved_two.text)
+                                          : 0;
+                                      due_amount.text =
+                                          (totalCost - advance - dueRecievedOne - dueRecievedTwo)
+                                              .toString();
+                                    },
+                                    controller: due_recieved_one,
+                                    decoration: InputDecoration(
+                                        errorStyle:
+                                        TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: appTheme)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                              appTheme), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding:
+                                        EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                            : SizedBox(),
 
                             widget.testEachRequest?.teststatus <= 5 ||
                                 widget.testEachRequest?.teststatus == 8
