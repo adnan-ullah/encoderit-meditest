@@ -175,10 +175,10 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
     for (var ds in snapshot.children) {
       try {
         final data = CostModel.fromJson(json.decode(json.encode(ds.value)));
-        if (data.postingDate == null) {
+        if (data.voucherDate == null) {
           continue;
         }
-        if (startDate <= data.postingDate! && data.postingDate! <= endDate) {
+        if (startDate <= data.voucherDate! && data.voucherDate! <= endDate) {
           costRequests.add(data);
           totalCostQuantity++;
           totalCost += int.parse(data.totalAmount) ?? 0;
@@ -462,10 +462,10 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          request.postingDate == null
+          request.voucherDate == null
               ? "N/A"
               : DateFormat('dd-MMM-yyyy').format(
-                  DateTime.fromMillisecondsSinceEpoch(request.postingDate!)),
+                  DateTime.fromMillisecondsSinceEpoch(request.voucherDate!)),
           request.voucherNo ?? "N/A",
           request.category ?? "N/A",
           NumberFormat.currency(symbol: '', decimalDigits: 2)
