@@ -3013,7 +3013,18 @@ class _TestRequestCreateTypeThreeState
                                 child: Container(
                                   height: DM.p42,
                                   child: TextFormField(
-                                    readOnly: (widget.testEachRequest?.due_recieved_one ?? 0) > 0,
+                                    readOnly: () {
+                                      if ((widget.testEachRequest?.due_amount ?? 0) == 0) return true;
+                                      if ((widget.testEachRequest?.due_recieved_two ?? 0) > 0) {
+                                        if ((widget.testEachRequest?.due_recieved_one ?? 0) > 0 &&
+                                            widget.testEachRequest?.due_recieve_one_date != null &&
+                                            widget.testEachRequest?.due_recieve_two_date != null) {
+                                          return widget.testEachRequest?.due_recieve_one_date<widget.testEachRequest?.due_recieve_two_date;
+                                        }
+                                        return false;
+                                      }
+                                      return true;
+                                    }(),
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
                                       int advance = advanced.text.isNotEmpty
@@ -3094,6 +3105,18 @@ class _TestRequestCreateTypeThreeState
                                 child: Container(
                                   height: DM.p42,
                                   child: TextFormField(
+                                    readOnly: () {
+                                      if ((widget.testEachRequest?.due_amount ?? 0) == 0) return true;
+                                      if ((widget.testEachRequest?.due_recieved_one ?? 0) > 0) {
+                                        if ((widget.testEachRequest?.due_recieved_two ?? 0) > 0 &&
+                                            widget.testEachRequest?.due_recieve_one_date != null &&
+                                            widget.testEachRequest?.due_recieve_two_date != null) {
+                                          return widget.testEachRequest?.due_recieve_two_date<widget.testEachRequest?.due_recieve_one_date;
+                                        }
+                                        return false;
+                                      }
+                                      return true;
+                                    }(),
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
                                       int advance = advanced.text.isNotEmpty
@@ -3145,7 +3168,10 @@ class _TestRequestCreateTypeThreeState
                           textInputType: TextInputType.name,
                           controller: due_amount,
                           title: "Due Amount",
-                          value:  "${totalCost - int.parse(advanced.text) - int.parse(due_recieved_one.text) - int.parse(due_recieved_two.text)}",
+                          value: "${totalCost -
+                              (int.tryParse(advanced.text) ?? 0) -
+                              (int.tryParse(due_recieved_one.text) ?? 0) -
+                              (int.tryParse(due_recieved_two.text) ?? 0)}",
                           activate: true,
                         ),
 

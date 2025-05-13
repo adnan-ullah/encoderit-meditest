@@ -1397,11 +1397,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 child: Text(
                                   "Discount Card\n(যদি থাকে)",
                                   style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: DM.p14,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: DM.p14,
                                       color: blackFontColor),
+                                  ),
                                 ),
-                              ),
                               SizedBox(
                                 width: DM.p5,
                               ),
@@ -1412,16 +1412,16 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                               image_discount_card.text != "empty" ||
                                       imageDiscountFile != null
                                   ? Column(
-                                      children: [
+                                children: [
                                         //MyphotoView for Form
-                                        Container(
-                                          height: DM.p80,
-                                          width: DM.p80,
+                                  Container(
+                                    height: DM.p80,
+                                    width: DM.p80,
                                           child: isFromNetwork_discount
-                                              ? InkWell(
-                                                  onTap: () {
-                                                    showDialog(
-                                                        context: context,
+                                        ? InkWell(
+                                      onTap: () {
+                                          showDialog(
+                                            context: context,
                                                         builder: (context) {
                                                           return MyDialogView(
                                                               myChild:
@@ -1434,86 +1434,75 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                 "Network",
                                                           ));
                                                         });
-                                                  },
+                                      },
                                                   child: Container(
-                                                    child: Image.network(
+                                      child: Image.network(
                                                       widget.testEachRequest!
                                                           .imageDiscountFile
                                                           .toString()!,
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                )
+                                        fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    )
                                               : InkWell(
-                                                  onTap: () {
-                                                    showDialog(
-                                                        context: context,
+                                      onTap: () {
+                                          showDialog(
+                                            context: context,
                                                         builder: (context) {
                                                           return MyDialogView(
-                                                              myChild:
-                                                                  MyPhotoView(
-                                                            image:
-                                                                imageDiscountFile,
-                                                            imageType: "File",
+                                              myChild: MyPhotoView(
+                                                image: imageDiscountFile,
+                                                imageType: "File",
                                                           ));
                                                         });
-                                                  },
+                                      },
                                                   child: Container(
-                                                    child: Image.file(
-                                                      imageDiscountFile!,
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                ),
+                                      child: Image.file(
+                                        imageDiscountFile!,
+                                        fit: BoxFit.cover,
                                         ),
+                                      ),
+                                    ),
+                                  ),
                                         typeUser == "7" || phone == superUser
                                             ? IconButton(
-                                                color: appTheme,
-                                                icon: Icon(
-                                                  CupertinoIcons
-                                                      .xmark_circle_fill,
-                                                  size: DM.p30,
-                                                ),
-                                                onPressed: () {
-                                                  setState(() {
-                                                    imageDiscountFile = null;
-                                                    image_discount_card.text =
-                                                        "empty";
-                                                  });
-                                                },
+                                      color: appTheme,
+                                      icon: Icon(
+                                        CupertinoIcons.xmark_circle_fill,
+                                        size: DM.p30,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          imageDiscountFile = null;
+                                          image_discount_card.text = "empty";
+                                        });
+                                      },
                                               )
                                             : SizedBox(),
-                                      ],
-                                    )
+                                ],
+                              )
                                   : Container(
-                                      height: DM.p60,
-                                      width: DM.p80,
-                                      margin: EdgeInsets.symmetric(
-                                          horizontal: DM.p15),
-                                      child: MaterialButton(
-                                          onPressed: () async {
-                                            showDialog(
-                                                context: context,
+                                height: DM.p60,
+                                width: DM.p80,
+                                margin: EdgeInsets.symmetric(horizontal: DM.p15),
+                                child: MaterialButton(
+                                  onPressed: () async {
+                                    showDialog(
+                                      context: context,
                                                 builder: (context) {
                                                   return Center(
-                                                    child: Container(
-                                                      color: whiteColor,
-                                                      child: Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Container(
-                                                            margin:
-                                                                EdgeInsets.all(
-                                                                    DM.p16),
-                                                            height: DM.p130,
-                                                            width: DM.p120,
-                                                            child:
-                                                                ElevatedButton(
-                                                                    style: ElevatedButton.styleFrom(
-                                                                        backgroundColor:
-                                                                            appTheme,
+                                        child: Container(
+                                          color: whiteColor,
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Container(
+                                                margin: EdgeInsets.all(DM.p16),
+                                                height: DM.p130,
+                                                width: DM.p120,
+                                                child: ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: appTheme,
                                                                         elevation:
                                                                             0),
                                                                     onPressed:
@@ -1522,26 +1511,23 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                           pickedFile =
                                                                           await ImagePicker()
                                                                               .getImage(
-                                                                        source:
-                                                                            ImageSource.gallery,
-                                                                        maxWidth:
-                                                                            1200,
-                                                                        maxHeight:
-                                                                            1600,
-                                                                      );
+                                                      source: ImageSource.gallery,
+                                                      maxWidth: 1200,
+                                                      maxHeight: 1600,
+                                                    );
                                                                       setState(
                                                                           () {
                                                                         if (pickedFile !=
                                                                             null)
                                                                           imageDiscountFile =
                                                                               File(pickedFile!.path);
-                                                                      });
+                                                      });
 
                                                                       Navigator.pop(
                                                                           context);
-                                                                    },
-                                                                    child: Text(
-                                                                      "Gallery",
+                                                  },
+                                                  child: Text(
+                                                    "Gallery",
                                                                       style: TextStyle(
                                                                           fontSize:
                                                                               DM.p18),
@@ -3559,7 +3545,19 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 child: Container(
                                   height: DM.p42,
                                   child: TextFormField(
-                                    readOnly: (widget.testEachRequest?.due_recieved_one ?? 0) > 0,
+                                    readOnly: () {
+                                      if ((widget.testEachRequest?.due_amount ?? 0) == 0) return true;
+                                      if ((widget.testEachRequest?.due_recieved_two ?? 0) > 0) {
+                                        if ((widget.testEachRequest?.due_recieved_one ?? 0) > 0 &&
+                                            widget.testEachRequest?.due_recieve_one_date != null &&
+                                            widget.testEachRequest?.due_recieve_two_date != null) {
+                                          return widget.testEachRequest?.due_recieve_one_date<widget.testEachRequest?.due_recieve_two_date;
+                                        }
+                                        return false;
+                                      }
+                                      return true;
+                                    }(),
+
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
                                       int advance = advanced.text.isNotEmpty
@@ -3639,6 +3637,18 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 child: Container(
                                   height: DM.p42,
                                   child: TextFormField(
+                                    readOnly: () {
+                                      if ((widget.testEachRequest?.due_amount ?? 0) == 0) return true;
+                                      if ((widget.testEachRequest?.due_recieved_one ?? 0) > 0) {
+                                        if ((widget.testEachRequest?.due_recieved_two ?? 0) > 0 &&
+                                            widget.testEachRequest?.due_recieve_one_date != null &&
+                                            widget.testEachRequest?.due_recieve_two_date != null) {
+                                          return widget.testEachRequest?.due_recieve_two_date<widget.testEachRequest?.due_recieve_one_date;
+                                        }
+                                        return false;
+                                      }
+                                      return true;
+                                    }(),
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
                                       int advance = advanced.text.isNotEmpty
@@ -3694,8 +3704,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           textInputType: TextInputType.name,
                           controller: due_amount,
                           title: "Due Amount",
-                          value:
-                              "${totalCost - int.parse(advanced.text) - int.parse(due_recieved_one.text) - int.parse(due_recieved_two.text)}",
+                          value: "${totalCost -
+                              (int.tryParse(advanced.text) ?? 0) -
+                              (int.tryParse(due_recieved_one.text) ?? 0) -
+                              (int.tryParse(due_recieved_two.text) ?? 0)}",
+
                           activate: phoneNumber == superUser ? false : true,
                         ),
 
