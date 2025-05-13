@@ -74,6 +74,7 @@ class _TestRequestCreateTypeThreeState
 
   var advanced = new TextEditingController();
   var due_amount = new TextEditingController();
+  var due_recieved_one = new TextEditingController();
   var due_recieved_two = new TextEditingController();
   var admin_discount = new TextEditingController();
 
@@ -101,6 +102,7 @@ class _TestRequestCreateTypeThreeState
   var serviceCost = 0;
   var tubeCost = 0;
   var totalDiscount = 0;
+  var totalDueRecievedOne = 0;
   var totalDueRecievedTwo = 0;
   var test_item_cost = 0;
   var test_item_discount = 0;
@@ -289,6 +291,11 @@ class _TestRequestCreateTypeThreeState
       due_amount.text = widget.testEachRequest!.due_amount.toString();
     else
       due_amount.text = totalprice.text.toString();
+
+    if (widget.testEachRequest!.due_recieved_one != null)
+      due_recieved_one.text = widget.testEachRequest!.due_recieved_one.toString();
+    else
+      due_recieved_one.text = "0";
 
     if (widget.testEachRequest!.due_recieved_two != null)
       due_recieved_two.text = widget.testEachRequest!.due_recieved_two.toString();
@@ -521,10 +528,12 @@ class _TestRequestCreateTypeThreeState
       }
 
       TestDataRequest buildRequest({
+        String? due_recieved_one_by,
         String? due_recieved_two_by,
         String? advance_recieved_by,
         String? preparedBy,
         String? lastModifier,
+        int? dueReceivedOneDate,
         int? dueReceivedTwoDate,
         int? paymentDate,
       })  {
@@ -579,13 +588,18 @@ class _TestRequestCreateTypeThreeState
           assigning_commission: int.parse(assigning_commission.text),
           radiology_assigning_commission:
           int.parse(radiology_assigning_commission.text),
+          due_recieved_one_by:
+          due_recieved_one_by ?? widget.testEachRequest?.due_recieved_one_by,
           due_recieved_two_by:
           due_recieved_two_by ?? widget.testEachRequest?.due_recieved_two_by,
           advance_recieved_by:
           advance_recieved_by ?? widget.testEachRequest?.advance_recieved_by,
           prepared_by: preparedBy ?? widget.testEachRequest?.prepared_by,
+          due_recieved_one: int.tryParse(due_recieved_one.text.trim()) ?? 0,
           due_recieved_two: int.tryParse(due_recieved_two.text.trim()) ?? 0,
           last_modifier: lastModifier ?? widget.testEachRequest?.last_modifier,
+          due_recieve_one_date:
+          dueReceivedOneDate ?? widget.testEachRequest?.due_recieve_one_date,
           due_recieve_two_date:
           dueReceivedTwoDate ?? widget.testEachRequest?.due_recieve_two_date,
           total_cash_recieve: totalCashRecieve,
@@ -734,6 +748,9 @@ class _TestRequestCreateTypeThreeState
         oldRequest.radiology_assigning_commission !=
             newRequest.radiology_assigning_commission ||
         oldRequest.imageDiscountFile != newRequest.imageDiscountFile ||
+        oldRequest.due_recieved_one != newRequest.due_recieved_one ||
+        oldRequest.due_recieved_one_by != newRequest.due_recieved_one_by ||
+        oldRequest.due_recieve_one_date != newRequest.due_recieve_one_date ||
         oldRequest.due_recieved_two_by != newRequest.due_recieved_two_by ||
         oldRequest.last_modifier != newRequest.last_modifier ||
         oldRequest.due_recieved_two != newRequest.due_recieved_two ||
@@ -747,6 +764,7 @@ class _TestRequestCreateTypeThreeState
     serviceCost = 0;
     tubeCost = 0;
     totalDiscount = 0;
+    totalDueRecievedOne = 0;
     totalDueRecievedTwo = 0;
     test_item_discount = 0;
     total_payable_pathology = 0;
@@ -774,6 +792,7 @@ class _TestRequestCreateTypeThreeState
         .toString();
 
     totalDiscount = totalDiscount + int.parse(admin_discount.text.toString());
+    totalDueRecievedOne =totalDueRecievedOne + int.parse(due_recieved_one.text.toString());
     totalDueRecievedTwo =totalDueRecievedTwo + int.parse(due_recieved_two.text.toString());
 
 
@@ -851,10 +870,10 @@ class _TestRequestCreateTypeThreeState
     total_payable_item = total_payable_pathology + total_payable_imaging;
     total_unpayable_item = total_unpayable_pathology + total_unpayable_imaging;
 
-    if (advanced.text.isNotEmpty || due_recieved_two.text.isNotEmpty) {
+    if (advanced.text.isNotEmpty || due_recieved_two.text.isNotEmpty || due_recieved_one.text.isNotEmpty) {
       due_amount.text = (totalCost -
           int.parse(advanced.text.toString()) -
-          int.parse(due_recieved_two.text.toString()))
+          int.parse(due_recieved_two.text.toString()) - int.parse(due_recieved_one.text.toString()))
           .toString();
     }
     if (testData_updated.length == 0) {
@@ -864,7 +883,7 @@ class _TestRequestCreateTypeThreeState
     }
 
     total_discount.text = totalDiscount.toString();
-    totalCashRecieve = totalDueRecievedTwo + int.parse(advanced.text.toString());
+    totalCashRecieve = totalDueRecievedOne + totalDueRecievedTwo + int.parse(advanced.text.toString());
 
 
     adminUserList.map((e) {
@@ -961,8 +980,9 @@ class _TestRequestCreateTypeThreeState
       test_item_cost = totalTestCost;
       due_amount.text = (totalCost -
           int.parse(advanced.text.toString()) -
-          int.parse(due_recieved_two.text.toString()))
+          int.parse(due_recieved_two.text.toString()) -  int.parse(due_recieved_one.text.toString()))
           .toString();
+
 
       if (testData_updated.length == 0) {
         totalDiscount = 0;
@@ -971,7 +991,7 @@ class _TestRequestCreateTypeThreeState
       }
 
       total_discount.text = totalDiscount.toString();
-      totalCashRecieve = totalDueRecievedTwo + int.parse(advanced.text.toString());
+      totalCashRecieve = totalDueRecievedOne + totalDueRecievedTwo + int.parse(advanced.text.toString());
 
 
       adminUserList.map((e) {
@@ -2892,12 +2912,16 @@ class _TestRequestCreateTypeThreeState
                                       int advance = advanced.text.isNotEmpty
                                           ? int.parse(advanced.text)
                                           : 0;
+                                      int dueRecievedOne =
+                                      due_recieved_one.text.isNotEmpty
+                                          ? int.parse(due_recieved_one.text)
+                                          : 0;
                                       int dueRecievedTwo =
                                       due_recieved_two.text.isNotEmpty
                                           ? int.parse(due_recieved_two.text)
                                           : 0;
                                       due_amount.text =
-                                          (totalCost - advance - dueRecievedTwo)
+                                          (totalCost - advance - dueRecievedOne - dueRecievedTwo)
                                               .toString();
                                     },
                                     controller: advanced,
@@ -2962,18 +2986,20 @@ class _TestRequestCreateTypeThreeState
                                   child: TextFormField(
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
-                                      int advance =
-                                      advanced.text.isNotEmpty
+                                      int advance = advanced.text.isNotEmpty
                                           ? int.parse(advanced.text)
                                           : 0;
-                                      int dueRecievedTwo = due_recieved_two
-                                          .text.isNotEmpty
+                                      int dueRecievedOne =
+                                      due_recieved_one.text.isNotEmpty
+                                          ? int.parse(due_recieved_one.text)
+                                          : 0;
+                                      int dueRecievedTwo =
+                                      due_recieved_two.text.isNotEmpty
                                           ? int.parse(due_recieved_two.text)
                                           : 0;
-                                      due_amount.text = (totalCost -
-                                          advance -
-                                          dueRecievedTwo)
-                                          .toString();
+                                      due_amount.text =
+                                          (totalCost - advance - dueRecievedOne - dueRecievedTwo)
+                                              .toString();
                                     },
                                     controller: due_recieved_two,
                                     decoration: InputDecoration(
@@ -3009,7 +3035,7 @@ class _TestRequestCreateTypeThreeState
                           textInputType: TextInputType.name,
                           controller: due_amount,
                           title: "Due Amount",
-                          value:   "${totalCost - int.parse(advanced.text) - int.parse(due_recieved_two.text)}",
+                          value:  "${totalCost - int.parse(advanced.text) - int.parse(due_recieved_one.text) - int.parse(due_recieved_two.text)}",
                           activate: true,
                         ),
 
