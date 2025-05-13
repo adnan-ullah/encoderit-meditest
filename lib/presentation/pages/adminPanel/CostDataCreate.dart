@@ -42,15 +42,14 @@ class _CostDataCreateState extends State<CostDataCreate> {
     final dbRef = FirebaseDatabase.instance.ref("$costApi/");
     final newCostItem = CostModel(
       id: const Uuid().v4(),
-      postingDate: postingDate.toIso8601String(),
+      postingDate: postingDate.millisecondsSinceEpoch,
       category: category!,
       voucherNo: voucherNo.text,
-      voucherDate: voucherDate!.toIso8601String(),
+      voucherDate: voucherDate!.millisecondsSinceEpoch,
       totalAmount: totalAmount.text,
       remarks: remarks.text,
     );
     await dbRef
-        .child("costModel")
         .child(newCostItem.id)
         .set(newCostItem.toJson());
   }
