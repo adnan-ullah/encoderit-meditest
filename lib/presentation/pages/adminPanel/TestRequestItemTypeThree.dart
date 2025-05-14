@@ -630,7 +630,7 @@ class _TestRequestCreateTypeThreeState
       String? preparedBy = widget.testEachRequest!.prepared_by;
       String? lastModifier = widget.testEachRequest!.last_modifier;
       final testStatus = widget.testEachRequest!.teststatus;
-      final isCollectingPage = (testStatus <= 5 || testStatus == 8);
+      final isCollectingPage = (testStatus <= 6 || testStatus == 8);
 
       final originalPaymentDate = widget.testEachRequest!.payment_date ?? 0;
       final originalDueReceivedOneDate =
@@ -2982,7 +2982,7 @@ class _TestRequestCreateTypeThreeState
                             ],
                           ),
                         ),
-                        widget.testEachRequest?.teststatus <= 5 ||
+                        widget.testEachRequest?.teststatus <= 6 ||
                             widget.testEachRequest?.teststatus == 8
                             ? Padding(
                           padding: EdgeInsets.all(DM.p5),
@@ -3051,7 +3051,7 @@ class _TestRequestCreateTypeThreeState
                         )
                             : SizedBox(),
 
-                            widget.testEachRequest?.teststatus <= 5 ||
+                            widget.testEachRequest?.teststatus <= 6 ||
                                 widget.testEachRequest?.teststatus == 8
                             ?
                         Padding(

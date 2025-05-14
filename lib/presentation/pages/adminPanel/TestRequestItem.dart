@@ -629,7 +629,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     String? lastModifier = widget.testEachRequest!.last_modifier;
 
     final testStatus = widget.testEachRequest!.teststatus;
-    final isCollectingPage = (testStatus <= 5 || testStatus == 8);
+    final isCollectingPage = (testStatus <= 6 || testStatus == 8);
 
     final originalPaymentDate = widget.testEachRequest!.payment_date ?? 0;
     final originalDueReceivedOneDate =
@@ -3481,7 +3481,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 child: Container(
                                   height: DM.p42,
                                   child: TextFormField(
-                                    readOnly: (widget.testEachRequest?.advanced ?? 0) > 0,
+                                    readOnly: ((widget.testEachRequest?.advanced ?? 0) > 0)  &&  phoneNumber != superUser,
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
                                       setState(() {
@@ -3515,7 +3515,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                             ],
                           ),
                         ),
-                        widget.testEachRequest?.teststatus <= 5 ||
+                        widget.testEachRequest?.teststatus <= 6 ||
                             widget.testEachRequest?.teststatus == 8
                             ? Padding(
                           padding: EdgeInsets.all(DM.p5),
@@ -3544,7 +3544,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 child: Container(
                                   height: DM.p42,
                                   child: TextFormField(
-                                    readOnly:isReadOnlyDueReceivedOne,
+                                    readOnly:isReadOnlyDueReceivedOne && phoneNumber != superUser,
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
                                    setState(() {
@@ -3584,7 +3584,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         )
                             : SizedBox(),
 
-                            widget.testEachRequest?.teststatus <= 5 ||
+                            widget.testEachRequest?.teststatus <= 6 ||
                                 widget.testEachRequest?.teststatus == 8
                             ? Padding(
                           padding: EdgeInsets.all(DM.p5),
@@ -3613,7 +3613,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 child: Container(
                                   height: DM.p42,
                                   child: TextFormField(
-                                    readOnly:isReadOnlyDueReceivedTwo,
+                                    readOnly:isReadOnlyDueReceivedTwo && phoneNumber != superUser,
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
                                       setState(() {
