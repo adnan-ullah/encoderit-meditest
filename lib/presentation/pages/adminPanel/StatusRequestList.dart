@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +9,6 @@ import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notificat
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/NotificationServices.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../../constants/app_info.dart';
 import '../../../responsives/dimensions.dart';
 import '../../widgets/projectsWidget/RequestListTabView.dart';
@@ -23,8 +21,7 @@ class StatusRequestList extends StatefulWidget {
     super.key,
     required this.statusIndices,
     required this.isButtonList,
-  }) : assert(statusIndices.length == isButtonList.length,
-            'Lists must have the same length');
+  }) : assert(statusIndices.length == isButtonList.length, 'Lists must have the same length');
 
   @override
   State<StatusRequestList> createState() => _StatusRequestListState();
@@ -32,14 +29,16 @@ class StatusRequestList extends StatefulWidget {
 
 FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-class _StatusRequestListState extends State<StatusRequestList>
-    with TickerProviderStateMixin {
+class _StatusRequestListState extends State<StatusRequestList> with TickerProviderStateMixin {
   int _selectedIndex = 0;
   late TabController tabController;
   CreateRequestController cr_controller = Get.put(CreateRequestController());
   var isLoading = true;
   dynamic status2;
   late DatabaseReference _dbref_testReqModel;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -54,7 +53,22 @@ class _StatusRequestListState extends State<StatusRequestList>
       _selectedIndex = tabController.index;
     });
 
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
+
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    status2?.cancel();
+    tabController.dispose();
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
   }
 
   void _onLoading(bool isClosed) {
@@ -109,19 +123,11 @@ class _StatusRequestListState extends State<StatusRequestList>
   }
 
   @override
-  void dispose() {
-    status2?.cancel();
-    tabController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    setState(() {
-      _getNotification(context);
-    });
+    _getNotification(context);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true, // Allow resizing when keyboard appears
       backgroundColor: secondaryColor,
       appBar: AppBar(
         backgroundColor: appTheme,
@@ -137,43 +143,102 @@ class _StatusRequestListState extends State<StatusRequestList>
           ),
         ],
       ),
-      body: Padding(
-        padding: EdgeInsets.all(DM.p5),
-        child: Column(
-          children: [
-            Container(
-              height: DM.p40,
-              child: TabBar(
-                isScrollable: true,
-                controller: tabController,
-                tabs: widget.statusIndices.map((index) {
-                  return Tab(
-                    child: Text(
-                      "${cr_controller.status[index]}",
-                      style: TextStyle(
-                        color: blackFontColor,
-                        fontSize: DM.p11,
-                        fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(DM.p5),
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.all(DM.p8),
+                child: Container(
+                  height: DM.p40,
+                  decoration: BoxDecoration(
+                    color: whiteColor,
+                    borderRadius: BorderRadius.circular(DM.p10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: DM.p8,
+                        offset: Offset(0, DM.p2),
                       ),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
+                    decoration: InputDecoration(
+                      hintText: 'Search by Invoice ID or Name',
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: DM.p14,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(DM.p10),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: whiteColor,
+                      prefixIcon: Icon(
+                        Icons.search,
+                        size: DM.p20,
+                        color: _searchFocusNode.hasFocus ? appTheme : Colors.grey.shade600,
+                      ),
+                      contentPadding: EdgeInsets.symmetric(vertical: DM.p8, horizontal: DM.p12),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                        icon: Icon(Icons.clear, size: DM.p20, color: Colors.grey.shade600),
+                        onPressed: () {
+                          _searchController.clear();
+                          _searchFocusNode.unfocus();
+                        },
+                      )
+                          : null,
                     ),
-                  );
-                }).toList(),
+                    style: TextStyle(fontSize: DM.p14, color: blackFontColor),
+                    onTap: () {
+                      setState(() {}); // Trigger rebuild to update focus state
+                    },
+                  ),
+                ),
               ),
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: tabController,
-                children: widget.statusIndices.asMap().entries.map((entry) {
-                  int idx = entry.key;
-                  int statusIndex = entry.value;
-                  return RequestListTabView(
-                    statusKey: cr_controller.status[statusIndex],
-                    isButton: widget.isButtonList[idx],
-                  );
-                }).toList(),
+              Container(
+                height: DM.p40,
+                child: TabBar(
+                  isScrollable: true,
+                  controller: tabController,
+                  tabs: widget.statusIndices.map((index) {
+                    return Tab(
+                      child: Text(
+                        "${cr_controller.status[index] ?? ''}",
+                        style: TextStyle(
+                          color: blackFontColor,
+                          fontSize: DM.p11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        softWrap: true,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
-            ),
-          ],
+              Expanded(
+                child: TabBarView(
+                  controller: tabController,
+                  children: widget.statusIndices.asMap().entries.map((entry) {
+                    int idx = entry.key;
+                    int statusIndex = entry.value;
+                    return RequestListTabView(
+                      statusKey: cr_controller.status[statusIndex] ?? '',
+                      isButton: widget.isButtonList[idx],
+                      searchQuery: _searchQuery,
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -195,17 +260,27 @@ Future<void> populateAllRequest() async {
 
     dbrefTestRequest.onValue.listen((event) {
       if (event.snapshot.exists) {
-        // Your logic to parse and add data
         print("Data from $path: ${event.snapshot.value}");
       }
     });
   }
 }
 
-Future<void> getAdminNotification(
-    String? phone, String? type, BuildContext context) async {
+Future<void> getAdminNotification(String? phone, String? type, BuildContext context) async {
   if (type == "1" || type == "7" || phone == "$superUser") {
     createPlantFoodNotification();
     showNotification(context);
   }
+}
+
+List<String> getLastThreeMonthTestRequestPaths() {
+  List<String> paths = [];
+  DateTime now = DateTime.now();
+  for (int i = 0; i < 3; i++) {
+    DateTime date = DateTime(now.year, now.month - i, 1);
+    String year = date.year.toString();
+    String month = const ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][date.month - 1];
+    paths.add("$database_name/testRequest/$year/$month");
+  }
+  return paths;
 }
