@@ -195,27 +195,29 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                 tempList.add(testData);
               }
             } else if (widget.statusKey == "RECIEVED") {
-              if (!testData.pathology_done || !testData.radiology_done) {
+              if (testData.pathology_done==false || testData.radiology_done==false) {
                 tempList.add(testData);
               }
             } else if (widget.statusKey == "COLLECTED") {
-              if (testData.pathology_done && testData.radiology_done) {
+              if (testData.pathology_done==true && testData.radiology_done==true) {
                 tempList.add(testData);
               }
             } else {
               tempList.add(testData);
             }
           }
-        } else if (type == "3" && phone != superUser) {
+        }
+        else if (type == "3" && phone != superUser) {
           if (widget.statusKey == "PRECOLLECTED") {
             if ((testData.assigning?.isNotEmpty == true && testData.assigning != "null") ||
                 (testData.radiology_assigning?.isNotEmpty == true && testData.radiology_assigning != "null")) {
-              if (!(testData.pathology_done && testData.radiology_done)) {
+              if (!(testData.pathology_done == true && testData.radiology_done ==true)) {
                 tempList.add(testData);
               }
             }
-          } else if (widget.statusKey == "COLLECTED") {
-            if (testData.pathology_done && testData.radiology_done) {
+          }
+          else if (widget.statusKey == "COLLECTED") {
+            if (testData.pathology_done == true && testData.radiology_done == true) {
               tempList.add(testData);
             }
           } else {
@@ -228,6 +230,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
     }
 
     tempList.sort((a, b) => (b.lastupdate ?? 0).compareTo(a.lastupdate ?? 0));
+    print("TemplIst" + tempList.toString());
     testStatusRequestList.addAll(tempList);
     tabStatusList();
   }
