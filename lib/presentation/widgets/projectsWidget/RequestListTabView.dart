@@ -529,7 +529,8 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                         fontSize: DM.p12,
                                         color: Color.fromARGB(255, 26, 1, 1),
                                       ),
-                                      overflow: TextOverflow.ellipsis,
+                                      softWrap: true,
+                                      maxLines: 2,
                                     ),
                                   ),
                                   Container(
@@ -541,7 +542,8 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                         fontSize: DM.p12,
                                         color: Color.fromARGB(255, 26, 1, 1),
                                       ),
-                                      overflow: TextOverflow.ellipsis,
+                                      softWrap: true,
+                                      maxLines: 2,
                                     ),
                                   ),
                                   Container(
@@ -556,7 +558,8 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                         fontSize: DM.p12,
                                         color: Color.fromARGB(255, 26, 1, 1),
                                       ),
-                                      overflow: TextOverflow.ellipsis,
+                                      softWrap: true,
+                                      maxLines: 2,
                                     ),
                                   ),
                                   if (showChangedByColumn)
@@ -571,7 +574,8 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                           fontSize: DM.p12,
                                           color: Color.fromARGB(255, 26, 1, 1),
                                         ),
-                                        overflow: TextOverflow.ellipsis,
+                                        softWrap: true,
+                                        maxLines: 2,
                                       ),
                                     ),
                                   if (widget.isButton &&
@@ -614,12 +618,14 @@ class _RequestListTabViewState extends State<RequestListTabView> {
             : Center(
                 child: Padding(
                   padding: EdgeInsets.all(DM.p16),
-                  child: Text(
-                    "Request list empty",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontSize: DM.p25,
-                      color: appTheme,
+                  child: Container(
+                    height: DM.screenHeight * 0.65,
+                    margin: EdgeInsets.symmetric(vertical: DM.p16),
+                    child: Center(
+                      child: Text(
+                        "Request list empty ",
+                        style: TextStyle(fontWeight: FontWeight.w400, fontSize: DM.p25, color: appTheme),
+                      ),
                     ),
                   ),
                 ),
