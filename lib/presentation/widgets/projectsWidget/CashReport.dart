@@ -112,7 +112,7 @@ class _CashReportListState extends State<CashReportList> {
         try {
           final data =
           TestDataRequest.fromJson(json.decode(json.encode(dsLater.value)));
-          if (data.payment_date == null ||
+          if (data.advance_payment_date == null ||
               data.total_cash_recieve == null ||
               data.total_cash_recieve == 0) continue;
 
@@ -127,7 +127,7 @@ class _CashReportListState extends State<CashReportList> {
               data.due_recieve_one_date != null &&
               data.due_recieved_one_by != null)
               ? data.due_recieve_one_date
-              : data.payment_date;
+              : data.advance_payment_date;
 
           if (startDate <= filterDate && filterDate <= endDate) {
             bool isCountedForQuantity = false;

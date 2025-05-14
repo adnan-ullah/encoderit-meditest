@@ -550,7 +550,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       String? lastModifier,
       int? dueReceivedOneDate,
       int? dueReceivedTwoDate,
-      int? paymentDate,
+      int? advancedPaymentDate,
     }) {
       return TestDataRequest(
         id: widget.testEachRequest!.id!,
@@ -596,6 +596,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         total_unpayable_imagine: total_unpayable_imaging,
         total_unpayable_pathology: total_unpayable_pathology,
         payment_date: paymentDate ?? widget.testEachRequest?.payment_date,
+        advance_payment_date: advancedPaymentDate ?? widget.testEachRequest?.advance_payment_date,
         pathology_done: pathologyDone,
         radiology_done: radiologyDone,
         assigning: pathologyAssigningPhone.toString(),
@@ -631,7 +632,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     final testStatus = widget.testEachRequest!.teststatus;
     final isCollectingPage = (testStatus <= 6 || testStatus == 8);
 
-    final originalPaymentDate = widget.testEachRequest!.payment_date ?? 0;
+    final originalAdvancePaymentDate = widget.testEachRequest!.advance_payment_date ?? 0;
     final originalDueReceivedOneDate =
         widget.testEachRequest!.due_recieve_one_date ?? 0;
     final originalDueReceivedTwoDate =
@@ -641,7 +642,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     final updatedDueReceivedOne = int.tryParse(due_recieved_one.text) ?? 0;
     final updatedDueReceivedTwo = int.tryParse(due_recieved_two.text) ?? 0;
 
-    int tempPaymentDate = originalPaymentDate;
+    int tempAdvancePaymentDate = originalAdvancePaymentDate;
     int tempDueReceivedOneDate = originalDueReceivedOneDate;
     int tempDueReceivedTwoDate = originalDueReceivedTwoDate;
 
@@ -656,12 +657,12 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
 
     final isAdvanceReceiverUntracked =
-        (widget.testEachRequest!.payment_date == null ||
-                widget.testEachRequest!.payment_date == 0) &&
+        (widget.testEachRequest!.advance_payment_date == null ||
+                widget.testEachRequest!.advance_payment_date == 0) &&
             updatedAdvanced > 0 && originalAdvance!=updatedAdvanced;
 
     if (isCollectingPage && isAdvanceReceiverUntracked) {
-      tempPaymentDate = currentTime;
+      tempAdvancePaymentDate = currentTime;
       advanceReceiverName = phoneNumber;
     }
 
@@ -707,7 +708,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       advance_recieved_by: advanceReceiverName,
       due_recieved_two_by: dueReceiverTwoName,
       dueReceivedTwoDate: tempDueReceivedTwoDate,
-      paymentDate: tempPaymentDate,
+      advancedPaymentDate: tempAdvancePaymentDate,
     );
 
     if (testStatus == 2 || testStatus == 8) {
@@ -774,6 +775,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         oldRequest.total_unpayable_pathology !=
             newRequest.total_unpayable_pathology ||
         oldRequest.payment_date != newRequest.payment_date ||
+        oldRequest.advance_payment_date != newRequest.advance_payment_date ||
         oldRequest.pathology_done != newRequest.pathology_done ||
         oldRequest.radiology_done != newRequest.radiology_done ||
         oldRequest.assigning != newRequest.assigning ||

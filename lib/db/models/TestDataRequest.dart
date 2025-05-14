@@ -48,6 +48,7 @@ class TestDataRequest {
         this.total_unpayable_pathology,
         this.total_unpayable_imagine,
         this.payment_date,
+        this.advance_payment_date,
         this.radiology_assigning,
         this.radiology_assigning_commission,
         this.pathology_done,
@@ -122,6 +123,7 @@ class TestDataRequest {
   dynamic total_unpayable_pathology;
   dynamic total_unpayable_imagine;
   dynamic payment_date;
+  dynamic advance_payment_date;
 
   dynamic assigning;
   dynamic radiology_assigning;
@@ -177,6 +179,8 @@ class TestDataRequest {
     'total_unpayable_pathology': total_unpayable_pathology,
     'total_unpayable_imagine': total_unpayable_imagine,
     'payment_date': payment_date,
+    'advance_payment_date': advance_payment_date,
+
 
     'radiology_assigning': radiology_assigning,
     'radiology_assigning_commission': radiology_assigning_commission,
@@ -247,6 +251,7 @@ class TestDataRequest {
       total_unpayable_pathology: parsedJson['total_unpayable_pathology'],
       total_unpayable_imagine: parsedJson['total_unpayable_imagine'],
       payment_date: parsedJson['payment_date'],
+      advance_payment_date: parsedJson['advance_payment_date'],
 
 
       radiology_assigning: parsedJson['radiology_assigning'],
