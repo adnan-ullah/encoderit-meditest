@@ -336,10 +336,10 @@ class _RequestListTabViewState extends State<RequestListTabView> {
 
     // Define column widths to ensure alignment
     const double typeWidth = 40.0;
-    const double nameWidth = 80.0;
+    const double nameWidth = 70.0;
     const double invoiceWidth = 90.0;
-    const double dateWidth = 70.0;
-    const double changedByWidth = 90.0;
+    const double dateWidth = 80.0;
+    const double changedByWidth = 80.0;
     const double buttonWidth = 80.0;
 
     return SafeArea(
@@ -413,10 +413,11 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                 textAlign: TextAlign.left,
                               ),
                             ),
-                            if (showChangedByColumn)
+
                               Container(
                                 width: changedByWidth,
-                                child: Text(
+                                child: showChangedByColumn
+                                    ? Text(
                                   "Changed by",
                                   style: TextStyle(
                                     fontWeight: FontWeight.w900,
@@ -424,7 +425,8 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                     color: Color.fromARGB(255, 26, 1, 1),
                                   ),
                                   textAlign: TextAlign.left,
-                                ),
+                                )
+                                    : SizedBox.shrink(),
                               ),
                             if (widget.isButton &&
                                 (createRequest_controller
@@ -563,13 +565,12 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                       maxLines: 2,
                                     ),
                                   ),
-                                  if (showChangedByColumn)
+
                                     Container(
                                       width: changedByWidth,
-                                      child: Text(
-                                        item.last_modifier ??
-                                            item.prepared_by ??
-                                            "N/A",
+                                      child: showChangedByColumn
+                                          ? Text(
+                                        item.last_modifier ?? item.prepared_by ?? "N/A",
                                         style: TextStyle(
                                           fontWeight: FontWeight.w900,
                                           fontSize: DM.p12,
@@ -577,7 +578,8 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                         ),
                                         softWrap: true,
                                         maxLines: 2,
-                                      ),
+                                      )
+                                          : SizedBox.shrink(), // Keeps the width space even when hidden
                                     ),
                                   if (widget.isButton &&
                                       (createRequest_controller
