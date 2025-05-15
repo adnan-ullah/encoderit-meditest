@@ -27,7 +27,10 @@ class _CostDataCreateState extends State<CostDataCreate> {
   final remarks = TextEditingController();
   String? category;
   DateTime postingDate = DateTime.now();
-  DateTime? voucherDate = DateTime.now();
+  DateTime? voucherDate;
+  bool isCategoryValid = true;
+  bool isVoucherDateValid = true;
+  bool isSubmitting = false;
 
   @override
   void initState() {
@@ -39,15 +42,14 @@ class _CostDataCreateState extends State<CostDataCreate> {
     final dbRef = FirebaseDatabase.instance.ref("$costApi/");
     final newCostItem = CostModel(
       id: const Uuid().v4(),
-      postingDate: postingDate.toIso8601String(),
+      postingDate: postingDate.millisecondsSinceEpoch,
       category: category!,
       voucherNo: voucherNo.text,
-      voucherDate: voucherDate!.toIso8601String(),
+      voucherDate: voucherDate!.millisecondsSinceEpoch,
       totalAmount: totalAmount.text,
       remarks: remarks.text,
     );
     await dbRef
-        .child("costModel")
         .child(newCostItem.id)
         .set(newCostItem.toJson());
   }
@@ -55,11 +57,16 @@ class _CostDataCreateState extends State<CostDataCreate> {
   Future<void> selectDate(BuildContext context) async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: voucherDate!,
+      initialDate: voucherDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    if (picked != null) setState(() => voucherDate = picked);
+    if (picked != null) {
+      setState(() {
+        voucherDate = picked;
+        isVoucherDateValid = true;
+      });
+    }
   }
 
   void showAddCategoryDialog() {
@@ -120,6 +127,22 @@ class _CostDataCreateState extends State<CostDataCreate> {
     );
   }
 
+  void showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing the dialog
+      builder: (_) => AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(color: appTheme),
+            const SizedBox(width: 20),
+            const Text("Submitting..."),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -165,7 +188,7 @@ class _CostDataCreateState extends State<CostDataCreate> {
                 SizedBox(height: DM.p15),
                 _buildDateField(
                   title: "Voucher Date",
-                  date: voucherDate!,
+                  date: voucherDate,
                   onTap: () => selectDate(context),
                 ),
                 SizedBox(height: DM.p15),
@@ -187,30 +210,102 @@ class _CostDataCreateState extends State<CostDataCreate> {
                 _buildFormField(
                   title: "Remarks",
                   controller: remarks,
-                  validator: validateString,
+                  validator: (_) => null,
                   hint: "Enter remarks",
                   inputType: TextInputType.text,
                 ),
                 SizedBox(height: DM.p30),
                 Center(
                   child: MaterialButton(
-                    onPressed: () async {
+                    onPressed: isSubmitting
+                        ? null // Disable button while submitting
+                        : () async {
+                      setState(() {
+                        isCategoryValid = category != null;
+                        isVoucherDateValid = voucherDate != null;
+                      });
                       if (_formKey.currentState!.validate() &&
-                          category != null) {
-                        if (await chechkingInternet()) {
-                          await insertNewCostItem();
-                          Get.back();
-                        }
+                          isCategoryValid &&
+                          isVoucherDateValid) {
+                        // Show confirmation dialog
+                        showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: const Text("Confirm Submission"),
+                            content: const Text(
+                                "Are you sure you want to submit the cost item?"),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text("No",
+                                    style: TextStyle(color: appTheme)),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  Navigator.pop(context); // Close confirmation dialog
+                                  setState(() {
+                                    isSubmitting = true;
+                                  });
+                                  showLoadingDialog(); // Show loading dialog
+                                  try {
+                                    if (await chechkingInternet()) {
+                                      await insertNewCostItem();
+                                      Navigator.pop(context); // Close loading dialog
+                                      Get.back(); // Navigate back after submission
+                                    } else {
+                                      Navigator.pop(context); // Close loading dialog
+                                      Get.snackbar(
+                                        "Error",
+                                        "No internet connection",
+                                        duration:
+                                        const Duration(milliseconds: 2000),
+                                        icon: Icon(Icons.error,
+                                            color: whiteColor),
+                                        margin: EdgeInsets.symmetric(
+                                            horizontal: DM.p20,
+                                            vertical: DM.p20),
+                                        backgroundColor: Colors.redAccent,
+                                        colorText: whiteColor,
+                                      );
+                                    }
+                                  } catch (e) {
+                                    Navigator.pop(context); // Close loading dialog
+                                    Get.snackbar(
+                                      "Error",
+                                      "Failed to submit: $e",
+                                      duration:
+                                      const Duration(milliseconds: 2000),
+                                      icon: Icon(Icons.error,
+                                          color: whiteColor),
+                                      margin: EdgeInsets.symmetric(
+                                          horizontal: DM.p20,
+                                          vertical: DM.p20),
+                                      backgroundColor: Colors.redAccent,
+                                      colorText: whiteColor,
+                                    );
+                                  } finally {
+                                    setState(() {
+                                      isSubmitting = false;
+                                    });
+                                  }
+                                },
+                                child: Text("Confirm",
+                                    style: TextStyle(color: appTheme)),
+                              ),
+                            ],
+                          ),
+                        );
                       } else {
+                        // Show error snackbar if validation fails
                         Get.snackbar(
+                          "Error",
+                          "Please fill all required fields correctly",
                           duration: const Duration(milliseconds: 2000),
-                          icon:  Icon(Icons.error, color: whiteColor),
+                          icon: Icon(Icons.error, color: whiteColor),
                           margin: EdgeInsets.symmetric(
                               horizontal: DM.p20, vertical: DM.p20),
                           backgroundColor: Colors.redAccent,
                           colorText: whiteColor,
-                          "Error",
-                          "Please fill all fields correctly",
                         );
                       }
                     },
@@ -302,29 +397,55 @@ class _CostDataCreateState extends State<CostDataCreate> {
         Row(
           children: [
             Expanded(
-              child: Obx(() => Container(
-                padding: EdgeInsets.symmetric(horizontal: DM.p15),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(DM.p8),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: DropdownButton<String>(
-                  value: category,
-                  hint: Text("Select Category",
-                      style: TextStyle(color: Colors.grey.shade500)),
-                  items: costController.categoryName
-                      .map((value) => DropdownMenuItem(
-                    value: value,
-                    child: Text(value,
-                        style: TextStyle(color: blackFontColor)),
-                  ))
-                      .toList(),
-                  onChanged: (newValue) =>
-                      setState(() => category = newValue!),
-                  isExpanded: true,
-                  underline: SizedBox(),
-                ),
+              child: Obx(() => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: DM.p15),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(DM.p8),
+                      border: Border.all(
+                        color: isCategoryValid
+                            ? Colors.grey.shade300
+                            : Colors.red,
+                      ),
+                    ),
+                    child: DropdownButton<String>(
+                      value: category,
+                      hint: Text(
+                        "Select Category",
+                        style: TextStyle(color: Colors.grey.shade500),
+                      ),
+                      items: costController.categoryName
+                          .map((value) => DropdownMenuItem(
+                        value: value,
+                        child: Text(value,
+                            style: TextStyle(color: blackFontColor)),
+                      ))
+                          .toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          category = newValue!;
+                          isCategoryValid = true;
+                        });
+                      },
+                      isExpanded: true,
+                      underline: SizedBox(),
+                    ),
+                  ),
+                  if (!isCategoryValid)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0, top: 4),
+                      child: Text(
+                        "Required",
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: DM.p12,
+                        ),
+                      ),
+                    ),
+                ],
               )),
             ),
             SizedBox(width: DM.p10),
@@ -346,7 +467,7 @@ class _CostDataCreateState extends State<CostDataCreate> {
 
   Widget _buildDateField({
     required String title,
-    required DateTime date,
+    required DateTime? date,
     required VoidCallback onTap,
   }) {
     return Column(
@@ -368,15 +489,33 @@ class _CostDataCreateState extends State<CostDataCreate> {
             padding: EdgeInsets.symmetric(horizontal: DM.p15, vertical: DM.p12),
             decoration: BoxDecoration(
               color: Colors.grey.shade50,
-              border: Border.all(color: Colors.grey.shade300),
               borderRadius: BorderRadius.circular(DM.p8),
+              border: Border.all(
+                color: isVoucherDateValid ? Colors.grey.shade300 : Colors.red,
+              ),
             ),
             child: Text(
-              DateFormat('yyyy-MM-dd').format(date),
-              style: TextStyle(fontSize: DM.p16, color: blackFontColor),
+              date != null
+                  ? DateFormat("dd-MM-yyyy").format(date)
+                  : "Select Date",
+              style: TextStyle(
+                color: date != null ? blackFontColor : Colors.grey.shade500,
+                fontSize: DM.p16,
+              ),
             ),
           ),
         ),
+        if (!isVoucherDateValid)
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0, top: 4),
+            child: Text(
+              "Required",
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: DM.p12,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -401,27 +540,16 @@ class _CostDataCreateState extends State<CostDataCreate> {
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: DM.p15, vertical: DM.p12),
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            border: Border.all(color: Colors.grey.shade300),
+            color: Colors.grey.shade50,
             borderRadius: BorderRadius.circular(DM.p8),
+            border: Border.all(color: Colors.grey.shade300),
           ),
           child: Text(
-            DateFormat('yyyy-MM-dd').format(date),
-            style: TextStyle(fontSize: DM.p16, color: blackFontColor),
+            DateFormat("dd-MM-yyyy").format(date),
+            style: TextStyle(color: blackFontColor, fontSize: DM.p16),
           ),
         ),
       ],
     );
   }
 }
-
-String? validateMobile(String? value) =>
-    value?.length != 11 ? 'Mobile Number must be of 11 digits' : null;
-
-String? validateString(String? value) =>
-    value?.isEmpty ?? true ? 'Please fill this form' : null;
-
-String? validateNumber(String? value) =>
-    value?.isEmpty ?? true || double.tryParse(value!) == null
-        ? 'Please fill numbers only'
-        : null;

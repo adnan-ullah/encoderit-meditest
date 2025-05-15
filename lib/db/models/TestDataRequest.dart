@@ -48,21 +48,22 @@ class TestDataRequest {
         this.total_unpayable_pathology,
         this.total_unpayable_imagine,
         this.payment_date,
+        this.advance_payment_date,
         this.radiology_assigning,
         this.radiology_assigning_commission,
         this.pathology_done,
         this.radiology_done,
         this.imageDiscountFile,
-        this.due_recieved_by,
+        this.due_recieved_two_by,
         this.advance_recieved_by,
         this.last_modifier,
-        this.due_recieved,
+        this.due_recieved_two,
         this.prepared_by,
-        this.due_recieve_date,
-        this.total_cash_recieve
-
-
-
+        this.due_recieve_two_date,
+        this.total_cash_recieve,
+        this.due_recieved_one_by,
+        this.due_recieved_one,
+        this.due_recieve_one_date
       });
 
   final dynamic id;
@@ -87,14 +88,17 @@ class TestDataRequest {
   final dynamic image_two;
   final dynamic comments;
   final dynamic delivery_date;
-  final dynamic due_recieved_by;
+  final dynamic due_recieved_one_by;
+  final dynamic due_recieved_two_by;
   final dynamic advance_recieved_by;
   final dynamic last_modifier;
   final dynamic prepared_by;
-  final dynamic due_recieve_date;
+  final dynamic due_recieve_one_date;
+  final dynamic due_recieve_two_date;
   final dynamic total_cash_recieve;
 
-  dynamic due_recieved;
+  dynamic due_recieved_one;
+  dynamic due_recieved_two;
   dynamic advanced;
   dynamic due_amount;
   dynamic total_admin_discount;
@@ -119,6 +123,7 @@ class TestDataRequest {
   dynamic total_unpayable_pathology;
   dynamic total_unpayable_imagine;
   dynamic payment_date;
+  dynamic advance_payment_date;
 
   dynamic assigning;
   dynamic radiology_assigning;
@@ -174,18 +179,23 @@ class TestDataRequest {
     'total_unpayable_pathology': total_unpayable_pathology,
     'total_unpayable_imagine': total_unpayable_imagine,
     'payment_date': payment_date,
+    'advance_payment_date': advance_payment_date,
+
 
     'radiology_assigning': radiology_assigning,
     'radiology_assigning_commission': radiology_assigning_commission,
     'pathology_done': pathology_done,
     'radiology_done': radiology_done,
     'imageDiscountFile':imageDiscountFile,
-    'due_recieved_by':due_recieved_by,
+    'due_recieved_one_by':due_recieved_one_by,
+    'due_recieved_one':due_recieved_one,
+    'due_recieve_one_date':due_recieve_one_date,
+    'due_recieved_two_by':due_recieved_two_by,
     'advance_recieved_by':advance_recieved_by,
     'last_modifier':last_modifier,
-    'due_recieved':due_recieved,
+    'due_recieved_two':due_recieved_two,
     'prepared_by':prepared_by,
-    'due_recieve_date':due_recieve_date,
+    'due_recieve_two_date':due_recieve_two_date,
     'total_cash_recieve':total_cash_recieve,
 
   };
@@ -241,20 +251,23 @@ class TestDataRequest {
       total_unpayable_pathology: parsedJson['total_unpayable_pathology'],
       total_unpayable_imagine: parsedJson['total_unpayable_imagine'],
       payment_date: parsedJson['payment_date'],
+      advance_payment_date: parsedJson['advance_payment_date'],
 
 
       radiology_assigning: parsedJson['radiology_assigning'],
       radiology_assigning_commission: parsedJson['radiology_assigning_commission'],
       pathology_done: parsedJson['pathology_done'],
       radiology_done: parsedJson['radiology_done'],
-
+      due_recieved_one_by:parsedJson['due_recieved_one_by'],
+      due_recieved_one: parsedJson['due_recieved_one'],
+      due_recieve_one_date: parsedJson['due_recieve_one_date'],
       imageDiscountFile:parsedJson['imageDiscountFile'],
-      due_recieved_by:parsedJson['due_recieved_by'],
+      due_recieved_two_by:parsedJson['due_recieved_two_by'],
       advance_recieved_by:parsedJson['advance_recieved_by'],
       last_modifier: parsedJson['last_modifier'],
-      due_recieved: parsedJson['due_recieved'],
+      due_recieved_two: parsedJson['due_recieved_two'],
       prepared_by: parsedJson['prepared_by'],
-      due_recieve_date: parsedJson['due_recieve_date'],
+      due_recieve_two_date: parsedJson['due_recieve_two_date'],
       total_cash_recieve: parsedJson['total_cash_recieve'],
     );
   }

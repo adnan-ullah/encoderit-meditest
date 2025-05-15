@@ -74,7 +74,8 @@ class _TestRequestCreateTypeThreeState
 
   var advanced = new TextEditingController();
   var due_amount = new TextEditingController();
-  var due_recieved = new TextEditingController();
+  var due_recieved_one = new TextEditingController();
+  var due_recieved_two = new TextEditingController();
   var admin_discount = new TextEditingController();
 
   var agent_discount = new TextEditingController();
@@ -89,6 +90,10 @@ class _TestRequestCreateTypeThreeState
   var assigning_commission = new TextEditingController();
   var radiology_assigning_commission = new TextEditingController();
 
+  bool isReadOnlyDueReceivedOne = true;
+  bool isReadOnlyDueReceivedTwo = true;
+  bool handleFirstTimeInitPage = false;
+
   List<TestData> testItemList = [];
   List<AdminUserModel> adminUserList = [];
   List<TestData> testData_updated = [];
@@ -101,7 +106,8 @@ class _TestRequestCreateTypeThreeState
   var serviceCost = 0;
   var tubeCost = 0;
   var totalDiscount = 0;
-  var totalDueRecieved = 0;
+  var totalDueRecievedOne = 0;
+  var totalDueRecievedTwo = 0;
   var test_item_cost = 0;
   var test_item_discount = 0;
 
@@ -290,10 +296,27 @@ class _TestRequestCreateTypeThreeState
     else
       due_amount.text = totalprice.text.toString();
 
-    if (widget.testEachRequest!.due_recieved != null)
-      due_recieved.text = widget.testEachRequest!.due_recieved.toString();
-    else
-      due_recieved.text = "0";
+    if (widget.testEachRequest!.due_recieved_two != null)
+      due_recieved_two.text = widget.testEachRequest!.due_recieved_two.toString();
+    else{
+      due_recieved_two.text = "0";
+
+      setState(() {
+        isReadOnlyDueReceivedTwo = false;
+      });
+
+    }
+
+    if (widget.testEachRequest!.due_recieved_one != null)
+      due_recieved_one.text = widget.testEachRequest!.due_recieved_one.toString();
+    else{
+      isReadOnlyDueReceivedOne = false;
+      setState(() {
+        isReadOnlyDueReceivedOne = false;
+      });
+      due_recieved_one.text = "0";
+    }
+
 
     if (widget.testEachRequest!.testlist != null) {
       widget.testEachRequest!.testlist!.map((e) {
@@ -428,6 +451,8 @@ class _TestRequestCreateTypeThreeState
       radiology_assigning_commission.text =
           widget.testEachRequest!.radiology_assigning_commission!.toString();
     }
+
+    testItemUpdatedData();
   }
 
   void _onLoading(isClosed) {
@@ -521,12 +546,14 @@ class _TestRequestCreateTypeThreeState
       }
 
       TestDataRequest buildRequest({
-        String? due_recieved_by,
+        String? due_recieved_one_by,
+        String? due_recieved_two_by,
         String? advance_recieved_by,
         String? preparedBy,
         String? lastModifier,
-        int? dueReceivedDate,
-        int? paymentDate,
+        int? dueReceivedOneDate,
+        int? dueReceivedTwoDate,
+        int? advancedPaymentDate,
       })  {
         return TestDataRequest(
           id: widget.testEachRequest!.id!,
@@ -572,6 +599,7 @@ class _TestRequestCreateTypeThreeState
           total_unpayable_imagine: total_unpayable_imaging,
           total_unpayable_pathology: total_unpayable_pathology,
           payment_date: paymentDate ?? widget.testEachRequest?.payment_date,
+          advance_payment_date: advancedPaymentDate ?? widget.testEachRequest?.advance_payment_date,
           pathology_done: pathologyDone,
           radiology_done: radiologyDone,
           assigning: pathologyAssigningPhone.toString(),
@@ -579,15 +607,20 @@ class _TestRequestCreateTypeThreeState
           assigning_commission: int.parse(assigning_commission.text),
           radiology_assigning_commission:
           int.parse(radiology_assigning_commission.text),
-          due_recieved_by:
-          due_recieved_by ?? widget.testEachRequest?.due_recieved_by,
+          due_recieved_one_by:
+          due_recieved_one_by ?? widget.testEachRequest?.due_recieved_one_by,
+          due_recieved_two_by:
+          due_recieved_two_by ?? widget.testEachRequest?.due_recieved_two_by,
           advance_recieved_by:
           advance_recieved_by ?? widget.testEachRequest?.advance_recieved_by,
           prepared_by: preparedBy ?? widget.testEachRequest?.prepared_by,
-          due_recieved: int.tryParse(due_recieved.text.trim()) ?? 0,
+          due_recieved_one: int.tryParse(due_recieved_one.text.trim()) ?? 0,
+          due_recieved_two: int.tryParse(due_recieved_two.text.trim()) ?? 0,
           last_modifier: lastModifier ?? widget.testEachRequest?.last_modifier,
-          due_recieve_date:
-          dueReceivedDate ?? widget.testEachRequest?.due_recieve_date,
+          due_recieve_one_date:
+          dueReceivedOneDate ?? widget.testEachRequest?.due_recieve_one_date,
+          due_recieve_two_date:
+          dueReceivedTwoDate ?? widget.testEachRequest?.due_recieve_two_date,
           total_cash_recieve: totalCashRecieve,
         );
       }
@@ -598,46 +631,63 @@ class _TestRequestCreateTypeThreeState
       String? preparedBy = widget.testEachRequest!.prepared_by;
       String? lastModifier = widget.testEachRequest!.last_modifier;
       final testStatus = widget.testEachRequest!.teststatus;
-      final isCollectingPage = (testStatus <= 5 || testStatus == 8);
+      final isCollectingPage = (testStatus <= 6 || testStatus == 8);
 
-      final originalPaymentDate = widget.testEachRequest!.payment_date ?? 0;
-      final originalDueReceivedDate =
-          widget.testEachRequest!.due_recieve_date ?? 0;
+      final originalAdvancePaymentDate = widget.testEachRequest!.advance_payment_date ?? 0;
+      final originalDueReceivedOneDate =
+          widget.testEachRequest!.due_recieve_one_date ?? 0;
+      final originalDueReceivedTwoDate =
+          widget.testEachRequest!.due_recieve_two_date ?? 0;
 
       final updatedAdvanced = int.tryParse(advanced.text) ?? 0;
-      final updatedDueReceived = int.tryParse(due_recieved.text) ?? 0;
+      final updatedDueReceivedOne = int.tryParse(due_recieved_one.text) ?? 0;
+      final updatedDueReceivedTwo = int.tryParse(due_recieved_two.text) ?? 0;
 
-      int tempPaymentDate = originalPaymentDate;
-      int tempDueReceivedDate = originalDueReceivedDate;
+      int tempAdvancePaymentDate = originalAdvancePaymentDate;
+      int tempDueReceivedOneDate = originalDueReceivedOneDate;
+      int tempDueReceivedTwoDate = originalDueReceivedTwoDate;
 
       String? advanceReceiverName = widget.testEachRequest!.advance_recieved_by;
-      String? dueReceiverName = widget.testEachRequest!.due_recieved_by;
-      ;
-
+      String? dueReceiverOneName = widget.testEachRequest!.due_recieved_one_by;
+      String? dueReceiverTwoName = widget.testEachRequest!.due_recieved_two_by;
       int? originalAdvance = widget.testEachRequest!.advanced??0;
-      int? originalDue = widget.testEachRequest!.due_recieved??0;
+      int? originalDueOne = widget.testEachRequest!.due_recieved_one??0;
+      int? originalDueTwo = widget.testEachRequest!.due_recieved_two??0;
+
       //int? orignalDueRecieve = int.parse(widget.testEachRequest!.due_recieved)??0;
 
 
 
       final isAdvanceReceiverUntracked =
-          (widget.testEachRequest!.payment_date == null ||
-              widget.testEachRequest!.payment_date == 0) &&
+          (widget.testEachRequest!.advance_payment_date == null ||
+              widget.testEachRequest!.advance_payment_date == 0) &&
               updatedAdvanced > 0 && originalAdvance!=updatedAdvanced;
 
       if (isCollectingPage && isAdvanceReceiverUntracked) {
-        tempPaymentDate = currentTime;
+        tempAdvancePaymentDate = currentTime;
         advanceReceiverName = phoneNumber;
       }
 
-      final isDueUntracked =
-          (widget.testEachRequest!.due_recieved == null ||
-              widget.testEachRequest!.due_recieved == 0) &&
-              updatedDueReceived > 0 && originalDue!=updatedDueReceived;
 
-      if (isCollectingPage && isDueUntracked) {
-        tempDueReceivedDate = currentTime;
-        dueReceiverName = phoneNumber;
+      final isDueOneUntracked =
+          (widget.testEachRequest!.due_recieved_one == null ||
+              widget.testEachRequest!.due_recieved_one == 0) &&
+              updatedDueReceivedOne > 0 && originalDueOne!=updatedDueReceivedOne;
+
+      if (isCollectingPage && isDueOneUntracked) {
+        tempDueReceivedOneDate = currentTime;
+        dueReceiverOneName = phoneNumber;
+      }
+
+
+      final isDueUntrackedTwo =
+          (widget.testEachRequest!.due_recieved_two == null ||
+              widget.testEachRequest!.due_recieved_two == 0) &&
+              updatedDueReceivedTwo > 0 && originalDueTwo!=updatedDueReceivedTwo;
+
+      if (isCollectingPage && isDueUntrackedTwo) {
+        tempDueReceivedTwoDate = currentTime;
+        dueReceiverTwoName = phoneNumber;
       }
 
       if (widget.testEachRequest!.prepared_by == null ||
@@ -655,12 +705,14 @@ class _TestRequestCreateTypeThreeState
       // }
 
       updateTestRequestItem = buildRequest(
+        due_recieved_one_by: dueReceiverOneName,
+        dueReceivedOneDate:tempDueReceivedOneDate ,
         preparedBy: preparedBy,
         lastModifier: lastModifier,
         advance_recieved_by: advanceReceiverName,
-        due_recieved_by: dueReceiverName,
-        dueReceivedDate: tempDueReceivedDate,
-        paymentDate: tempPaymentDate,
+        due_recieved_two_by: dueReceiverTwoName,
+        dueReceivedTwoDate: tempDueReceivedTwoDate,
+        advancedPaymentDate: tempAdvancePaymentDate,
       );
 
       if (testStatus == 2 || testStatus == 8) {
@@ -727,6 +779,7 @@ class _TestRequestCreateTypeThreeState
         oldRequest.total_unpayable_pathology !=
             newRequest.total_unpayable_pathology ||
         oldRequest.payment_date != newRequest.payment_date ||
+        oldRequest.advance_payment_date != newRequest.advance_payment_date ||
         oldRequest.pathology_done != newRequest.pathology_done ||
         oldRequest.radiology_done != newRequest.radiology_done ||
         oldRequest.assigning != newRequest.assigning ||
@@ -735,10 +788,13 @@ class _TestRequestCreateTypeThreeState
         oldRequest.radiology_assigning_commission !=
             newRequest.radiology_assigning_commission ||
         oldRequest.imageDiscountFile != newRequest.imageDiscountFile ||
-        oldRequest.due_recieved_by != newRequest.due_recieved_by ||
+        oldRequest.due_recieved_one != newRequest.due_recieved_one ||
+        oldRequest.due_recieved_one_by != newRequest.due_recieved_one_by ||
+        oldRequest.due_recieve_one_date != newRequest.due_recieve_one_date ||
+        oldRequest.due_recieved_two_by != newRequest.due_recieved_two_by ||
         oldRequest.last_modifier != newRequest.last_modifier ||
-        oldRequest.due_recieved != newRequest.due_recieved ||
-        oldRequest.due_recieve_date != newRequest.due_recieve_date ||
+        oldRequest.due_recieved_two != newRequest.due_recieved_two ||
+        oldRequest.due_recieve_two_date != newRequest.due_recieve_two_date ||
         oldRequest.total_cash_recieve != newRequest.total_cash_recieve;
   }
 
@@ -748,7 +804,8 @@ class _TestRequestCreateTypeThreeState
     serviceCost = 0;
     tubeCost = 0;
     totalDiscount = 0;
-    totalDueRecieved = 0;
+    totalDueRecievedOne = 0;
+    totalDueRecievedTwo = 0;
     test_item_discount = 0;
     total_payable_pathology = 0;
     total_payable_imaging = 0;
@@ -775,8 +832,11 @@ class _TestRequestCreateTypeThreeState
         .toString();
 
     totalDiscount = totalDiscount + int.parse(admin_discount.text.toString());
-    totalDueRecieved =totalDueRecieved + int.parse(due_recieved.text.toString());
+    int valueOne = int.tryParse(due_recieved_one.text.toString()) ?? 0;
+    int valueTwo = int.tryParse(due_recieved_two.text.toString()) ?? 0;
 
+    totalDueRecievedOne += valueOne;
+    totalDueRecievedTwo += valueTwo;
 
     //agent
 
@@ -852,12 +912,15 @@ class _TestRequestCreateTypeThreeState
     total_payable_item = total_payable_pathology + total_payable_imaging;
     total_unpayable_item = total_unpayable_pathology + total_unpayable_imaging;
 
-    if (advanced.text.isNotEmpty || due_recieved.text.isNotEmpty) {
+    if (advanced.text.isNotEmpty || due_recieved_two.text.isNotEmpty || due_recieved_one.text.isNotEmpty) {
       due_amount.text = (totalCost -
-          int.parse(advanced.text.toString()) -
-          int.parse(due_recieved.text.toString()))
+          (int.tryParse(advanced.text.toString())??0) -
+          (int.tryParse(due_recieved_one.text.toString())??0) - (int.tryParse(due_recieved_two.text.toString())??0))
           .toString();
+      handleDisbaleDueReecieve();
     }
+
+
     if (testData_updated.length == 0) {
       totalDiscount = 0;
       agent_discount.text = "0";
@@ -865,7 +928,7 @@ class _TestRequestCreateTypeThreeState
     }
 
     total_discount.text = totalDiscount.toString();
-    totalCashRecieve = totalDueRecieved + int.parse(advanced.text.toString());
+    totalCashRecieve = totalDueRecievedOne + totalDueRecievedTwo + (int.tryParse(advanced.text) ?? 0);
 
 
     adminUserList.map((e) {
@@ -960,10 +1023,15 @@ class _TestRequestCreateTypeThreeState
       //totaltestprice.text = totalTestCost.toString();
       servicecharge.text = serviceCost.toString();
       test_item_cost = totalTestCost;
-      due_amount.text = (totalCost -
-          int.parse(advanced.text.toString()) -
-          int.parse(due_recieved.text.toString()))
-          .toString();
+
+
+      if (advanced.text.isNotEmpty || due_recieved_two.text.isNotEmpty || due_recieved_one.text.isNotEmpty) {
+        due_amount.text = (totalCost -
+            (int.tryParse(advanced.text.toString())??0) -
+            (int.tryParse(due_recieved_one.text.toString())??0) - (int.tryParse(due_recieved_two.text.toString())??0))
+            .toString();
+        handleDisbaleDueReecieve();
+      }
 
       if (testData_updated.length == 0) {
         totalDiscount = 0;
@@ -972,7 +1040,7 @@ class _TestRequestCreateTypeThreeState
       }
 
       total_discount.text = totalDiscount.toString();
-      totalCashRecieve = totalDueRecieved + int.parse(advanced.text.toString());
+      totalCashRecieve = totalDueRecievedOne + totalDueRecievedTwo + (int.tryParse(advanced.text) ?? 0);
 
 
       adminUserList.map((e) {
@@ -1066,19 +1134,6 @@ class _TestRequestCreateTypeThreeState
   @override
   Widget build(BuildContext context) {
     chechkingInternet();
-
-    if (init == false) {
-      testData_updated.clear();
-
-      testItemList.map((e) {
-        if (testItemListWithSelected[e.id] == true) {
-          testData_updated.add(e);
-          testItemListWithSelected[e.id] = true;
-        }
-      }).toList();
-    }
-    init = false;
-    calculationProcess();
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -1200,6 +1255,7 @@ class _TestRequestCreateTypeThreeState
                           ),
                         ),
                         FormUserAge(
+                          formKey:  _formKey,
                           ageController: age,
                           initialAge: age.text,
                         ),
@@ -2056,7 +2112,9 @@ class _TestRequestCreateTypeThreeState
                                                           testItemListWithSelected,
                                                     ));
                                                   })
-                                              .then((value) => setState(() {}));
+                                              .then((value) => setState(() {
+                                            testItemUpdatedData();
+                                          }));
                                         }
                                       },
                                       child: Text(
@@ -2147,6 +2205,8 @@ class _TestRequestCreateTypeThreeState
                                                             testData_updated[
                                                                     index]
                                                                 .id);
+                                                        handleFirstTimeInitPage = false;
+                                                        handleDisbaleDueReecieve();
                                                       });
 
                                                       // createReqController
@@ -2888,18 +2948,12 @@ class _TestRequestCreateTypeThreeState
                                 child: Container(
                                   height: DM.p42,
                                   child: TextFormField(
+                                    readOnly: (widget.testEachRequest?.advanced ?? 0) > 0,
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
-                                      int advance = advanced.text.isNotEmpty
-                                          ? int.parse(advanced.text)
-                                          : 0;
-                                      int dueRecieved =
-                                      due_recieved.text.isNotEmpty
-                                          ? int.parse(due_recieved.text)
-                                          : 0;
-                                      due_amount.text =
-                                          (totalCost - advance - dueRecieved)
-                                              .toString();
+                                      setState(() {
+                                        calculationProcess();
+                                      });
                                     },
                                     controller: advanced,
                                     decoration: InputDecoration(
@@ -2930,11 +2984,9 @@ class _TestRequestCreateTypeThreeState
                             ],
                           ),
                         ),
-
-                            widget.testEachRequest?.teststatus <= 5 ||
-                                widget.testEachRequest?.teststatus == 8
-                            ?
-                        Padding(
+                        widget.testEachRequest?.teststatus <= 6 ||
+                            widget.testEachRequest?.teststatus == 8
+                            ? Padding(
                           padding: EdgeInsets.all(DM.p5),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -2943,7 +2995,7 @@ class _TestRequestCreateTypeThreeState
                               SizedBox(
                                 width: DM.p100,
                                 child: Text(
-                                  "Due Received",
+                                  "Due Received One",
                                   style: TextStyle(
                                       fontWeight: FontWeight.w500,
                                       fontSize: DM.p14,
@@ -2961,22 +3013,84 @@ class _TestRequestCreateTypeThreeState
                                 child: Container(
                                   height: DM.p42,
                                   child: TextFormField(
+                                    readOnly:isReadOnlyDueReceivedOne,
                                     keyboardType: TextInputType.number,
                                     onChanged: (value) {
-                                      int advance =
-                                      advanced.text.isNotEmpty
-                                          ? int.parse(advanced.text)
-                                          : 0;
-                                      int dueRecieved = due_recieved
-                                          .text.isNotEmpty
-                                          ? int.parse(due_recieved.text)
-                                          : 0;
-                                      due_amount.text = (totalCost -
-                                          advance -
-                                          dueRecieved)
-                                          .toString();
+                                      setState(() {
+                                        calculationProcess();
+                                      });
                                     },
-                                    controller: due_recieved,
+                                    controller: due_recieved_one,
+                                    decoration: InputDecoration(
+                                        errorStyle:
+                                        TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: appTheme)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                              appTheme), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding:
+                                        EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                            : SizedBox(),
+
+                            widget.testEachRequest?.teststatus <= 6 ||
+                                widget.testEachRequest?.teststatus == 8
+                            ?
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Due Received Two",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    readOnly: isReadOnlyDueReceivedTwo,
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        calculationProcess();
+                                      });
+                                    },
+                                    controller: due_recieved_two,
                                     decoration: InputDecoration(
                                         errorStyle: TextStyle(fontSize: DM.p9),
                                         focusedBorder: OutlineInputBorder(
@@ -3005,13 +3119,65 @@ class _TestRequestCreateTypeThreeState
                             ],
                           ),
                         ):SizedBox(),
-                        FormUserInfo(
-                          formKey: _formKey,
-                          textInputType: TextInputType.name,
-                          controller: due_amount,
-                          title: "Due Amount",
-                          value:   "${totalCost - int.parse(advanced.text) - int.parse(due_recieved.text)}",
-                          activate: true,
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: DM.p100,
+                                child: Text(
+                                  "Due Amount",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: DM.p14,
+                                      color: blackFontColor),
+                                ),
+                              ),
+                              SizedBox(
+                                width: DM.p5,
+                              ),
+                              Text(":"),
+                              SizedBox(
+                                width: DM.p10,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  height: DM.p42,
+                                  child: TextFormField(
+                                    readOnly: true,
+                                    keyboardType: TextInputType.number,
+                                    controller: due_amount,
+                                    decoration: InputDecoration(
+                                        errorStyle:
+                                        TextStyle(fontSize: DM.p9),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                width: DM.p1,
+                                                color: appTheme)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              width: DM.p1,
+                                              color:
+                                              appTheme), //<-- SEE HERE
+                                        ),
+                                        filled: true,
+                                        fillColor: fullWhiteColor,
+                                        contentPadding:
+                                        EdgeInsets.symmetric(
+                                            horizontal: DM.p10),
+                                        border: InputBorder.none,
+                                        hintText: "0",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: DM.p14,
+                                        )),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
 
                         FormUserInfo(
@@ -3822,7 +3988,77 @@ class _TestRequestCreateTypeThreeState
       ),
     )));
   }
+  void handleDisbaleDueReecieve() {
+    final req = widget.testEachRequest;
+    bool isDueAmountZero = (req?.due_amount ?? 0) == 0 && (int.tryParse(due_amount.text)??0) == 0;
+
+
+    if(!handleFirstTimeInitPage){
+      isReadOnlyDueReceivedOne = isDueAmountZero;
+      if(!isReadOnlyDueReceivedOne){
+        if ((req?.due_recieved_one ?? 0) > 0 &&
+            (req?.due_recieved_two ?? 0) > 0 &&
+            req?.due_recieve_one_date != null &&
+            req?.due_recieve_two_date != null) {
+
+          if((req?.due_recieve_one_date ?? 0) == (req?.due_recieve_two_date ?? 0)){
+            isReadOnlyDueReceivedOne = true;
+          }else{
+            isReadOnlyDueReceivedOne =
+                (req?.due_recieve_one_date ?? 0) < (req?.due_recieve_two_date ?? 0);
+          }
+        }
+        else {
+          if ((req?.due_recieved_one ?? 0) != 0){
+            isReadOnlyDueReceivedOne = true;
+          }
+          else{
+            isReadOnlyDueReceivedOne =  false;
+          }
+        }
+      }
+
+      isReadOnlyDueReceivedTwo =isDueAmountZero;
+      if(!isReadOnlyDueReceivedTwo){
+        if ((req?.due_recieved_one ?? 0) > 0 &&
+            (req?.due_recieved_two ?? 0) > 0 &&
+            req?.due_recieve_one_date != null &&
+            req?.due_recieve_two_date != null) {
+          isReadOnlyDueReceivedTwo =
+              (req?.due_recieve_two_date ?? 0) < (req?.due_recieve_one_date ?? 0);
+        } else {
+          if ((req?.due_recieved_two ?? 0) != 0){
+            isReadOnlyDueReceivedTwo = true;
+          }
+          else{
+            isReadOnlyDueReceivedTwo = false;
+          }
+        }
+      }
+      handleFirstTimeInitPage = true;
+    }
+    // Update the readOnly values based on the logic
+  }
+
+  void testItemUpdatedData() {
+    if (init == false) {
+      testData_updated.clear();
+
+      testItemList.map((e) {
+        if (testItemListWithSelected[e.id] == true) {
+          testData_updated.add(e);
+          testItemListWithSelected[e.id] = true;
+        }
+      }).toList();
+    }
+    init = false;
+    calculationProcess();
+    handleFirstTimeInitPage = false;
+    handleDisbaleDueReecieve();
+  }
 }
+
+
 
 class FormUserInfo extends StatelessWidget {
   dynamic title;
@@ -3952,12 +4188,14 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
         totalAmount: testDataRequest.totalprice,
         advance: advanced.text.toString(),
         dueAmount: due_amount.text.toString(),
+        dueRecieveOne: testDataRequest.due_recieved_one,
+        dueRecieveTwo: testDataRequest.due_recieved_two,
         totalDiscount: totalDiscount,
         testItems: testDataRequest.testlist,
         collection_charge: testDataRequest.servicecharge,
         tube_cost: tubeCost,
         deliveryDate: testDataRequest.delivery_date,
-        reciever_name: assigningMapping[testDataRequest.due_recieved_by],
+        reciever_name: assigningMapping[testDataRequest.due_recieved_two_by],
         last_modifier: testDataRequest.last_modifier,
         prepared_by: testDataRequest.prepared_by,
         totalCashRecieved: testDataRequest.total_cash_recieve),

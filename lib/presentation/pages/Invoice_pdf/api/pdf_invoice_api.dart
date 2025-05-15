@@ -6,9 +6,9 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/widgets.dart';
 
+import '../../../../responsives/dimensions.dart';
 import '../model/customer.dart';
 import '../model/invoice.dart';
-import '../model/supplier.dart';
 import '../utils.dart';
 import 'pdf_api.dart';
 
@@ -29,11 +29,13 @@ class PdfInvoiceApi {
         buildInvoice(invoice),
         Divider(),
         SizedBox(height: 3 * PdfPageFormat.mm),
-        buildFooternfo(invoice)
+        buildFooterInfo(invoice)
       ],
     ));
 
-    return PdfApi.saveDocument(name: '${invoice.customer.invoice_id.toString()} (Customer_Copy).pdf', pdf: pdf);
+    return PdfApi.saveDocument(
+        name: '${invoice.customer.invoice_id.toString()} (Customer_Copy).pdf',
+        pdf: pdf);
   }
 
   static Widget buildHeader(Invoice invoice) => Column(
@@ -54,19 +56,18 @@ class PdfInvoiceApi {
   static Widget buildCustomerAddress(Customer customer) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-            SizedBox(
+          SizedBox(
             width: PdfPageFormat.cm * 3.4,
-            child:
-          Text("ID#  " + customer.invoice_id,
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),),
-                SizedBox(
+            child: Text("ID#  " + customer.invoice_id,
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+          ),
+          SizedBox(
             width: PdfPageFormat.cm * 3.5,
-            child:
-          Text("Name: " + customer.name,
-              style: TextStyle(
-                fontSize: 8,
-              )),
-                ),
+            child: Text("Name: " + customer.name,
+                style: TextStyle(
+                  fontSize: 8,
+                )),
+          ),
           Text("Gender: " + customer.gender,
               style: TextStyle(
                 fontSize: 8,
@@ -78,13 +79,13 @@ class PdfInvoiceApi {
                   fontSize: 8,
                 )),
           ),
-            SizedBox(
+          SizedBox(
             width: PdfPageFormat.cm * 3.5,
-            child:
-          Text("Ref:  " + customer.referrer,
-              style: TextStyle(
-                fontSize: 8,
-              )),),
+            child: Text("Ref:  " + customer.referrer,
+                style: TextStyle(
+                  fontSize: 8,
+                )),
+          ),
         ],
       );
 
@@ -98,8 +99,8 @@ class PdfInvoiceApi {
                   .format(DateTime.fromMillisecondsSinceEpoch(customer.date))
                   .toString(),
           style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold)),
-       Text(
-            "Time: "+
+      Text(
+          "Time: " +
               DateFormat(
                 'hh:mm a',
               )
@@ -147,8 +148,8 @@ class PdfInvoiceApi {
       ];
     }).toList();
 
-    data.add(["", "Collection Charge" ,invoice.customer.collection_charge]);
-    data.add(["", "Tube Cost" , invoice.customer.tube_cost]);
+    data.add(["", "Collection Charge", invoice.customer.collection_charge]);
+    data.add(["", "Tube Cost", invoice.customer.tube_cost]);
 
     return Table.fromTextArray(
       headers: headers,
@@ -238,99 +239,123 @@ class PdfInvoiceApi {
         ],
       );
 
-  static Widget buildFooternfo(Invoice invoice) => Container(
-          child:
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Column(children: [
-          Text(
-            "Report Delivery",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
-          ),
-          Text(
-           DateFormat(
-                'dd MMM, yyy',
-              )
-                  .format(DateTime.fromMillisecondsSinceEpoch(invoice.customer.deliveryDate))
+  static Widget buildFooterInfo(Invoice invoice) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      /// LEFT COLUMN (Delivery Date + Prepared & Modified Info)
+      Expanded(
+        flex: 3,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Report Delivery",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
+            SizedBox(height: 2),
+            Text(
+              DateFormat('dd MMM, yyyy').format(
+                  DateTime.fromMillisecondsSinceEpoch(invoice.customer.deliveryDate)),
+              style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+            ),
+            Text("08:00 PM",
+                style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold)),
+            SizedBox(height: 20),
+
+            /// Prepared By
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Prepared by: ",
+                    style: TextStyle(fontSize: 8, fontWeight: FontWeight.normal)),
+                Expanded(
+                  child: Text(
+                    invoice.customer.prepared_by ?? '',
+                    style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+                    maxLines: 2,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 4),
+
+            /// Modified By
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Modified by: ",
+                    style: TextStyle(fontSize: 8, fontWeight: FontWeight.normal)),
+                Expanded(
+                  child: Text(
+                    invoice.customer.last_modifier ?? '',
+                    style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+                    maxLines: 2,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+
+      /// RIGHT COLUMN (Amounts)
+      Expanded(
+        flex: 2,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            buildAmountRow(
+              label: "Total Amount:",
+              value: (int.parse(invoice.customer.totalAmount.toString()) +
+                  int.parse(invoice.customer.totalDiscount.toString()))
                   .toString(),
-            style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+            ),
+            buildAmountRow(
+              label: "Discount:",
+              value: invoice.customer.totalDiscount.toString(),
+            ),
+            buildAmountRow(
+              label: "Advanced:",
+              value: (int.parse(invoice.customer.advance.toString()) +
+                  int.parse(invoice.customer.dueRecieveOne.toString()) +
+                  int.parse(invoice.customer.dueRecieveTwo.toString()))
+                  .toString(),
+            ),
+            buildAmountRow(
+              label: "Due Amount:",
+              value: invoice.customer.dueAmount.toString(),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+
+  /// Helper for aligned amount rows
+  static Widget buildAmountRow({required String label, required String value}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: TextStyle(fontSize: 8),
+            ),
           ),
-          Text(
-            "08:00 PM",
-            style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+          Expanded(
+            flex: 1,
+            child: Text(
+              value,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
+              textAlign: TextAlign.right,
+            ),
           ),
-        ]),
-        Column(children: [
-          Container(
-            width: PdfPageFormat.inch * 1.3,
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    "Total Amount:",
-                    style: TextStyle(fontSize: 8),
-                  ),
-                  Text(
-                    (int.parse(invoice.customer.totalAmount.toString()) +  int.parse(invoice.customer.totalDiscount.toString())).toString(),
-                    textAlign: TextAlign.right,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
-                  ),
-                ]),
-          ),
-           Container(
-              width: PdfPageFormat.inch * 1.3,
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "Discount:",
-                      style: TextStyle(fontSize: 8),
-                    ),
-                    Text(
-                      invoice.customer.totalDiscount.toString(),
-                      textAlign: TextAlign.right,
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
-                    )
-                  ])),
-          Container(
-              width: PdfPageFormat.inch * 1.3,
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "Advance:",
-                      style: TextStyle(fontSize: 8),
-                    ),
-                    Text(
-                      invoice.customer.advance.toString(),
-                      textAlign: TextAlign.right,
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
-                    )
-                  ])),
-         
-          Container(
-              width: PdfPageFormat.inch * 1.3,
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "Due Amount Total:",
-                      style: TextStyle(fontSize: 8),
-                    ),
-                    Text(
-                      invoice.customer.dueAmount.toString(),
-                      textAlign: TextAlign.right,
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
-                    )
-                  ])),
-        ]),
-      ]));
+        ],
+      ),
+    );
+  }
+
 
   static Widget buildHeadInfo() => Container(
       margin: EdgeInsets.symmetric(horizontal: 10),
