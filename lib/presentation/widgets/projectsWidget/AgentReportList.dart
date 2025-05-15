@@ -212,6 +212,8 @@ class _AgentReportListState extends State<AgentReportList> {
       // Update last payment date
     }
 
+    _agentNameSorting();
+
     for (var e in _newTestRequestList) {
       if (e.teststatus == 6) {
         totalEarning += e.agent_commission - e.total_agent_discount;
@@ -221,7 +223,6 @@ class _AgentReportListState extends State<AgentReportList> {
         }
       }
     }
-
     lastPaymentTestReq = getLatestPaymentData(_newTestRequestList);
 
     print("Filtered ${_newTestRequestList.length} requests");
@@ -467,6 +468,22 @@ class _AgentReportListState extends State<AgentReportList> {
 
   Future<void> permissionNeed() async {
     if (await Permission.storage.request() == true) {}
+  }
+
+  void _agentNameSorting() {
+
+    //sort with user wise and date wise
+    final Map<String, String> codeToNameMap = {
+      for (var agent in agentUserMapList) agent['referrer_code']: agent['name']
+    };
+
+    _newTestRequestList.sort((a, b) {
+      final nameA = codeToNameMap[a.referrer.toString()] ?? '';
+      final nameB = codeToNameMap[b.referrer.toString()] ?? '';
+      final nameComparison = nameA.compareTo(nameB);
+      if (nameComparison != 0) return nameComparison;
+      return a.dateofcreated.compareTo(b.dateofcreated);
+    });
   }
 
   @override
