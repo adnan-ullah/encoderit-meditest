@@ -30,7 +30,7 @@ class _AgentReportListState extends State<AgentReportList> {
   final CreateRequestController createRequestController =
       Get.put(CreateRequestController());
   final TextEditingController referrerInput = TextEditingController(text: "0");
-  bool isLoading = false;
+  bool isLoading = true;
   String referrerCode = "0";
   String? commission;
   String type = "0";
@@ -119,7 +119,6 @@ class _AgentReportListState extends State<AgentReportList> {
 
   // Fetch data from Firebase for all year/month paths
   Future<void> _fetchData() async {
-    // _showLoading(true);
     _allRequestListAdmin.clear();
     _newTestRequestList.clear();
     totalEarning = 0;
@@ -186,6 +185,7 @@ class _AgentReportListState extends State<AgentReportList> {
 
   // Filter data by referrer, date range, and paid status, calculate metrics
   Future<void> _filterData(String referrer) async {
+    isLoading = true;
     _newTestRequestList.clear();
     totalEarning = 0;
     totalTestCost = 0;
@@ -226,7 +226,9 @@ class _AgentReportListState extends State<AgentReportList> {
     lastPaymentTestReq = getLatestPaymentData(_newTestRequestList);
 
     print("Filtered ${_newTestRequestList.length} requests");
-    if (mounted) setState(() {});
+    if (mounted) setState(() {
+      isLoading = false;
+    });
   }
 
   // Update payment status in Firebase and refresh UI
@@ -628,6 +630,7 @@ class _AgentReportListState extends State<AgentReportList> {
                               endDatetime = DateTime(picked.year, picked.month,
                                       picked.day, 23, 59, 59)
                                   .millisecondsSinceEpoch;
+                              isLoading = true;
                               _fetchData();
                             });
                           }
@@ -713,7 +716,8 @@ class _AgentReportListState extends State<AgentReportList> {
             Container(
               height: DM.screenHeight * 0.62,
               margin: EdgeInsets.symmetric(horizontal: DM.p5),
-              child: ListView(
+              child:
+              !isLoading? ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
                   Column(
@@ -1186,7 +1190,15 @@ class _AgentReportListState extends State<AgentReportList> {
                     ],
                   ),
                 ],
+              ):
+              Container(
+                child: Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(appTheme),
+                  ),
+                ),
               ),
+
             ),
             // Summary metrics
             Container(
