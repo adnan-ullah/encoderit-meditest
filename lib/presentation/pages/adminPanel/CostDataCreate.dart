@@ -13,7 +13,9 @@ import '../../../state_programming/CostController.dart';
 import 'AdminUserData.dart';
 
 class CostDataCreate extends StatefulWidget {
-  const CostDataCreate({super.key});
+  final CostModel? cost;
+
+  const CostDataCreate({super.key, this.cost});
 
   @override
   _CostDataCreateState createState() => _CostDataCreateState();
@@ -36,10 +38,18 @@ class _CostDataCreateState extends State<CostDataCreate> {
   void initState() {
     super.initState();
     costController.fetchCategories();
+    if (widget.cost != null) {
+      final cost = widget.cost!;
+      voucherNo.text = cost.voucherNo;
+      totalAmount.text = cost.totalAmount;
+      remarks.text = cost.remarks;
+      category = cost.category;
+      voucherDate = DateTime.fromMillisecondsSinceEpoch(cost.voucherDate);
+    }
   }
 
   Future<void> insertNewCostItem() async {
-    final dbRef = FirebaseDatabase.instance.ref("$costApi/");
+    final dbRef = FirebaseDatabase.instance.ref('$costApi/');
     final newCostItem = CostModel(
       id: const Uuid().v4(),
       postingDate: postingDate.millisecondsSinceEpoch,
@@ -49,9 +59,21 @@ class _CostDataCreateState extends State<CostDataCreate> {
       totalAmount: totalAmount.text,
       remarks: remarks.text,
     );
-    await dbRef
-        .child(newCostItem.id)
-        .set(newCostItem.toJson());
+    await dbRef.child(newCostItem.id).set(newCostItem.toJson());
+  }
+
+  Future<void> updateCostItem() async {
+    final dbRef = FirebaseDatabase.instance.ref('$costApi/');
+    final updatedCostItem = CostModel(
+      id: widget.cost!.id,
+      postingDate: postingDate.millisecondsSinceEpoch,
+      category: category!,
+      voucherNo: voucherNo.text,
+      voucherDate: voucherDate!.millisecondsSinceEpoch,
+      totalAmount: totalAmount.text,
+      remarks: remarks.text,
+    );
+    await dbRef.child(updatedCostItem.id).set(updatedCostItem.toJson());
   }
 
   Future<void> selectDate(BuildContext context) async {
@@ -77,7 +99,7 @@ class _CostDataCreateState extends State<CostDataCreate> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Add New Category"),
+        title: const Text('Add New Category'),
         content: SingleChildScrollView(
           child: Form(
             key: dialogFormKey,
@@ -89,8 +111,8 @@ class _CostDataCreateState extends State<CostDataCreate> {
                   validatorField: validateString,
                   textInputType: TextInputType.text,
                   controller: nameController,
-                  title: "Category Name",
-                  value: "Enter category name",
+                  title: 'Category Name',
+                  value: 'Enter category name',
                   activate: false,
                 ),
                 FormUserInfo(
@@ -98,8 +120,8 @@ class _CostDataCreateState extends State<CostDataCreate> {
                   validatorField: validateString,
                   textInputType: TextInputType.text,
                   controller: typeController,
-                  title: "Category Type",
-                  value: "Enter category type",
+                  title: 'Category Type',
+                  value: 'Enter category type',
                   activate: false,
                 ),
               ],
@@ -109,18 +131,26 @@ class _CostDataCreateState extends State<CostDataCreate> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Cancel", style: TextStyle(color: appTheme)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: appTheme),
+            ),
           ),
           TextButton(
             onPressed: () async {
               if (dialogFormKey.currentState!.validate()) {
                 await costController.addCategory(
-                    nameController.text, typeController.text);
+                  nameController.text,
+                  typeController.text,
+                );
                 Navigator.pop(context);
                 setState(() => category = nameController.text);
               }
             },
-            child: Text("Submit", style: TextStyle(color: appTheme)),
+            child: Text(
+              'Submit',
+              style: TextStyle(color: appTheme),
+            ),
           ),
         ],
       ),
@@ -130,13 +160,13 @@ class _CostDataCreateState extends State<CostDataCreate> {
   void showLoadingDialog() {
     showDialog(
       context: context,
-      barrierDismissible: false, // Prevent dismissing the dialog
+      barrierDismissible: false,
       builder: (_) => AlertDialog(
         content: Row(
           children: [
             CircularProgressIndicator(color: appTheme),
             const SizedBox(width: 20),
-            const Text("Submitting..."),
+            const Text('Submitting...'),
           ],
         ),
       ),
@@ -150,14 +180,20 @@ class _CostDataCreateState extends State<CostDataCreate> {
       appBar: AppBar(
         backgroundColor: appTheme,
         title: Text(
-          "Cost Item Form",
-          style: TextStyle(color: secondaryColor, fontSize: DM.p24),
+          widget.cost != null ? 'Edit Cost Item' : 'Cost Item Form',
+          style: TextStyle(
+            color: secondaryColor,
+            fontSize: DM.p24,
+          ),
         ),
         centerTitle: true,
       ),
       backgroundColor: secondaryColor,
       body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p20),
+        padding: EdgeInsets.symmetric(
+          horizontal: DM.p20,
+          vertical: DM.p20,
+        ),
         child: Form(
           key: _formKey,
           child: Container(
@@ -179,46 +215,46 @@ class _CostDataCreateState extends State<CostDataCreate> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildFormField(
-                  title: "Voucher No",
+                  title: 'Voucher No',
                   controller: voucherNo,
                   validator: validateString,
-                  hint: "Enter voucher number",
+                  hint: 'Enter voucher number',
                   inputType: TextInputType.text,
                 ),
                 SizedBox(height: DM.p15),
                 _buildDateField(
-                  title: "Voucher Date",
+                  title: 'Voucher Date',
                   date: voucherDate,
                   onTap: () => selectDate(context),
                 ),
                 SizedBox(height: DM.p15),
                 _buildFormField(
-                  title: "Total Amount",
+                  title: 'Total Amount',
                   controller: totalAmount,
                   validator: validateNumber,
-                  hint: "Enter amount",
+                  hint: 'Enter amount',
                   inputType: TextInputType.number,
                 ),
                 SizedBox(height: DM.p15),
                 _buildCategoryField(),
                 SizedBox(height: DM.p15),
                 _buildNonEditableDateField(
-                  title: "Posting Date",
+                  title: 'Posting Date',
                   date: postingDate,
                 ),
                 SizedBox(height: DM.p15),
                 _buildFormField(
-                  title: "Remarks",
+                  title: 'Remarks',
                   controller: remarks,
                   validator: (_) => null,
-                  hint: "Enter remarks",
+                  hint: 'Enter remarks',
                   inputType: TextInputType.text,
                 ),
                 SizedBox(height: DM.p30),
                 Center(
                   child: MaterialButton(
                     onPressed: isSubmitting
-                        ? null // Disable button while submitting
+                        ? null
                         : () async {
                       setState(() {
                         isCategoryValid = category != null;
@@ -227,59 +263,73 @@ class _CostDataCreateState extends State<CostDataCreate> {
                       if (_formKey.currentState!.validate() &&
                           isCategoryValid &&
                           isVoucherDateValid) {
-                        // Show confirmation dialog
                         showDialog(
                           context: context,
                           builder: (_) => AlertDialog(
-                            title: const Text("Confirm Submission"),
+                            title: const Text('Confirm Submission'),
                             content: const Text(
-                                "Are you sure you want to submit the cost item?"),
+                              'Are you sure you want to submit the cost item?',
+                            ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
-                                child: Text("No",
-                                    style: TextStyle(color: appTheme)),
+                                child: Text(
+                                  'No',
+                                  style: TextStyle(color: appTheme),
+                                ),
                               ),
                               TextButton(
                                 onPressed: () async {
-                                  Navigator.pop(context); // Close confirmation dialog
+                                  Navigator.pop(context);
                                   setState(() {
                                     isSubmitting = true;
                                   });
-                                  showLoadingDialog(); // Show loading dialog
+                                  showLoadingDialog();
                                   try {
                                     if (await chechkingInternet()) {
-                                      await insertNewCostItem();
-                                      Navigator.pop(context); // Close loading dialog
-                                      Get.back(); // Navigate back after submission
+                                      if (widget.cost != null) {
+                                        await updateCostItem();
+                                      } else {
+                                        await insertNewCostItem();
+                                      }
+                                      Navigator.pop(context);
+                                      Get.back();
                                     } else {
-                                      Navigator.pop(context); // Close loading dialog
+                                      Navigator.pop(context);
                                       Get.snackbar(
-                                        "Error",
-                                        "No internet connection",
-                                        duration:
-                                        const Duration(milliseconds: 2000),
-                                        icon: Icon(Icons.error,
-                                            color: whiteColor),
+                                        'Error',
+                                        'No internet connection',
+                                        duration: const Duration(
+                                          milliseconds: 2000,
+                                        ),
+                                        icon: Icon(
+                                          Icons.error,
+                                          color: whiteColor,
+                                        ),
                                         margin: EdgeInsets.symmetric(
-                                            horizontal: DM.p20,
-                                            vertical: DM.p20),
+                                          horizontal: DM.p20,
+                                          vertical: DM.p20,
+                                        ),
                                         backgroundColor: Colors.redAccent,
                                         colorText: whiteColor,
                                       );
                                     }
                                   } catch (e) {
-                                    Navigator.pop(context); // Close loading dialog
+                                    Navigator.pop(context);
                                     Get.snackbar(
-                                      "Error",
-                                      "Failed to submit: $e",
-                                      duration:
-                                      const Duration(milliseconds: 2000),
-                                      icon: Icon(Icons.error,
-                                          color: whiteColor),
+                                      'Error',
+                                      'Failed to submit: $e',
+                                      duration: const Duration(
+                                        milliseconds: 2000,
+                                      ),
+                                      icon: Icon(
+                                        Icons.error,
+                                        color: whiteColor,
+                                      ),
                                       margin: EdgeInsets.symmetric(
-                                          horizontal: DM.p20,
-                                          vertical: DM.p20),
+                                        horizontal: DM.p20,
+                                        vertical: DM.p20,
+                                      ),
                                       backgroundColor: Colors.redAccent,
                                       colorText: whiteColor,
                                     );
@@ -289,21 +339,27 @@ class _CostDataCreateState extends State<CostDataCreate> {
                                     });
                                   }
                                 },
-                                child: Text("Confirm",
-                                    style: TextStyle(color: appTheme)),
+                                child: Text(
+                                  'Confirm',
+                                  style: TextStyle(color: appTheme),
+                                ),
                               ),
                             ],
                           ),
                         );
                       } else {
-                        // Show error snackbar if validation fails
                         Get.snackbar(
-                          "Error",
-                          "Please fill all required fields correctly",
+                          'Error',
+                          'Please fill all required fields correctly',
                           duration: const Duration(milliseconds: 2000),
-                          icon: Icon(Icons.error, color: whiteColor),
+                          icon: Icon(
+                            Icons.error,
+                            color: whiteColor,
+                          ),
                           margin: EdgeInsets.symmetric(
-                              horizontal: DM.p20, vertical: DM.p20),
+                            horizontal: DM.p20,
+                            vertical: DM.p20,
+                          ),
                           backgroundColor: Colors.redAccent,
                           colorText: whiteColor,
                         );
@@ -316,7 +372,7 @@ class _CostDataCreateState extends State<CostDataCreate> {
                     ),
                     color: appTheme,
                     child: Text(
-                      "Submit",
+                      widget.cost != null ? 'Update' : 'Submit',
                       style: TextStyle(
                         color: fullWhiteColor,
                         fontSize: DM.p16,
@@ -361,8 +417,10 @@ class _CostDataCreateState extends State<CostDataCreate> {
             hintStyle: TextStyle(color: Colors.grey.shade500),
             filled: true,
             fillColor: Colors.grey.shade50,
-            contentPadding:
-            EdgeInsets.symmetric(horizontal: DM.p15, vertical: DM.p12),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: DM.p15,
+              vertical: DM.p12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(DM.p8),
               borderSide: BorderSide(color: Colors.grey.shade300),
@@ -373,7 +431,10 @@ class _CostDataCreateState extends State<CostDataCreate> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(DM.p8),
-              borderSide: BorderSide(color: appTheme, width: 2),
+              borderSide: BorderSide(
+                color: appTheme,
+                width: 2,
+              ),
             ),
           ),
         ),
@@ -386,7 +447,7 @@ class _CostDataCreateState extends State<CostDataCreate> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Category",
+          'Category',
           style: TextStyle(
             fontWeight: FontWeight.w500,
             fontSize: DM.p16,
@@ -397,56 +458,65 @@ class _CostDataCreateState extends State<CostDataCreate> {
         Row(
           children: [
             Expanded(
-              child: Obx(() => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: DM.p15),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(DM.p8),
-                      border: Border.all(
-                        color: isCategoryValid
-                            ? Colors.grey.shade300
-                            : Colors.red,
-                      ),
-                    ),
-                    child: DropdownButton<String>(
-                      value: category,
-                      hint: Text(
-                        "Select Category",
-                        style: TextStyle(color: Colors.grey.shade500),
-                      ),
-                      items: costController.categoryName
-                          .map((value) => DropdownMenuItem(
-                        value: value,
-                        child: Text(value,
-                            style: TextStyle(color: blackFontColor)),
-                      ))
-                          .toList(),
-                      onChanged: (newValue) {
-                        setState(() {
-                          category = newValue!;
-                          isCategoryValid = true;
-                        });
-                      },
-                      isExpanded: true,
-                      underline: SizedBox(),
-                    ),
-                  ),
-                  if (!isCategoryValid)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0, top: 4),
-                      child: Text(
-                        "Required",
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: DM.p12,
+              child: Obx(
+                    () => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: DM.p15),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(DM.p8),
+                        border: Border.all(
+                          color: isCategoryValid
+                              ? Colors.grey.shade300
+                              : Colors.red,
                         ),
                       ),
+                      child: DropdownButton<String>(
+                        value: category,
+                        hint: Text(
+                          'Select Category',
+                          style: TextStyle(color: Colors.grey.shade500),
+                        ),
+                        items: costController.categoryName
+                            .map(
+                              (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(
+                              value,
+                              style: TextStyle(color: blackFontColor),
+                            ),
+                          ),
+                        )
+                            .toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            category = newValue!;
+                            isCategoryValid = true;
+                          });
+                        },
+                        isExpanded: true,
+                        underline: SizedBox(),
+                      ),
                     ),
-                ],
-              )),
+                    if (!isCategoryValid)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 8.0,
+                          top: 4,
+                        ),
+                        child: Text(
+                          'Required',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: DM.p12,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
             SizedBox(width: DM.p10),
             MaterialButton(
@@ -457,7 +527,10 @@ class _CostDataCreateState extends State<CostDataCreate> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(DM.p8),
               ),
-              child: Icon(Icons.add, color: fullWhiteColor),
+              child: Icon(
+                Icons.add,
+                color: fullWhiteColor,
+              ),
             ),
           ],
         ),
@@ -486,7 +559,10 @@ class _CostDataCreateState extends State<CostDataCreate> {
           onTap: onTap,
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: DM.p15, vertical: DM.p12),
+            padding: EdgeInsets.symmetric(
+              horizontal: DM.p15,
+              vertical: DM.p12,
+            ),
             decoration: BoxDecoration(
               color: Colors.grey.shade50,
               borderRadius: BorderRadius.circular(DM.p8),
@@ -496,8 +572,8 @@ class _CostDataCreateState extends State<CostDataCreate> {
             ),
             child: Text(
               date != null
-                  ? DateFormat("dd-MM-yyyy").format(date)
-                  : "Select Date",
+                  ? DateFormat('dd-MM-yyyy').format(date)
+                  : 'Select Date',
               style: TextStyle(
                 color: date != null ? blackFontColor : Colors.grey.shade500,
                 fontSize: DM.p16,
@@ -507,9 +583,12 @@ class _CostDataCreateState extends State<CostDataCreate> {
         ),
         if (!isVoucherDateValid)
           Padding(
-            padding: const EdgeInsets.only(left: 8.0, top: 4),
+            padding: const EdgeInsets.only(
+              left: 8.0,
+              top: 4,
+            ),
             child: Text(
-              "Required",
+              'Required',
               style: TextStyle(
                 color: Colors.red,
                 fontSize: DM.p12,
@@ -538,15 +617,21 @@ class _CostDataCreateState extends State<CostDataCreate> {
         SizedBox(height: DM.p8),
         Container(
           width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: DM.p15, vertical: DM.p12),
+          padding: EdgeInsets.symmetric(
+            horizontal: DM.p15,
+            vertical: DM.p12,
+          ),
           decoration: BoxDecoration(
             color: Colors.grey.shade50,
             borderRadius: BorderRadius.circular(DM.p8),
             border: Border.all(color: Colors.grey.shade300),
           ),
           child: Text(
-            DateFormat("dd-MM-yyyy").format(date),
-            style: TextStyle(color: blackFontColor, fontSize: DM.p16),
+            DateFormat('dd-MM-yyyy').format(date),
+            style: TextStyle(
+              color: blackFontColor,
+              fontSize: DM.p16,
+            ),
           ),
         ),
       ],
