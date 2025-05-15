@@ -2,6 +2,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/presentation/pages/LoginScreen.dart';
+import 'package:healthcare_homelab/presentation/widgets/projectsWidget/ShareHolderReport.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
@@ -292,8 +293,8 @@ class _CostDataCreateState extends State<CostDataCreate> {
                                       } else {
                                         await insertNewCostItem();
                                       }
-                                      Navigator.pop(context);
                                       Get.back();
+                                      Get.back(result: "refresh");
                                     } else {
                                       Navigator.pop(context);
                                       Get.snackbar(
