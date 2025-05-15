@@ -2783,10 +2783,12 @@ class _TestRequestCreateTypeThreeState
                                 width: DM.p10,
                               ),
                               DropdownButton<String>(
+                                value: createReqController.status[int.tryParse(teststatus.text) ?? 0],
                                 hint: Text(
-                                    "${createReqController.status[int.parse(teststatus.text)]}",
-                                    style: TextStyle(color: blackFontColor)),
-                                items: <String>[
+                                  createReqController.status[int.tryParse(teststatus.text) ?? 0] ?? "Select status",
+                                  style: TextStyle(color: blackFontColor),
+                                ),
+                                items: ( [
                                   "PENDING",
                                   "RECIEVED",
                                   "PRECOLLECTED",
@@ -2795,23 +2797,24 @@ class _TestRequestCreateTypeThreeState
                                   "R.RECIEVED",
                                   "DELIVERED",
                                   "CANCEL"
-                                ].map((String value) {
+                                ])
+                                    .map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
                                     child: Text(
-                                      "$value",
+                                      value,
                                       style: TextStyle(color: blackFontColor),
                                     ),
                                   );
                                 }).toList(),
                                 onChanged: (newValue) {
-                                  setState(() {
-                                    teststatus.text = createReqController
-                                        .toStatus[newValue]
-                                        .toString();
-                                  });
+                                  if (newValue != null) {
+                                    setState(() {
+                                      teststatus.text = createReqController.toStatus[newValue]!.toString();
+                                    });
+                                  }
                                 },
-                              ),
+                              )
                             ],
                           ),
                         ),

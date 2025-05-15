@@ -3279,72 +3279,42 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                         SizedBox(
                                           width: DM.p10,
                                         ),
-                                        typeUser == "4" &&
-                                                phoneNumber != superUser
-                                            ? DropdownButton<String>(
-                                                hint: Text(
-                                                    "${createReqController.status[int.parse(teststatus.text)]}",
-                                                    style: TextStyle(
-                                                        color: blackFontColor)),
-                                                items: <String>[
-                                                  "PENDING",
-                                                  "RECIEVED",
-                                                ].map((String value) {
-                                                  return DropdownMenuItem<
-                                                      String>(
-                                                    value: value,
-                                                    child: Text(
-                                                      "$value",
-                                                      style: TextStyle(
-                                                          color:
-                                                              blackFontColor),
-                                                    ),
-                                                  );
-                                                }).toList(),
-                                                onChanged: (newValue) {
-                                                  setState(() {
-                                                    teststatus.text =
-                                                        createReqController
-                                                            .toStatus[newValue]
-                                                            .toString();
-                                                  });
-                                                },
-                                              )
-                                            : DropdownButton<String>(
-                                                hint: Text(
-                                                    "${createReqController.status[int.parse(teststatus.text)]}",
-                                                    style: TextStyle(
-                                                        color: blackFontColor)),
-                                                items: <String>[
-                                                  "PENDING",
-                                                  "RECIEVED",
-                                                  "PRECOLLECTED",
-                                                  "COLLECTED",
-                                                  "READY",
-                                                  "R.RECIEVED",
-                                                  "DELIVERED",
-                                                  "CANCEL"
-                                                ].map((String value) {
-                                                  return DropdownMenuItem<
-                                                      String>(
-                                                    value: value,
-                                                    child: Text(
-                                                      "$value",
-                                                      style: TextStyle(
-                                                          color:
-                                                              blackFontColor),
-                                                    ),
-                                                  );
-                                                }).toList(),
-                                                onChanged: (newValue) {
-                                                  setState(() {
-                                                    teststatus.text =
-                                                        createReqController
-                                                            .toStatus[newValue]
-                                                            .toString();
-                                                  });
-                                                },
+                                        DropdownButton<String>(
+                                          value: createReqController.status[int.tryParse(teststatus.text) ?? 0],
+                                          hint: Text(
+                                            createReqController.status[int.tryParse(teststatus.text) ?? 0] ?? "Select status",
+                                            style: TextStyle(color: blackFontColor),
+                                          ),
+                                          items: (typeUser == "4" && phoneNumber != superUser
+                                              ? ["PENDING", "RECIEVED"]
+                                              : [
+                                            "PENDING",
+                                            "RECIEVED",
+                                            "PRECOLLECTED",
+                                            "COLLECTED",
+                                            "READY",
+                                            "R.RECIEVED",
+                                            "DELIVERED",
+                                            "CANCEL"
+                                          ])
+                                              .map((String value) {
+                                            return DropdownMenuItem<String>(
+                                              value: value,
+                                              child: Text(
+                                                value,
+                                                style: TextStyle(color: blackFontColor),
                                               ),
+                                            );
+                                          }).toList(),
+                                          onChanged: (newValue) {
+                                            if (newValue != null) {
+                                              setState(() {
+                                                teststatus.text = createReqController.toStatus[newValue]!.toString();
+                                              });
+                                            }
+                                          },
+                                        )
+
                                       ],
                                     ),
                                   ),
@@ -4018,22 +3988,22 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                       width: DM.p10,
                                     ),
                                     Checkbox(
-                                        value: pathologyDone,
-                                        onChanged: (value) {
-                                          if (typeUser == "4" &&
-                                              phoneNumber != superUser) {
-                                            if (widget.testEachRequest!
-                                                    .pathology_done !=
-                                                true)
-                                              setState(() {
-                                                pathologyDone = !pathologyDone;
-                                              });
-                                          } else {
+                                      value: pathologyDone,
+                                      onChanged: (value) {
+                                        final isSuperUser = phoneNumber == superUser;
+                                        if (isSuperUser) {
+                                          setState(() {
+                                            pathologyDone = !pathologyDone;
+                                          });
+                                        } else if (typeUser == "4") {
+                                          if (widget.testEachRequest?.pathology_done != true) {
                                             setState(() {
                                               pathologyDone = !pathologyDone;
                                             });
                                           }
-                                        })
+                                        }
+                                      },
+                                    )
                                   ],
                                 ),
                               )
@@ -4066,22 +4036,23 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                       width: DM.p10,
                                     ),
                                     Checkbox(
-                                        value: radiologyDone,
-                                        onChanged: (value) {
-                                          if (typeUser == "4" &&
-                                              phoneNumber != superUser) {
-                                            if (widget.testEachRequest!
-                                                    .radiology_done !=
-                                                true)
-                                              setState(() {
-                                                radiologyDone = !radiologyDone;
-                                              });
-                                          } else {
+                                      value: radiologyDone,
+                                      onChanged: (value) {
+                                        final isSuperUser = phoneNumber == superUser;
+                                        if (isSuperUser) {
+                                          setState(() {
+                                            radiologyDone = !radiologyDone;
+                                          });
+                                        } else if (typeUser == "4") {
+                                          if (widget.testEachRequest?.radiology_done != true) {
                                             setState(() {
                                               radiologyDone = !radiologyDone;
                                             });
                                           }
-                                        })
+                                        }
+                                      },
+                                    )
+
                                   ],
                                 ),
                               )

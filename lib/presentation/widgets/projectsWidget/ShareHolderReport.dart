@@ -29,7 +29,6 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
   bool _isDialogOpen = false;
   String phone = "";
   double percentage = 0;
-  String type = "0";
   List<TestDataRequest> sellRequests = [];
   List<CostModel> costRequests = [];
   int totalSellQuantity = 0;
@@ -50,12 +49,9 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
 
   String reportType = 'Sell';
 
-  final GlobalKey _dialogKey = GlobalKey();
-
   Future<void> _fetchPercentage() async {
     final prefs = await SharedPreferences.getInstance();
     phone = prefs.getString('phoneNumber') ?? "";
-    type = prefs.getString('type') ?? "";
     if (phone.isEmpty) {
       print("Error: No phone number in SharedPreferences");
       return;
@@ -593,7 +589,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
                 ),
               ),
             ),
-            if (type == '7' || phone == superUser) ...[
+            if (phone == superUser) ...[
               Container(
                 width: DM.p40,
                 child: IconButton(
