@@ -554,7 +554,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     }) {
       return TestDataRequest(
         id: widget.testEachRequest!.id!,
-        name: name.text,
+        name: name.text.toUpperCase(),
         gender: gender,
         mobile: phone.text,
         age: age.text,
@@ -596,6 +596,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         total_unpayable_imagine: total_unpayable_imaging,
         total_unpayable_pathology: total_unpayable_pathology,
         payment_date: paymentDate ?? widget.testEachRequest?.payment_date,
+        pathology_payment_date: widget.testEachRequest?.pathology_payment_date,
         advance_payment_date: advancedPaymentDate ?? widget.testEachRequest?.advance_payment_date,
         pathology_done: pathologyDone,
         radiology_done: radiologyDone,

@@ -298,6 +298,7 @@ class _AgentReportListState extends State<AgentReportList> {
           total_unpayable_pathology: requestItem.total_unpayable_pathology,
           total_unpayable_imagine: requestItem.total_unpayable_imagine,
           payment_date: currentTime,
+          pathology_payment_date: requestItem.pathology_payment_date,
           pathology_done: requestItem.pathology_done,
           radiology_done: requestItem.radiology_done,
           radiology_assigning: requestItem.radiology_assigning,

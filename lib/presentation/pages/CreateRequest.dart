@@ -211,7 +211,7 @@ class _CreateRequestState extends State<CreateRequest> {
     setState(() {
       newRequestData = TestDataRequest(
           id: ((Random().nextInt(900000) + 100000).toString()),
-          name: name.text!,
+          name: name.text.toUpperCase(),
           gender: gender,
           mobile: phone.text,
           age: age.text,
@@ -271,7 +271,7 @@ class _CreateRequestState extends State<CreateRequest> {
 
     newRequestData = TestDataRequest(
         id: ((Random().nextInt(900000) + 100000).toString()),
-        name: name.text,
+        name: name.text.toUpperCase(),
         gender: gender,
         mobile: phone.text,
         age: age.text,
@@ -352,7 +352,7 @@ class _CreateRequestState extends State<CreateRequest> {
 
     newRequestData = TestDataRequest(
       id: ((Random().nextInt(900000) + 100000).toString()),
-      name: name.text,
+      name: name.text.toUpperCase(),
       gender: gender,
       mobile: phone.text,
       age: age.text,
