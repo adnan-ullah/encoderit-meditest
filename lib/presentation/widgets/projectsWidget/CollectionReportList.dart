@@ -282,14 +282,18 @@ class _CollectionReportState extends State<CollectionReport> {
         !(element.radiology_assigning?.toString().trim().isEmpty ?? true);
 
     if (assigningFilter == 'Pathology' && hasValidAssigning) {
-      totalCommission += element.assigning_commission ?? 0;
+      if(!(element.teststatus<=5 || element.teststatus==8)){
+        totalCommission += element.assigning_commission ?? 0;
+      }
       totalTestCost += element.total_payable_pathology_cost ?? 0;
 
       if (element.is_pathology_paid == true) {
         totalPaid += element.assigning_commission ?? 0;
       }
     } else if (assigningFilter == 'Radiology' && hasValidRadiologyAssigning) {
-      totalCommission += element.radiology_assigning_commission ?? 0;
+      if(!(element.teststatus<=5 || element.teststatus==8)){
+        totalCommission += element.radiology_assigning_commission ?? 0;
+      }
       totalTestCost += element.total_payable_imagine_cost ?? 0;
 
       if (element.is_radiology_paid == true) {
@@ -499,8 +503,8 @@ class _CollectionReportState extends State<CollectionReport> {
                   item.name,
                   collectionName,
                   collectionPhone,
-                  item.teststatus != 1 ? testCost : 'Processing',
-                  item.teststatus != 1 ? commission : 'Processing',
+                  testCost,
+                  !(item.teststatus <= 5 || item.teststatus == 8) ? commission : 'Processing',
                   paymentDate == 0
                       ? 'NA'
                       : DateFormat('dd-MMM-yyyy').format(
@@ -566,7 +570,7 @@ class _CollectionReportState extends State<CollectionReport> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            _buildSearchBar(),
+            (type=="7" || phone==superUser)? _buildSearchBar():const SizedBox(),
             _buildDatePickers(),
             _buildFiltersAndExport(),
             _buildDataTable(),
@@ -977,7 +981,7 @@ class _CollectionReportState extends State<CollectionReport> {
           Container(
             width: DM.p80,
             child: Text(
-              request.teststatus != 1 ? testCost.toString() : 'Processing',
+              testCost.toString(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.w900,
@@ -989,7 +993,7 @@ class _CollectionReportState extends State<CollectionReport> {
           Container(
             width: DM.p80,
             child: Text(
-              request.teststatus != 1 ? commission.toString() : 'Processing',
+                !(request.teststatus <= 5 || request.teststatus == 8) ? commission.toString() : 'Processing',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.w900,

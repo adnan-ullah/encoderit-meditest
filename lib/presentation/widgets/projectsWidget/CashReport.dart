@@ -313,7 +313,7 @@ class _CashReportListState extends State<CashReportList> {
                       children: [
                         SizedBox(height: DM.p15),
                         Text(
-                          "Total Cashed Received: ${(totalAdvanced + totalDueReceived).toStringAsFixed(2)}",
+                          "Total Cash Received: ${(totalAdvanced + totalDueReceived).toStringAsFixed(2)}",
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: DM.p14,

@@ -3899,6 +3899,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                   .pathology_done !=
                                               true) {
                                             pathologyAssigningPhone = newValue!;
+                                            assigning_commission.text = getUserCommission(newValue,"PATHOLOGY");
                                           }
                                         });
                                       },
@@ -3954,6 +3955,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                   .radiology_done !=
                                               true) {
                                             radiologyAssigningPhone = newValue!;
+                                            radiology_assigning_commission.text = getUserCommission(newValue,"RADIOLOGY");
                                           }
                                         });
                                       },
@@ -4582,9 +4584,36 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     handleFirstTimeInitPage = false;
     handleDisbaleDueReecieve();
   }
+
+  String getUserCommission(dynamic phone, dynamic assigningType) {
+    AdminUserModel? matchedUser;
+    try {
+      matchedUser = adminUserList.firstWhere((e) => e.phone.toString() == phone.toString(),
+      );
+    } catch (e) {
+      return '0';
+    }
+
+    switch (assigningType.toString().toUpperCase()) {
+      case 'PATHOLOGY':
+        final commissionStr = matchedUser.pathology_commission?.toString() ?? '0';
+        final commission = double.tryParse(commissionStr) ?? 0.0;
+        return  (((total_payable_pathology * commission) / 100)).toInt().toString();
+
+      case 'RADIOLOGY':
+        final commissionStr = matchedUser.imagine_commission?.toString() ?? '0';
+        final commission = double.tryParse(commissionStr) ?? 0.0;
+        return (((total_payable_imaging * commission) / 100)).toInt().toString();;
+
+      default:
+        return '';
+    }
+  }
+
+
 }
 
-class FormUserInfo extends StatelessWidget {
+  class FormUserInfo extends StatelessWidget {
   dynamic title;
   dynamic value;
   dynamic activate;

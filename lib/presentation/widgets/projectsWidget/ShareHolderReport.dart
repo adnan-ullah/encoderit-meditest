@@ -394,9 +394,9 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
                 _buildSummaryRow(
                     "Total Cost: ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(totalCost)}"),
                 _buildSummaryRow(
-                    "Company Total Earning: ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(companyEarning)}"),
+                    "Company Total Earning/Loss: ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(companyEarning)}"),
                 _buildSummaryRow(
-                    "Reporter Earning ($percentage%): ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(reporterEarning)}"),
+                    "Shareholder Earnings ($percentage%): ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(reporterEarning)}"),
               ],
             ),
           ),
