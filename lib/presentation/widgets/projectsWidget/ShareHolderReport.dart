@@ -155,7 +155,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
                 .any((r) => r.id == data.id && r.mobile == data.mobile)) {
               sellRequests.add(data);
               totalSellQuantity++;
-              final payable = data.total_payable ?? 0;
+              final payable = data.totalprice ?? 0;
               final due = data.due_amount ?? 0;
               if (data.is_paid == true || due == 0) {
                 totalSellWithoutDue += payable;
@@ -506,7 +506,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
               width: DM.p80,
               child: Text(
                 NumberFormat.currency(symbol: '', decimalDigits: 2)
-                    .format(request.total_payable ?? 0),
+                    .format(request.totalprice ?? 0),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
