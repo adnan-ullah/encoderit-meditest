@@ -53,4 +53,4 @@ final samratApi = "$database_name/samrat";
 
 
 //storage api
-const storageFiles = "new_files";
+const storageFiles = "files";

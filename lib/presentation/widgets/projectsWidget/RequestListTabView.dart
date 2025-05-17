@@ -274,21 +274,17 @@ class _RequestListTabViewState extends State<RequestListTabView> {
   }
 
   String getFirstName(String name) {
-    String firstName;
-    List<String> test = name.split(" ");
-    if (test.first == "Mr." ||
-        test.first == "Mr" ||
-        test.first == "Mrs." ||
-        test.first == "Mrs" ||
-        test.first == "Md." ||
-        test.first == "Md" ||
-        test.first == "Ms." ||
-        test.first == "Ms") {
-      firstName = test[1];
-    } else {
-      firstName = test.first;
+    List<String> parts = name.trim().split(RegExp(r'\s+'));
+
+    if (parts.isEmpty) return '';
+
+    final honorifics = {'Mr', 'Mr.', 'Mrs', 'Mrs.', 'Md', 'Md.', 'Ms', 'Ms.'};
+
+    if (parts.length >= 2 && honorifics.contains(parts.first)) {
+      return parts[1];
     }
-    return firstName.toString();
+
+    return parts.first;
   }
 
   @override

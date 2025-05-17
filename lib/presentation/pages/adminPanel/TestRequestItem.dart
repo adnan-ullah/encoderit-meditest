@@ -1089,6 +1089,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   @override
   void initState() {
     permissionNeed();
+
     getAdminUserList();
     if (widget.testEachRequest != null) {
       this.retreiveEachDataRequest();
