@@ -320,10 +320,10 @@ class _RequestListTabViewState extends State<RequestListTabView> {
       return _newTestRequestList;
     }
     return _newTestRequestList.where((item) {
-      final invoiceCall = item.invoice_call?.toString().toLowerCase() ?? '';
       final name = item.name?.toLowerCase() ?? '';
+      final phone = item.mobile ?? '';
       final query = widget.searchQuery.toLowerCase();
-      return invoiceCall.contains(query) || name.contains(query);
+      return name.contains(query) || phone.contains(widget.searchQuery);
     }).toList();
   }
 

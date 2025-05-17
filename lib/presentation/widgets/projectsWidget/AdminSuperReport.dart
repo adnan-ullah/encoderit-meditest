@@ -23,7 +23,7 @@ class AdminSuperReport extends StatefulWidget {
 
 class _AdminSuperReportState extends State<AdminSuperReport> {
   final CreateRequestController createRequestController = Get.put(CreateRequestController());
-  final TextEditingController referrerInput = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
   bool isLoading = false;
   String? referrerCode;
   String? commission;
@@ -135,16 +135,20 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
     totalTestCost = 0;
     totalDiscount = 0;
 
-    if (referrerInput.text.isNotEmpty) {
+    if (searchController.text.isNotEmpty) {
+      final input = searchController.text.toLowerCase();
+
       _newTestRequestList.addAll(
         _allRequestListAdmin.where(
               (element) =>
-          element.referrer?.contains(referrerInput.text) == true &&
+          (element.name?.toLowerCase().contains(input) == true ||
+              element.mobile?.contains(searchController.text) == true) &&
               startDatetime <= (element.dateofcreated ?? 0) &&
               (element.dateofcreated ?? 0) <= endDatetime,
         ),
       );
-    } else {
+    }
+    else {
       _newTestRequestList.addAll(
         _allRequestListAdmin.where(
               (element) =>
@@ -221,7 +225,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
 
   @override
   void dispose() {
-    referrerInput.dispose();
+    searchController.dispose();
     if (isLoading) {
       Navigator.pop(context);
     }
@@ -255,7 +259,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
                   SizedBox(
                     width: DM.p70,
                     child: Text(
-                      "Referrer Code",
+                      "Search",
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: DM.p14,
@@ -271,7 +275,7 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
                       height: DM.p50,
                       child: TextFormField(
                         keyboardType: TextInputType.name,
-                        controller: referrerInput,
+                        controller: searchController,
                         onChanged: (value) => _filterData(),
                         decoration: InputDecoration(
                           errorStyle: TextStyle(fontSize: DM.p9),
