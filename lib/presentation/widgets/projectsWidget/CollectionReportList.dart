@@ -463,11 +463,39 @@ class _CollectionReportState extends State<CollectionReport> {
           pageFormat: PdfPageFormat.a4.landscape,
           margin: const pw.EdgeInsets.all(16),
           build: (pw.Context context) => [
-            pw.Header(
-              level: 0,
-              child: pw.Text('Collection Report',
-                  style: const pw.TextStyle(fontSize: 22)),
+            pw.Center(child:    pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Text(
+                  'HEALTHCARE HOMELAB',
+                  style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+                  textAlign: pw.TextAlign.center,
+                ),
+                pw.Text(
+                  'Steel Mills Bazar, Patenga',
+                  style: pw.TextStyle(fontSize: 12),
+                  textAlign: pw.TextAlign.center,
+                ),
+                pw.Text(
+                  '01785-890750',
+                  style: pw.TextStyle(
+                    fontSize: 12,
+                    color: PdfColors.blue,
+                  ),
+                  textAlign: pw.TextAlign.center,
+                ),
+                pw.SizedBox(height: 10),
+                pw.Text(
+                  assigningFilter=="Pathology"?'Collection Report(Pathology)':'Collection Report (Radiology)',
+                  style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+                  textAlign: pw.TextAlign.center,
+                ),
+                pw.SizedBox(height: 10),
+              ],
             ),
+            ),
+
+
             pw.SizedBox(height: 10),
             pw.Table.fromTextArray(
               headers: [

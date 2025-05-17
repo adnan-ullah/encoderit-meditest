@@ -362,12 +362,41 @@ class _AgentReportListState extends State<AgentReportList> {
           margin: const pw.EdgeInsets.all(16),
           build: (pw.Context context) {
             return [
-              pw.Header(
-                level: 0,
-                child:
-                    pw.Text('Agent Report', style: pw.TextStyle(fontSize: 22)),
+
+              pw.Center(child:    pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                children: [
+                  pw.Text(
+                    'HEALTHCARE HOMELAB',
+                    style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.Text(
+                    'Steel Mills Bazar, Patenga',
+                    style: pw.TextStyle(fontSize: 12),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.Text(
+                    '01785-890750',
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      color: PdfColors.blue,
+                    ),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.SizedBox(height: 10),
+                  pw.Text(
+                    'Agent Report',
+                    style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.SizedBox(height: 10),
+                ],
               ),
-              pw.SizedBox(height: 10),
+              ),
+
+              // Removed pw.Header here
+
               pw.Table.fromTextArray(
                 headers: [
                   'Date',
@@ -434,8 +463,7 @@ class _AgentReportListState extends State<AgentReportList> {
                   'Last Payment Date = ${DateFormat('dd-MMM-yyyy').format(DateTime.fromMillisecondsSinceEpoch(lastPaymentTestReq?.payment_date ?? 0))}'),
               pw.Text('Total Invoice Quantity = ${_newTestRequestList.length}'),
               pw.Text('Total Test Cost = $totalTestCost'),
-              pw.Text(
-                  'Total Earning = $totalEarning/-  Total Paid = $totalPaidAmount'),
+              pw.Text('Total Earning = $totalEarning/-  Total Paid = $totalPaidAmount'),
             ];
           },
         ),
