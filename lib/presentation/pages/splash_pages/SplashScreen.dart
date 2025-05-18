@@ -25,7 +25,7 @@ class SplashScreen extends StatelessWidget {
           logo: Image(image: AssetImage("lib/assets/images/new_plus.png")),
 
           title: Text(
-            "Health Care Homelab",
+            "Healthcare Homelab",
             style: TextStyle(
               fontSize: DM.p22,
               fontWeight: FontWeight.bold,

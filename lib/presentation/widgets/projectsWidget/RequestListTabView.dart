@@ -222,10 +222,11 @@ class _RequestListTabViewState extends State<RequestListTabView> {
               }
             }
           } else if (widget.statusKey == "COLLECTED") {
-            if (testData.pathology_done == true &&
-                testData.radiology_done == true) {
-              tempList.add(testData);
-            }
+            // if (testData.pathology_done == true &&
+            //     testData.radiology_done == true) {
+            //   tempList.add(testData);
+            // }
+            tempList.add(testData);
           } else {
             tempList.add(testData);
           }
@@ -583,7 +584,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
                                                   .toStatus[widget.statusKey]! <
                                               5 ||
                                           type == "7" ||
-                                          type == "3" ||
+                                          (type == "3" && item.due_amount != null && item.due_amount == 0) ||
                                           phone == "$superUser"))
                                     Container(
                                       width: buttonWidth,
