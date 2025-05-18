@@ -1231,7 +1231,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                           formKey:  _formKey,
                           ageController: age,
                           // Controller to collect the combined age string
-                          initialAge: age.text, // The initial value
+                          initialAge: widget.testEachRequest?.age??"", // The initial value
                         ),
                         Padding(
                           padding: EdgeInsets.all(DM.p5),
