@@ -212,15 +212,16 @@ class _RequestListTabViewState extends State<RequestListTabView> {
           }
         } else if (type == "3" && phone != superUser) {
           if (widget.statusKey == "PRECOLLECTED") {
-            if ((testData.assigning?.isNotEmpty == true &&
-                    testData.assigning != "null") ||
-                (testData.radiology_assigning?.isNotEmpty == true &&
-                    testData.radiology_assigning != "null")) {
-              if (!(testData.pathology_done == true &&
-                  testData.radiology_done == true)) {
-                tempList.add(testData);
-              }
-            }
+            // if ((testData.assigning?.isNotEmpty == true &&
+            //         testData.assigning != "null") ||
+            //     (testData.radiology_assigning?.isNotEmpty == true &&
+            //         testData.radiology_assigning != "null")) {
+            //   if (!(testData.pathology_done == true &&
+            //       testData.radiology_done == true)) {
+            //     tempList.add(testData);
+            //   }
+            // }
+            tempList.add(testData);
           } else if (widget.statusKey == "COLLECTED") {
             // if (testData.pathology_done == true &&
             //     testData.radiology_done == true) {

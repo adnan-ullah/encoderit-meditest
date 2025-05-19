@@ -1181,7 +1181,7 @@ class _TestRequestCreateTypeThreeState
                           controller: type,
                           title: "Type",
                           value: "0",
-                          activate: false,
+                          activate: true,
                         ),
                         FormUserInfo(
                           formKey: _formKey,
