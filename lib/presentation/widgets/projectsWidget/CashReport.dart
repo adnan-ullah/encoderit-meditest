@@ -116,59 +116,63 @@ class _CashReportListState extends State<CashReportList> {
               data.total_cash_recieve == null ||
               data.total_cash_recieve == 0) continue;
 
-          // Determine filter date: prioritize due_recieve_two_date, then due_recieve_one_date, then payment_date
-          dynamic filterDate = (data.due_recieved_two != null &&
-              data.due_recieved_two! > 0 &&
-              data.due_recieve_two_date != null &&
-              data.due_recieved_two_by != null)
-              ? data.due_recieve_two_date
-              : (data.due_recieved_one != null &&
-              data.due_recieved_one! > 0 &&
-              data.due_recieve_one_date != null &&
-              data.due_recieved_one_by != null)
-              ? data.due_recieve_one_date
-              : data.advance_payment_date;
-
-          if (startDate <= filterDate && filterDate <= endDate) {
-            bool isCountedForQuantity = false;
+          bool isCountedForQuantity = false;
 
             for (var user in users) {
               final handledAdvance = data.advance_recieved_by == user.phone;
               final handledDueOne = data.due_recieved_one_by == user.phone;
               final handledDueTwo = data.due_recieved_two_by == user.phone;
 
-              if (!handledAdvance && !handledDueOne && !handledDueTwo) continue;
+            if (!handledAdvance && !handledDueOne && !handledDueTwo) continue;
 
-              // Add to user's list only once
-              userRequests.putIfAbsent(user.phone, () => []);
-              if (!userRequests[user.phone]!
-                  .any((r) => r.id == data.id && r.mobile == data.mobile)) {
-                userRequests[user.phone]!.add(data);
-              }
+            // Add to user's list only once
+            userRequests.putIfAbsent(user.phone, () => []);
+            if (!userRequests[user.phone]!
+                .any((r) => r.id == data.id && r.mobile == data.mobile)) {
+              userRequests[user.phone]!.add(data);
+            }
 
-              // Count advanced only if this user handled advance
-              if (handledAdvance) {
-                totalAdvanced += data.advanced ?? 0;
-              }
+            // Check and sum advance only if its date is within the range
+            if (handledAdvance &&
+                data.advance_payment_date != null &&
+                startDate <= data.advance_payment_date &&
+                data.advance_payment_date <= endDate) {
+              totalAdvanced += data.advanced ?? 0;
+            }
 
-              // Count due (sum of due_recieved_one and due_recieved_two) only if this user handled either
-              if (handledDueOne) {
-                totalDueReceived += data.due_recieved_one ?? 0;
-              }
-              if (handledDueTwo) {
-                totalDueReceived += data.due_recieved_two ?? 0;
-              }
+            // Check and sum due_recieved_one only if its date is within the range
+            if (handledDueOne &&
+                data.due_recieve_one_date != null &&
+                startDate <= data.due_recieve_one_date &&
+                data.due_recieve_one_date <= endDate) {
+              totalDueReceived += data.due_recieved_one ?? 0;
+            }
 
-              // Only count quantity and totalCash once globally
-              if (!isCountedForQuantity) {
-                totalQuantity++;
-                isCountedForQuantity = true;
-              }
+            // Check and sum due_recieved_two only if its date is within the range
+            if (handledDueTwo &&
+                data.due_recieve_two_date != null &&
+                startDate <= data.due_recieve_two_date &&
+                data.due_recieve_two_date <= endDate) {
+              totalDueReceived += data.due_recieved_two ?? 0;
+            }
+
+            // Only count quantity once globally if any payment date falls within the range
+            if (!isCountedForQuantity &&
+                ((data.advance_payment_date != null &&
+                    startDate <= data.advance_payment_date &&
+                    data.advance_payment_date <= endDate) ||
+                    (data.due_recieve_one_date != null &&
+                        startDate <= data.due_recieve_one_date &&
+                        data.due_recieve_one_date <= endDate) ||
+                    (data.due_recieve_two_date != null &&
+                        startDate <= data.due_recieve_two_date &&
+                        data.due_recieve_two_date <= endDate))) {
+              totalQuantity++;
+              isCountedForQuantity = true;
             }
           }
         } catch (e) {
-          print(
-              "Error parsing TestDataRequest: $e for JSON: ${json.encode(dsLater.value)}");
+          print("Error parsing TestDataRequest: $e for JSON: ${json.encode(dsLater.value)}");
         }
       }
     }
@@ -355,7 +359,7 @@ class _CashReportListState extends State<CashReportList> {
       padding: EdgeInsets.symmetric(horizontal: DM.p5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: ["User Name", "Total Cash", "Advance", "Due Received"]
+        children: ["User Name", "Total Cash\n(Taka)", "Advance\n(Taka)", "Due Received\n(Taka)"]
             .map((text) => Expanded(
           child: Text(
             text,
@@ -378,7 +382,11 @@ class _CashReportListState extends State<CashReportList> {
 
     double userAdvanced = requests.fold(
       0,
-          (sum, r) => r.advance_recieved_by == user.phone
+          (sum, r) =>
+      r.advance_recieved_by == user.phone &&
+          r.advance_payment_date != null &&
+          startDate <= r.advance_payment_date &&
+          r.advance_payment_date <= endDate
           ? sum + (r.advanced ?? 0)
           : sum,
     );
@@ -387,10 +395,16 @@ class _CashReportListState extends State<CashReportList> {
       0,
           (sum, r) {
         double dueSum = 0;
-        if (r.due_recieved_one_by == user.phone) {
+        if (r.due_recieved_one_by == user.phone &&
+            r.due_recieve_one_date != null &&
+            startDate <= r.due_recieve_one_date &&
+            r.due_recieve_one_date <= endDate) {
           dueSum += r.due_recieved_one ?? 0;
         }
-        if (r.due_recieved_two_by == user.phone) {
+        if (r.due_recieved_two_by == user.phone &&
+            r.due_recieve_two_date != null &&
+            startDate <= r.due_recieve_two_date &&
+            r.due_recieve_two_date <= endDate) {
           dueSum += r.due_recieved_two ?? 0;
         }
         return sum + dueSum;
@@ -399,7 +413,7 @@ class _CashReportListState extends State<CashReportList> {
 
     double userTotalCash = userAdvanced + userDueReceived;
 
-    return Container(
+    return userTotalCash!=0?Container(
       decoration: BoxDecoration(
           color: whiteColor, borderRadius: BorderRadius.circular(DM.p10)),
       margin: EdgeInsets.symmetric(vertical: DM.p5, horizontal: DM.p5),
@@ -428,6 +442,6 @@ class _CashReportListState extends State<CashReportList> {
         ))
             .toList(),
       ),
-    );
+    ):SizedBox();
   }
 }
