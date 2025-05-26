@@ -931,9 +931,9 @@ class _TestRequestCreateTypeThreeState
     total_discount.text = totalDiscount.toString();
     totalCashRecieve = totalDueRecievedOne + totalDueRecievedTwo + (int.tryParse(advanced.text) ?? 0);
 
-
+    agent_commission.text = "0";
     adminUserList.map((e) {
-      if (e.referrer_code !=null && e.referrer_code.contains(referrer.text.toString())) {
+      if (e.referrer_code !=null && e.referrer_code == referrer.text.toString()) {
         var pathology_commision = 0;
         var imagine_commission = 0;
 
@@ -1043,9 +1043,9 @@ class _TestRequestCreateTypeThreeState
       total_discount.text = totalDiscount.toString();
       totalCashRecieve = totalDueRecievedOne + totalDueRecievedTwo + (int.tryParse(advanced.text) ?? 0);
 
-
+      agent_commission.text = "0";
       adminUserList.map((e) {
-        if (e.referrer_code !=null && e.referrer_code.contains(referrer.text.toString())) {
+        if (e.referrer_code !=null && e.referrer_code == referrer.text.toString()) {
           var pathology_commision = 0;
           var imagine_commission = 0;
 
@@ -1362,7 +1362,7 @@ class _TestRequestCreateTypeThreeState
                                     controller: referrer,
                                     keyboardType: TextInputType.multiline,
                                     maxLines: null,
-                                    onEditingComplete: () {
+                                    onChanged: (v) {
                                       calculationProcess();
                                     },
                                     readOnly: true,
