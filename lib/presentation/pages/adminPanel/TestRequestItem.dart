@@ -936,28 +936,15 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     //Agent
     agent_commission.text = "0";
     adminUserList.map((e) {
-      if (e.referrer_code != null &&
-          e.referrer_code == referrer.text.toString()) {
-        var pathology_commision = 0;
-        var imagine_commission = 0;
+      if (e.referrer_code != null && e.referrer_code == referrer.text.toString()) {
+        final pathologyCommission = int.tryParse(e.pathology_commission ?? '') ?? 0;
+        final imagingCommission = int.tryParse(e.imagine_commission ?? '') ?? 0;
 
-        if (e.pathology_commission != null &&
-            !e.pathology_commission.toString().contains("null") &&
-            e.pathology_commission != "") {
-          pathology_commision = int.parse(e.pathology_commission);
-        }
+        final pathologyAmount = (total_payable_pathology * pathologyCommission) / 100;
+        final imagingAmount = (total_payable_imaging * imagingCommission) / 100;
 
-        if (e.imagine_commission != null &&
-            !e.imagine_commission.toString().contains("null") &&
-            e.imagine_commission != "") {
-          imagine_commission = int.parse(e.imagine_commission);
-        }
-
-        agent_commission.text =
-            ((((total_payable_pathology) * pathology_commision) / 100) +
-                    (((total_payable_imaging) * imagine_commission) / 100))
-                .toInt()
-                .toString();
+        final totalCommission = (pathologyAmount + imagingAmount).toInt();
+        agent_commission.text = totalCommission.toString();
       }
     }).toList();
   }
@@ -1051,29 +1038,15 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
 
       adminUserList.map((e) {
-        var pathology_commision = 0;
-        var imagine_commission = 0;
+        if (e.referrer_code != null && e.referrer_code == referrer.text.toString()) {
+          final pathologyCommission = int.tryParse(e.pathology_commission ?? '') ?? 0;
+          final imagingCommission = int.tryParse(e.imagine_commission ?? '') ?? 0;
 
-        if (e.pathology_commission != null &&
-            !e.pathology_commission.toString().contains("null") &&
-            e.pathology_commission != "") {
-          pathology_commision = int.parse(e.pathology_commission);
-        }
+          final pathologyAmount = (total_payable_pathology * pathologyCommission) / 100;
+          final imagingAmount = (total_payable_imaging * imagingCommission) / 100;
 
-        if (e.imagine_commission != null &&
-            !e.imagine_commission.toString().contains("null") &&
-            e.imagine_commission != "") {
-          imagine_commission = int.parse(e.imagine_commission);
-        }
-
-        agent_commission.text = "0";
-        if (e.referrer_code != null &&
-            e.referrer_code== referrer.text.toString()) {
-          agent_commission.text =
-              ((((total_payable_pathology) * pathology_commision) / 100) +
-                      (((total_payable_imaging) * imagine_commission) / 100))
-                  .toInt()
-                  .toString();
+          final totalCommission = (pathologyAmount + imagingAmount).toInt();
+          agent_commission.text = totalCommission.toString();
         }
       }).toList();
     });
