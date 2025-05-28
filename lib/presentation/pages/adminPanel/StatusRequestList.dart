@@ -112,7 +112,7 @@ class _StatusRequestListState extends State<StatusRequestList> with TickerProvid
 
   @override
   Widget build(BuildContext context) {
-    _getNotification(context);
+    // _getNotification(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,

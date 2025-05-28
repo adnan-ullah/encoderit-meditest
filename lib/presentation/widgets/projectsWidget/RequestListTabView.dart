@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+
+import 'package:async/async.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,6 +14,7 @@ import 'package:healthcare_homelab/state_programming/CreateRequestController.dar
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../constants/app_info.dart';
 import '../../../db/models/AdminUserModel.dart';
 import '../../../db/models/TestDataRequest.dart';
@@ -42,6 +45,7 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
   final FocusNode _searchFocusNode = FocusNode();
   StreamSubscription<DatabaseEvent>? _notificationSubscription;
   List<TestDataRequest> _newTestRequestList = [];
+  Timer? _debounceTimer;
 
   @override
   bool get wantKeepAlive => true;
@@ -65,6 +69,7 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
     _searchController.dispose();
     _searchFocusNode.dispose();
     _notificationSubscription?.cancel();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
@@ -141,6 +146,17 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
       due_recieved_two_by: requestItem.due_recieved_two_by,
       advance_recieved_by: requestItem.advance_recieved_by,
     );
+
+    if (mounted) {
+      setState(() {
+        final index = testStatusRequestList.indexWhere(
+                (item) => item.id == requestItem.id && item.mobile == requestItem.mobile);
+        if (index != -1) {
+          testStatusRequestList[index] = updateTestRequestItem;
+        }
+        tabStatusList();
+      });
+    }
 
     await dbRefTestReqModel
         .child(updateTestRequestItem.mobile)
@@ -239,43 +255,71 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
     String? phone = prefs.getString("phoneNumber");
     String? type = prefs.getString("type");
 
+    if (phone == null || type == null) {
+      print('Error: phone or type is null in SharedPreferences');
+      return;
+    }
+
     List<String> lastThreeMonthsPaths = getLastThreeMonthTestRequestPaths();
+    List<Stream<DatabaseEvent>> streams = [];
+
     for (String path in lastThreeMonthsPaths) {
       DatabaseReference dbRefTestModel = FirebaseDatabase.instance.ref(path);
       dbRefTestModel.keepSynced(true);
-
-      _notificationSubscription = dbRefTestModel.onChildAdded.listen((event) async {
-        AdminUserModel testData =
-        AdminUserModel.fromJson(json.decode(jsonEncode(event.snapshot.value)));
-        if (testData.phone == phone || phone == "$superUser") {
-          if (type == "1" || type == "7" || phone == "$superUser") {
-            String notificationKey = "${event.snapshot.key}_${testData.phone}";
-            bool isNotified = prefs.getBool(notificationKey) ?? false;
-            if (!isNotified) {
-              createPlantFoodNotification();
-              showNotification(context);
-              await prefs.setBool(notificationKey, true);
-            }
-          }
-        }
-      });
-
-      _notificationSubscription = dbRefTestModel.onChildChanged.listen((event) async {
-        AdminUserModel testData =
-        AdminUserModel.fromJson(json.decode(jsonEncode(event.snapshot.value)));
-        if (testData.phone == phone || phone == "$superUser") {
-          if (type == "1" || type == "7" || phone == "$superUser") {
-            String notificationKey = "${event.snapshot.key}_${testData.phone}_changed";
-            bool isNotified = prefs.getBool(notificationKey) ?? false;
-            if (!isNotified) {
-              createPlantFoodNotification();
-              showNotification(context);
-              await prefs.setBool(notificationKey, true);
-            }
-          }
-        }
-      });
+      streams.add(dbRefTestModel.onChildChanged); // Ensure listener is at the correct level
+      print('Listening for changes at path: $path');
     }
+
+    _notificationSubscription = StreamGroup.merge(streams).listen((event) async {
+      print('onChildChanged event triggered for key: ${event.snapshot.key}');
+      _debounceTimer?.cancel();
+      _debounceTimer = Timer(const Duration(milliseconds: 250), () async {
+        if (!mounted) {
+          print('Widget is not mounted, skipping notification');
+          return;
+        }
+
+        final snapshotValue = event.snapshot.value;
+        print('Snapshot value: $snapshotValue');
+
+        if (snapshotValue is Map) {
+          try {
+            AdminUserModel testData = AdminUserModel.fromJson(snapshotValue.cast<String, dynamic>());
+            print('Parsed AdminUserModel: phone=${testData.phone}');
+
+            if (testData.phone == phone || phone == superUser) {
+              if (type == "1" || type == "7" || phone == superUser) {
+                // Use timestamp to ensure unique notification keys
+                String notificationKey =
+                    "${event.snapshot.key}_${testData.phone}_${DateTime.now().millisecondsSinceEpoch}_changed";
+                bool isNotified = prefs.getBool(notificationKey) ?? false;
+                print('Notification key: $notificationKey, isNotified: $isNotified');
+
+                if (!isNotified) {
+                  print('Generating notification');
+                  createPlantFoodNotification();
+                  showNotification(context);
+                  await prefs.setBool(notificationKey, true);
+                  print('Notification shown and preference set');
+                } else {
+                  print('Notification already shown for this key');
+                }
+              } else {
+                print('User type ($type) not eligible for notification');
+              }
+            } else {
+              print('Phone mismatch: testData.phone=${testData.phone}, userPhone=$phone');
+            }
+          } catch (e) {
+            print('Error parsing AdminUserModel: $e');
+          }
+        } else {
+          print('Snapshot value is not a Map: $snapshotValue');
+        }
+      });
+    }, onError: (error) {
+      print('Error in notification stream: $error');
+    });
   }
 
   String getFirstName(String name) {
@@ -295,14 +339,11 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
   void tabStatusList() {
     if (!mounted) return;
     setState(() {
-      _newTestRequestList.clear();
-      _newTestRequestList.addAll(
-        testStatusRequestList
-            .where((p0) =>
-        createRequestController.status[p0.teststatus].toString() ==
-            widget.statusKey.toString())
-            .toList(),
-      );
+      _newTestRequestList = testStatusRequestList
+          .where((p0) =>
+      createRequestController.status[p0.teststatus].toString() ==
+          widget.statusKey.toString())
+          .toList();
     });
   }
 
@@ -336,352 +377,362 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
 
     return SafeArea(
       child: isLoading
-          ?  Center(
+          ? Center(
         child: CircularProgressIndicator(
           color: appTheme,
         ),
       )
-          : SingleChildScrollView(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: Column(
-          children: [
-            // Search Box
-            Padding(
-              padding: EdgeInsets.only(top: DM.p16, right: DM.p8, left: DM.p8),
-              child: Container(
-                height: DM.p40,
-                decoration: BoxDecoration(
-                  color: whiteColor,
-                  borderRadius: BorderRadius.circular(DM.p10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: DM.p8,
-                      offset:  Offset(0, DM.p2),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  focusNode: _searchFocusNode,
-                  decoration: InputDecoration(
-                    hintText: 'Search by Invoice ID or Name',
-                    hintStyle: TextStyle(
-                      color: Colors.grey.shade500,
-                      fontSize: DM.p14,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(DM.p10),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: whiteColor,
-                    prefixIcon: Icon(
-                      Icons.search,
-                      size: DM.p20,
-                      color: _searchFocusNode.hasFocus ? appTheme : Colors.grey.shade600,
-                    ),
-                    contentPadding:  EdgeInsets.symmetric(vertical: DM.p8, horizontal: DM.p12),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                      icon: Icon(Icons.clear, size: DM.p20, color: Colors.grey.shade600),
-                      onPressed: () {
-                        _searchController.clear();
-                        _searchFocusNode.unfocus();
-                      },
-                    )
-                        : null,
+          : Column(
+        children: [
+          // Search Box (Non-scrollable)
+          Padding(
+            padding:
+            EdgeInsets.only(top: DM.p16, right: DM.p8, left: DM.p8),
+            child: Container(
+              height: DM.p40,
+              decoration: BoxDecoration(
+                color: whiteColor,
+                borderRadius: BorderRadius.circular(DM.p10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: DM.p8,
+                    offset: Offset(0, DM.p2),
                   ),
-                  style:  TextStyle(fontSize: DM.p14, color: blackFontColor),
-                  onTap: () {
-                    setState(() {});
-                  },
+                ],
+              ),
+              child: TextField(
+                controller: _searchController,
+                focusNode: _searchFocusNode,
+                decoration: InputDecoration(
+                  hintText: 'Search by Invoice ID or Name',
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: DM.p14,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(DM.p10),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: whiteColor,
+                  prefixIcon: Icon(
+                    Icons.search,
+                    size: DM.p20,
+                    color: _searchFocusNode.hasFocus
+                        ? appTheme
+                        : Colors.grey.shade600,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                      vertical: DM.p8, horizontal: DM.p12),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                    icon: Icon(Icons.clear,
+                        size: DM.p20, color: Colors.grey.shade600),
+                    onPressed: () {
+                      _searchController.clear();
+                      _searchFocusNode.unfocus();
+                    },
+                  )
+                      : null,
+                ),
+                style: TextStyle(fontSize: DM.p14, color: blackFontColor),
+                onTap: () {
+                  setState(() {});
+                },
+              ),
+            ),
+          ),
+          // Header Row (Non-scrollable)
+          _getFilteredList().isNotEmpty
+              ? Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: DM.p8, vertical: DM.p8),
+                decoration: BoxDecoration(
+                  border: Border(
+                      bottom: BorderSide(
+                          color: Colors.black, width: DM.p2)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: typeWidth,
+                      child: Text(
+                        "T",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: DM.p14,
+                          color: Color.fromARGB(255, 26, 1, 1),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Container(
+                      width: nameWidth,
+                      child: Text(
+                        "Name",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: DM.p14,
+                          color: Color.fromARGB(255, 26, 1, 1),
+                        ),
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                    SizedBox(width: DM.p4),
+                    Container(
+                      width: invoiceWidth,
+                      child: Text(
+                        "Invoice Call",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: DM.p14,
+                          color: Color.fromARGB(255, 26, 1, 1),
+                        ),
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                    Container(
+                      width: dateWidth,
+                      child: Text(
+                        "Date",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: DM.p14,
+                          color: Color.fromARGB(255, 26, 1, 1),
+                        ),
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                    SizedBox(width: DM.p4),
+                    Container(
+                      width: changedByWidth,
+                      child: showChangedByColumn
+                          ? Text(
+                        "Changed by",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: DM.p14,
+                          color:
+                          Color.fromARGB(255, 26, 1, 1),
+                        ),
+                        textAlign: TextAlign.left,
+                      )
+                          : SizedBox.shrink(),
+                    ),
+                    if (widget.isButton &&
+                        (createRequestController
+                            .toStatus[widget.statusKey]! <
+                            5 ||
+                            type == "7" ||
+                            type == "3" ||
+                            phone == "$superUser"))
+                      Container(
+                        width: buttonWidth,
+                        child: SizedBox(),
+                      ),
+                  ],
                 ),
               ),
             ),
-            // Request List
-            _getFilteredList().isNotEmpty
-                ? Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  // Header Row
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
+          )
+              : SizedBox.shrink(),
+          // Scrollable List
+          Expanded(
+            child: _getFilteredList().isNotEmpty
+                ? ListView.builder(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              itemCount: _getFilteredList().length,
+              itemBuilder: (context, index) {
+                final item = _getFilteredList()[index];
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: InkWell(
+                    onTap: () async {
+                      if (type == "3" && phone != "$superUser") {
+                        if (createRequestController
+                            .toStatus[widget.statusKey]! <
+                            3 ||
+                            createRequestController
+                                .toStatus[widget.statusKey]! ==
+                                8) {
+                          Get.to(TestRequestCreateTypeThree(
+                              testEachRequest: item));
+                        }
+                      } else if (type == "4" &&
+                          phone != "$superUser") {
+                        if (createRequestController
+                            .toStatus[widget.statusKey]! ==
+                            8 ||
+                            createRequestController
+                                .toStatus[widget.statusKey]! !=
+                                3) {
+                          if (item.assigning == phone &&
+                              !item.pathology_done) {
+                            Get.to(TestRequestCreate(
+                                testEachRequest: item));
+                          } else if (item.radiology_assigning ==
+                              phone &&
+                              !item.radiology_done) {
+                            Get.to(TestRequestCreate(
+                                testEachRequest: item));
+                          }
+                        }
+                      } else {
+                        if (type == "7" &&
+                            phone != "$superUser" &&
+                            (createRequestController.toStatus[
+                            widget.statusKey]! <
+                                7 ||
+                                createRequestController.toStatus[
+                                widget.statusKey] ==
+                                    8)) {
+                          Get.to(TestRequestCreate(
+                              testEachRequest: item));
+                        } else {
+                          Get.to(TestRequestCreate(
+                              testEachRequest: item));
+                        }
+                      }
+                    },
                     child: Container(
-                      padding:  EdgeInsets.symmetric(
-                          horizontal: DM.p8, vertical: DM.p8),
-                      decoration:  BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(
-                                color: Colors.black, width: DM.p2)),
+                      decoration: BoxDecoration(
+                        color: whiteColor,
+                        borderRadius: BorderRadius.circular(DM.p10),
                       ),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: DM.p8, vertical: DM.p5),
+                      margin: EdgeInsets.symmetric(vertical: DM.p5),
+                      height: DM.p60,
                       child: Row(
                         children: [
                           Container(
                             width: typeWidth,
-                            child:  Text(
-                              "T",
+                            child: Text(
+                              "${createRequestController.typeName[item.type]![0]}",
                               style: TextStyle(
                                 fontWeight: FontWeight.w900,
-                                fontSize: DM.p14,
-                                color: Color.fromARGB(255, 26, 1, 1),
+                                fontSize: DM.p12,
+                                color:
+                                Color.fromARGB(255, 26, 1, 1),
                               ),
                               textAlign: TextAlign.center,
                             ),
                           ),
                           Container(
                             width: nameWidth,
-                            child:  Text(
-                              "Name",
+                            child: Text(
+                              getFirstName(item.name),
                               style: TextStyle(
                                 fontWeight: FontWeight.w900,
-                                fontSize: DM.p14,
-                                color: Color.fromARGB(255, 26, 1, 1),
+                                fontSize: DM.p12,
+                                color:
+                                Color.fromARGB(255, 26, 1, 1),
                               ),
-                              textAlign: TextAlign.left,
+                              softWrap: true,
+                              maxLines: 2,
                             ),
-                          ),  SizedBox(width: DM.p4,),
+                          ),
+                          SizedBox(width: DM.p4),
                           Container(
                             width: invoiceWidth,
-                            child:  Text(
-                              "Invoice Call",
+                            child: Text(
+                              "#${item.invoice_call.toString()}",
                               style: TextStyle(
                                 fontWeight: FontWeight.w900,
-                                fontSize: DM.p14,
-                                color: Color.fromARGB(255, 26, 1, 1),
+                                fontSize: DM.p12,
+                                color:
+                                Color.fromARGB(255, 26, 1, 1),
                               ),
-                              textAlign: TextAlign.left,
+                              softWrap: true,
+                              maxLines: 2,
                             ),
                           ),
                           Container(
                             width: dateWidth,
-                            child:  Text(
-                              "Date",
+                            child: Text(
+                              DateFormat('dd-MMM HH:mm').format(
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    item.dateofcreated),
+                              ),
                               style: TextStyle(
                                 fontWeight: FontWeight.w900,
-                                fontSize: DM.p14,
-                                color: Color.fromARGB(255, 26, 1, 1),
+                                fontSize: DM.p12,
+                                color:
+                                Color.fromARGB(255, 26, 1, 1),
                               ),
-                              textAlign: TextAlign.left,
+                              softWrap: true,
+                              maxLines: 2,
                             ),
-                          ),  SizedBox(width: DM.p4,),
+                          ),
+                          SizedBox(width: DM.p4),
                           Container(
                             width: changedByWidth,
                             child: showChangedByColumn
-                                ?  Text(
-                              "Changed by",
+                                ? Text(
+                              item.last_modifier ??
+                                  item.prepared_by ??
+                                  "N/A",
                               style: TextStyle(
                                 fontWeight: FontWeight.w900,
-                                fontSize: DM.p14,
-                                color: Color.fromARGB(255, 26, 1, 1),
+                                fontSize: DM.p12,
+                                color: Color.fromARGB(
+                                    255, 26, 1, 1),
                               ),
-                              textAlign: TextAlign.left,
+                              softWrap: true,
+                              maxLines: 2,
                             )
-                                :  SizedBox.shrink(),
+                                : const SizedBox.shrink(),
                           ),
                           if (widget.isButton &&
-                              (createRequestController
-                                  .toStatus[widget.statusKey]! <
+                              (createRequestController.toStatus[
+                              widget.statusKey]! <
                                   5 ||
                                   type == "7" ||
-                                  type == "3" ||
+                                  (type == "3" &&
+                                      item.due_amount != null &&
+                                      item.due_amount == 0) ||
                                   phone == "$superUser"))
                             Container(
                               width: buttonWidth,
-                              child:  SizedBox(),
+                              child: MaterialButton(
+                                onPressed: () async {
+                                  await _updateStatus(item);
+                                },
+                                height: DM.p40,
+                                shape: StadiumBorder(),
+                                color: appTheme,
+                                child: Text(
+                                  "Done",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: fullWhiteColor,
+                                    fontSize: DM.p10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ),
                         ],
                       ),
                     ),
                   ),
-                  // Data List
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics:  NeverScrollableScrollPhysics(),
-                    itemCount: _getFilteredList().length,
-                    itemBuilder: (context, index) {
-                      final item = _getFilteredList()[index];
-                      return SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: InkWell(
-                          onTap: () async {
-                            if (type == "3" && phone != "$superUser") {
-                              if (createRequestController
-                                  .toStatus[widget.statusKey]! <
-                                  3 ||
-                                  createRequestController
-                                      .toStatus[widget.statusKey]! ==
-                                      8) {
-                                Get.to(TestRequestCreateTypeThree(
-                                    testEachRequest: item));
-                              }
-                            } else if (type == "4" && phone != "$superUser") {
-                              if (createRequestController
-                                  .toStatus[widget.statusKey]! ==
-                                  8 ||
-                                  createRequestController
-                                      .toStatus[widget.statusKey]! !=
-                                      3) {
-                                if (item.assigning == phone &&
-                                    !item.pathology_done) {
-                                  Get.to(TestRequestCreate(
-                                      testEachRequest: item));
-                                } else if (item.radiology_assigning ==
-                                    phone &&
-                                    !item.radiology_done) {
-                                  Get.to(TestRequestCreate(
-                                      testEachRequest: item));
-                                }
-                              }
-                            } else {
-                              if (type == "7" &&
-                                  phone != "$superUser" &&
-                                  (createRequestController
-                                      .toStatus[widget.statusKey]! <
-                                      7 ||
-                                      createRequestController
-                                          .toStatus[widget.statusKey] ==
-                                          8)) {
-                                Get.to(
-                                    TestRequestCreate(testEachRequest: item));
-                              } else {
-                                Get.to(
-                                    TestRequestCreate(testEachRequest: item));
-                              }
-                            }
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: whiteColor,
-                              borderRadius: BorderRadius.circular(DM.p10),
-                            ),
-                            padding:  EdgeInsets.symmetric(
-                                horizontal: DM.p8, vertical: DM.p5),
-                            margin:  EdgeInsets.symmetric(vertical: DM.p5),
-                            height: DM.p60,
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: typeWidth,
-                                  child: Text(
-                                    "${createRequestController.typeName[item.type]![0]}",
-                                    style:  TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: DM.p12,
-                                      color: Color.fromARGB(255, 26, 1, 1),
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-
-                                Container(
-                                  width: nameWidth,
-                                  child: Text(
-                                    getFirstName(item.name),
-                                    style:  TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: DM.p12,
-                                      color: Color.fromARGB(255, 26, 1, 1),
-                                    ),
-                                    softWrap: true,
-                                    maxLines: 2,
-                                  ),
-                                ),  SizedBox(width: DM.p4,),
-                                Container(
-                                  width: invoiceWidth,
-                                  child: Text(
-                                    "#${item.invoice_call.toString()}",
-                                    style:  TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: DM.p12,
-                                      color: Color.fromARGB(255, 26, 1, 1),
-                                    ),
-                                    softWrap: true,
-                                    maxLines: 2,
-                                  ),
-                                ),
-                                Container(
-                                  width: dateWidth,
-                                  child: Text(
-                                    DateFormat('dd-MMM HH:mm').format(
-                                      DateTime.fromMillisecondsSinceEpoch(
-                                          item.dateofcreated),
-                                    ),
-                                    style:  TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: DM.p12,
-                                      color: Color.fromARGB(255, 26, 1, 1),
-                                    ),
-                                    softWrap: true,
-                                    maxLines: 2,
-                                  ),
-                                ),  SizedBox(width: DM.p4,),
-                                Container(
-                                  width: changedByWidth,
-                                  child: showChangedByColumn
-                                      ? Text(
-                                    item.last_modifier ??
-                                        item.prepared_by ??
-                                        "N/A",
-                                    style:  TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: DM.p12,
-                                      color: Color.fromARGB(255, 26, 1, 1),
-                                    ),
-                                    softWrap: true,
-                                    maxLines: 2,
-                                  )
-                                      : const SizedBox.shrink(),
-                                ),
-                                if (widget.isButton &&
-                                    (createRequestController
-                                        .toStatus[widget.statusKey]! <
-                                        5 ||
-                                        type == "7" ||
-                                        (type == "3" &&
-                                            item.due_amount != null &&
-                                            item.due_amount == 0) ||
-                                        phone == "$superUser"))
-                                  Container(
-                                    width: buttonWidth,
-                                    child: MaterialButton(
-                                      onPressed: () async {
-                                        await _updateStatus(item);
-                                      },
-                                      height: DM.p40,
-                                      shape:  StadiumBorder(),
-                                      color: appTheme,
-                                      child:  Text(
-                                        "Done",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          color: fullWhiteColor,
-                                          fontSize: DM.p10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
+                );
+              },
             )
                 : Center(
               child: Padding(
-                padding:  EdgeInsets.all(DM.p16),
+                padding: EdgeInsets.all(DM.p16),
                 child: Container(
                   height: DM.screenHeight * 0.65,
-                  margin:  EdgeInsets.symmetric(vertical: DM.p16),
-                  child:  Center(
+                  margin: EdgeInsets.symmetric(vertical: DM.p16),
+                  child: Center(
                     child: Text(
                       "Request list empty ",
                       style: TextStyle(
@@ -693,8 +744,8 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
