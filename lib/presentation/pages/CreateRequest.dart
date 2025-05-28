@@ -23,6 +23,7 @@ import '../../db/models/TestData.dart';
 import '../../db/models/TestDataRequest.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/CreateRequestController.dart';
+import '../widgets/projectsWidget/FormUserAge.dart';
 import '../widgets/projectsWidget/Notifications/NotificationServices.dart';
 import 'LoginScreen.dart';
 
@@ -211,7 +212,7 @@ class _CreateRequestState extends State<CreateRequest> {
     setState(() {
       newRequestData = TestDataRequest(
           id: ((Random().nextInt(900000) + 100000).toString()),
-          name: name.text!,
+          name: name.text.toUpperCase(),
           gender: gender,
           mobile: phone.text,
           age: age.text,
@@ -271,7 +272,7 @@ class _CreateRequestState extends State<CreateRequest> {
 
     newRequestData = TestDataRequest(
         id: ((Random().nextInt(900000) + 100000).toString()),
-        name: name.text,
+        name: name.text.toUpperCase(),
         gender: gender,
         mobile: phone.text,
         age: age.text,
@@ -352,7 +353,7 @@ class _CreateRequestState extends State<CreateRequest> {
 
     newRequestData = TestDataRequest(
       id: ((Random().nextInt(900000) + 100000).toString()),
-      name: name.text,
+      name: name.text.toUpperCase(),
       gender: gender,
       mobile: phone.text,
       age: age.text,
@@ -525,86 +526,11 @@ class _CreateRequestState extends State<CreateRequest> {
                                   value: "Write Your Name",
                                   activate: false,
                                 ),
-                                Padding(
-                                  padding: EdgeInsets.all(DM.p1),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: DM.p100,
-                                        child: Text(
-                                          "Age (বয়স)",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: DM.p14,
-                                              color: blackFontColor),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: DM.p5,
-                                      ),
-                                      Text(":"),
-                                      SizedBox(
-                                        width: DM.p10,
-                                      ),
-                                      Flexible(
-                                        child: Container(
-                                          height: DM.p42,
-                                          child: TextFormField(
-                                            controller: age,
-                                            keyboardType: TextInputType.name,
-                                            // inputFormatters: <
-                                            //     TextInputFormatter>[
-                                            //   FilteringTextInputFormatter
-                                            //       .digitsOnly
-                                            // ],
-                                            maxLines: null,
-                                            // onTap: (() {
-                                            //   showDialog(
-                                            //       context: context,
-                                            //       builder: (context) {
-                                            //         return MyDialogView(
-                                            //             myChild: TextDialogueBox(
-                                            //                 keyTitle:
-                                            //                     "Referrer Info",
-                                            //                 addressText:
-                                            //                     referredAddressText));
-                                            //       });
-                                            // }),
-                                            decoration: InputDecoration(
-                                                errorStyle:
-                                                    TextStyle(fontSize: DM.p9),
-                                                focusedBorder:
-                                                    OutlineInputBorder(
-                                                        borderSide: BorderSide(
-                                                            width: DM.p1,
-                                                            color:
-                                                                appTheme)),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                      width: DM.p1,
-                                                      color:
-                                                          appTheme), //<-- SEE HERE
-                                                ),
-                                                filled: true,
-                                                fillColor: Colors.white,
-                                                contentPadding:
-                                                    EdgeInsets.symmetric(
-                                                        horizontal: DM.p10),
-                                                border: InputBorder.none,
-                                                hintText: "Write Your Age",
-                                                hintStyle: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: DM.p14,
-                                                )),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                FormUserAge(
+                                  formKey:  _formKey,
+                                  ageController: age,
+                                  initialAge: age.text,
+                                  isAdmin: false,
                                 ),
                                 Padding(
                                   padding: EdgeInsets.all(DM.p1),

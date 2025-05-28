@@ -30,7 +30,7 @@ class _AgentReportListState extends State<AgentReportList> {
   final CreateRequestController createRequestController =
       Get.put(CreateRequestController());
   final TextEditingController referrerInput = TextEditingController(text: "0");
-  bool isLoading = false;
+  bool isLoading = true;
   String referrerCode = "0";
   String? commission;
   String type = "0";
@@ -119,7 +119,6 @@ class _AgentReportListState extends State<AgentReportList> {
 
   // Fetch data from Firebase for all year/month paths
   Future<void> _fetchData() async {
-    // _showLoading(true);
     _allRequestListAdmin.clear();
     _newTestRequestList.clear();
     totalEarning = 0;
@@ -186,6 +185,7 @@ class _AgentReportListState extends State<AgentReportList> {
 
   // Filter data by referrer, date range, and paid status, calculate metrics
   Future<void> _filterData(String referrer) async {
+    isLoading = true;
     _newTestRequestList.clear();
     totalEarning = 0;
     totalTestCost = 0;
@@ -212,6 +212,8 @@ class _AgentReportListState extends State<AgentReportList> {
       // Update last payment date
     }
 
+    _agentNameSorting();
+
     for (var e in _newTestRequestList) {
       if (e.teststatus == 6) {
         totalEarning += e.agent_commission - e.total_agent_discount;
@@ -221,11 +223,12 @@ class _AgentReportListState extends State<AgentReportList> {
         }
       }
     }
-
     lastPaymentTestReq = getLatestPaymentData(_newTestRequestList);
 
     print("Filtered ${_newTestRequestList.length} requests");
-    if (mounted) setState(() {});
+    if (mounted) setState(() {
+      isLoading = false;
+    });
   }
 
   // Update payment status in Firebase and refresh UI
@@ -295,6 +298,7 @@ class _AgentReportListState extends State<AgentReportList> {
           total_unpayable_pathology: requestItem.total_unpayable_pathology,
           total_unpayable_imagine: requestItem.total_unpayable_imagine,
           payment_date: currentTime,
+          pathology_payment_date: requestItem.pathology_payment_date,
           pathology_done: requestItem.pathology_done,
           radiology_done: requestItem.radiology_done,
           radiology_assigning: requestItem.radiology_assigning,
@@ -358,12 +362,41 @@ class _AgentReportListState extends State<AgentReportList> {
           margin: const pw.EdgeInsets.all(16),
           build: (pw.Context context) {
             return [
-              pw.Header(
-                level: 0,
-                child:
-                    pw.Text('Agent Report', style: pw.TextStyle(fontSize: 22)),
+
+              pw.Center(child:    pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                children: [
+                  pw.Text(
+                    'HEALTHCARE HOMELAB',
+                    style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.Text(
+                    'Steel Mills Bazar, Patenga',
+                    style: pw.TextStyle(fontSize: 12),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.Text(
+                    '01785-890750',
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      color: PdfColors.blue,
+                    ),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.SizedBox(height: 10),
+                  pw.Text(
+                    'Agent Report',
+                    style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.SizedBox(height: 10),
+                ],
               ),
-              pw.SizedBox(height: 10),
+              ),
+
+              // Removed pw.Header here
+
               pw.Table.fromTextArray(
                 headers: [
                   'Date',
@@ -430,8 +463,7 @@ class _AgentReportListState extends State<AgentReportList> {
                   'Last Payment Date = ${DateFormat('dd-MMM-yyyy').format(DateTime.fromMillisecondsSinceEpoch(lastPaymentTestReq?.payment_date ?? 0))}'),
               pw.Text('Total Invoice Quantity = ${_newTestRequestList.length}'),
               pw.Text('Total Test Cost = $totalTestCost'),
-              pw.Text(
-                  'Total Earning = $totalEarning/-  Total Paid = $totalPaidAmount'),
+              pw.Text('Total Earning = $totalEarning/-  Total Paid = $totalPaidAmount'),
             ];
           },
         ),
@@ -467,6 +499,22 @@ class _AgentReportListState extends State<AgentReportList> {
 
   Future<void> permissionNeed() async {
     if (await Permission.storage.request() == true) {}
+  }
+
+  void _agentNameSorting() {
+
+    //sort with user wise and date wise
+    final Map<String, String> codeToNameMap = {
+      for (var agent in agentUserMapList) agent['referrer_code']: agent['name']
+    };
+
+    _newTestRequestList.sort((a, b) {
+      final nameA = codeToNameMap[a.referrer.toString()] ?? '';
+      final nameB = codeToNameMap[b.referrer.toString()] ?? '';
+      final nameComparison = nameA.compareTo(nameB);
+      if (nameComparison != 0) return nameComparison;
+      return a.dateofcreated.compareTo(b.dateofcreated);
+    });
   }
 
   @override
@@ -611,6 +659,7 @@ class _AgentReportListState extends State<AgentReportList> {
                               endDatetime = DateTime(picked.year, picked.month,
                                       picked.day, 23, 59, 59)
                                   .millisecondsSinceEpoch;
+                              isLoading = true;
                               _fetchData();
                             });
                           }
@@ -696,7 +745,8 @@ class _AgentReportListState extends State<AgentReportList> {
             Container(
               height: DM.screenHeight * 0.62,
               margin: EdgeInsets.symmetric(horizontal: DM.p5),
-              child: ListView(
+              child:
+              !isLoading? ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
                   Column(
@@ -1169,7 +1219,15 @@ class _AgentReportListState extends State<AgentReportList> {
                     ],
                   ),
                 ],
+              ):
+              Container(
+                child: Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(appTheme),
+                  ),
+                ),
               ),
+
             ),
             // Summary metrics
             Container(

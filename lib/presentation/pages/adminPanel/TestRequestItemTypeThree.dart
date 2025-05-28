@@ -174,26 +174,35 @@ class _TestRequestCreateTypeThreeState
 
 
   Future<void> getAdminUserList() async {
-    late DatabaseReference DbrefTestModel;
-    DbrefTestModel =
-        FirebaseDatabase.instance.ref("$adminUserApi/");
     FirebaseDatabase.instance.setPersistenceEnabled(true);
-    DbrefTestModel.keepSynced(true);
 
-    DbrefTestModel.onValue.listen((event) {
+    final dbRefTestModel = FirebaseDatabase.instance.ref(adminUserApi);
+    dbRefTestModel.keepSynced(true);
+
+    dbRefTestModel.onValue.listen((event) {
+      final List<AdminUserModel> tempAdminUsers = [];
+      final List<AdminUserModel> tempCollectionUsers = [];
+      final Map<String, String> tempAssigningMapping = {};
+
       for (DataSnapshot ds in event.snapshot.children) {
-        AdminUserModel testData =
-            AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
+        final data = ds.value;
+        if (data == null) continue;
 
-        setState(() {
-          if (testData.type == "4") {
-            collectionUserList.add(testData);
-            assigningMapping[testData.phone] = testData.name;
-          }
-        });
+        final testData = AdminUserModel.fromJson(json.decode(jsonEncode(data)));
+        tempAdminUsers.add(testData);
 
-        adminUserList.add(testData);
+        if (testData.type == "4") {
+          tempCollectionUsers.add(testData);
+          tempAssigningMapping[testData.phone ?? ""] = testData.name ?? "";
+        }
       }
+
+      setState(() {
+        adminUserList = tempAdminUsers;
+        collectionUserList = tempCollectionUsers;
+        assigningMapping = tempAssigningMapping;
+        calculationProcess();
+      });
     });
   }
 
@@ -557,7 +566,7 @@ class _TestRequestCreateTypeThreeState
       })  {
         return TestDataRequest(
           id: widget.testEachRequest!.id!,
-          name: name.text,
+          name: name.text.toUpperCase(),
           gender: gender,
           mobile: phone.text,
           age: age.text,
@@ -599,6 +608,7 @@ class _TestRequestCreateTypeThreeState
           total_unpayable_imagine: total_unpayable_imaging,
           total_unpayable_pathology: total_unpayable_pathology,
           payment_date: paymentDate ?? widget.testEachRequest?.payment_date,
+          pathology_payment_date: widget.testEachRequest?.payment_date,
           advance_payment_date: advancedPaymentDate ?? widget.testEachRequest?.advance_payment_date,
           pathology_done: pathologyDone,
           radiology_done: radiologyDone,
@@ -930,27 +940,17 @@ class _TestRequestCreateTypeThreeState
     total_discount.text = totalDiscount.toString();
     totalCashRecieve = totalDueRecievedOne + totalDueRecievedTwo + (int.tryParse(advanced.text) ?? 0);
 
-
+    agent_commission.text = "0";
     adminUserList.map((e) {
-      if (e.referrer_code !=null && e.referrer_code.contains(referrer.text.toString())) {
-        var pathology_commision = 0;
-        var imagine_commission = 0;
+      if (e.referrer_code != null && e.referrer_code == referrer.text.toString()) {
+        final pathologyCommission = int.tryParse(e.pathology_commission ?? '') ?? 0;
+        final imagingCommission = int.tryParse(e.imagine_commission ?? '') ?? 0;
 
-        if (e.pathology_commission != null &&
-            e.pathology_commission.toString().contains("null")) {
-          pathology_commision = int.parse(e.pathology_commission);
-        }
+        final pathologyAmount = (total_payable_pathology * pathologyCommission) / 100;
+        final imagingAmount = (total_payable_imaging * imagingCommission) / 100;
 
-        if (e.imagine_commission != null &&
-            e.imagine_commission.toString().contains("null")) {
-          imagine_commission = int.parse(e.imagine_commission);
-        }
-
-        agent_commission.text =
-            ((((total_payable_pathology) * pathology_commision) / 100) +
-                    (((total_payable_imaging) * imagine_commission) / 100))
-                .toInt()
-                .toString();
+        final totalCommission = (pathologyAmount + imagingAmount).toInt();
+        agent_commission.text = totalCommission.toString();
       }
 
       if (e.phone.toString() == phoneNumber) {
@@ -1001,6 +1001,10 @@ class _TestRequestCreateTypeThreeState
       tubeCost = 0;
       totalDiscount = 0;
       test_item_discount = 0;
+      total_payable_pathology = 0;
+      total_payable_imaging = 0;
+      total_unpayable_pathology = 0;
+      total_unpayable_imaging = 0;
 
       testData_updated.map((testItem) {
         totalTestCost =
@@ -1013,6 +1017,33 @@ class _TestRequestCreateTypeThreeState
         totalDiscount = totalDiscount + int.parse(testItem.discount.toString());
         test_item_discount =
             test_item_discount + int.parse(testItem.discount.toString());
+
+        if (testItem.is_payable == null) {
+          testItem.is_payable = true;
+        }
+
+        if (testItem.is_payable) {
+          if (testItem.category == 1) {
+            total_payable_pathology = total_payable_pathology +
+                int.parse(testItem.testprice.toString()) -
+                int.parse(testItem.discount.toString());
+          } else {
+            total_payable_imaging = total_payable_imaging +
+                int.parse(testItem.testprice.toString()) -
+                int.parse(testItem.discount.toString());
+          }
+        } else {
+          if (testItem.category == 1) {
+            total_unpayable_pathology = total_unpayable_pathology +
+                int.parse(testItem.testprice.toString()) -
+                int.parse(testItem.discount.toString());
+          } else {
+            total_unpayable_imaging = total_unpayable_imaging +
+                int.parse(testItem.testprice.toString()) -
+                int.parse(testItem.discount.toString());
+          }
+        }
+
       }).toList();
 
       totalCost = totalTestCost + serviceCost + tubeCost - totalDiscount;
@@ -1042,27 +1073,17 @@ class _TestRequestCreateTypeThreeState
       total_discount.text = totalDiscount.toString();
       totalCashRecieve = totalDueRecievedOne + totalDueRecievedTwo + (int.tryParse(advanced.text) ?? 0);
 
-
+      agent_commission.text = "0";
       adminUserList.map((e) {
-        if (e.referrer_code !=null && e.referrer_code.contains(referrer.text.toString())) {
-          var pathology_commision = 0;
-          var imagine_commission = 0;
+        if (e.referrer_code != null && e.referrer_code == referrer.text.toString()) {
+          final pathologyCommission = int.tryParse(e.pathology_commission ?? '') ?? 0;
+          final imagingCommission = int.tryParse(e.imagine_commission ?? '') ?? 0;
 
-          if (e.pathology_commission != null &&
-              e.pathology_commission.toString().contains("null")) {
-            pathology_commision = int.parse(e.pathology_commission);
-          }
+          final pathologyAmount = (total_payable_pathology * pathologyCommission) / 100;
+          final imagingAmount = (total_payable_imaging * imagingCommission) / 100;
 
-          if (e.imagine_commission != null &&
-              e.imagine_commission.toString().contains("null")) {
-            imagine_commission = int.parse(e.imagine_commission);
-          }
-
-          agent_commission.text =
-              ((((total_payable_pathology) * pathology_commision) / 100) +
-                      (((total_payable_imaging) * imagine_commission) / 100))
-                  .toInt()
-                  .toString();
+          final totalCommission = (pathologyAmount + imagingAmount).toInt();
+          agent_commission.text = totalCommission.toString();
         }
 
 //collection
@@ -1180,7 +1201,7 @@ class _TestRequestCreateTypeThreeState
                           controller: type,
                           title: "Type",
                           value: "0",
-                          activate: false,
+                          activate: true,
                         ),
                         FormUserInfo(
                           formKey: _formKey,
@@ -1257,7 +1278,7 @@ class _TestRequestCreateTypeThreeState
                         FormUserAge(
                           formKey:  _formKey,
                           ageController: age,
-                          initialAge: age.text,
+                          initialAge: widget.testEachRequest?.age ?? "",
                         ),
                         Padding(
                           padding: EdgeInsets.all(DM.p5),
@@ -1361,7 +1382,7 @@ class _TestRequestCreateTypeThreeState
                                     controller: referrer,
                                     keyboardType: TextInputType.multiline,
                                     maxLines: null,
-                                    onEditingComplete: () {
+                                    onChanged: (v) {
                                       calculationProcess();
                                     },
                                     readOnly: true,
@@ -2783,10 +2804,12 @@ class _TestRequestCreateTypeThreeState
                                 width: DM.p10,
                               ),
                               DropdownButton<String>(
+                                value: createReqController.status[int.tryParse(teststatus.text) ?? 0],
                                 hint: Text(
-                                    "${createReqController.status[int.parse(teststatus.text)]}",
-                                    style: TextStyle(color: blackFontColor)),
-                                items: <String>[
+                                  createReqController.status[int.tryParse(teststatus.text) ?? 0] ?? "Select status",
+                                  style: TextStyle(color: blackFontColor),
+                                ),
+                                items: ( [
                                   "PENDING",
                                   "RECIEVED",
                                   "PRECOLLECTED",
@@ -2795,23 +2818,24 @@ class _TestRequestCreateTypeThreeState
                                   "R.RECIEVED",
                                   "DELIVERED",
                                   "CANCEL"
-                                ].map((String value) {
+                                ])
+                                    .map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
                                     child: Text(
-                                      "$value",
+                                      value,
                                       style: TextStyle(color: blackFontColor),
                                     ),
                                   );
                                 }).toList(),
                                 onChanged: (newValue) {
-                                  setState(() {
-                                    teststatus.text = createReqController
-                                        .toStatus[newValue]
-                                        .toString();
-                                  });
+                                  if (newValue != null) {
+                                    setState(() {
+                                      teststatus.text = createReqController.toStatus[newValue]!.toString();
+                                    });
+                                  }
                                 },
-                              ),
+                              )
                             ],
                           ),
                         ),

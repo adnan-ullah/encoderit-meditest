@@ -135,6 +135,7 @@ class _AdminHomeState extends State<AdminHome> {
     final isAdmin = isSuperUser || widget.check_type == "7";
     final isAgent = widget.check_type == "1" || widget.check_type == "3" || widget.check_type == "4";
     final isReportUser = widget.check_type == "2";
+    final isCollector = isSuperUser || widget.check_type == "7" || widget.check_type == "4";
     final isShareHolder = isSuperUser ||  widget.check_type == "8";
 
     return Scaffold(
@@ -211,7 +212,7 @@ class _AdminHomeState extends State<AdminHome> {
                         }
                       },
                     ),
-                  if (isSuperUser || widget.check_type == "4")
+                  if (isSuperUser)
                     _buildButton(
                       title: "Report",
                       icon: Icons.bar_chart,
@@ -219,11 +220,22 @@ class _AdminHomeState extends State<AdminHome> {
                         final ref = await SharedPreferences.getInstance();
                         if (ref.getString("phoneNumber") == superUser) {
                           Get.to(() => AdminSuperReport());
-                        } else if (widget.check_type == "4") {
-                          Get.to(() => CollectionReportList());
                         }
                       },
                     ),
+
+                  if (isCollector)
+                    _buildButton(
+                      title: "Collection Report",
+                      icon: Icons.people,
+                      onPressed: () async {
+                        final ref = await SharedPreferences.getInstance();
+                        if (ref.getString("phoneNumber") == superUser || ref.getString("type") == "7" || ref.getString("type") == "4") {
+                          Get.to(() => CollectionReport());
+                        }
+                      },
+                    ),
+
                   if (isShareHolder)
                     _buildButton(
                       title: "Shareholder Report",

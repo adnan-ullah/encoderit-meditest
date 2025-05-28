@@ -45,9 +45,13 @@ class TestDataRequest {
         this.assigning_commission,
         this.agent_commission,
         this.is_paid,
+        this.is_pathology_paid,
+        this.is_radiology_paid,
         this.total_unpayable_pathology,
         this.total_unpayable_imagine,
         this.payment_date,
+        this.pathology_payment_date,
+        this.radiology_payment_date,
         this.advance_payment_date,
         this.radiology_assigning,
         this.radiology_assigning_commission,
@@ -120,10 +124,14 @@ class TestDataRequest {
 
   dynamic agent_commission;
   dynamic is_paid;
+  dynamic is_pathology_paid;
+  dynamic is_radiology_paid;
   dynamic total_unpayable_pathology;
   dynamic total_unpayable_imagine;
   dynamic payment_date;
   dynamic advance_payment_date;
+  dynamic pathology_payment_date;
+  dynamic radiology_payment_date;
 
   dynamic assigning;
   dynamic radiology_assigning;
@@ -176,10 +184,14 @@ class TestDataRequest {
     'assigning_commission': assigning_commission,
     'agent_commission': agent_commission,
     'is_paid': is_paid,
+    'is_pathology_paid': is_pathology_paid,
+    'is_radiology_paid': is_radiology_paid,
     'total_unpayable_pathology': total_unpayable_pathology,
     'total_unpayable_imagine': total_unpayable_imagine,
     'payment_date': payment_date,
     'advance_payment_date': advance_payment_date,
+    'collector_payment_date': pathology_payment_date,
+    'radiology_payment_date': radiology_payment_date,
 
 
     'radiology_assigning': radiology_assigning,
@@ -248,10 +260,14 @@ class TestDataRequest {
       assigning_commission: parsedJson['assigning_commission'],
       agent_commission: parsedJson['agent_commission'],
       is_paid: parsedJson['is_paid'],
+      is_pathology_paid: parsedJson['is_pathology_paid'],
+      is_radiology_paid: parsedJson['is_radiology_paid'],
       total_unpayable_pathology: parsedJson['total_unpayable_pathology'],
       total_unpayable_imagine: parsedJson['total_unpayable_imagine'],
       payment_date: parsedJson['payment_date'],
       advance_payment_date: parsedJson['advance_payment_date'],
+      pathology_payment_date: parsedJson['collector_payment_date'],
+      radiology_payment_date: parsedJson['radiology_payment_date'],
 
 
       radiology_assigning: parsedJson['radiology_assigning'],

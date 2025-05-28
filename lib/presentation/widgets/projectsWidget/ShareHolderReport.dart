@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../constants/app_info.dart';
 import '../../../db/models/CostModel.dart';
+import '../../pages/adminPanel/CostDataCreate.dart';
 
 class ShareholderReportList extends StatefulWidget {
   const ShareholderReportList({super.key});
@@ -35,10 +36,10 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
   double totalSellWithoutDue = 0;
   double totalCost = 0;
   double companyEarning = 0;
-  double reporterEarning = 0;
+   double reporterEarning = 0;
 
   DateTime selectedMonth =
-      DateTime(DateTime.now().year, DateTime.now().month, 1);
+  DateTime(DateTime.now().year, DateTime.now().month, 1);
   int startDate =
       DateTime(DateTime.now().year, DateTime.now().month, 1, 0, 0, 1)
           .millisecondsSinceEpoch;
@@ -47,8 +48,6 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
           .millisecondsSinceEpoch;
 
   String reportType = 'Sell';
-
-  final GlobalKey _dialogKey = GlobalKey();
 
   Future<void> _fetchPercentage() async {
     final prefs = await SharedPreferences.getInstance();
@@ -62,7 +61,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
     if (snapshot.exists) {
       try {
         final user =
-            AdminUserModel.fromJson(json.decode(json.encode(snapshot.value)));
+        AdminUserModel.fromJson(json.decode(json.encode(snapshot.value)));
         percentage = double.tryParse(user.percentage ?? "0") ?? 0;
         print("Fetched percentage: $percentage for phone: $phone");
       } catch (e) {
@@ -146,7 +145,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
       for (var dsLater in ds.children) {
         try {
           final data =
-              TestDataRequest.fromJson(json.decode(json.encode(dsLater.value)));
+          TestDataRequest.fromJson(json.decode(json.encode(dsLater.value)));
           if (data.dateofcreated == null || data.teststatus != 6) {
             continue;
           }
@@ -156,7 +155,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
                 .any((r) => r.id == data.id && r.mobile == data.mobile)) {
               sellRequests.add(data);
               totalSellQuantity++;
-              final payable = data.total_payable ?? 0;
+              final payable = data.totalprice ?? 0;
               final due = data.due_amount ?? 0;
               if (data.is_paid == true || due == 0) {
                 totalSellWithoutDue += payable;
@@ -186,6 +185,37 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
       } catch (e) {
         print("Error parsing CostModel: $e for JSON: ${json.encode(ds.value)}");
       }
+    }
+  }
+
+  Future<void> _deleteCost(String id, int index) async {
+    try {
+      final year = selectedMonth.year;
+      final formatter = DateFormat('MMMM');
+      final monthName = formatter.format(selectedMonth);
+      final path = "$database_name/cost/$year/$monthName/$id";
+
+      await FirebaseDatabase.instance.ref(path).remove();
+
+      setState(() {
+        final deletedItem = costRequests[index];
+
+        costRequests.removeAt(index);
+        totalCostQuantity--;
+
+        totalCost -= int.tryParse(deletedItem.totalAmount) ?? 0;
+
+        companyEarning = totalSellWithoutDue - totalCost;
+        reporterEarning = companyEarning * (percentage / 100);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Cost deleted successfully")),
+      );
+    } catch (e) {
+      print("Error deleting cost: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to delete cost: $e")),
+      );
     }
   }
 
@@ -303,7 +333,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
                 Container(
                   height: DM.screenHeight * 0.62,
                   margin:
-                      EdgeInsets.symmetric(horizontal: DM.p10, vertical: DM.p5),
+                  EdgeInsets.symmetric(horizontal: DM.p10, vertical: DM.p5),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -312,62 +342,61 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
                         child: isLoading
                             ? const SizedBox()
                             : Container(
-                                width: DM.screenWidth - DM.p20,
-                                child: (reportType == 'Sell'
-                                        ? sellRequests.isNotEmpty
-                                        : costRequests.isNotEmpty)
-                                    ? Column(
-                                        children: [
-                                          Divider(
-                                              thickness: DM.p2,
-                                              color: Colors.black),
-                                          Expanded(
-                                            child: ListView.builder(
-                                              shrinkWrap: true,
-                                              itemCount: reportType == 'Sell'
-                                                  ? sellRequests.length
-                                                  : costRequests.length,
-                                              itemBuilder: (_, index) =>
-                                                  reportType == 'Sell'
-                                                      ? _buildSellRequestRow(
-                                                          index)
-                                                      : _buildCostRequestRow(
-                                                          index),
-                                            ),
-                                          ),
-                                        ],
-                                      )
-                                    : Container(
-                                        height: DM.screenHeight * 0.65,
-                                        margin: EdgeInsets.symmetric(
-                                            vertical: DM.p16),
-                                        child: Center(
-                                          child: Text(
-                                            "Request list empty",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              fontSize: DM.p25,
-                                              color: appTheme,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
+                          width: DM.screenWidth - DM.p20,
+                          child: (reportType == 'Sell'
+                              ? sellRequests.isNotEmpty
+                              : costRequests.isNotEmpty)
+                              ? Column(
+                            children: [
+                              Divider(
+                                  thickness: DM.p2,
+                                  color: Colors.black),
+                              Expanded(
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: reportType == 'Sell'
+                                      ? sellRequests.length
+                                      : costRequests.length,
+                                  itemBuilder: (_, index) =>
+                                  reportType == 'Sell'
+                                      ? _buildSellRequestRow(
+                                      index)
+                                      : _buildCostRequestRow(
+                                      index),
+                                ),
                               ),
+                            ],
+                          )
+                              : Container(
+                            height: DM.screenHeight * 0.65,
+                            margin: EdgeInsets.symmetric(
+                                vertical: DM.p16),
+                            child: Center(
+                              child: Text(
+                                "Request list empty",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: DM.p25,
+                                  color: appTheme,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
                 // Summary
                 _buildSummaryRow("Total Sell Quantity: $totalSellQuantity"),
-                // _buildSummaryRow("Total Cost Quantity: $totalCostQuantity"),
                 _buildSummaryRow(
                     "Total Sell (Without Due): ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(totalSellWithoutDue)}"),
                 _buildSummaryRow(
                     "Total Cost: ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(totalCost)}"),
                 _buildSummaryRow(
-                    "Company Total Earning: ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(companyEarning)}"),
+                    "Company Total Earning/Loss: ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(companyEarning)}"),
                 _buildSummaryRow(
-                    "Reporter Earning ($percentage%): ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(reporterEarning)}"),
+                    "Shareholder Earnings ($percentage%): ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(reporterEarning)}"),
               ],
             ),
           ),
@@ -386,27 +415,33 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
 
   Widget _buildHeaderRow() {
     final headers = reportType == 'Sell'
-        ? ["Invoice Id", "Name", "Date", "Sell"]
-        : ["Date", "Voucher No", "Category", "Amount"];
+        ? ['Invoice Id', 'Name', 'Date', 'Sell']
+        : ['Date', 'Voucher No', 'Category', 'Amount'];
     return Container(
       height: DM.p50,
       width: DM.screenWidth - DM.p20,
       padding: EdgeInsets.symmetric(horizontal: DM.p5),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: headers.map((text) {
-          return Expanded(
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.w900,
-                fontSize: DM.p12,
-                color: Color.fromARGB(255, 26, 1, 1),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: headers
+              .map(
+                (text) => Container(
+              width: DM.p80,
+              child: Text(
+                text,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: DM.p12,
+                  color: Color.fromARGB(255, 26, 1, 1),
+                ),
               ),
             ),
-          );
-        }).toList(),
+          )
+              .toList(),
+        ),
       ),
     );
   }
@@ -421,30 +456,67 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
       margin: EdgeInsets.symmetric(vertical: DM.p5, horizontal: DM.p5),
       height: DM.p60,
       padding: EdgeInsets.symmetric(horizontal: DM.p5),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          request.invoice_call?.toString() ?? "N/A",
-          request.name ?? "N/A",
-          request.dateofcreated == null
-              ? "N/A"
-              : DateFormat('dd-MMM-yyyy').format(
-                  DateTime.fromMillisecondsSinceEpoch(request.dateofcreated!)),
-          NumberFormat.currency(symbol: '', decimalDigits: 2)
-              .format(request.total_payable ?? 0),
-        ].asMap().entries.map((entry) {
-          return Expanded(
-            child: Text(
-              entry.value,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: DM.p12,
-                color: Color.fromARGB(255, 26, 1, 1),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              width: DM.p80,
+              child: Text(
+                request.invoice_call?.toString() ?? 'N/A',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: DM.p12,
+                  color: Color.fromARGB(255, 26, 1, 1),
+                ),
               ),
             ),
-          );
-        }).toList(),
+            Container(
+              width: DM.p80,
+              child: Text(
+                request.name ?? 'N/A',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: DM.p12,
+                  color: Color.fromARGB(255, 26, 1, 1),
+                ),
+              ),
+            ),
+            Container(
+              width: DM.p80,
+              child: Text(
+                request.dateofcreated == null
+                    ? 'N/A'
+                    : DateFormat('dd-MMM-yyyy').format(
+                  DateTime.fromMillisecondsSinceEpoch(
+                      request.dateofcreated!),
+                ),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: DM.p12,
+                  color: Color.fromARGB(255, 26, 1, 1),
+                ),
+              ),
+            ),
+            Container(
+              width: DM.p80,
+              child: Text(
+                NumberFormat.currency(symbol: '', decimalDigits: 2)
+                    .format(request.totalprice ?? 0),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: DM.p12,
+                  color: Color.fromARGB(255, 26, 1, 1),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -459,30 +531,116 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
       margin: EdgeInsets.symmetric(vertical: DM.p5, horizontal: DM.p5),
       height: DM.p60,
       padding: EdgeInsets.symmetric(horizontal: DM.p5),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          request.voucherDate == null
-              ? "N/A"
-              : DateFormat('dd-MMM-yyyy').format(
-                  DateTime.fromMillisecondsSinceEpoch(request.voucherDate!)),
-          request.voucherNo ?? "N/A",
-          request.category ?? "N/A",
-          NumberFormat.currency(symbol: '', decimalDigits: 2)
-              .format(int.parse(request.totalAmount) ?? 0),
-        ].asMap().entries.map((entry) {
-          return Expanded(
-            child: Text(
-              entry.value,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: DM.p12,
-                color: Color.fromARGB(255, 26, 1, 1),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              width: DM.p80,
+              child: Text(
+                request.voucherDate == null
+                    ? 'N/A'
+                    : DateFormat('dd-MMM-yyyy').format(
+                  DateTime.fromMillisecondsSinceEpoch(request.voucherDate!),
+                ),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: DM.p12,
+                  color: Color.fromARGB(255, 26, 1, 1),
+                ),
               ),
             ),
-          );
-        }).toList(),
+            Container(
+              width: DM.p80,
+              child: Text(
+                request.voucherNo ?? 'N/A',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: DM.p12,
+                  color: Color.fromARGB(255, 26, 1, 1),
+                ),
+              ),
+            ),
+            Container(
+              width: DM.p80,
+              child: Text(
+                request.category ?? 'N/A',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: DM.p12,
+                  color: Color.fromARGB(255, 26, 1, 1),
+                ),
+              ),
+            ),
+            Container(
+              width: DM.p80,
+              child: Text(
+                NumberFormat.currency(symbol: '', decimalDigits: 0)
+                    .format(int.parse(request.totalAmount) ?? 0),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: DM.p12,
+                  color: Color.fromARGB(255, 26, 1, 1),
+                ),
+              ),
+            ),
+            if (phone == superUser) ...[
+              Container(
+                width: DM.p40,
+                child: IconButton(
+                  icon: Icon(Icons.edit, size: DM.p20, color: appTheme),
+                  onPressed: () {
+                    Get.to(() => CostDataCreate(cost: request))?.then((result) {
+                      if (result == "refresh") {
+                        print("refresheddd");
+                        setState(() {
+                          _fetchData();
+                        });
+                      }
+                    });;
+                  },
+                ),
+              ),
+              Container(
+                width: DM.p40,
+                child: IconButton(
+                  icon: Icon(Icons.delete, size: DM.p20, color: Colors.red),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Confirm Delete'),
+                          content: Text('Are you sure you want to delete this cost?'),
+                          actions: [
+                            TextButton(
+                              child: Text('Cancel'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            TextButton(
+                              child: Text('Delete'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                _deleteCost(request.id ?? '', index);
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -557,7 +715,7 @@ class _MonthPickerDialogState extends State<MonthPickerDialog> {
                     return DropdownMenuItem(
                       value: month,
                       child:
-                          Text(DateFormat.MMMM().format(DateTime(2023, month))),
+                      Text(DateFormat.MMMM().format(DateTime(2023, month))),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -573,7 +731,7 @@ class _MonthPickerDialogState extends State<MonthPickerDialog> {
                   value: selectedYear,
                   items: List.generate(
                     widget.lastDate.year - widget.firstDate.year + 1,
-                    (index) => widget.firstDate.year + index,
+                        (index) => widget.firstDate.year + index,
                   ).map((year) {
                     return DropdownMenuItem(
                       value: year,
