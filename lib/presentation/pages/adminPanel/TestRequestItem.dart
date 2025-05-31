@@ -4277,10 +4277,24 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                       MaterialButton(
                                                         onPressed: () async {
                                                           if (await chechkingInternet()) {
-                                                            uploadImage();
+                                                            final statusIndex = int.tryParse(teststatus.text) ?? 0;
+                                                            final isDeliveredOrCancelled = statusIndex == 6 || statusIndex == 7;
+                                                            final isDueZero = due_amount.text == "0";
+                                                            var isAdmin = typeUser=="7";
 
-                                                            Get.back();
+                                                            if (isDeliveredOrCancelled && isAdmin) {
+                                                              if (isDueZero) {
+                                                                uploadImage();
+                                                                Get.back();
+                                                              } else {
+                                                                Get.snackbar("Error", "Please Collect the Due Amount",backgroundColor: redColor, colorText: fullWhiteColor);
+                                                              }
+                                                            } else {
+                                                              uploadImage();
+                                                              Get.back();
+                                                            }
                                                           }
+
                                                         },
                                                         height: DM.p45,
                                                         minWidth: DM.p120,
@@ -4393,10 +4407,22 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                                 ?.validate() ==
                                                             true) {
                                                           if (await chechkingInternet()) {
-                                                            Get.back();
-                                                            uploadImage();
+                                                            final statusIndex = int.tryParse(teststatus.text) ?? 0;
+                                                            final isDeliveredOrCancelled = statusIndex == 6 || statusIndex == 7;
+                                                            final isDueZero = due_amount.text == "0";
+                                                            var isAdmin = typeUser=="7";
 
-                                                            //cr_controller.filter_testItemList.removeAt(index);
+                                                            if (isDeliveredOrCancelled && isAdmin) {
+                                                              if (isDueZero) {
+                                                                uploadImage();
+                                                                Get.back();
+                                                              } else {
+                                                                Get.snackbar("Error", "Please Collect the Due Amount",backgroundColor: redColor, colorText: fullWhiteColor);
+                                                              }
+                                                            } else {
+                                                              uploadImage();
+                                                              Get.back();
+                                                            }
                                                           }
                                                         }
                                                       },

@@ -703,7 +703,18 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
                               width: buttonWidth,
                               child: MaterialButton(
                                 onPressed: () async {
-                                  await _updateStatus(item);
+                                 var isAdmin = type=="7";
+                                 var nextStatusDeliver = (item.teststatus + 1) == 6;
+                                 var isDueZero = item.due_amount.toString()=="0";
+                                  if(nextStatusDeliver && isAdmin){
+                                    if (isDueZero) {
+                                      await _updateStatus(item);
+                                    } else {
+                                      Get.snackbar("Error", "Please Collect the Due Amount",backgroundColor: redColor, colorText: fullWhiteColor);
+                                    }
+                                  } else{
+                                    await _updateStatus(item);
+                                  }
                                 },
                                 height: DM.p40,
                                 shape: StadiumBorder(),

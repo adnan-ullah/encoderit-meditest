@@ -38,6 +38,12 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
   double companyEarning = 0;
    double reporterEarning = 0;
 
+  static const List<String> monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+
   DateTime selectedMonth =
   DateTime(DateTime.now().year, DateTime.now().month, 1);
   int startDate =
@@ -80,13 +86,10 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
   }
 
   List<String> _getCostYearMonthPaths() {
-    final paths = <String>[];
-    final formatter = DateFormat('MMMM');
     final year = selectedMonth.year;
-    final monthName = formatter.format(selectedMonth);
-    paths.add("$database_name/cost/$year/$monthName");
-    return paths;
+    return List.generate(12, (i) => "$database_name/cost/$year/${monthNames[i]}");
   }
+
 
   Future<void> _fetchData() async {
     setState(() {
@@ -177,6 +180,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
         if (data.voucherDate == null) {
           continue;
         }
+        print("CostModel: ${data.voucherDate}  start: ${startDate}  end: ${endDate}");
         if (startDate <= data.voucherDate! && data.voucherDate! <= endDate) {
           costRequests.add(data);
           totalCostQuantity++;
@@ -190,27 +194,54 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
 
   Future<void> _deleteCost(String id, int index) async {
     try {
-      final year = selectedMonth.year;
       final formatter = DateFormat('MMMM');
-      final monthName = formatter.format(selectedMonth);
-      final path = "$database_name/cost/$year/$monthName/$id";
+      final year = selectedMonth.year;
 
-      await FirebaseDatabase.instance.ref(path).remove();
+      final futures = <Future<DataSnapshot>>[];
+      final paths = <String>[];
 
-      setState(() {
-        final deletedItem = costRequests[index];
+      // Create all 12 month paths and their requests
+      for (int month = 1; month <= 12; month++) {
+        final monthName = formatter.format(DateTime(year, month));
+        final path = "$database_name/cost/$year/$monthName/$id";
+        paths.add(path);
+        futures.add(FirebaseDatabase.instance.ref(path).get());
+      }
 
-        costRequests.removeAt(index);
-        totalCostQuantity--;
+      // Execute all requests in parallel
+      final results = await Future.wait(futures);
 
-        totalCost -= int.tryParse(deletedItem.totalAmount) ?? 0;
+      // Find the first path where the snapshot exists
+      String? pathToDelete;
+      for (int i = 0; i < results.length; i++) {
+        if (results[i].exists) {
+          pathToDelete = paths[i];
+          break;
+        }
+      }
 
-        companyEarning = totalSellWithoutDue - totalCost;
-        reporterEarning = companyEarning * (percentage / 100);
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Cost deleted successfully")),
-      );
+      if (pathToDelete != null) {
+        await FirebaseDatabase.instance.ref(pathToDelete).remove();
+
+        setState(() {
+          final deletedItem = costRequests[index];
+
+          costRequests.removeAt(index);
+          totalCostQuantity--;
+
+          totalCost -= int.tryParse(deletedItem.totalAmount) ?? 0;
+          companyEarning = totalSellWithoutDue - totalCost;
+          reporterEarning = companyEarning * (percentage / 100);
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Cost deleted successfully")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Cost not found in any month")),
+        );
+      }
     } catch (e) {
       print("Error deleting cost: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -218,6 +249,8 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
       );
     }
   }
+
+
 
   @override
   void initState() {
