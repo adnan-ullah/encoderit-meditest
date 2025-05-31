@@ -44,14 +44,10 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
   ];
 
 
-  DateTime selectedMonth =
-  DateTime(DateTime.now().year, DateTime.now().month, 1);
-  int startDate =
-      DateTime(DateTime.now().year, DateTime.now().month, 1, 0, 0, 1)
-          .millisecondsSinceEpoch;
-  int endDate =
-      DateTime(DateTime.now().year, DateTime.now().month + 1, 1, 0, 0, 0, -1)
-          .millisecondsSinceEpoch;
+  DateTime selectedMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  int startDate = DateTime(DateTime.now().year, DateTime.now().month, 1, 0, 0, 0, 0).millisecondsSinceEpoch;
+  int endDate = DateTime(DateTime.now().year, DateTime.now().month + 1, 0, 0, 0, 0, 0).millisecondsSinceEpoch;
+
 
   String reportType = 'Sell';
 
@@ -280,10 +276,8 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
     if (picked != null) {
       setState(() {
         selectedMonth = picked;
-        startDate = DateTime(picked.year, picked.month, 1, 0, 0, 1)
-            .millisecondsSinceEpoch;
-        endDate = DateTime(picked.year, picked.month + 1, 1, 0, 0, 0, -1)
-            .millisecondsSinceEpoch;
+         startDate = DateTime(picked.year, picked.month, 1, 0, 0, 0, 0).millisecondsSinceEpoch;
+         endDate = DateTime(picked.year, picked.month + 1, 0, 0, 0, 0, 0).millisecondsSinceEpoch;
         _fetchData();
       });
     }
