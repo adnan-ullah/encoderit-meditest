@@ -10,6 +10,9 @@ import 'package:healthcare_homelab/db/models/TestDataRequest.dart';
 import 'package:healthcare_homelab/responsives/dimensions.dart';
 import 'package:intl/intl.dart';
 
+import '../otherWidgets/MyDateFilter.dart';
+
+
 class CashReportList extends StatefulWidget {
   const CashReportList({super.key});
 
@@ -22,14 +25,9 @@ class _CashReportListState extends State<CashReportList> {
   List<AdminUserModel> usersWithRequests = [];
   Map<String, List<TestDataRequest>> userRequests = {};
 
-  // Date filter variables
-  int startDate = DateTime(DateTime.now().year, DateTime.now().month, 1, 0, 0, 1)
-      .millisecondsSinceEpoch;
-  int endDate = DateTime(DateTime.now().year, DateTime.now().month,
-      DateTime.now().day, 23, 59, 59)
-      .millisecondsSinceEpoch;
+  int startDate = DateFilterWithUtils.getDefaultStartDate();
+  int endDate = DateFilterWithUtils.getDefaultEndDate();
 
-  // Summary variables
   int totalQuantity = 0;
   double totalCashReceived = 0;
   double totalAdvanced = 0;
@@ -38,6 +36,7 @@ class _CashReportListState extends State<CashReportList> {
   Future<void> _fetchData() async {
     if (isLoading) return;
     setState(() => isLoading = true);
+
     usersWithRequests.clear();
     userRequests.clear();
     totalQuantity = 0;
@@ -54,8 +53,7 @@ class _CashReportListState extends State<CashReportList> {
       if (userSnapshot.exists) {
         for (var ds in userSnapshot.children) {
           try {
-            final data =
-            AdminUserModel.fromJson(json.decode(json.encode(ds.value)));
+            final data = AdminUserModel.fromJson(jsonDecode(jsonEncode(ds.value)));
             allUsers.add(data);
           } catch (e) {
             print("Error parsing AdminUserModel: $e");
@@ -63,26 +61,29 @@ class _CashReportListState extends State<CashReportList> {
         }
         print("Fetched ${allUsers.length} admin users");
       } else {
-        print("No admin users found at database/adminUser/");
+        print("No admin users found at $adminUserApi/");
       }
 
-      // Fetch test requests
-      final paths = _getYearMonthPaths();
-      for (var path in paths) {
+      final paths = getYearMonthPathsForPastYears("testRequest");
+
+      // Parallel fetch and process
+      await Future.wait(paths.map((path) async {
         final snapshot = await ref.ref(path).get();
         if (snapshot.exists) {
           _processSnapshot(snapshot, allUsers);
         }
-      }
-      print("Processed ${userRequests.length} users with requests");
+      }));
 
       // Filter users with matching requests
       usersWithRequests = allUsers
           .where((user) => userRequests[user.phone]?.isNotEmpty ?? false)
           .toList();
 
-      print(
-          "Filtered ${usersWithRequests.length} users with matching requests");
+      totalCashReceived = totalAdvanced + totalDueReceived;
+      totalQuantity = usersWithRequests.fold(
+          0, (sum, user) => sum + (userRequests[user.phone]?.length ?? 0));
+
+      print("Filtered ${usersWithRequests.length} users with matching requests");
     } catch (e) {
       print("Error fetching cash report data: $e");
     } finally {
@@ -90,18 +91,23 @@ class _CashReportListState extends State<CashReportList> {
     }
   }
 
-  List<String> _getYearMonthPaths() {
-    final start = DateTime.fromMillisecondsSinceEpoch(startDate);
-    final end = DateTime.fromMillisecondsSinceEpoch(endDate);
-    final paths = <String>[];
-    final formatter = DateFormat('MMMM');
 
-    var current = DateTime(start.year, start.month, 1);
-    while (current.isBefore(end) ||
-        (current.year == end.year && current.month == end.month)) {
-      paths.add(
-          "$database_name/testRequest/${current.year}/${formatter.format(current)}");
-      current = DateTime(current.year, current.month + 1, 1);
+  List<String> getYearMonthPathsForPastYears(String type, {int pastYears = 10}) {
+    final formatter = DateFormat.MMMM();
+    final current = DateTime.now();
+    final currentYear = current.year;
+    final currentMonth = current.month;
+
+    final paths = <String>[];
+
+    for (int year = currentYear; year > currentYear - pastYears; year--) {
+      for (int month = 1; month <= 12; month++) {
+        if (year == currentYear && month > currentMonth) continue;
+
+        final monthName = formatter.format(DateTime(year, month));
+        final path = "$database_name/$type/$year/$monthName";
+        paths.add(path);
+      }
     }
     return paths;
   }
@@ -110,69 +116,40 @@ class _CashReportListState extends State<CashReportList> {
     for (var ds in snapshot.children) {
       for (var dsLater in ds.children) {
         try {
-          final data =
-          TestDataRequest.fromJson(json.decode(json.encode(dsLater.value)));
+          final data = TestDataRequest.fromJson(jsonDecode(jsonEncode(dsLater.value)));
           if (data.advance_payment_date == null ||
               data.total_cash_recieve == null ||
               data.total_cash_recieve == 0) continue;
 
-          bool isCountedForQuantity = false;
-
-            for (var user in users) {
-              final handledAdvance = data.advance_recieved_by == user.phone;
-              final handledDueOne = data.due_recieved_one_by == user.phone;
-              final handledDueTwo = data.due_recieved_two_by == user.phone;
+          for (var user in users) {
+            final handledAdvance = data.advance_recieved_by == user.phone;
+            final handledDueOne = data.due_recieved_one_by == user.phone;
+            final handledDueTwo = data.due_recieved_two_by == user.phone;
 
             if (!handledAdvance && !handledDueOne && !handledDueTwo) continue;
 
-            // Add to user's list only once
-            userRequests.putIfAbsent(user.phone, () => []);
-            if (!userRequests[user.phone]!
-                .any((r) => r.id == data.id && r.mobile == data.mobile)) {
-              userRequests[user.phone]!.add(data);
-            }
+            if (DateFilterWithUtils.isDateInRange(data, startDate, endDate,false)) {
+              userRequests.putIfAbsent(user.phone, () => []);
+              if (!userRequests[user.phone]!
+                  .any((r) => r.id == data.id && r.mobile == data.mobile)) {
+                userRequests[user.phone]!.add(data);
+              }
 
-            // Check and sum advance only if its date is within the range
-            if (handledAdvance &&
-                data.advance_payment_date != null &&
-                startDate <= data.advance_payment_date &&
-                data.advance_payment_date <= endDate) {
-              totalAdvanced += data.advanced ?? 0;
-            }
+              if (handledAdvance && DateFilterWithUtils.isDateInRange(data, startDate, endDate,false)) {
+                totalAdvanced += data.advanced ?? 0;
+              }
 
-            // Check and sum due_recieved_one only if its date is within the range
-            if (handledDueOne &&
-                data.due_recieve_one_date != null &&
-                startDate <= data.due_recieve_one_date &&
-                data.due_recieve_one_date <= endDate) {
-              totalDueReceived += data.due_recieved_one ?? 0;
-            }
+              if (handledDueOne && DateFilterWithUtils.isDateInRange(data, startDate, endDate,false)) {
+                totalDueReceived += data.due_recieved_one ?? 0;
+              }
 
-            // Check and sum due_recieved_two only if its date is within the range
-            if (handledDueTwo &&
-                data.due_recieve_two_date != null &&
-                startDate <= data.due_recieve_two_date &&
-                data.due_recieve_two_date <= endDate) {
-              totalDueReceived += data.due_recieved_two ?? 0;
-            }
-
-            // Only count quantity once globally if any payment date falls within the range
-            if (!isCountedForQuantity &&
-                ((data.advance_payment_date != null &&
-                    startDate <= data.advance_payment_date &&
-                    data.advance_payment_date <= endDate) ||
-                    (data.due_recieve_one_date != null &&
-                        startDate <= data.due_recieve_one_date &&
-                        data.due_recieve_one_date <= endDate) ||
-                    (data.due_recieve_two_date != null &&
-                        startDate <= data.due_recieve_two_date &&
-                        data.due_recieve_two_date <= endDate))) {
-              totalQuantity++;
-              isCountedForQuantity = true;
+              if (handledDueTwo && DateFilterWithUtils.isDateInRange(data, startDate, endDate,false)) {
+                totalDueReceived += data.due_recieved_two ?? 0;
+              }
             }
           }
         } catch (e) {
-          print("Error parsing TestDataRequest: $e for JSON: ${json.encode(dsLater.value)}");
+          print("Error parsing TestDataRequest: $e for JSON: ${jsonEncode(dsLater.value)}");
         }
       }
     }
@@ -198,77 +175,21 @@ class _CashReportListState extends State<CashReportList> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Date filter buttons
-            Padding(
-              padding: EdgeInsets.all(DM.p15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Container(
-                      height: DM.p60,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: appTheme, elevation: 0),
-                        onPressed: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate:
-                            DateTime.fromMillisecondsSinceEpoch(startDate),
-                            firstDate: DateTime(2022, 11),
-                            lastDate: DateTime(2030, 7),
-                          );
-                          if (picked != null) {
-                            setState(() {
-                              startDate = DateTime(picked.year, picked.month,
-                                  picked.day, 0, 0, 1)
-                                  .millisecondsSinceEpoch;
-                              _fetchData();
-                            });
-                          }
-                        },
-                        child: Text(
-                          "First: ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(startDate))}",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: DM.p15),
-                  Flexible(
-                    child: Container(
-                      height: DM.p60,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: appTheme, elevation: 0),
-                        onPressed: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate:
-                            DateTime.fromMillisecondsSinceEpoch(endDate),
-                            firstDate: DateTime(2022, 11),
-                            lastDate: DateTime(2030, 7),
-                          );
-                          if (picked != null) {
-                            setState(() {
-                              endDate = DateTime(picked.year, picked.month,
-                                  picked.day, 23, 59, 59)
-                                  .millisecondsSinceEpoch;
-                              _fetchData();
-                            });
-                          }
-                        },
-                        child: Text(
-                          "Last: ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(endDate))}",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            DateFilterWithUtils(
+              initialStartDate: startDate,
+              initialEndDate: endDate,
+              onStartDateChanged: (newStart) {
+                setState(() {
+                  startDate = newStart;
+                  _fetchData();
+                });
+              },
+              onEndDateChanged: (newEnd) {
+                setState(() {
+                  endDate = newEnd;
+                  _fetchData();
+                });
+              },
             ),
             Container(
               height: DM.screenHeight * 0.62,
@@ -288,8 +209,7 @@ class _CashReportListState extends State<CashReportList> {
                           child: ListView.builder(
                             shrinkWrap: true,
                             itemCount: usersWithRequests.length,
-                            itemBuilder: (_, index) =>
-                                _buildRequestRow(index),
+                            itemBuilder: (_, index) => _buildRequestRow(index),
                           ),
                         ),
                       ],
@@ -309,7 +229,6 @@ class _CashReportListState extends State<CashReportList> {
                       ),
                     ),
                   ),
-                  // Summary Section
                   Container(
                     padding: EdgeInsets.all(DM.p10),
                     child: Column(
@@ -317,7 +236,7 @@ class _CashReportListState extends State<CashReportList> {
                       children: [
                         SizedBox(height: DM.p15),
                         Text(
-                          "Total Cash Received: ${(totalAdvanced + totalDueReceived).toStringAsFixed(2)}",
+                          "Total Cash Received: ${totalCashReceived.toStringAsFixed(2)}",
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: DM.p14,
@@ -380,40 +299,28 @@ class _CashReportListState extends State<CashReportList> {
     final user = usersWithRequests[index];
     final requests = userRequests[user.phone]!;
 
-    double userAdvanced = requests.fold(
-      0,
-          (sum, r) =>
-      r.advance_recieved_by == user.phone &&
-          r.advance_payment_date != null &&
-          startDate <= r.advance_payment_date &&
-          r.advance_payment_date <= endDate
-          ? sum + (r.advanced ?? 0)
-          : sum,
-    );
+    double userAdvanced = requests.fold(0, (sum, r) {
+      if (r.advance_recieved_by == user.phone && DateFilterWithUtils.isDateInRange(r, startDate, endDate,false)) {
+        return sum + (r.advanced ?? 0);
+      }
+      return sum;
+    });
 
-    double userDueReceived = requests.fold(
-      0,
-          (sum, r) {
-        double dueSum = 0;
-        if (r.due_recieved_one_by == user.phone &&
-            r.due_recieve_one_date != null &&
-            startDate <= r.due_recieve_one_date &&
-            r.due_recieve_one_date <= endDate) {
-          dueSum += r.due_recieved_one ?? 0;
-        }
-        if (r.due_recieved_two_by == user.phone &&
-            r.due_recieve_two_date != null &&
-            startDate <= r.due_recieve_two_date &&
-            r.due_recieve_two_date <= endDate) {
-          dueSum += r.due_recieved_two ?? 0;
-        }
-        return sum + dueSum;
-      },
-    );
+    double userDueReceived = requests.fold(0, (sum, r) {
+      double dueSum = 0;
+      if (r.due_recieved_one_by == user.phone && DateFilterWithUtils.isDateInRange(r, startDate, endDate,false)) {
+        dueSum += r.due_recieved_one ?? 0;
+      }
+      if (r.due_recieved_two_by == user.phone && DateFilterWithUtils.isDateInRange(r, startDate, endDate,false)) {
+        dueSum += r.due_recieved_two ?? 0;
+      }
+      return sum + dueSum;
+    });
 
     double userTotalCash = userAdvanced + userDueReceived;
 
-    return userTotalCash!=0?Container(
+    return userTotalCash != 0
+        ? Container(
       decoration: BoxDecoration(
           color: whiteColor, borderRadius: BorderRadius.circular(DM.p10)),
       margin: EdgeInsets.symmetric(vertical: DM.p5, horizontal: DM.p5),
@@ -436,12 +343,13 @@ class _CashReportListState extends State<CashReportList> {
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: DM.p12,
-              color: Color.fromARGB(255, 26, 1, 1),
+              color: const Color.fromARGB(255, 26, 1, 1),
             ),
           ),
         ))
             .toList(),
       ),
-    ):SizedBox();
+    )
+        : const SizedBox();
   }
 }

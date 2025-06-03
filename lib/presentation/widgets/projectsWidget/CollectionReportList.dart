@@ -18,6 +18,9 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
+import '../otherWidgets/MyDateFilter.dart';
+
 class CollectionReport extends StatefulWidget {
   const CollectionReport({super.key});
 
@@ -27,7 +30,7 @@ class CollectionReport extends StatefulWidget {
 
 class _CollectionReportState extends State<CollectionReport> {
   final CreateRequestController createRequestController =
-      Get.put(CreateRequestController());
+  Get.put(CreateRequestController());
   final TextEditingController searchInput = TextEditingController();
   final List<String> assigningFilterList = ['Pathology', 'Radiology'];
   final List<String> paymentStatusFilterList = ['Paid', 'Unpaid', 'Both'];
@@ -40,12 +43,8 @@ class _CollectionReportState extends State<CollectionReport> {
   String type = '0';
   String assigningFilter = 'Pathology';
   String paymentStatusFilter = 'Both';
-  int startDatetime =
-      DateTime(DateTime.now().year, DateTime.now().month, 1, 0, 0, 1)
-          .millisecondsSinceEpoch;
-  int endDatetime = DateTime(DateTime.now().year, DateTime.now().month,
-          DateTime.now().day, 23, 59, 59)
-      .millisecondsSinceEpoch;
+  int startDatetime = DateFilterWithUtils.getDefaultStartDate();
+  int endDatetime = DateFilterWithUtils.getDefaultEndDate();
   double totalCommission = 0;
   double totalTestCost = 0;
   int totalInvoiceQuantity = 0;
@@ -76,26 +75,29 @@ class _CollectionReportState extends State<CollectionReport> {
     }
   }
 
-  List<String> _getYearMonthPaths() {
-    final start = DateTime.fromMillisecondsSinceEpoch(startDatetime);
-    final end = DateTime.fromMillisecondsSinceEpoch(endDatetime);
-    final paths = <String>[];
-    final formatter = DateFormat('MMMM');
+  List<String> getYearMonthPathsForPastYears(String type, {int pastYears = 10}) {
+    final formatter = DateFormat.MMMM();
+    final current = DateTime.now();
+    final currentYear = current.year;
+    final currentMonth = current.month;
 
-    var current = DateTime(start.year, start.month, 1);
-    while (current.isBefore(end) ||
-        (current.year == end.year && current.month == end.month)) {
-      final year = current.year;
-      final monthName = formatter.format(current);
-      paths.add('$database_name/testRequest/$year/$monthName');
-      current = DateTime(current.year, current.month + 1, 1);
+    final paths = <String>[];
+
+    for (int year = currentYear; year > currentYear - pastYears; year--) {
+      for (int month = 1; month <= 12; month++) {
+        if (year == currentYear && month > currentMonth) continue;
+
+        final monthName = formatter.format(DateTime(year, month));
+        final path = "$database_name/$type/$year/$monthName";
+        paths.add(path);
+      }
     }
     return paths;
   }
 
   String getNameByPhoneNumber(String phoneNumber) {
     final userMap = collectionUserMapList.firstWhere(
-      (user) => user['phone'] == phoneNumber,
+          (user) => user['phone'] == phoneNumber,
       orElse: () => {},
     );
     return userMap.isNotEmpty ? userMap['name'] ?? 'Unknown' : 'Unknown';
@@ -110,7 +112,7 @@ class _CollectionReportState extends State<CollectionReport> {
       for (var ds in userSnapshot.children) {
         try {
           final data =
-              AdminUserModel.fromJson(json.decode(json.encode(ds.value)));
+          AdminUserModel.fromJson(json.decode(json.encode(ds.value)));
           if (data.type.toString() == '4' &&
               data.name != null &&
               data.name!.isNotEmpty &&
@@ -150,11 +152,11 @@ class _CollectionReportState extends State<CollectionReport> {
     phone = prefs.getString('phoneNumber') ?? '0';
     type = prefs.getString('type') ?? '0';
 
-    final paths = _getYearMonthPaths();
+    final paths = getYearMonthPathsForPastYears("testRequest");
     final ref = FirebaseDatabase.instance;
 
     try {
-      for (var path in paths) {
+      await Future.wait(paths.map((path) async {
         final snapshot = await ref.ref(path).get();
         if (snapshot.exists) {
           for (var ds in snapshot.children) {
@@ -162,6 +164,7 @@ class _CollectionReportState extends State<CollectionReport> {
               try {
                 final data = TestDataRequest.fromJson(
                     json.decode(jsonEncode(dsLater.value)));
+
                 final isDuplicate = _allRequestListAdmin
                     .any((r) => r.id == data.id && r.mobile == data.mobile);
                 final isValid = _isValidRequest(data);
@@ -176,9 +179,9 @@ class _CollectionReportState extends State<CollectionReport> {
             }
           }
         }
-      }
-      debugPrint(
-          'Fetched ${_allRequestListAdmin.length} requests from Firebase');
+      }));
+
+      debugPrint('Fetched ${_allRequestListAdmin.length} requests from Firebase');
       await _filterData(searchInput.text);
     } catch (e) {
       debugPrint('Error fetching test requests: $e');
@@ -186,6 +189,7 @@ class _CollectionReportState extends State<CollectionReport> {
       if (mounted) setState(() => isLoading = false);
     }
   }
+
 
   bool _isValidRequest(TestDataRequest data) {
     final assigningStr = data.assigning?.toString().trim() ?? "";
@@ -223,8 +227,12 @@ class _CollectionReportState extends State<CollectionReport> {
           (collectionPhone?.toString().toLowerCase().contains(lowerCaseQuery) ??
               false);
 
-      final matchesDate = startDatetime <= (element.dateofcreated ?? 0) &&
-          (element.dateofcreated ?? 0) <= endDatetime;
+      final matchesDate = DateFilterWithUtils.isDateInRange(
+        element,
+        startDatetime,
+        endDatetime,
+        true,
+      );
 
       var matchesAssigningFilter = type == "4" && assigningFilter == 'Pathology'
           ? _matchesAssigning(element.assigning, phone)
@@ -233,9 +241,9 @@ class _CollectionReportState extends State<CollectionReport> {
       if (type == "7" || phone == superUser) {
         matchesAssigningFilter = assigningFilter == 'Pathology'
             ? element.assigning != null &&
-                element.assigning.toString().isNotEmpty
+            element.assigning.toString().isNotEmpty
             : element.radiology_assigning != null &&
-                element.radiology_assigning.toString().isNotEmpty;
+            element.radiology_assigning.toString().isNotEmpty;
       }
 
       final matchesPaymentStatus = _matchesPaymentStatus(element);
@@ -277,9 +285,9 @@ class _CollectionReportState extends State<CollectionReport> {
 
   void _updateMetrics(TestDataRequest element) {
     final hasValidAssigning =
-        !(element.assigning?.toString().trim().isEmpty ?? true);
+    !(element.assigning?.toString().trim().isEmpty ?? true);
     final hasValidRadiologyAssigning =
-        !(element.radiology_assigning?.toString().trim().isEmpty ?? true);
+    !(element.radiology_assigning?.toString().trim().isEmpty ?? true);
 
     if (assigningFilter == 'Pathology' && hasValidAssigning) {
       if(!(element.teststatus<=5 || element.teststatus==8)){
@@ -332,7 +340,7 @@ class _CollectionReportState extends State<CollectionReport> {
 
     try {
       final date =
-          DateTime.fromMillisecondsSinceEpoch(requestItem.dateofcreated!);
+      DateTime.fromMillisecondsSinceEpoch(requestItem.dateofcreated!);
       final year = date.year;
       final monthName = DateFormat('MMMM').format(date);
       final path =
@@ -341,12 +349,12 @@ class _CollectionReportState extends State<CollectionReport> {
 
       final currentTime = DateTime.now().millisecondsSinceEpoch;
       final updateTestRequestItem =
-          _createUpdatedTestRequest(requestItem, paymentType, currentTime);
+      _createUpdatedTestRequest(requestItem, paymentType, currentTime);
 
       await ref.update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
 
       final index = _newTestRequestList.indexWhere((item) =>
-          item.id == requestItem.id && item.mobile == requestItem.mobile);
+      item.id == requestItem.id && item.mobile == requestItem.mobile);
       if (index != -1) {
         _newTestRequestList[index] = updateTestRequestItem;
         _recalculateMetrics();
@@ -414,7 +422,7 @@ class _CollectionReportState extends State<CollectionReport> {
       radiology_done: requestItem.radiology_done,
       radiology_assigning: requestItem.radiology_assigning,
       radiology_assigning_commission:
-          requestItem.radiology_assigning_commission,
+      requestItem.radiology_assigning_commission,
       imageDiscountFile: requestItem.imageDiscountFile,
       advance_recieved_by: requestItem.advance_recieved_by,
       total_cash_recieve: requestItem.total_cash_recieve,
@@ -434,9 +442,9 @@ class _CollectionReportState extends State<CollectionReport> {
           ? currentTime
           : requestItem.radiology_payment_date,
       is_pathology_paid:
-          paymentType == 'Pathology' ? true : requestItem.is_pathology_paid,
+      paymentType == 'Pathology' ? true : requestItem.is_pathology_paid,
       is_radiology_paid:
-          paymentType == 'Radiology' ? true : requestItem.is_radiology_paid,
+      paymentType == 'Radiology' ? true : requestItem.is_radiology_paid,
     );
   }
 
@@ -536,13 +544,13 @@ class _CollectionReportState extends State<CollectionReport> {
                   paymentDate == 0
                       ? 'NA'
                       : DateFormat('dd-MMM-yyyy').format(
-                          DateTime.fromMillisecondsSinceEpoch(paymentDate)),
+                      DateTime.fromMillisecondsSinceEpoch(paymentDate)),
                   paymentStatus,
                 ];
               }).toList(),
               cellStyle: const pw.TextStyle(fontSize: 9),
               headerStyle:
-                  pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+              pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
               cellAlignment: pw.Alignment.center,
             ),
             pw.SizedBox(height: 10),
@@ -573,7 +581,7 @@ class _CollectionReportState extends State<CollectionReport> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content:
-                  Text('Could not open the PDF. Please open it manually.')),
+              Text('Could not open the PDF. Please open it manually.')),
         );
       }
     } catch (e) {
@@ -659,78 +667,23 @@ class _CollectionReportState extends State<CollectionReport> {
   }
 
   Widget _buildDatePickers() {
-    return Padding(
-      padding: EdgeInsets.all(DM.p15),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Flexible(
-            child: SizedBox(
-              height: DM.p60,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: appTheme, elevation: 0),
-                onPressed: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate:
-                        DateTime.fromMillisecondsSinceEpoch(startDatetime),
-                    firstDate: DateTime(2022, 11),
-                    lastDate: DateTime(2030, 7),
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      startDatetime = DateTime(
-                              picked.year, picked.month, picked.day, 0, 0, 1)
-                          .millisecondsSinceEpoch;
-                      _fetchData();
-                    });
-                  }
-                },
-                child: Text(
-                  'First: ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(startDatetime))}',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontSize: DM.p12),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: DM.p15),
-          Flexible(
-            child: SizedBox(
-              height: DM.p60,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: appTheme, elevation: 0),
-                onPressed: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate:
-                        DateTime.fromMillisecondsSinceEpoch(endDatetime),
-                    firstDate: DateTime(2022, 11),
-                    lastDate: DateTime(2030, 7),
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      endDatetime = DateTime(
-                              picked.year, picked.month, picked.day, 23, 59, 59)
-                          .millisecondsSinceEpoch;
-                      isLoading = true;
-                      _fetchData();
-                    });
-                  }
-                },
-                child: Text(
-                  'Last: ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(endDatetime))}',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontSize: DM.p12),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return DateFilterWithUtils(
+      initialStartDate: startDatetime,
+      initialEndDate: endDatetime,
+      onStartDateChanged: (newStart) {
+        setState(() {
+          startDatetime = newStart;
+          isLoading = true;
+          _fetchData();
+        });
+      },
+      onEndDateChanged: (newEnd) {
+        setState(() {
+          endDatetime = newEnd;
+          isLoading = true;
+          _fetchData();
+        });
+      },
     );
   }
 
@@ -847,47 +800,47 @@ class _CollectionReportState extends State<CollectionReport> {
       margin: EdgeInsets.symmetric(horizontal: DM.p5),
       child: isLoading
           ? Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(appTheme),
-              ),
-            )
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(appTheme),
+        ),
+      )
           : ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTableHeader(),
-                    Divider(thickness: DM.p2, color: Colors.black),
-                    Expanded(
-                      child: Container(
-                        width: (type == '7' || phone == superUser)
-                            ? DM.screenWidth * 2.1
-                            : DM.screenWidth * 1.9,
-                        child: _newTestRequestList.isNotEmpty
-                            ? ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: _newTestRequestList.length,
-                                itemBuilder: (context, index) =>
-                                    _buildTableRow(_newTestRequestList[index]),
-                              )
-                            : Center(
-                                child: Text(
-                                  'Request list empty',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: DM.p25,
-                                    color: appTheme,
-                                  ),
-                                ),
-                              ),
+        scrollDirection: Axis.horizontal,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTableHeader(),
+              Divider(thickness: DM.p2, color: Colors.black),
+              Expanded(
+                child: Container(
+                  width: (type == '7' || phone == superUser)
+                      ? DM.screenWidth * 2.1
+                      : DM.screenWidth * 1.9,
+                  child: _newTestRequestList.isNotEmpty
+                      ? ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _newTestRequestList.length,
+                    itemBuilder: (context, index) =>
+                        _buildTableRow(_newTestRequestList[index]),
+                  )
+                      : Center(
+                    child: Text(
+                      'Request list empty',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                        fontSize: DM.p25,
+                        color: appTheme,
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -1036,7 +989,7 @@ class _CollectionReportState extends State<CollectionReport> {
               paymentDate == 0
                   ? 'NA'
                   : DateFormat('dd-MMM-yyyy')
-                      .format(DateTime.fromMillisecondsSinceEpoch(paymentDate)),
+                  .format(DateTime.fromMillisecondsSinceEpoch(paymentDate)),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.w900,

@@ -19,6 +19,8 @@ import '../../../db/models/AdminUserModel.dart';
 import '../../../db/models/TestDataRequest.dart';
 import '../../../responsives/dimensions.dart';
 
+import '../otherWidgets/MyDateFilter.dart';
+
 class AgentReportList extends StatefulWidget {
   const AgentReportList({super.key});
 
@@ -37,12 +39,8 @@ class _AgentReportListState extends State<AgentReportList> {
   String phone = "0";
   String paidStatus = "BOTH";
   TestDataRequest? lastPaymentTestReq;
-  int startDatetime =
-      DateTime(DateTime.now().year, DateTime.now().month, 1, 0, 0, 1)
-          .millisecondsSinceEpoch;
-  int endDatetime = DateTime(DateTime.now().year, DateTime.now().month,
-          DateTime.now().day, 23, 59, 59)
-      .millisecondsSinceEpoch;
+  int startDate = DateFilterWithUtils.getDefaultStartDate();
+  int endDate = DateFilterWithUtils.getDefaultEndDate();
   double totalEarning = 0;
   double totalTestCost = 0;
   double totalPaidAmount = 0;
@@ -52,31 +50,33 @@ class _AgentReportListState extends State<AgentReportList> {
   final Set<String> agentReferrerCodes = {};
   final List<Map<dynamic, dynamic>> agentUserMapList = [];
 
-  // Generate list of year/month paths to query based on date range
-  List<String> _getYearMonthPaths() {
-    final start = DateTime.fromMillisecondsSinceEpoch(startDatetime);
-    final end = DateTime.fromMillisecondsSinceEpoch(endDatetime);
-    final paths = <String>[];
-    final formatter = DateFormat('MMMM');
+  List<String> getYearMonthPathsForPastYears(String type, {int pastYears = 10}) {
+    final formatter = DateFormat.MMMM();
+    final current = DateTime.now();
+    final currentYear = current.year;
+    final currentMonth = current.month;
 
-    var current = DateTime(start.year, start.month, 1);
-    while (current.isBefore(end) ||
-        (current.year == end.year && current.month == end.month)) {
-      final year = current.year;
-      final monthName = formatter.format(current);
-      paths.add("$database_name/testRequest/$year/$monthName");
-      current = DateTime(current.year, current.month + 1, 1);
+    final paths = <String>[];
+
+    for (int year = currentYear; year > currentYear - pastYears; year--) {
+      for (int month = 1; month <= 12; month++) {
+        if (year == currentYear && month > currentMonth) continue;
+
+        final monthName = formatter.format(DateTime(year, month));
+        final path = "$database_name/$type/$year/$monthName";
+        paths.add(path);
+      }
     }
     return paths;
   }
 
-  String getNameByReferrerCode(String referrerCode) {
-    final userMap = agentUserMapList.firstWhere(
-      (user) => user['referrer_code'] == referrerCode,
-      orElse: () => {}, // Return an empty map if not found
-    );
 
-    return userMap.isNotEmpty ? userMap['name'] ?? "Unknown" : "Unknown";
+  String getNameByReferrerCode(String? referrerCode) {
+    final userMap = agentUserMapList.firstWhere(
+          (user) => user['referrer_code'] == referrerCode,
+      orElse: () => {},
+    );
+    return userMap.isEmpty ? "Unknown" : userMap['name'] ?? "Unknown";
   }
 
   Future<void> getAgentUsers() async {
@@ -117,7 +117,6 @@ class _AgentReportListState extends State<AgentReportList> {
         (a, b) => (a.payment_date ?? 0) > (b.payment_date ?? 0) ? a : b);
   }
 
-  // Fetch data from Firebase for all year/month paths
   Future<void> _fetchData() async {
     _allRequestListAdmin.clear();
     _newTestRequestList.clear();
@@ -127,65 +126,58 @@ class _AgentReportListState extends State<AgentReportList> {
 
     final prefs = await SharedPreferences.getInstance();
     phone = prefs.getString('phoneNumber') ?? "0";
-    type = prefs.getString("type") ?? "0";
+    type = prefs.getString('type') ?? "0";
     if (phone != superUser && type != "7") {
       commission = prefs.getString("commission");
       referrerCode = prefs.getString("referrer_code") ?? "0";
     }
 
-    final paths = _getYearMonthPaths();
+    final paths = getYearMonthPathsForPastYears("testRequest");
     final ref = FirebaseDatabase.instance;
 
     try {
-      for (var path in paths) {
+      final futures = paths.map((path) async {
         final snapshot = await ref.ref(path).get();
-        if (snapshot.exists) {
-          for (var ds in snapshot.children) {
-            for (var dsLater in ds.children) {
-              try {
-                final data = TestDataRequest.fromJson(
-                  json.decode(jsonEncode(dsLater.value)),
-                );
+        if (!snapshot.exists) return;
 
-                final isDuplicate = _allRequestListAdmin.any(
-                  (r) => r.id == data.id && r.mobile == data.mobile,
-                );
+        for (var snapshotChild in snapshot.children) {
+          for (var ds in snapshotChild.children) {
+            try {
+              final data = TestDataRequest.fromJson(jsonDecode(jsonEncode(ds.value)));
+              final isDuplicate = _allRequestListAdmin.any(
+                    (r) => r.id == data.id && r.mobile == data.mobile,
+              );
+              final hasValidReferrer = data.referrer != null &&
+                  data.referrer != 0 &&
+                  data.referrer.toString().isNotEmpty;
+              final isReferrerRecognized = agentUserMapList.any(
+                    (entry) => entry['referrer_code'] == data.referrer.toString(),
+              );
 
-                final hasValidReferrer = data.referrer != null &&
-                    data.referrer != 0 &&
-                    data.referrer.toString().isNotEmpty;
-
-                final isReferrerRecognized = agentUserMapList.any(
-                  (entry) => entry['referrer_code'] == data.referrer.toString(),
-                );
-
-                print("agentUserMapList: $agentUserMapList");
-
-                if (!isDuplicate && hasValidReferrer && isReferrerRecognized) {
-                  _allRequestListAdmin.add(data);
-                }
-              } catch (e) {
-                print(
-                    "Error parsing TestDataRequest: $e for JSON: ${jsonEncode(dsLater.value)}");
+              if (!isDuplicate && hasValidReferrer && isReferrerRecognized) {
+                _allRequestListAdmin.add(data);
               }
+            } catch (e) {
+              print("Error parsing TestDataRequest: $e for JSON: ${jsonEncode(ds.value)}");
             }
           }
         }
-      }
+      }).toList();
+
+      await Future.wait(futures);
+
       print("Fetched ${_allRequestListAdmin.length} requests from Firebase");
       await _filterData(referrerInput.text);
     } catch (e) {
-      print("Error fetching test requests: $e");
+      print("Error fetching data: $e");
     } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
-  // Filter data by referrer, date range, and paid status, calculate metrics
+
   Future<void> _filterData(String referrer) async {
-    isLoading = true;
+    setState(() => isLoading = true);
     _newTestRequestList.clear();
     totalEarning = 0;
     totalTestCost = 0;
@@ -199,8 +191,7 @@ class _AgentReportListState extends State<AgentReportList> {
       bool matchesReferrer = referrer.isNotEmpty && referrer != "0"
           ? element.referrer.toString() == referrer
           : true;
-      bool matchesDate = startDatetime <= (element.dateofcreated ?? 0) &&
-          (element.dateofcreated ?? 0) <= endDatetime;
+      bool matchesDate = DateFilterWithUtils.isDateInRange(element, startDate, endDate,true);
       bool matchesPaidStatus = paidStatus == "BOTH" ||
           (paidStatus == "PAID" && element.is_paid == true) ||
           (paidStatus == "UNPAID" && element.is_paid == false);
@@ -226,12 +217,9 @@ class _AgentReportListState extends State<AgentReportList> {
     lastPaymentTestReq = getLatestPaymentData(_newTestRequestList);
 
     print("Filtered ${_newTestRequestList.length} requests");
-    if (mounted) setState(() {
-      isLoading = false;
-    });
+    if (mounted) setState(() => isLoading = false);
   }
 
-  // Update payment status in Firebase and refresh UI
   Future<void> _updatePay(TestDataRequest requestItem) async {
     if (requestItem.dateofcreated == null || requestItem.dateofcreated == 0) {
       print("Error: Invalid dateofcreated for request ${requestItem.id}");
@@ -317,16 +305,11 @@ class _AgentReportListState extends State<AgentReportList> {
           due_recieved_two: requestItem.due_recieved_two,
           due_recieved_two_by: requestItem.due_recieved_two_by);
 
-      // Update Firebase
       await ref.update(jsonDecode(jsonEncode(updateTestRequestItem.toJson())));
 
-      // Update local list to reflect the change immediately
-      final index = _newTestRequestList.indexWhere((item) =>
-          item.id == requestItem.id && item.mobile == requestItem.mobile);
+      final index = _newTestRequestList.indexWhere((item) => item.id == requestItem.id && item.mobile == requestItem.mobile);
       if (index != -1) {
         _newTestRequestList[index] = updateTestRequestItem;
-
-        // Recalculate metrics
         totalEarning = 0;
         totalTestCost = 0;
         totalPaidAmount = 0;
@@ -360,10 +343,9 @@ class _AgentReportListState extends State<AgentReportList> {
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4.landscape,
           margin: const pw.EdgeInsets.all(16),
-          build: (pw.Context context) {
-            return [
-
-              pw.Center(child:    pw.Column(
+          build: (pw.Context context) => [
+            pw.Center(
+              child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.center,
                 children: [
                   pw.Text(
@@ -373,15 +355,12 @@ class _AgentReportListState extends State<AgentReportList> {
                   ),
                   pw.Text(
                     'Steel Mills Bazar, Patenga',
-                    style: pw.TextStyle(fontSize: 12),
+                    style: const pw.TextStyle(fontSize: 12),
                     textAlign: pw.TextAlign.center,
                   ),
                   pw.Text(
-                    '01785-890750',
-                    style: pw.TextStyle(
-                      fontSize: 12,
-                      color: PdfColors.blue,
-                    ),
+                    '01790-890750',
+                    style: const pw.TextStyle(fontSize: 12, color: PdfColors.blue),
                     textAlign: pw.TextAlign.center,
                   ),
                   pw.SizedBox(height: 10),
@@ -393,84 +372,58 @@ class _AgentReportListState extends State<AgentReportList> {
                   pw.SizedBox(height: 10),
                 ],
               ),
-              ),
-
-              // Removed pw.Header here
-
-              pw.Table.fromTextArray(
-                headers: [
-                  'Date',
-                  'Invoice',
-                  'Patient',
-                  'Agent',
-                  'Code',
-                  'Path.',
-                  'Radio.',
-                  'Total',
-                  'Comm.',
-                  'Disc.',
-                  'Earn.',
-                  'Status',
-                  'Pay Date',
-                  'Payment',
-                ],
-                data: _newTestRequestList.map((item) {
-                  return [
-                    item.dateofcreated == 0
-                        ? 'NA'
-                        : DateFormat('dd-MMM-yyyy').format(
-                            DateTime.fromMillisecondsSinceEpoch(
-                                item.dateofcreated)),
-                    '#${item.invoice_call}',
-                    item.name,
-                    getNameByReferrerCode(item.referrer.toString()),
-                    item.referrer.toString(),
-                    item.teststatus != 1
-                        ? item.total_payable_pathology_cost.toString()
-                        : 'Processing',
-                    item.teststatus != 1
-                        ? item.total_payable_imagine_cost.toString()
-                        : 'Processing',
-                    item.teststatus != 1
-                        ? item.total_payable.toString()
-                        : 'Processing',
-                    item.teststatus != 1
-                        ? item.agent_commission.toString()
-                        : 'Processing',
-                    item.teststatus != 1
-                        ? item.total_agent_discount.toString()
-                        : 'Processing',
-                    item.teststatus == 6
-                        ? (item.agent_commission - item.total_agent_discount)
-                            .toString()
-                        : 'Processing',
-                    createRequestController.status[item.teststatus].toString(),
-                    item.payment_date == 0
-                        ? 'NA'
-                        : DateFormat('dd-MMM-yyyy').format(
-                            DateTime.fromMillisecondsSinceEpoch(
-                                item.payment_date)),
-                    item.is_paid ? 'Paid' : 'Unpaid',
-                  ];
-                }).toList(),
-                cellStyle: pw.TextStyle(fontSize: 9),
-                headerStyle:
-                    pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
-                cellAlignment: pw.Alignment.center,
-              ),
-              pw.SizedBox(height: 10),
-              pw.Text(
-                  'Last Payment Date = ${DateFormat('dd-MMM-yyyy').format(DateTime.fromMillisecondsSinceEpoch(lastPaymentTestReq?.payment_date ?? 0))}'),
-              pw.Text('Total Invoice Quantity = ${_newTestRequestList.length}'),
-              pw.Text('Total Test Cost = $totalTestCost'),
-              pw.Text('Total Earning = $totalEarning/-  Total Paid = $totalPaidAmount'),
-            ];
-          },
+            ),
+            pw.Table.fromTextArray(
+              headers: [
+                'Date',
+                'Invoice',
+                'Patient',
+                'Agent',
+                'Code',
+                'Path.',
+                'Radio.',
+                'Total',
+                'Comm.',
+                'Disc.',
+                'Earn.',
+                'Status',
+                'Pay Date',
+                'Payment',
+              ],
+              data: _newTestRequestList.map((item) => [
+                item.dateofcreated == 0
+                    ? 'NA'
+                    : DateFormat('dd-MMM-yyyy').format(DateFilterWithUtils.toDateTime(item.dateofcreated!)),
+                '#${item.invoice_call}',
+                item.name ?? '',
+                getNameByReferrerCode(item.referrer.toString()),
+                item.referrer.toString(),
+                item.teststatus != 1 ? item.total_payable_pathology_cost.toString() : 'Pending',
+                item.teststatus != 1 ? item.total_payable_imagine_cost.toString() : 'Pending',
+                item.teststatus != 1 ? item.total_payable.toString() : 'Pending',
+                item.teststatus != 1 ? item.agent_commission.toString() : '',
+                item.teststatus != 1 ? item.total_agent_discount.toString() : '',
+                item.teststatus == 6 ? (item.agent_commission - item.total_agent_discount).toString() : '',
+                createRequestController.status[item.teststatus] ?? 'Unknown',
+                item.payment_date == 0
+                    ? 'NA'
+                    : DateFormat('dd-MMM-yyyy').format(DateFilterWithUtils.toDateTime(item.payment_date!)),
+                item.is_paid ? 'Paid' : 'Unpaid',
+              ]).toList(),
+              cellStyle: const pw.TextStyle(fontSize: 9),
+              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+              cellAlignment: pw.Alignment.center,
+            ),
+            pw.SizedBox(height: 10),
+            pw.Text('Last Payment Date = ${DateFormat('dd-MMM-yyyy').format(DateFilterWithUtils.toDateTime(lastPaymentTestReq?.payment_date ?? 0))}'),
+            pw.Text('Total Invoice Quantity = ${_newTestRequestList.length}'),
+            pw.Text('Total Test Cost = $totalTestCost'),
+            pw.Text('Total Earning = $totalEarning/-  Total Paid = $totalPaidAmount'),
+          ],
         ),
       );
 
-      final baseDir = Directory(
-          '/storage/emulated/0/Documents/Health Care Homelab report/agent report');
+      final baseDir = Directory('/storage/emulated/0/Documents/Health Care Homelab report/agent report');
       await baseDir.create(recursive: true);
 
       final agentName = referrerCode.replaceAll(RegExp(r'[^\w\s-]'), '_');
@@ -481,13 +434,10 @@ class _AgentReportListState extends State<AgentReportList> {
         SnackBar(content: Text('PDF saved to ${file.path}')),
       );
 
-      // Open the file automatically
       final result = await OpenFile.open(file.path);
       if (result.type != ResultType.done) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text('Could not open the PDF. Please open it manually.')),
+          const SnackBar(content: Text('Could not open the PDF. Please open it manually.')),
         );
       }
     } catch (e) {
@@ -498,13 +448,11 @@ class _AgentReportListState extends State<AgentReportList> {
   }
 
   Future<void> permissionNeed() async {
-    if (await Permission.storage.request() == true) {}
+    if (await Permission.storage.request().isGranted) {}
   }
 
   void _agentNameSorting() {
-
-    //sort with user wise and date wise
-    final Map<String, String> codeToNameMap = {
+    final Map<String?, String?> codeToNameMap = {
       for (var agent in agentUserMapList) agent['referrer_code']: agent['name']
     };
 
@@ -513,7 +461,7 @@ class _AgentReportListState extends State<AgentReportList> {
       final nameB = codeToNameMap[b.referrer.toString()] ?? '';
       final nameComparison = nameA.compareTo(nameB);
       if (nameComparison != 0) return nameComparison;
-      return a.dateofcreated.compareTo(b.dateofcreated);
+      return (a.dateofcreated ?? 0).compareTo(b.dateofcreated ?? 0);
     });
   }
 
@@ -528,9 +476,6 @@ class _AgentReportListState extends State<AgentReportList> {
   @override
   void dispose() {
     referrerInput.dispose();
-    if (isLoading) {
-      Navigator.pop(context);
-    }
     super.dispose();
   }
 
@@ -549,7 +494,6 @@ class _AgentReportListState extends State<AgentReportList> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            // Referrer code input for superusers
             if (type == "7" || phone == superUser)
               Padding(
                 padding: EdgeInsets.all(DM.p10),
@@ -569,10 +513,10 @@ class _AgentReportListState extends State<AgentReportList> {
                       ),
                     ),
                     SizedBox(width: DM.p5),
-                    Text(":"),
+                    const Text(":"),
                     SizedBox(width: DM.p10),
                     Flexible(
-                      child: Container(
+                      child: SizedBox(
                         height: DM.p50,
                         child: TextFormField(
                           keyboardType: TextInputType.name,
@@ -581,18 +525,15 @@ class _AgentReportListState extends State<AgentReportList> {
                           decoration: InputDecoration(
                             errorStyle: TextStyle(fontSize: DM.p9),
                             focusedBorder: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(width: DM.p1, color: appTheme),
+                              borderSide: BorderSide(width: DM.p1, color: appTheme),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(width: DM.p1, color: appTheme),
+                              borderSide: BorderSide(width: DM.p1, color: appTheme),
                             ),
                             filled: true,
                             fillColor: Colors.white,
                             hintText: "0",
-                            hintStyle:
-                                TextStyle(color: Colors.grey, fontSize: DM.p14),
+                            hintStyle: TextStyle(color: Colors.grey, fontSize: DM.p14),
                           ),
                         ),
                       ),
@@ -600,83 +541,24 @@ class _AgentReportListState extends State<AgentReportList> {
                   ],
                 ),
               ),
-            // Date filter buttons
-            Padding(
-              padding: EdgeInsets.all(DM.p15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Flexible(
-                    child: Container(
-                      height: DM.p60,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: appTheme, elevation: 0),
-                        onPressed: () async {
-                          final DateTime? picked = await showDatePicker(
-                            context: context,
-                            initialDate: DateTime.fromMillisecondsSinceEpoch(
-                                startDatetime),
-                            firstDate: DateTime(2022, 11),
-                            lastDate: DateTime(2030, 7),
-                          );
-                          if (picked != null) {
-                            setState(() {
-                              startDatetime = DateTime(picked.year,
-                                      picked.month, picked.day, 0, 0, 1)
-                                  .millisecondsSinceEpoch;
-                              _fetchData();
-                            });
-                          }
-                        },
-                        child: Text(
-                          "First: ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(startDatetime))}",
-                          textAlign: TextAlign.center,
-                          style:
-                              TextStyle(color: Colors.white, fontSize: DM.p12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: DM.p15),
-                  Flexible(
-                    child: Container(
-                      height: DM.p60,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: appTheme, elevation: 0),
-                        onPressed: () async {
-                          final DateTime? picked = await showDatePicker(
-                            context: context,
-                            initialDate: DateTime.fromMillisecondsSinceEpoch(
-                                endDatetime),
-                            firstDate: DateTime(2022, 11),
-                            lastDate: DateTime(2030, 7),
-                          );
-                          if (picked != null) {
-                            setState(() {
-                              endDatetime = DateTime(picked.year, picked.month,
-                                      picked.day, 23, 59, 59)
-                                  .millisecondsSinceEpoch;
-                              isLoading = true;
-                              _fetchData();
-                            });
-                          }
-                        },
-                        child: Text(
-                          "Last: ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(endDatetime))}",
-                          textAlign: TextAlign.center,
-                          style:
-                              TextStyle(color: Colors.white, fontSize: DM.p12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            DateFilterWithUtils(
+              initialStartDate: startDate,
+              initialEndDate: endDate,
+              onStartDateChanged: (newStart) {
+                setState(() {
+                  startDate = newStart;
+                  isLoading = true;
+                  _fetchData();
+                });
+              },
+              onEndDateChanged: (newEnd) {
+                setState(() {
+                  endDate = newEnd;
+                  isLoading = true;
+                  _fetchData();
+                });
+              },
             ),
-            // Paid status dropdown and export button
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -691,24 +573,21 @@ class _AgentReportListState extends State<AgentReportList> {
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
                             fontSize: DM.p14,
-                            color: Color.fromARGB(255, 26, 1, 1),
+                            color: const Color(0xFF1A0101),
                           ),
                         ),
                       ),
                       SizedBox(width: DM.p5),
-                      Text(":"),
+                      const Text(":"),
                       SizedBox(width: DM.p10),
                       DropdownButton<String>(
                         value: paidStatus,
-                        items: paidStatusList.map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(
-                              value,
-                              style: TextStyle(color: blackFontColor),
-                            ),
-                          );
-                        }).toList(),
+                        items: paidStatusList
+                            .map((value) => DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value, style: TextStyle(color: blackFontColor)),
+                        ))
+                            .toList(),
                         onChanged: (newValue) {
                           setState(() {
                             paidStatus = newValue!;
@@ -725,8 +604,7 @@ class _AgentReportListState extends State<AgentReportList> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: appTheme,
                       elevation: 0,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: DM.p20, vertical: DM.p15),
+                      padding: EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p15),
                     ),
                     onPressed: _exportToPdf,
                     child: Text(
@@ -741,19 +619,18 @@ class _AgentReportListState extends State<AgentReportList> {
                 ),
               ],
             ),
-            // Request list
-            Container(
-              height: DM.screenHeight * 0.62,
-              margin: EdgeInsets.symmetric(horizontal: DM.p5),
-              child:
-              !isLoading? ListView(
+            SizedBox(
+              height: DM.screenHeight * 0.60,
+              child: isLoading
+                  ?  Center(child: CircularProgressIndicator(color: appTheme,))
+                  : ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
                   Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
+                      SizedBox(
                         height: DM.p50,
                         width: DM.screenWidth * 2.7,
                         child: Row(
@@ -883,8 +760,7 @@ class _AgentReportListState extends State<AgentReportList> {
                       ),
                       Divider(thickness: DM.p2, color: Colors.black),
                       Expanded(
-                        child: Container(
-                          height: DM.screenHeight * 0.50,
+                        child: SizedBox(
                           width: DM.screenWidth * 2.7,
                           child: _newTestRequestList.isNotEmpty
                               ? ListView.builder(
@@ -1206,42 +1082,35 @@ class _AgentReportListState extends State<AgentReportList> {
                                   },
                                 )
                               : Center(
-                                  child: Text(
-                                    "Request list empty",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: DM.p25,
-                                        color: appTheme),
-                                  ),
-                                ),
+                            child: Text(
+                              "Request list empty",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w400,
+                                fontSize: DM.p25,
+                                color: appTheme,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ],
-              ):
-              Container(
-                child: Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(appTheme),
-                  ),
-                ),
               ),
-
             ),
-            // Summary metrics
             Container(
               margin: EdgeInsets.symmetric(horizontal: DM.p10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Divider(thickness: DM.p1, color: blackFontColor),
+                   Divider(thickness: 1, color: blackFontColor),
                   Text(
-                    "Last Payment Date: ${DateFormat('dd-MMM-yyyy').format(DateTime.fromMillisecondsSinceEpoch(lastPaymentTestReq?.payment_date ?? 0))}",
-                    style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: DM.p15,
-                        color: Color.fromARGB(255, 26, 1, 1)),
+                    "Last Payment Date: ${DateFormat('dd-MMM-yyyy').format(DateFilterWithUtils.toDateTime(lastPaymentTestReq?.payment_date ?? 0))}",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                      color: Color(0xFF1A0101),
+                    ),
                   ),
                   Text(
                     "Total Invoice Quantity: ${_newTestRequestList.length}",

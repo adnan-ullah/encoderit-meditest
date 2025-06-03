@@ -15,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../constants/app_info.dart';
 import '../../../db/models/CostModel.dart';
 import '../../pages/adminPanel/CostDataCreate.dart';
+import '../otherWidgets/MyDateFilter.dart';
 
 class ShareholderReportList extends StatefulWidget {
   const ShareholderReportList({super.key});
@@ -45,8 +46,8 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
 
 
   DateTime selectedMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
-  int startDate = DateTime(DateTime.now().year, DateTime.now().month, 1, 0, 0, 0, 0).millisecondsSinceEpoch;
-  int endDate = DateTime(DateTime.now().year, DateTime.now().month + 1, 0, 0, 0, 0, 0).millisecondsSinceEpoch;
+  int startDate = DateFilterWithUtils.getDefaultStartDate();
+  int endDate = DateFilterWithUtils.getDefaultEndDate();
 
 
   String reportType = 'Sell';
@@ -72,18 +73,18 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
     }
   }
 
-  List<String> _getYearMonthPaths() {
-    final paths = <String>[];
-    final formatter = DateFormat('MMMM');
-    final year = selectedMonth.year;
-    final monthName = formatter.format(selectedMonth);
-    paths.add("$database_name/testRequest/$year/$monthName");
-    return paths;
-  }
+  List<String> _getYearMonthPathsFor(String type, {int pastYears = 10}) {
+    final formatter = DateFormat.MMMM();
+    final currentYear = selectedMonth.year;
 
-  List<String> _getCostYearMonthPaths() {
-    final year = selectedMonth.year;
-    return List.generate(12, (i) => "$database_name/cost/$year/${monthNames[i]}");
+    return List.generate(pastYears + 1, (yearOffset) {
+      final year = currentYear - yearOffset;
+      return List.generate(12, (i) {
+        final monthDate = DateTime(year, i + 1);
+        final monthName = formatter.format(monthDate);
+        return "$database_name/$type/$year/$monthName";
+      });
+    }).expand((paths) => paths).toList();
   }
 
 
@@ -106,19 +107,23 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
     final ref = FirebaseDatabase.instance;
 
     try {
-      // Fetch sell data
-      final sellPaths = _getYearMonthPaths();
-      for (var path in sellPaths) {
-        final snapshot = await ref.ref(path).get();
+      // Sell fetches in parallel
+      final sellPaths = _getYearMonthPathsFor("testRequest",pastYears: 10);
+      final sellFutures = sellPaths.map((path) => ref.ref(path).get()).toList();
+      final sellSnapshots = await Future.wait(sellFutures);
+
+      for (var snapshot in sellSnapshots) {
         if (snapshot.exists) {
           _processSellSnapshot(snapshot);
         }
       }
 
-      // Fetch cost data
-      final costPaths = _getCostYearMonthPaths();
-      for (var path in costPaths) {
-        final snapshot = await ref.ref(path).get();
+      // Cost fetches in parallel
+      final costPaths = _getYearMonthPathsFor("cost",pastYears: 10);
+      final costFutures = costPaths.map((path) => ref.ref(path).get()).toList();
+      final costSnapshots = await Future.wait(costFutures);
+
+      for (var snapshot in costSnapshots) {
         if (snapshot.exists) {
           _processCostSnapshot(snapshot);
         }
@@ -139,6 +144,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
     }
   }
 
+
   void _processSellSnapshot(DataSnapshot snapshot) {
     for (var ds in snapshot.children) {
       for (var dsLater in ds.children) {
@@ -148,8 +154,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
           if (data.dateofcreated == null || data.teststatus != 6) {
             continue;
           }
-          if (startDate <= data.dateofcreated! &&
-              data.dateofcreated! <= endDate) {
+          if (DateFilterWithUtils.isDateInRange(data, startDate, endDate, true)) {
             if (!sellRequests
                 .any((r) => r.id == data.id && r.mobile == data.mobile)) {
               sellRequests.add(data);
@@ -163,7 +168,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
           }
         } catch (e) {
           print(
-              "Error parsing TestDataRequest: $e for JSON: ${json.encode(dsLater.value)}");
+              "Error parsing TestDataRequest: $e for JSON: ${jsonEncode(dsLater.value)}");
         }
       }
     }
