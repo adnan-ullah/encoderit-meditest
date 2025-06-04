@@ -31,26 +31,74 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
   String phone = "";
   double percentage = 0;
   List<TestDataRequest> sellRequests = [];
+  List<TestDataRequest> filteredSellRequests = [];
   List<CostModel> costRequests = [];
+  List<CostModel> filteredCostRequests = [];
   int totalSellQuantity = 0;
   int totalCostQuantity = 0;
   double totalSellWithoutDue = 0;
   double totalCost = 0;
   double companyEarning = 0;
-   double reporterEarning = 0;
+  double reporterEarning = 0;
+  TextEditingController searchController = TextEditingController();
 
   static const List<String> monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-
   DateTime selectedMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
   int startDate = DateFilterWithUtils.getDefaultStartDate();
   int endDate = DateFilterWithUtils.getDefaultEndDate();
 
-
   String reportType = 'Sell';
+
+  @override
+  void initState() {
+    super.initState();
+    searchController.addListener(_filterRequests);
+    Future.delayed(Duration.zero, _fetchData);
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    if (_isDialogOpen) {
+      while (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+    }
+    super.dispose();
+  }
+
+  void _filterRequests() {
+    final searchTerm = searchController.text.toLowerCase();
+    if (searchTerm.isEmpty) {
+      setState(() {
+        filteredSellRequests = List.from(sellRequests);
+        filteredCostRequests = List.from(costRequests);
+      });
+      return;
+    }
+
+    if (reportType == 'Sell') {
+      setState(() {
+        filteredSellRequests = sellRequests.where((request) {
+          final name = request.name?.toLowerCase() ?? '';
+          final invoice = request.invoice_call?.toString().toLowerCase() ?? '';
+          return name.contains(searchTerm) || invoice.contains(searchTerm);
+        }).toList();
+      });
+    } else {
+      setState(() {
+        filteredCostRequests = costRequests.where((request) {
+          final voucherNo = request.voucherNo?.toLowerCase() ?? '';
+          final category = request.category?.toLowerCase() ?? '';
+          return voucherNo.contains(searchTerm) || category.contains(searchTerm);
+        }).toList();
+      });
+    }
+  }
 
   Future<void> _fetchPercentage() async {
     final prefs = await SharedPreferences.getInstance();
@@ -86,7 +134,6 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
       });
     }).expand((paths) => paths).toList();
   }
-
 
   Future<void> _fetchData() async {
     setState(() {
@@ -132,6 +179,10 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
       // Calculate earnings
       companyEarning = totalSellWithoutDue - totalCost;
       reporterEarning = companyEarning * (percentage / 100);
+
+      // Initialize filtered lists
+      filteredSellRequests = List.from(sellRequests);
+      filteredCostRequests = List.from(costRequests);
     } catch (e) {
       print("Error fetching data: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -144,14 +195,13 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
     }
   }
 
-
   void _processSellSnapshot(DataSnapshot snapshot) {
     for (var ds in snapshot.children) {
       for (var dsLater in ds.children) {
         try {
           final data =
           TestDataRequest.fromJson(json.decode(json.encode(dsLater.value)));
-          if (data.dateofcreated == null || data.teststatus != 6) {
+          if (data.dateofcreated == null) {
             continue;
           }
           if (DateFilterWithUtils.isDateInRange(data, startDate, endDate, true)) {
@@ -159,7 +209,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
                 .any((r) => r.id == data.id && r.mobile == data.mobile)) {
               sellRequests.add(data);
               totalSellQuantity++;
-              final payable = data.totalprice ?? 0;
+              final payable = DateFilterWithUtils.getMatchedPaymentSumInRange(data, startDate, endDate);
               final due = data.due_amount ?? 0;
               if (data.is_paid == true || due == 0) {
                 totalSellWithoutDue += payable;
@@ -233,6 +283,8 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
           totalCost -= int.tryParse(deletedItem.totalAmount) ?? 0;
           companyEarning = totalSellWithoutDue - totalCost;
           reporterEarning = companyEarning * (percentage / 100);
+
+          _filterRequests(); // Update filtered list after deletion
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -251,24 +303,6 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
     }
   }
 
-
-
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(Duration.zero, _fetchData);
-  }
-
-  @override
-  void dispose() {
-    if (_isDialogOpen) {
-      while (Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
-    }
-    super.dispose();
-  }
-
   Future<void> _showMonthPicker() async {
     final picked = await showDialog<DateTime>(
       context: context,
@@ -281,8 +315,8 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
     if (picked != null) {
       setState(() {
         selectedMonth = picked;
-         startDate = DateTime(picked.year, picked.month, 1, 0, 0, 0, 0).millisecondsSinceEpoch;
-         endDate = DateTime(picked.year, picked.month + 1, 0, 0, 0, 0, 0).millisecondsSinceEpoch;
+        startDate = DateTime(picked.year, picked.month, 1, 0, 0, 0, 0).millisecondsSinceEpoch;
+        endDate = DateTime(picked.year, picked.month + 1, 0, 0, 0, 0, 0).millisecondsSinceEpoch;
         _fetchData();
       });
     }
@@ -304,6 +338,30 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
           SingleChildScrollView(
             child: Column(
               children: [
+                // Search Box
+                Padding(
+                  padding:  EdgeInsets.all(DM.p15),
+                  child: SizedBox(
+                    height: DM.p50,
+                    child: TextFormField(
+                      keyboardType: TextInputType.text,
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        errorStyle: TextStyle(fontSize: DM.p9),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: DM.p1, color: appTheme),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: DM.p1, color: appTheme),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        hintText: 'Name or Phone Number',
+                        hintStyle: TextStyle(color: Colors.grey, fontSize: DM.p14),
+                      ),
+                    ),
+                  ),
+                ),
                 // Filters
                 Padding(
                   padding: EdgeInsets.all(DM.p15),
@@ -352,6 +410,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
                               if (value != null) {
                                 setState(() {
                                   reportType = value;
+                                  _filterRequests(); // Re-filter when type changes
                                 });
                               }
                             },
@@ -376,8 +435,8 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
                             : Container(
                           width: DM.screenWidth - DM.p20,
                           child: (reportType == 'Sell'
-                              ? sellRequests.isNotEmpty
-                              : costRequests.isNotEmpty)
+                              ? filteredSellRequests.isNotEmpty
+                              : filteredCostRequests.isNotEmpty)
                               ? Column(
                             children: [
                               Divider(
@@ -387,8 +446,8 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
                                 child: ListView.builder(
                                   shrinkWrap: true,
                                   itemCount: reportType == 'Sell'
-                                      ? sellRequests.length
-                                      : costRequests.length,
+                                      ? filteredSellRequests.length
+                                      : filteredCostRequests.length,
                                   itemBuilder: (_, index) =>
                                   reportType == 'Sell'
                                       ? _buildSellRequestRow(
@@ -479,7 +538,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
   }
 
   Widget _buildSellRequestRow(int index) {
-    final request = sellRequests[index];
+    final request = filteredSellRequests[index];
     return Container(
       decoration: BoxDecoration(
         color: whiteColor,
@@ -538,7 +597,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
               width: DM.p80,
               child: Text(
                 NumberFormat.currency(symbol: '', decimalDigits: 2)
-                    .format(request.totalprice ?? 0),
+                    .format( DateFilterWithUtils.getMatchedPaymentSumInRange(request, startDate, endDate) ?? 0),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
@@ -554,7 +613,7 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
   }
 
   Widget _buildCostRequestRow(int index) {
-    final request = costRequests[index];
+    final request = filteredCostRequests[index];
     return Container(
       decoration: BoxDecoration(
         color: whiteColor,

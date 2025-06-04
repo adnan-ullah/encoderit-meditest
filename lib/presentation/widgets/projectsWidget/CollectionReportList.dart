@@ -1016,7 +1016,7 @@ class _CollectionReportState extends State<CollectionReport> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if ((type == '7' || phone == superUser) &&
+                  if (((type == '7' && request.teststatus==6) || phone == superUser) &&
                       paymentStatus == 'Not Paid')
                     MaterialButton(
                       onPressed: () async =>

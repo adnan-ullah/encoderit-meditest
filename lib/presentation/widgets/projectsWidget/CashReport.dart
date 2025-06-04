@@ -135,15 +135,15 @@ class _CashReportListState extends State<CashReportList> {
                 userRequests[user.phone]!.add(data);
               }
 
-              if (handledAdvance && DateFilterWithUtils.isDateInRange(data, startDate, endDate,false)) {
+              if (handledAdvance && DateFilterWithUtils.isDateInRangeInCash(data,data.advance_payment_date, startDate, endDate)) {
                 totalAdvanced += data.advanced ?? 0;
               }
 
-              if (handledDueOne && DateFilterWithUtils.isDateInRange(data, startDate, endDate,false)) {
+              if (handledDueOne && DateFilterWithUtils.isDateInRangeInCash(data,data.due_recieve_one_date, startDate, endDate)) {
                 totalDueReceived += data.due_recieved_one ?? 0;
               }
 
-              if (handledDueTwo && DateFilterWithUtils.isDateInRange(data, startDate, endDate,false)) {
+              if (handledDueTwo && DateFilterWithUtils.isDateInRangeInCash(data,data.due_recieve_two_date, startDate, endDate)) {
                 totalDueReceived += data.due_recieved_two ?? 0;
               }
             }
@@ -300,7 +300,7 @@ class _CashReportListState extends State<CashReportList> {
     final requests = userRequests[user.phone]!;
 
     double userAdvanced = requests.fold(0, (sum, r) {
-      if (r.advance_recieved_by == user.phone && DateFilterWithUtils.isDateInRange(r, startDate, endDate,false)) {
+      if (r.advance_recieved_by == user.phone && DateFilterWithUtils.isDateInRangeInCash(r,r.advance_payment_date, startDate, endDate)) {
         return sum + (r.advanced ?? 0);
       }
       return sum;
@@ -308,10 +308,10 @@ class _CashReportListState extends State<CashReportList> {
 
     double userDueReceived = requests.fold(0, (sum, r) {
       double dueSum = 0;
-      if (r.due_recieved_one_by == user.phone && DateFilterWithUtils.isDateInRange(r, startDate, endDate,false)) {
+      if (r.due_recieved_one_by == user.phone && DateFilterWithUtils.isDateInRangeInCash(r, r.due_recieve_one_date,startDate, endDate)) {
         dueSum += r.due_recieved_one ?? 0;
       }
-      if (r.due_recieved_two_by == user.phone && DateFilterWithUtils.isDateInRange(r, startDate, endDate,false)) {
+      if (r.due_recieved_two_by == user.phone && DateFilterWithUtils.isDateInRangeInCash(r, r.due_recieve_two_date,startDate, endDate)) {
         dueSum += r.due_recieved_two ?? 0;
       }
       return sum + dueSum;

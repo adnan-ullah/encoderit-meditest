@@ -1039,7 +1039,7 @@ class _AgentReportListState extends State<AgentReportList> {
                                                         fontSize: DM.p10,
                                                         color: Color.fromARGB(
                                                             255, 26, 1, 1)))
-                                                : (type == "7" ||
+                                                : ((type == "7" && request.teststatus==6) ||
                                                         phone == superUser)
                                                     ? MaterialButton(
                                                         onPressed: () async =>

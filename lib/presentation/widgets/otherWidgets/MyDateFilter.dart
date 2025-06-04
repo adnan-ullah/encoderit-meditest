@@ -18,6 +18,21 @@ class DateFilterWithUtils extends StatefulWidget {
     required this.onEndDateChanged,
   });
 
+  static bool isDateInRangeInCash(
+      TestDataRequest request,
+      dynamic payDate,
+      int startDate,
+      int endDate
+      ) {
+    final int? pay = payDate is int ? payDate : int.tryParse(payDate.toString());
+
+    if (pay != null && pay != 0 && startDate <= pay && pay <= endDate) {
+      return true;
+    }
+    return false;
+  }
+
+
   static bool isDateInRange(TestDataRequest request, int startDate, int endDate, bool considerDate) {
     final dates = [
       request.advance_payment_date,
@@ -37,6 +52,39 @@ class DateFilterWithUtils extends StatefulWidget {
     }
     return false;
   }
+
+  static int parseToInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  static int getMatchedPaymentSumInRange(TestDataRequest data, int startDate, int endDate) {
+    int sum = 0;
+
+    final advDate = parseToInt(data.advance_payment_date);
+    final advAmount = parseToInt(data.advanced);
+
+    final dueOneDate = parseToInt(data.due_recieve_one_date);
+    final dueOneAmount = parseToInt(data.due_recieved_one);
+
+    final dueTwoDate = parseToInt(data.due_recieve_two_date);
+    final dueTwoAmount = parseToInt(data.due_recieved_two);
+
+    if (advDate >= startDate && advDate <= endDate) {
+      sum += advAmount;
+    }
+    if (dueOneDate >= startDate && dueOneDate <= endDate) {
+      sum += dueOneAmount;
+    }
+    if (dueTwoDate >= startDate && dueTwoDate <= endDate) {
+      sum += dueTwoAmount;
+    }
+
+    return sum;
+  }
+
 
 
 
