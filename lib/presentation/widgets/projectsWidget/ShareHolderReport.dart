@@ -479,9 +479,9 @@ class _ShareholderReportListState extends State<ShareholderReportList> {
                   ),
                 ),
                 // Summary
-                _buildSummaryRow("Total Sell Quantity: $totalSellQuantity"),
+                _buildSummaryRow("Amount Received Invoice Qty: $totalSellQuantity"),
                 _buildSummaryRow(
-                    "Total Sell (Without Due): ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(totalSellWithoutDue)}"),
+                    "Total Sell: ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(totalSellWithoutDue)}"),
                 _buildSummaryRow(
                     "Total Cost: ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(totalCost)}"),
                 _buildSummaryRow(

@@ -257,7 +257,7 @@ class _CollectionReportState extends State<CollectionReport> {
       }
     }
 
-    totalInvoiceQuantity = _newTestRequestList.length;
+    totalInvoiceQuantity = getTotalDeliveredInvoice();
     lastPaymentTestReq = getLatestPaymentData(_newTestRequestList);
     _sortData();
 
@@ -269,6 +269,14 @@ class _CollectionReportState extends State<CollectionReport> {
     final value = assigning?.toString().trim();
     return value != null && value.isNotEmpty && value == phone;
   }
+
+
+  int getTotalDeliveredInvoice() {
+    return _newTestRequestList
+        .where((request) => request.teststatus == 6)
+        .length;
+  }
+
 
   bool _matchesPaymentStatus(TestDataRequest element) {
     if (paymentStatusFilter == 'Both') return true;
@@ -557,7 +565,7 @@ class _CollectionReportState extends State<CollectionReport> {
             pw.Text(
               'Last Payment Date = ${DateFormat('dd-MMM-yyyy').format(DateTime.fromMillisecondsSinceEpoch(lastPaymentTestReq?.pathology_payment_date ?? lastPaymentTestReq?.radiology_payment_date ?? 0))}',
             ),
-            pw.Text('Total Invoice Quantity = $totalInvoiceQuantity'),
+            pw.Text('Total Delivered Invoice Qty = $totalInvoiceQuantity'),
             pw.Text('Total Test Cost = $totalTestCost'),
             pw.Text('Total Commission = $totalCommission'),
             pw.Text('Total Paid Amount = $totalPaid'),
@@ -1056,7 +1064,7 @@ class _CollectionReportState extends State<CollectionReport> {
                 color: blackFontColor),
           ),
           Text(
-            'Total Invoice Quantity: $totalInvoiceQuantity',
+            'Total Delivered Invoice Qty: $totalInvoiceQuantity',
             style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: DM.p15,
