@@ -9,7 +9,10 @@ import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../constants/app_info.dart';
 import '../../../responsives/dimensions.dart';
+import '../../widgets/projectsWidget/Notifications/GenerateNotification.dart';
+import '../../widgets/projectsWidget/Notifications/NotificationServices.dart';
 import '../../widgets/projectsWidget/RequestListTabView.dart';
 import '../CreateRequest.dart';
 
@@ -38,7 +41,7 @@ class _StatusRequestListState extends State<StatusRequestList> with TickerProvid
 
   @override
   void initState() {
-
+    populateAllRequest();
     tabController = TabController(
       length: widget.statusIndices.length,
       vsync: this,
@@ -112,7 +115,7 @@ class _StatusRequestListState extends State<StatusRequestList> with TickerProvid
 
   @override
   Widget build(BuildContext context) {
-    // _getNotification(context);
+  // _getNotification(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -177,4 +180,45 @@ class _StatusRequestListState extends State<StatusRequestList> with TickerProvid
       ),
     );
   }
+
+  Future<void> populateAllRequest() async {
+    CreateRequestController createRequestController = Get.put(CreateRequestController());
+    FirebaseDatabase.instance.setPersistenceEnabled(true);
+
+    createRequestController.testItemList.clear();
+    createRequestController.testItemListWithSelected.clear();
+
+    List<String> lastThreeMonthsPaths = getLastThreeMonthTestRequestPaths();
+
+    for (String path in lastThreeMonthsPaths) {
+      DatabaseReference dbrefTestRequest = FirebaseDatabase.instance.ref(path);
+      dbrefTestRequest.keepSynced(true);
+
+      dbrefTestRequest.onValue.listen((event) {
+        if (event.snapshot.exists) {
+          print("Data from $path: ${event.snapshot.value}");
+        }
+      });
+    }
+  }
+
+  Future<void> getAdminNotification(String? phone, String? type, BuildContext context) async {
+    if (type == "1" || type == "7" || phone == "$superUser") {
+      createPlantFoodNotification();
+      showNotification(context);
+    }
+  }
+
+  List<String> getLastThreeMonthTestRequestPaths() {
+    List<String> paths = [];
+    DateTime now = DateTime.now();
+    for (int i = 0; i < 3; i++) {
+      DateTime date = DateTime(now.year, now.month - i, 1);
+      String year = date.year.toString();
+      String month = const ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][date.month - 1];
+      paths.add("$database_name/testRequest/$year/$month");
+    }
+    return paths;
+  }
+
 }

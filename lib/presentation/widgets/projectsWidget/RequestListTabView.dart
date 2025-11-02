@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:async/async.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -24,7 +23,7 @@ class RequestListTabView extends StatefulWidget {
   final String statusKey;
   final bool isButton;
 
-  const RequestListTabView({
+  RequestListTabView({
     super.key,
     required this.statusKey,
     required this.isButton,
@@ -34,44 +33,17 @@ class RequestListTabView extends StatefulWidget {
   State<RequestListTabView> createState() => _RequestListTabViewState();
 }
 
-class _RequestListTabViewState extends State<RequestListTabView> with AutomaticKeepAliveClientMixin {
-  CreateRequestController createRequestController = Get.put(CreateRequestController());
+class _RequestListTabViewState extends State<RequestListTabView> {
+  CreateRequestController createRequest_controller = Get.put(CreateRequestController());
   var testStatusRequestList = <TestDataRequest>[];
   var isLoading = false;
   var type;
   var phone;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  final FocusNode _searchFocusNode = FocusNode();
-  StreamSubscription<DatabaseEvent>? _notificationSubscription;
-  List<TestDataRequest> _newTestRequestList = [];
-  Timer? _debounceTimer;
-
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(Duration.zero, () {
-      getStatusData(context);
-      _setupNotificationListener(context);
-    });
-    _searchController.addListener(() {
-      setState(() {
-        _searchQuery = _searchController.text;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _searchFocusNode.dispose();
-    _notificationSubscription?.cancel();
-    _debounceTimer?.cancel();
-    super.dispose();
-  }
+  Timer? _debounce;
+  final Map<String, Map<String, String>> _searchCache = {};
+  StreamSubscription<DatabaseEvent>? _realtimeSubscription;
 
   Future<void> _updateStatus(TestDataRequest requestItem) async {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
@@ -167,74 +139,106 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
   Future<void> getStatusData(context) async {
     setState(() {
       isLoading = true;
+      testStatusRequestList.clear();
+      _searchCache.clear();
     });
+
     SharedPreferences ref = await SharedPreferences.getInstance();
     type = ref.getString("type");
     phone = ref.getString("phoneNumber");
     List<String> paths = getLastThreeMonthTestRequestPaths();
 
-    for (String path in paths) {
-      DatabaseReference dbRef = FirebaseDatabase.instance.ref(path);
-      if (path == paths.first) {
-        dbRef.onValue.listen((event) async {
-          testStatusRequestList.clear();
-          parseTestDataFromSnapshot(event.snapshot);
-        });
-      } else {
-        DataSnapshot snapshot = await dbRef.get();
-        parseTestDataFromSnapshot(snapshot);
-      }
-    }
+    // Realtime listener for the first path — don't clear lists!
+    DatabaseReference firstRef = FirebaseDatabase.instance.ref(paths.first);
+    _realtimeSubscription = firstRef.onValue.listen((event) {
+      final newItems = parseTestDataFromSnapshot(event.snapshot, returnList: true);
+      setState(() {
+        mergeOrReplaceTestData(newItems);
+      });
+    });
+
+    // Fetch other paths in parallel (once)
+    List<Future<void>> futures = paths.skip(1).map((path) async {
+      DataSnapshot snapshot = await FirebaseDatabase.instance.ref(path).get();
+      final newItems = parseTestDataFromSnapshot(snapshot, returnList: true);
+      mergeOrReplaceTestData(newItems);
+    }).toList();
+
+    await Future.wait(futures);
+
     setState(() {
       isLoading = false;
     });
   }
 
-  void parseTestDataFromSnapshot(DataSnapshot snapshot) {
+  void mergeOrReplaceTestData(List<TestDataRequest> newItems) {
+    for (var newItem in newItems) {
+      int index = testStatusRequestList.indexWhere((item) => item.id == newItem.id);
+      if (index != -1) {
+        testStatusRequestList[index] = newItem;
+      } else {
+        testStatusRequestList.add(newItem);
+      }
+
+      _searchCache[newItem.id] = {
+        'name': newItem.name?.toLowerCase() ?? '',
+        'phone': newItem.mobile ?? '',
+      };
+    }
+
+    testStatusRequestList.sort((a, b) => (b.lastupdate ?? 0).compareTo(a.lastupdate ?? 0));
+    tabStatusList();
+  }
+
+  List<TestDataRequest> parseTestDataFromSnapshot(DataSnapshot snapshot, {bool returnList = false}) {
     List<TestDataRequest> tempList = [];
     for (DataSnapshot ds in snapshot.children) {
       for (DataSnapshot dsLater in ds.children) {
         TestDataRequest testData = TestDataRequest.fromJson(
           json.decode(jsonEncode(dsLater.value)),
         );
+
+        bool shouldAdd = false;
         if (type == "4" && phone != superUser) {
-          if (testData.assigning == phone ||
-              testData.radiology_assigning == phone) {
+          if (testData.assigning == phone || testData.radiology_assigning == phone) {
             if (widget.statusKey == "PRECOLLECTED") {
-              if ((testData.pathology_done == true &&
-                  testData.radiology_done == false) ||
-                  (testData.pathology_done == false &&
-                      testData.radiology_done == true)) {
-                tempList.add(testData);
+              if ((testData.pathology_done == true && testData.radiology_done == false) ||
+                  (testData.pathology_done == false && testData.radiology_done == true)) {
+                shouldAdd = true;
               }
             } else if (widget.statusKey == "RECIEVED") {
-              if (testData.pathology_done == false ||
-                  testData.radiology_done == false) {
-                tempList.add(testData);
+              if (testData.pathology_done == false || testData.radiology_done == false) {
+                shouldAdd = true;
               }
             } else if (widget.statusKey == "COLLECTED") {
-              if (testData.pathology_done == true &&
-                  testData.radiology_done == true) {
-                tempList.add(testData);
+              if (testData.pathology_done == true && testData.radiology_done == true) {
+                shouldAdd = true;
               }
             } else {
-              tempList.add(testData);
+              shouldAdd = true;
             }
           }
         } else if (type == "3" && phone != superUser) {
-          if (widget.statusKey == "PRECOLLECTED" || widget.statusKey == "COLLECTED") {
-            tempList.add(testData);
-          } else {
-            tempList.add(testData);
-          }
+          shouldAdd = true;
         } else {
+          shouldAdd = true;
+        }
+
+        if (shouldAdd) {
           tempList.add(testData);
+          _searchCache[testData.id] = {
+            'name': testData.name?.toLowerCase() ?? '',
+            'phone': testData.mobile ?? '',
+          };
         }
       }
     }
     tempList.sort((a, b) => (b.lastupdate ?? 0).compareTo(a.lastupdate ?? 0));
-    testStatusRequestList.addAll(tempList);
-    tabStatusList();
+    if (!returnList) {
+      testStatusRequestList.addAll(tempList);
+      tabStatusList();
+    }
+    return tempList;
   }
 
   Future getStoragePermission() async {
@@ -249,77 +253,24 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
     }
   }
 
-  Future<void> _setupNotificationListener(BuildContext context) async {
+  Future<void> getAdminNotification(phone, type, context) async {
     FirebaseDatabase.instance.setPersistenceEnabled(true);
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? phone = prefs.getString("phoneNumber");
-    String? type = prefs.getString("type");
-
-    if (phone == null || type == null) {
-      print('Error: phone or type is null in SharedPreferences');
-      return;
-    }
-
     List<String> lastThreeMonthsPaths = getLastThreeMonthTestRequestPaths();
-    List<Stream<DatabaseEvent>> streams = [];
-
     for (String path in lastThreeMonthsPaths) {
       DatabaseReference dbRefTestModel = FirebaseDatabase.instance.ref(path);
       dbRefTestModel.keepSynced(true);
-      streams.add(dbRefTestModel.onChildChanged); // Ensure listener is at the correct level
-      print('Listening for changes at path: $path');
-    }
-
-    _notificationSubscription = StreamGroup.merge(streams).listen((event) async {
-      print('onChildChanged event triggered for key: ${event.snapshot.key}');
-      _debounceTimer?.cancel();
-      _debounceTimer = Timer(const Duration(milliseconds: 250), () async {
-        if (!mounted) {
-          print('Widget is not mounted, skipping notification');
-          return;
-        }
-
-        final snapshotValue = event.snapshot.value;
-        print('Snapshot value: $snapshotValue');
-
-        if (snapshotValue is Map) {
-          try {
-            AdminUserModel testData = AdminUserModel.fromJson(snapshotValue.cast<String, dynamic>());
-            print('Parsed AdminUserModel: phone=${testData.phone}');
-
-            if (testData.phone == phone || phone == superUser) {
-              if (type == "1" || type == "7" || phone == superUser) {
-                // Use timestamp to ensure unique notification keys
-                String notificationKey =
-                    "${event.snapshot.key}_${testData.phone}_${DateTime.now().millisecondsSinceEpoch}_changed";
-                bool isNotified = prefs.getBool(notificationKey) ?? false;
-                print('Notification key: $notificationKey, isNotified: $isNotified');
-
-                if (!isNotified) {
-                  print('Generating notification');
-                  createPlantFoodNotification();
-                  showNotification(context);
-                  await prefs.setBool(notificationKey, true);
-                  print('Notification shown and preference set');
-                } else {
-                  print('Notification already shown for this key');
-                }
-              } else {
-                print('User type ($type) not eligible for notification');
-              }
-            } else {
-              print('Phone mismatch: testData.phone=${testData.phone}, userPhone=$phone');
-            }
-          } catch (e) {
-            print('Error parsing AdminUserModel: $e');
+      final event = await dbRefTestModel.once();
+      if (!event.snapshot.exists) continue;
+      for (DataSnapshot ds in event.snapshot.children) {
+        AdminUserModel testData = AdminUserModel.fromJson(json.decode(jsonEncode(ds.value)));
+        if (testData.phone == phone || phone == "$superUser") {
+          if (type == "1" || type == "7" || phone == "$superUser") {
+            createPlantFoodNotification();
+            showNotification(context);
           }
-        } else {
-          print('Snapshot value is not a Map: $snapshotValue');
         }
-      });
-    }, onError: (error) {
-      print('Error in notification stream: $error');
-    });
+      }
+    }
   }
 
   String getFirstName(String name) {
@@ -336,35 +287,61 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
     return parts.first;
   }
 
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () {
+      getStatusData(context);
+    });
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 150), () {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounce?.cancel();
+    _realtimeSubscription?.cancel();
+    super.dispose();
+  }
+
+  List<TestDataRequest> _newTestRequestList = [];
+
   void tabStatusList() {
     if (!mounted) return;
-    setState(() {
-      _newTestRequestList = testStatusRequestList
-          .where((p0) =>
-      createRequestController.status[p0.teststatus].toString() ==
-          widget.statusKey.toString())
-          .toList();
-    });
+    _newTestRequestList.clear();
+    _newTestRequestList.addAll(
+      testStatusRequestList
+          .where((p0) => createRequest_controller.status[p0.teststatus].toString() == widget.statusKey.toString())
+          .toList(),
+    );
+    setState(() {});
   }
 
   List<TestDataRequest> _getFilteredList() {
     if (_searchQuery.isEmpty) {
       return _newTestRequestList;
     }
+    final query = _searchQuery.toLowerCase();
     return _newTestRequestList.where((item) {
-      final name = item.name?.toLowerCase() ?? '';
-      final phone = item.mobile ?? '';
-      final query = _searchQuery.toLowerCase();
-      return name.contains(query) || phone.contains(query);
+      final cache = _searchCache[item.id];
+      return cache != null && (cache['name']!.contains(query) || cache['phone']!.contains(query));
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     bool showChangedByColumn =
-        (createRequestController.toStatus[widget.statusKey]! <= 6 ||
-            createRequestController.toStatus[widget.statusKey] == 8) &&
+        (createRequest_controller.toStatus[widget.statusKey]! <= 6 ||
+            createRequest_controller.toStatus[widget.statusKey] == 8) &&
             _newTestRequestList.any((item) =>
             item.prepared_by != null || item.last_modifier != null);
 
@@ -403,7 +380,6 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
               ),
               child: TextField(
                 controller: _searchController,
-                focusNode: _searchFocusNode,
                 decoration: InputDecoration(
                   hintText: 'Search by Invoice ID or Name',
                   hintStyle: TextStyle(
@@ -419,9 +395,7 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
                   prefixIcon: Icon(
                     Icons.search,
                     size: DM.p20,
-                    color: _searchFocusNode.hasFocus
-                        ? appTheme
-                        : Colors.grey.shade600,
+                    color: appTheme,
                   ),
                   contentPadding: EdgeInsets.symmetric(
                       vertical: DM.p8, horizontal: DM.p12),
@@ -431,7 +405,7 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
                         size: DM.p20, color: Colors.grey.shade600),
                     onPressed: () {
                       _searchController.clear();
-                      _searchFocusNode.unfocus();
+
                     },
                   )
                       : null,
@@ -525,7 +499,7 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
                           : SizedBox.shrink(),
                     ),
                     if (widget.isButton &&
-                        (createRequestController
+                        (createRequest_controller
                             .toStatus[widget.statusKey]! <
                             5 ||
                             type == "7" ||
@@ -556,10 +530,10 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
                   child: InkWell(
                     onTap: () async {
                       if (type == "3" && phone != "$superUser") {
-                        if (createRequestController
+                        if (createRequest_controller
                             .toStatus[widget.statusKey]! <
                             3 ||
-                            createRequestController
+                            createRequest_controller
                                 .toStatus[widget.statusKey]! ==
                                 8) {
                           Get.to(TestRequestCreateTypeThree(
@@ -567,10 +541,10 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
                         }
                       } else if (type == "4" &&
                           phone != "$superUser") {
-                        if (createRequestController
+                        if (createRequest_controller
                             .toStatus[widget.statusKey]! ==
                             8 ||
-                            createRequestController
+                            createRequest_controller
                                 .toStatus[widget.statusKey]! !=
                                 3) {
                           if (item.assigning == phone &&
@@ -587,10 +561,10 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
                       } else {
                         if (type == "7" &&
                             phone != "$superUser" &&
-                            (createRequestController.toStatus[
+                            (createRequest_controller.toStatus[
                             widget.statusKey]! <
                                 7 ||
-                                createRequestController.toStatus[
+                                createRequest_controller.toStatus[
                                 widget.statusKey] ==
                                     8)) {
                           Get.to(TestRequestCreate(
@@ -615,7 +589,7 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
                           Container(
                             width: typeWidth,
                             child: Text(
-                              "${createRequestController.typeName[item.type]![0]}",
+                              "${createRequest_controller.typeName[item.type]![0]}",
                               style: TextStyle(
                                 fontWeight: FontWeight.w900,
                                 fontSize: DM.p12,
@@ -691,7 +665,7 @@ class _RequestListTabViewState extends State<RequestListTabView> with AutomaticK
                                 : const SizedBox.shrink(),
                           ),
                           if (widget.isButton &&
-                              (createRequestController.toStatus[
+                              (createRequest_controller.toStatus[
                               widget.statusKey]! <
                                   5 ||
                                   type == "7" ||
