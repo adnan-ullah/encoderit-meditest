@@ -916,7 +916,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
       if (testItem.is_payable) {
         // Update legacy variables for backward compatibility
-        if (testItem.category == 1) {
+        if (CommissionTypes.isPathologyType(type)) {
           total_payable_pathology = total_payable_pathology + amount;
         } else {
           total_payable_imaging = total_payable_imaging + amount;
@@ -926,7 +926,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         payableByCommissionType[type] = (payableByCommissionType[type] ?? 0) + amount;
       } else {
         // Update legacy variables for backward compatibility
-        if (testItem.category == 1) {
+        if (CommissionTypes.isPathologyType(type)) {
           total_unpayable_pathology = total_unpayable_pathology + amount;
         } else {
           total_unpayable_imaging = total_unpayable_imaging + amount;
@@ -1086,7 +1086,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
 
         if (testItem.is_payable) {
           // Update legacy variables for backward compatibility
-          if (testItem.category == 1) {
+          if (CommissionTypes.isPathologyType(type)) {
             total_payable_pathology = total_payable_pathology + amount;
           } else {
             total_payable_imaging = total_payable_imaging + amount;
@@ -1096,7 +1096,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
           payableByCommissionType[type] = (payableByCommissionType[type] ?? 0) + amount;
         } else {
           // Update legacy variables for backward compatibility
-          if (testItem.category == 1) {
+          if (CommissionTypes.isPathologyType(type)) {
             total_unpayable_pathology = total_unpayable_pathology + amount;
           } else {
             total_unpayable_imaging = total_unpayable_imaging + amount;
@@ -4704,13 +4704,39 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
       return '0';
     }
 
-    // Normalize commission type (handles legacy PATHOLOGY/IMAGINE -> actual types)
-    final normalizedType = CommissionTypes.normalize(assigningType.toString());
+    final assigningTypeStr = assigningType.toString().toUpperCase();
     
-    // Get payable amount for this commission type from the new map
+    // Handle group types: PATHOLOGY and RADIOLOGY
+    if (assigningTypeStr == 'PATHOLOGY' || assigningTypeStr == CommissionTypes.pathology) {
+      // Calculate pathology group commission (sum of all pathology types)
+      final pathologyCommission = CommissionCalculator.calculatePathologyAssigningCommission(
+        payableByType: payableByCommissionType,
+        adminUser: matchedUser,
+      );
+      return pathologyCommission.toString();
+    }
+    
+    if (assigningTypeStr == 'RADIOLOGY' || assigningTypeStr == CommissionTypes.radiology) {
+      // Calculate radiology group commission (sum of Radiology and Imaging)
+      // Also split for saving
+      _radiologyAssigningCommissionRadiologyPart = CommissionCalculator.calculateAssigningCommission(
+        commissionType: CommissionTypes.radiology,
+        payableAmount: payableByCommissionType[CommissionTypes.radiology] ?? 0,
+        adminUser: matchedUser,
+      );
+      _radiologyAssigningCommissionImagingPart = CommissionCalculator.calculateAssigningCommission(
+        commissionType: CommissionTypes.imaging,
+        payableAmount: payableByCommissionType[CommissionTypes.imaging] ?? 0,
+        adminUser: matchedUser,
+      );
+      final radiologyCommission = _radiologyAssigningCommissionRadiologyPart + _radiologyAssigningCommissionImagingPart;
+      return radiologyCommission.toString();
+    }
+    
+    // Handle individual commission types
+    final normalizedType = CommissionTypes.normalize(assigningTypeStr);
     final payableAmount = payableByCommissionType[normalizedType] ?? 0;
     
-    // Use new dynamic system
     final commission = CommissionCalculator.calculateAssigningCommission(
       commissionType: normalizedType,
       payableAmount: payableAmount,

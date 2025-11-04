@@ -922,7 +922,7 @@ class _TestRequestCreateTypeThreeState
 
       if (testItem.is_payable) {
         // Update legacy variables for backward compatibility
-        if (testItem.category == 1) {
+        if (CommissionTypes.isPathologyType(type)) {
           total_payable_pathology = total_payable_pathology + amount;
         } else {
           total_payable_imaging = total_payable_imaging + amount;
@@ -932,7 +932,7 @@ class _TestRequestCreateTypeThreeState
         payableByCommissionType[type] = (payableByCommissionType[type] ?? 0) + amount;
       } else {
         // Update legacy variables for backward compatibility
-        if (testItem.category == 1) {
+        if (CommissionTypes.isPathologyType(type)) {
           total_unpayable_pathology = total_unpayable_pathology + amount;
         } else {
           total_unpayable_imaging = total_unpayable_imaging + amount;
@@ -985,34 +985,32 @@ class _TestRequestCreateTypeThreeState
         agent_commission.text = totalCommission.toString();
       }
 
-      if (e.phone.toString() == phoneNumber) {
-        if (e.phone.toString().contains(pathologyAssigningPhone)) {
-          // Calculate pathology assigning commission (sum of Hematology, Biochemistry, Hormone, Serology, Immunology, Others, Pathology)
-          final commission = CommissionCalculator.calculatePathologyAssigningCommission(
-            payableByType: payableByCommissionType,
-            adminUser: e,
-          );
-          print("pathology_commision (combined): $commission");
-          assigning_commission.text = commission.toString();
-        }
-        print("assigining_commission " + assigning_commission.text.toString());
+      // Calculate pathology assigning commission (sum of Hematology, Biochemistry, Hormone, Serology, Immunology, Others)
+      if (e.phone.toString() == pathologyAssigningPhone.toString()) {
+        final commission = CommissionCalculator.calculatePathologyAssigningCommission(
+          payableByType: payableByCommissionType,
+          adminUser: e,
+        );
+        print("pathology_commision (combined): $commission");
+        assigning_commission.text = commission.toString();
+      }
 
-        if (e.phone.toString().contains(radiologyAssigningPhone)) {
-          // Calculate radiology assigning commission parts
-          _radiologyAssigningCommissionRadiologyPart = CommissionCalculator.calculateAssigningCommission(
-            commissionType: CommissionTypes.radiology,
-            payableAmount: payableByCommissionType[CommissionTypes.radiology] ?? 0,
-            adminUser: e,
-          );
-          _radiologyAssigningCommissionImagingPart = CommissionCalculator.calculateAssigningCommission(
-            commissionType: CommissionTypes.imaging,
-            payableAmount: payableByCommissionType[CommissionTypes.imaging] ?? 0,
-            adminUser: e,
-          );
-          final commission = _radiologyAssigningCommissionRadiologyPart + _radiologyAssigningCommissionImagingPart;
-          print("radiology_assigning_commission (combined): $commission");
-          radiology_assigning_commission.text = commission.toString();
-        }
+      // Calculate radiology assigning commission (sum of Radiology and Imaging)
+      if (e.phone.toString() == radiologyAssigningPhone.toString()) {
+        // Split into parts: Radiology and Imaging
+        _radiologyAssigningCommissionRadiologyPart = CommissionCalculator.calculateAssigningCommission(
+          commissionType: CommissionTypes.radiology,
+          payableAmount: payableByCommissionType[CommissionTypes.radiology] ?? 0,
+          adminUser: e,
+        );
+        _radiologyAssigningCommissionImagingPart = CommissionCalculator.calculateAssigningCommission(
+          commissionType: CommissionTypes.imaging,
+          payableAmount: payableByCommissionType[CommissionTypes.imaging] ?? 0,
+          adminUser: e,
+        );
+        final commission = _radiologyAssigningCommissionRadiologyPart + _radiologyAssigningCommissionImagingPart;
+        print("radiology_assigning_commission (combined): $commission");
+        radiology_assigning_commission.text = commission.toString();
       }
     }).toList();
   }
@@ -1064,7 +1062,7 @@ class _TestRequestCreateTypeThreeState
 
         if (testItem.is_payable) {
           // Update legacy variables for backward compatibility
-          if (testItem.category == 1) {
+          if (CommissionTypes.isPathologyType(type)) {
             total_payable_pathology = total_payable_pathology + amount;
           } else {
             total_payable_imaging = total_payable_imaging + amount;
@@ -1074,7 +1072,7 @@ class _TestRequestCreateTypeThreeState
           payableByCommissionType[type] = (payableByCommissionType[type] ?? 0) + amount;
         } else {
           // Update legacy variables for backward compatibility
-          if (testItem.category == 1) {
+          if (CommissionTypes.isPathologyType(type)) {
             total_unpayable_pathology = total_unpayable_pathology + amount;
           } else {
             total_unpayable_imaging = total_unpayable_imaging + amount;
@@ -1126,27 +1124,24 @@ class _TestRequestCreateTypeThreeState
         }
 
 //collection
-        if (e.phone.toString() == phoneNumber) {
-          if (e.phone.toString().contains(pathologyAssigningPhone)) {
-            // Calculate pathology group commission (sum of all pathology types)
-            final commission = CommissionCalculator.calculatePathologyAssigningCommission(
-              payableByType: payableByCommissionType,
-              adminUser: e,
-            );
-            print("pathology_commision calculated from pathology group");
-            assigning_commission.text = commission.toString();
-          }
-          print("assigining_commission " + assigning_commission.text.toString());
+        // Calculate pathology assigning commission (sum of Hematology, Biochemistry, Hormone, Serology, Immunology, Others)
+        if (e.phone.toString() == pathologyAssigningPhone.toString()) {
+          final commission = CommissionCalculator.calculatePathologyAssigningCommission(
+            payableByType: payableByCommissionType,
+            adminUser: e,
+          );
+          print("pathology_commision calculated from pathology group");
+          assigning_commission.text = commission.toString();
+        }
 
-          if (e.phone.toString().contains(radiologyAssigningPhone)) {
-            // Calculate radiology assigning commission (sum of Radiology and Imaging)
-            final commission = CommissionCalculator.calculateRadiologyAssigningCommission(
-              payableByType: payableByCommissionType,
-              adminUser: e,
-            );
-            print("radiology_assigning_commission (combined): $commission");
-            radiology_assigning_commission.text = commission.toString();
-          }
+        // Calculate radiology assigning commission (sum of Radiology and Imaging)
+        if (e.phone.toString() == radiologyAssigningPhone.toString()) {
+          final commission = CommissionCalculator.calculateRadiologyAssigningCommission(
+            payableByType: payableByCommissionType,
+            adminUser: e,
+          );
+          print("radiology_assigning_commission (combined): $commission");
+          radiology_assigning_commission.text = commission.toString();
         }
       }).toList();
     });
