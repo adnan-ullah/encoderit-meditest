@@ -31,7 +31,7 @@ class _RequestListState extends State<RequestList> {
     _onLoading(true);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     phoneNumber = prefs.getString("phoneNumber")!;
-    List<String> monthPaths = getLastThreeMonthTestRequestPaths();
+    List<String> monthPaths = getLastYearTestRequestPaths();
 
     setState(() {
       testDataEach.clear();

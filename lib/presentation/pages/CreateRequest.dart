@@ -1369,7 +1369,7 @@ Future<void> getTestItemList() async {
   Get.put(CreateRequestController());
 
   late DatabaseReference _dbref_testModel;
-  List<String> paths = getLastSixMonthTestDataPaths();
+  List<String> paths = getLastYearTestDataPaths();
 
   FirebaseDatabase.instance.setPersistenceEnabled(true);
 

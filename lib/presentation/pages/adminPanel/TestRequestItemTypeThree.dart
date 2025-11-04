@@ -149,7 +149,7 @@ class _TestRequestCreateTypeThreeState
     testItemList.clear();
     testItemListWithSelected.clear();
 
-    List<String> paths = getLastSixMonthTestDataPaths();
+    List<String> paths = getLastYearTestDataPaths();
     List<TestData> allItems = [];
 
     for (String path in paths) {

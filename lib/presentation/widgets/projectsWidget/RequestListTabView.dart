@@ -756,7 +756,7 @@ class _RequestListTabViewState extends State<RequestListTabView> {
   List<String> getLastThreeMonthTestRequestPaths() {
     List<String> paths = [];
     DateTime now = DateTime.now();
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 12; i++) {
       DateTime date = DateTime(now.year, now.month - i, 1);
       String year = date.year.toString();
       String month = getMonthName(date.month);

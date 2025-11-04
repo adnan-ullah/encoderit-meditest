@@ -68,7 +68,7 @@ class _TestDataCreateState extends State<TestDataCreate> {
       category: createReqController.toCategory[category]!,
     );
 
-    List<String> paths = getLastSixMonthTestDataPaths();
+    List<String> paths = getLastYearTestDataPaths();
     bool updated = false;
 
     for (String path in paths) {

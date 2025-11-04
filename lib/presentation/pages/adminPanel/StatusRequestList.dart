@@ -99,7 +99,7 @@ class _StatusRequestListState extends State<StatusRequestList> with TickerProvid
   }
 
   Future<void> _getNotification(BuildContext context) async {
-    List<String> lastThreeMonthsPaths = getLastThreeMonthTestRequestPaths();
+    List<String> lastThreeMonthsPaths = getLastYearTestRequestPaths();
 
     for (String path in lastThreeMonthsPaths) {
       DatabaseReference dbref = FirebaseDatabase.instance.ref(path);
@@ -188,7 +188,7 @@ class _StatusRequestListState extends State<StatusRequestList> with TickerProvid
     createRequestController.testItemList.clear();
     createRequestController.testItemListWithSelected.clear();
 
-    List<String> lastThreeMonthsPaths = getLastThreeMonthTestRequestPaths();
+    List<String> lastThreeMonthsPaths = getLastYearTestRequestPaths();
 
     for (String path in lastThreeMonthsPaths) {
       DatabaseReference dbrefTestRequest = FirebaseDatabase.instance.ref(path);
@@ -209,10 +209,10 @@ class _StatusRequestListState extends State<StatusRequestList> with TickerProvid
     }
   }
 
-  List<String> getLastThreeMonthTestRequestPaths() {
+  List<String> getLastYearTestRequestPaths() {
     List<String> paths = [];
     DateTime now = DateTime.now();
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 12; i++) {
       DateTime date = DateTime(now.year, now.month - i, 1);
       String year = date.year.toString();
       String month = const ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][date.month - 1];

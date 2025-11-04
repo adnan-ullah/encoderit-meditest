@@ -16,11 +16,11 @@ String getMonthName(int month) {
   ];
   return monthNames[month];
 }
-List<String> getLastThreeMonthTestRequestPaths() {
+List<String> getLastYearTestRequestPaths() {
   DateTime now = DateTime.now();
   List<String> paths = [];
 
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 12; i++) {
     DateTime date = DateTime(now.year, now.month - i, 1);
     String year = date.year.toString();
     String month = getMonthName(date.month);
@@ -30,11 +30,11 @@ List<String> getLastThreeMonthTestRequestPaths() {
   return paths;
 }
 
-List<String> getLastSixMonthTestDataPaths() {
+List<String> getLastYearTestDataPaths() {
   DateTime now = DateTime.now();
   List<String> paths = [];
 
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 12; i++) {
     DateTime date = DateTime(now.year, now.month - i, 1);
     String year = date.year.toString();
     String month = getMonthName(date.month);

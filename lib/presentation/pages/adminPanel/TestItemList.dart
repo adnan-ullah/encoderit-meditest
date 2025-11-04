@@ -45,7 +45,7 @@ class _TestItemListState extends State<TestItemList> {
     if (_isLoading) return;
     _setLoading(true);
 
-    List<String> monthPaths = getLastSixMonthTestDataPaths();
+    List<String> monthPaths = getLastYearTestDataPaths();
     setState(() {
       _testItemsListAdmin.clear();
       _filterTestItemsList.clear();
@@ -93,7 +93,7 @@ class _TestItemListState extends State<TestItemList> {
 
   Future<void> removeFromFirebase(String testItemId) async {
     try {
-      List<String> paths = getLastSixMonthTestDataPaths();
+      List<String> paths = getLastYearTestDataPaths();
       bool removed = false;
 
       for (String path in paths) {
