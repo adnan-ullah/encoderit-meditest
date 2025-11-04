@@ -83,7 +83,8 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
         agent_radiology_discount: 0,
         area: "",
         assigning: "",
-        assigning_commission: 0,
+        // Use new commissions map instead of legacy fields
+        commissionsByType: {},
         advanced: 0,
         comments: "",
         delivery_date: null,

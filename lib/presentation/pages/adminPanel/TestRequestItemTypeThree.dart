@@ -18,11 +18,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../constants/app_info.dart';
 import '../../../constants/colors.dart';
+import '../../../constants/commission_types.dart';
 import '../../../db/models/AdminUserModel.dart';
 import '../../../db/models/TestData.dart';
 import '../../../db/models/TestDataRequest.dart';
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/CreateRequestController.dart';
+import '../../../utils/commission_calculator.dart';
 import '../../widgets/otherWidgets/PhotoViewImage.dart';
 import '../../widgets/projectsWidget/FormUserAge.dart';
 import '../Invoice_pdf/api/pdf_api.dart';
@@ -120,6 +122,14 @@ class _TestRequestCreateTypeThreeState
   var total_unpayable_item = 0;
 
   var totalCashRecieve = 0;
+  // Radiology assigning commission split parts for saving
+  int _radiologyAssigningCommissionImagingPart = 0;
+  int _radiologyAssigningCommissionRadiologyPart = 0;
+  
+  // New Map-based commission tracking (for multiple commission types)
+  Map<String, int> payableByCommissionType = {};
+  Map<String, int> unpayableByCommissionType = {};
+  Map<String, int> assigningCommissionsByType = {};
 
   var urlDownload1;
   var urlDownload2;
@@ -614,9 +624,19 @@ class _TestRequestCreateTypeThreeState
           radiology_done: radiologyDone,
           assigning: pathologyAssigningPhone.toString(),
           radiology_assigning: radiologyAssigningPhone.toString(),
-          assigning_commission: int.parse(assigning_commission.text),
-          radiology_assigning_commission:
-          int.parse(radiology_assigning_commission.text),
+          // Use new commissions map - store detailed types; no top-level PATHOLOGY entry and no duplicate IMAGING
+          commissionsByType: {
+            // Pathology-related detailed types
+            CommissionTypes.hematology: _getCommissionFromMap(CommissionTypes.hematology, assigningCommissionsByType),
+            CommissionTypes.biochemistry: _getCommissionFromMap(CommissionTypes.biochemistry, assigningCommissionsByType),
+            CommissionTypes.hormone: _getCommissionFromMap(CommissionTypes.hormone, assigningCommissionsByType),
+            CommissionTypes.serology: _getCommissionFromMap(CommissionTypes.serology, assigningCommissionsByType),
+            CommissionTypes.immunology: _getCommissionFromMap(CommissionTypes.immunology, assigningCommissionsByType),
+            CommissionTypes.others: _getCommissionFromMap(CommissionTypes.others, assigningCommissionsByType),
+            // Radiology and Imaging saved separately using split parts
+            CommissionTypes.radiology: _radiologyAssigningCommissionRadiologyPart,
+            CommissionTypes.imaging: _radiologyAssigningCommissionImagingPart,
+          },
           due_recieved_one_by:
           due_recieved_one_by ?? widget.testEachRequest?.due_recieved_one_by,
           due_recieved_two_by:
@@ -824,6 +844,11 @@ class _TestRequestCreateTypeThreeState
 
     total_payable_item = 0;
     total_unpayable_item = 0;
+    
+    // Initialize new Map-based tracking
+    payableByCommissionType.clear();
+    unpayableByCommissionType.clear();
+    assigningCommissionsByType.clear();
 
     if (admin_discount.text == null || admin_discount.text.isEmpty) {
       admin_discount.text = "0";
@@ -887,26 +912,34 @@ class _TestRequestCreateTypeThreeState
         testItem.is_payable = true;
       }
 
+      final testPrice = int.parse(testItem.testprice.toString());
+      final testDiscount = int.parse(testItem.discount.toString());
+      final amount = testPrice - testDiscount;
+      
+      // Determine commission type from test category
+      final commissionType = CommissionTypes.getCommissionTypeFromTestCategory(testItem.category);
+      final type = commissionType ?? CommissionTypes.others;
+
       if (testItem.is_payable) {
+        // Update legacy variables for backward compatibility
         if (testItem.category == 1) {
-          total_payable_pathology = total_payable_pathology +
-              int.parse(testItem.testprice.toString()) -
-              int.parse(testItem.discount.toString());
+          total_payable_pathology = total_payable_pathology + amount;
         } else {
-          total_payable_imaging = total_payable_imaging +
-              int.parse(testItem.testprice.toString()) -
-              int.parse(testItem.discount.toString());
+          total_payable_imaging = total_payable_imaging + amount;
         }
+        
+        // Update new Map-based structure
+        payableByCommissionType[type] = (payableByCommissionType[type] ?? 0) + amount;
       } else {
+        // Update legacy variables for backward compatibility
         if (testItem.category == 1) {
-          total_unpayable_pathology = total_unpayable_pathology +
-              int.parse(testItem.testprice.toString()) -
-              int.parse(testItem.discount.toString());
+          total_unpayable_pathology = total_unpayable_pathology + amount;
         } else {
-          total_unpayable_imaging = total_unpayable_imaging +
-              int.parse(testItem.testprice.toString()) -
-              int.parse(testItem.discount.toString());
+          total_unpayable_imaging = total_unpayable_imaging + amount;
         }
+        
+        // Update new Map-based structure
+        unpayableByCommissionType[type] = (unpayableByCommissionType[type] ?? 0) + amount;
       }
     }).toList();
 
@@ -940,51 +973,45 @@ class _TestRequestCreateTypeThreeState
     total_discount.text = totalDiscount.toString();
     totalCashRecieve = totalDueRecievedOne + totalDueRecievedTwo + (int.tryParse(advanced.text) ?? 0);
 
+    //Agent - using new dynamic system
     agent_commission.text = "0";
     adminUserList.map((e) {
       if (e.referrer_code != null && e.referrer_code == referrer.text.toString()) {
-        final pathologyCommission = int.tryParse(e.pathology_commission ?? '') ?? 0;
-        final imagingCommission = int.tryParse(e.imagine_commission ?? '') ?? 0;
-
-        final pathologyAmount = (total_payable_pathology * pathologyCommission) / 100;
-        final imagingAmount = (total_payable_imaging * imagingCommission) / 100;
-
-        final totalCommission = (pathologyAmount + imagingAmount).toInt();
+        // Use new commission calculator for dynamic commission calculation
+        final totalCommission = CommissionCalculator.calculateAgentCommission(
+          payableByType: payableByCommissionType,
+          adminUser: e,
+        );
         agent_commission.text = totalCommission.toString();
       }
 
       if (e.phone.toString() == phoneNumber) {
         if (e.phone.toString().contains(pathologyAssigningPhone)) {
-          var pathology_commision = 0;
-
-          if (e.pathology_commission != null &&
-              !e.pathology_commission.toString().contains("null") &&
-              e.pathology_commission != "") {
-            pathology_commision = int.parse(e.pathology_commission);
-          }
-
-          print("pathology_commision " + pathology_commision.toString());
-          assigning_commission.text =
-              ((((total_payable_pathology) * pathology_commision) / 100))
-                  .toInt()
-                  .toString();
+          // Calculate pathology assigning commission (sum of Hematology, Biochemistry, Hormone, Serology, Immunology, Others, Pathology)
+          final commission = CommissionCalculator.calculatePathologyAssigningCommission(
+            payableByType: payableByCommissionType,
+            adminUser: e,
+          );
+          print("pathology_commision (combined): $commission");
+          assigning_commission.text = commission.toString();
         }
         print("assigining_commission " + assigning_commission.text.toString());
 
         if (e.phone.toString().contains(radiologyAssigningPhone)) {
-          var imagine_commission = 0;
-
-          if (e.imagine_commission != null &&
-              !e.imagine_commission.toString().contains("null") &&
-              e.imagine_commission != "") {
-            imagine_commission = int.parse(e.imagine_commission);
-          }
-          print("radiology_assigning_commission " +
-              imagine_commission.toString());
-          radiology_assigning_commission.text =
-              ((((total_payable_imaging) * imagine_commission) / 100))
-                  .toInt()
-                  .toString();
+          // Calculate radiology assigning commission parts
+          _radiologyAssigningCommissionRadiologyPart = CommissionCalculator.calculateAssigningCommission(
+            commissionType: CommissionTypes.radiology,
+            payableAmount: payableByCommissionType[CommissionTypes.radiology] ?? 0,
+            adminUser: e,
+          );
+          _radiologyAssigningCommissionImagingPart = CommissionCalculator.calculateAssigningCommission(
+            commissionType: CommissionTypes.imaging,
+            payableAmount: payableByCommissionType[CommissionTypes.imaging] ?? 0,
+            adminUser: e,
+          );
+          final commission = _radiologyAssigningCommissionRadiologyPart + _radiologyAssigningCommissionImagingPart;
+          print("radiology_assigning_commission (combined): $commission");
+          radiology_assigning_commission.text = commission.toString();
         }
       }
     }).toList();
@@ -1005,6 +1032,11 @@ class _TestRequestCreateTypeThreeState
       total_payable_imaging = 0;
       total_unpayable_pathology = 0;
       total_unpayable_imaging = 0;
+      
+      // Clear new Map-based tracking
+      payableByCommissionType.clear();
+      unpayableByCommissionType.clear();
+      assigningCommissionsByType.clear();
 
       testData_updated.map((testItem) {
         totalTestCost =
@@ -1022,26 +1054,34 @@ class _TestRequestCreateTypeThreeState
           testItem.is_payable = true;
         }
 
+        final testPrice = int.parse(testItem.testprice.toString());
+        final testDiscount = int.parse(testItem.discount.toString());
+        final amount = testPrice - testDiscount;
+        
+        // Determine commission type from test category
+        final commissionType = CommissionTypes.getCommissionTypeFromTestCategory(testItem.category);
+        final type = commissionType ?? CommissionTypes.others;
+
         if (testItem.is_payable) {
+          // Update legacy variables for backward compatibility
           if (testItem.category == 1) {
-            total_payable_pathology = total_payable_pathology +
-                int.parse(testItem.testprice.toString()) -
-                int.parse(testItem.discount.toString());
+            total_payable_pathology = total_payable_pathology + amount;
           } else {
-            total_payable_imaging = total_payable_imaging +
-                int.parse(testItem.testprice.toString()) -
-                int.parse(testItem.discount.toString());
+            total_payable_imaging = total_payable_imaging + amount;
           }
+          
+          // Update new Map-based structure
+          payableByCommissionType[type] = (payableByCommissionType[type] ?? 0) + amount;
         } else {
+          // Update legacy variables for backward compatibility
           if (testItem.category == 1) {
-            total_unpayable_pathology = total_unpayable_pathology +
-                int.parse(testItem.testprice.toString()) -
-                int.parse(testItem.discount.toString());
+            total_unpayable_pathology = total_unpayable_pathology + amount;
           } else {
-            total_unpayable_imaging = total_unpayable_imaging +
-                int.parse(testItem.testprice.toString()) -
-                int.parse(testItem.discount.toString());
+            total_unpayable_imaging = total_unpayable_imaging + amount;
           }
+          
+          // Update new Map-based structure
+          unpayableByCommissionType[type] = (unpayableByCommissionType[type] ?? 0) + amount;
         }
 
       }).toList();
@@ -1073,57 +1113,48 @@ class _TestRequestCreateTypeThreeState
       total_discount.text = totalDiscount.toString();
       totalCashRecieve = totalDueRecievedOne + totalDueRecievedTwo + (int.tryParse(advanced.text) ?? 0);
 
+      //Agent - using new dynamic system
       agent_commission.text = "0";
       adminUserList.map((e) {
         if (e.referrer_code != null && e.referrer_code == referrer.text.toString()) {
-          final pathologyCommission = int.tryParse(e.pathology_commission ?? '') ?? 0;
-          final imagingCommission = int.tryParse(e.imagine_commission ?? '') ?? 0;
-
-          final pathologyAmount = (total_payable_pathology * pathologyCommission) / 100;
-          final imagingAmount = (total_payable_imaging * imagingCommission) / 100;
-
-          final totalCommission = (pathologyAmount + imagingAmount).toInt();
+          // Use new commission calculator for dynamic commission calculation
+          final totalCommission = CommissionCalculator.calculateAgentCommission(
+            payableByType: payableByCommissionType,
+            adminUser: e,
+          );
           agent_commission.text = totalCommission.toString();
         }
 
 //collection
         if (e.phone.toString() == phoneNumber) {
           if (e.phone.toString().contains(pathologyAssigningPhone)) {
-            var pathology_commision = 0;
-
-            if (e.pathology_commission != null &&
-                !e.pathology_commission.toString().contains("null") &&
-                e.pathology_commission != "") {
-              pathology_commision = int.parse(e.pathology_commission);
-            }
-
-            print("pathology_commision " + pathology_commision.toString());
-            assigning_commission.text =
-                ((((total_payable_pathology) * pathology_commision) / 100))
-                    .toInt()
-                    .toString();
+            // Calculate pathology group commission (sum of all pathology types)
+            final commission = CommissionCalculator.calculatePathologyAssigningCommission(
+              payableByType: payableByCommissionType,
+              adminUser: e,
+            );
+            print("pathology_commision calculated from pathology group");
+            assigning_commission.text = commission.toString();
           }
-          print(
-              "assigining_commission " + assigning_commission.text.toString());
+          print("assigining_commission " + assigning_commission.text.toString());
 
           if (e.phone.toString().contains(radiologyAssigningPhone)) {
-            var imagine_commission = 0;
-
-            if (e.imagine_commission != null &&
-                !e.imagine_commission.toString().contains("null") &&
-                e.imagine_commission != "") {
-              imagine_commission = int.parse(e.imagine_commission);
-            }
-            print("radiology_assigning_commission " +
-                imagine_commission.toString());
-            radiology_assigning_commission.text =
-                ((((total_payable_imaging) * imagine_commission) / 100))
-                    .toInt()
-                    .toString();
+            // Calculate radiology assigning commission (sum of Radiology and Imaging)
+            final commission = CommissionCalculator.calculateRadiologyAssigningCommission(
+              payableByType: payableByCommissionType,
+              adminUser: e,
+            );
+            print("radiology_assigning_commission (combined): $commission");
+            radiology_assigning_commission.text = commission.toString();
           }
         }
       }).toList();
     });
+  }
+
+  /// Helper method to get commission from map with fallback
+  int _getCommissionFromMap(String commissionType, Map<String, int> commissionsMap, [int fallback = 0]) {
+    return commissionsMap[commissionType] ?? fallback;
   }
 
   Future<void> permissionNeed() async {

@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/api.dart';
 
 import '../../../constants/colors.dart';
+import '../../../constants/commission_types.dart';
 import '../../../db/models/AdminUserModel.dart';
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/CreateRequestController.dart';
@@ -31,15 +32,29 @@ class _AdminUserDataState extends State<AdminUserData> {
     password.text = widget.adminUser!.password.toString();
     phone.text = widget.adminUser!.phone.toString();
     type.text = widget.adminUser!.type.toString();
-    pathology_commission.text =
-        widget.adminUser!.pathology_commission?.toString() ?? "";
-    imagine_commission.text =
-        widget.adminUser!.imagine_commission?.toString() ?? "";
     referrer_code.text = widget.adminUser!.referrer_code?.toString() ?? "";
     address.text = widget.adminUser!.address.toString();
     surname.text = widget.adminUser!.surname.toString();
     short_address.text = widget.adminUser!.short_address.toString();
     percentage.text = widget.adminUser!.percentage?.toString() ?? "";
+    
+    // Load new commission types from the model
+    hematology_commission.text =
+        widget.adminUser!.getCommission(CommissionTypes.hematology)?.toString() ?? "";
+    biochemistry_commission.text =
+        widget.adminUser!.getCommission(CommissionTypes.biochemistry)?.toString() ?? "";
+    hormone_commission.text =
+        widget.adminUser!.getCommission(CommissionTypes.hormone)?.toString() ?? "";
+    serology_commission.text =
+        widget.adminUser!.getCommission(CommissionTypes.serology)?.toString() ?? "";
+    immunology_commission.text =
+        widget.adminUser!.getCommission(CommissionTypes.immunology)?.toString() ?? "";
+    radiology_commission.text =
+        widget.adminUser!.getCommission(CommissionTypes.radiology)?.toString() ?? "";
+    imaging_commission.text =
+        widget.adminUser!.getCommission(CommissionTypes.imaging)?.toString() ?? "";
+    others_commission.text =
+        widget.adminUser!.getCommission(CommissionTypes.others)?.toString() ?? "";
   }
 
   Future<void> updateToFirebase() async {
@@ -47,21 +62,47 @@ class _AdminUserDataState extends State<AdminUserData> {
     late DatabaseReference dbrefAdminUser;
     dbrefAdminUser = FirebaseDatabase.instance.ref("$adminUserApi/");
 
+    // Build commissions map for all types
+    Map<String, dynamic> commissionsMap = {};
+    if (type.text != "8") {
+      commissionsMap[CommissionTypes.hematology] = hematology_commission.text.isNotEmpty 
+          ? hematology_commission.text.toString() 
+          : '0';
+      commissionsMap[CommissionTypes.biochemistry] = biochemistry_commission.text.isNotEmpty 
+          ? biochemistry_commission.text.toString() 
+          : '0';
+      commissionsMap[CommissionTypes.hormone] = hormone_commission.text.isNotEmpty 
+          ? hormone_commission.text.toString() 
+          : '0';
+      commissionsMap[CommissionTypes.serology] = serology_commission.text.isNotEmpty 
+          ? serology_commission.text.toString() 
+          : '0';
+      commissionsMap[CommissionTypes.immunology] = immunology_commission.text.isNotEmpty 
+          ? immunology_commission.text.toString() 
+          : '0';
+      commissionsMap[CommissionTypes.radiology] = radiology_commission.text.isNotEmpty 
+          ? radiology_commission.text.toString() 
+          : '0';
+      commissionsMap[CommissionTypes.imaging] = imaging_commission.text.isNotEmpty 
+          ? imaging_commission.text.toString() 
+          : '0';
+      commissionsMap[CommissionTypes.others] = others_commission.text.isNotEmpty 
+          ? others_commission.text.toString() 
+          : '0';
+    }
+
     updatedAdminUser = AdminUserModel(
       name: name.text.toString(),
       active: active.text.toString(),
       password: password.text.toString(),
       phone: phone.text.toString(),
       type: type.text.toString(),
-      pathology_commission:
-          type.text == "8" ? null : pathology_commission.text.toString(),
       referrer_code: type.text == "8" ? null : referrer_code.text.toString(),
       address: address.text.toString(),
       surname: surname.text.toString(),
       short_address: short_address.text.toString(),
-      imagine_commission:
-          type.text == "8" ? null : imagine_commission.text.toString(),
       percentage: type.text == "8" ? percentage.text.toString() : null,
+      commissions: commissionsMap.isNotEmpty ? commissionsMap : null,
     );
 
     if (updatedAdminUser != null) {
@@ -76,21 +117,47 @@ class _AdminUserDataState extends State<AdminUserData> {
     DatabaseReference _dbref_testReqModel;
     _dbref_testReqModel = FirebaseDatabase.instance.ref("$adminUserApi/");
 
+    // Build commissions map for all types
+    Map<String, dynamic> commissionsMap = {};
+    if (type.text != "8") {
+      commissionsMap[CommissionTypes.hematology] = hematology_commission.text.isNotEmpty 
+          ? hematology_commission.text.toString() 
+          : '0';
+      commissionsMap[CommissionTypes.biochemistry] = biochemistry_commission.text.isNotEmpty 
+          ? biochemistry_commission.text.toString() 
+          : '0';
+      commissionsMap[CommissionTypes.hormone] = hormone_commission.text.isNotEmpty 
+          ? hormone_commission.text.toString() 
+          : '0';
+      commissionsMap[CommissionTypes.serology] = serology_commission.text.isNotEmpty 
+          ? serology_commission.text.toString() 
+          : '0';
+      commissionsMap[CommissionTypes.immunology] = immunology_commission.text.isNotEmpty 
+          ? immunology_commission.text.toString() 
+          : '0';
+      commissionsMap[CommissionTypes.radiology] = radiology_commission.text.isNotEmpty 
+          ? radiology_commission.text.toString() 
+          : '0';
+      commissionsMap[CommissionTypes.imaging] = imaging_commission.text.isNotEmpty 
+          ? imaging_commission.text.toString() 
+          : '0';
+      commissionsMap[CommissionTypes.others] = others_commission.text.isNotEmpty 
+          ? others_commission.text.toString() 
+          : '0';
+    }
+
     insertNewAdminUser = AdminUserModel(
       name: name.text.toString(),
       active: active.text.toString(),
       password: password.text.toString(),
       phone: phone.text.toString(),
       type: type.text.toString(),
-      pathology_commission:
-          type.text == "8" ? null : pathology_commission.text.toString(),
       referrer_code: type.text == "8" ? null : referrer_code.text.toString(),
       address: address.text.toString(),
       surname: surname.text.toString(),
       short_address: short_address.text.toString(),
-      imagine_commission:
-          type.text == "8" ? null : imagine_commission.text.toString(),
       percentage: type.text == "8" ? percentage.text.toString() : null,
+      commissions: commissionsMap.isNotEmpty ? commissionsMap : null,
     );
     if (insertNewAdminUser != null) {
       await _dbref_testReqModel
@@ -127,12 +194,20 @@ class _AdminUserDataState extends State<AdminUserData> {
   var phone = TextEditingController();
   var type = TextEditingController();
   var referrer_code = TextEditingController();
-  var pathology_commission = TextEditingController();
-  var imagine_commission = TextEditingController();
   var address = TextEditingController();
   var surname = TextEditingController();
   var short_address = TextEditingController();
   var percentage = TextEditingController();
+  
+  // New commission type controllers
+  var hematology_commission = TextEditingController();
+  var biochemistry_commission = TextEditingController();
+  var hormone_commission = TextEditingController();
+  var serology_commission = TextEditingController();
+  var immunology_commission = TextEditingController();
+  var radiology_commission = TextEditingController();
+  var imaging_commission = TextEditingController();
+  var others_commission = TextEditingController();
 
   // GetX controller for reactive type field
   final typeController = Get.put(TypeController());
@@ -141,6 +216,68 @@ class _AdminUserDataState extends State<AdminUserData> {
 
   CreateRequestController createReqController =
       Get.put(CreateRequestController());
+
+  // Helper method to build commission field
+  Widget _buildCommissionField(String title, TextEditingController controller) {
+    return Padding(
+      padding: EdgeInsets.all(DM.p5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: DM.p100,
+            child: Text(
+              title,
+              style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: DM.p14,
+                  color: blackFontColor),
+            ),
+          ),
+          SizedBox(
+            width: DM.p5,
+          ),
+          Text(":"),
+          SizedBox(
+            width: DM.p10,
+          ),
+          Flexible(
+            child: Container(
+              child: TextFormField(
+                controller: controller,
+                keyboardType: TextInputType.phone,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly
+                ],
+                maxLines: null,
+                validator: validateNumberOptional,
+                decoration: InputDecoration(
+                    errorStyle: TextStyle(fontSize: DM.p9),
+                    focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            width: DM.p1, color: appTheme)),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          width: DM.p1, color: appTheme),
+                    ),
+                    filled: true,
+                    fillColor: fullWhiteColor,
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: DM.p10),
+                    border: InputBorder.none,
+                    hintText: "0",
+                    hintStyle: TextStyle(
+                      color: Colors.grey,
+                      fontSize: DM.p14,
+                    )),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -311,135 +448,30 @@ class _AdminUserDataState extends State<AdminUserData> {
                                 activate: false,
                               )
                             : SizedBox.shrink()),
+                        // Commission Type Fields
                         Obx(() => typeController.type.value != "8"
-                            ? Padding(
-                                padding: EdgeInsets.all(DM.p5),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: DM.p100,
-                                      child: Text(
-                                        "Pathology Commission",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: DM.p14,
-                                            color: blackFontColor),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: DM.p5,
-                                    ),
-                                    Text(":"),
-                                    SizedBox(
-                                      width: DM.p10,
-                                    ),
-                                    Flexible(
-                                      child: Container(
-                                        child: TextFormField(
-                                          controller: pathology_commission,
-                                          keyboardType: TextInputType.phone,
-                                          inputFormatters: <TextInputFormatter>[
-                                            FilteringTextInputFormatter
-                                                .digitsOnly
-                                          ],
-                                          maxLines: null,
-                                          validator: validateNumberOptional,
-                                          decoration: InputDecoration(
-                                              errorStyle:
-                                                  TextStyle(fontSize: DM.p9),
-                                              focusedBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                      width: DM.p1,
-                                                      color: appTheme)),
-                                              enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    width: DM.p1,
-                                                    color: appTheme),
-                                              ),
-                                              filled: true,
-                                              fillColor: fullWhiteColor,
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                      horizontal: DM.p10),
-                                              border: InputBorder.none,
-                                              hintText: "0",
-                                              hintStyle: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: DM.p14,
-                                              )),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
+                            ? _buildCommissionField("Hematology Commission", hematology_commission)
                             : SizedBox.shrink()),
                         Obx(() => typeController.type.value != "8"
-                            ? Padding(
-                                padding: EdgeInsets.all(DM.p5),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: DM.p100,
-                                      child: Text(
-                                        "Imagine Commission",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: DM.p14,
-                                            color: blackFontColor),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: DM.p5,
-                                    ),
-                                    Text(":"),
-                                    SizedBox(
-                                      width: DM.p10,
-                                    ),
-                                    Flexible(
-                                      child: Container(
-                                        child: TextFormField(
-                                          controller: imagine_commission,
-                                          keyboardType: TextInputType.phone,
-                                          inputFormatters: <TextInputFormatter>[
-                                            FilteringTextInputFormatter
-                                                .digitsOnly
-                                          ],
-                                          maxLines: null,
-                                          validator: validateNumberOptional,
-                                          decoration: InputDecoration(
-                                              errorStyle:
-                                                  TextStyle(fontSize: DM.p9),
-                                              focusedBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                      width: DM.p1,
-                                                      color: appTheme)),
-                                              enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    width: DM.p1,
-                                                    color: appTheme),
-                                              ),
-                                              filled: true,
-                                              fillColor: fullWhiteColor,
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                      horizontal: DM.p10),
-                                              border: InputBorder.none,
-                                              hintText: "0",
-                                              hintStyle: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: DM.p14,
-                                              )),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
+                            ? _buildCommissionField("Biochemistry Commission", biochemistry_commission)
+                            : SizedBox.shrink()),
+                        Obx(() => typeController.type.value != "8"
+                            ? _buildCommissionField("Hormone Commission", hormone_commission)
+                            : SizedBox.shrink()),
+                        Obx(() => typeController.type.value != "8"
+                            ? _buildCommissionField("Serology Commission", serology_commission)
+                            : SizedBox.shrink()),
+                        Obx(() => typeController.type.value != "8"
+                            ? _buildCommissionField("Immunology Commission", immunology_commission)
+                            : SizedBox.shrink()),
+                        Obx(() => typeController.type.value != "8"
+                            ? _buildCommissionField("Radiology Commission", radiology_commission)
+                            : SizedBox.shrink()),
+                        Obx(() => typeController.type.value != "8"
+                            ? _buildCommissionField("Imaging Commission", imaging_commission)
+                            : SizedBox.shrink()),
+                        Obx(() => typeController.type.value != "8"
+                            ? _buildCommissionField("Others Commission", others_commission)
                             : SizedBox.shrink()),
                         Obx(() => typeController.type.value == "8"
                             ? Padding(

@@ -46,7 +46,15 @@ class _TestDataCreateState extends State<TestDataCreate> {
       is_payable = true;
     }
 
-    category = createReqController.categoryName[widget.testItem!.category]!;
+    // Get category name, with fallback for new categories
+    if (widget.testItem!.category is int) {
+      category = createReqController.categoryName[widget.testItem!.category] ?? 
+                 widget.testItem!.getCommissionType();
+    } else if (widget.testItem!.category is String) {
+      category = widget.testItem!.category.toString();
+    } else {
+      category = widget.testItem!.getCommissionType();
+    }
   }
 
   Future<void> updateToFirebase() async {
@@ -274,8 +282,18 @@ class _TestDataCreateState extends State<TestDataCreate> {
                                   style: TextStyle(color: blackFontColor),
                                 ),
                                 items: <String>[
+                                  // Legacy categories (for backward compatibility)
                                   'PATHOLOGY',
                                   'RADIO/IMAGE',
+                                  // New commission type categories
+                                  'HEMATOLOGY',
+                                  'BIOCHEMISTRY',
+                                  'HORMONE',
+                                  'SEROLOGY',
+                                  'IMMUNOLOGY',
+                                  'RADIOLOGY',
+                                  'IMAGING',
+                                  'OTHERS',
                                 ].map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,

@@ -66,14 +66,24 @@ class CreateRequestController extends GetxController {
   };
 
     Map<int, String> categoryName = {
-    1: "PATHOLOGY",
-    2: "RADIO/IMAGE",
-
+    3: "HEMATOLOGY",
+    4: "BIOCHEMISTRY",
+    5: "HORMONE",
+    6: "SEROLOGY",
+    7: "IMMUNOLOGY",
+    8: "RADIOLOGY",
+    9: "IMAGING",
+    10: "OTHERS",
   };
     Map<String, int> toCategory = {
-    "PATHOLOGY":1,
-   "RADIO/IMAGE":2,
-
+    "HEMATOLOGY": 3,
+    "BIOCHEMISTRY": 4,
+    "HORMONE": 5,
+    "SEROLOGY": 6,
+    "IMMUNOLOGY": 7,
+    "RADIOLOGY": 8,
+    "IMAGING": 9,
+    "OTHERS": 10,
   };
 
   RxInt totalTestCost = 0.obs;

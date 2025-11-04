@@ -95,12 +95,13 @@ class CommissionCalculator {
   }
 
   /// Legacy method: Calculate pathology commission (backward compatibility)
+  /// Uses HEMATOLOGY as the default pathology type
   static int calculatePathologyCommission({
     required int payablePathologyAmount,
     required AdminUserModel adminUser,
   }) {
     return calculateAssigningCommission(
-      commissionType: CommissionTypes.pathology,
+      commissionType: CommissionTypes.hematology, // First pathology group type
       payableAmount: payablePathologyAmount,
       adminUser: adminUser,
     );
@@ -123,7 +124,7 @@ class CommissionCalculator {
     return int.tryParse(adminUser.getCommission(commissionType)?.toString() ?? '0') ?? 0;
   }
 
-  /// Calculate pathology assigning commission (sum of: Hematology, Biochemistry, Hormone, Serology, Immunology, Others, Pathology)
+  /// Calculate pathology assigning commission (sum of: Hematology, Biochemistry, Hormone, Serology, Immunology, Others)
   static int calculatePathologyAssigningCommission({
     required Map<String, int> payableByType,
     required AdminUserModel adminUser,
@@ -138,7 +139,6 @@ class CommissionCalculator {
       CommissionTypes.serology,
       CommissionTypes.immunology,
       CommissionTypes.others,
-      CommissionTypes.pathology, // Include for backward compatibility
     ];
 
     for (final commissionType in pathologyTypes) {

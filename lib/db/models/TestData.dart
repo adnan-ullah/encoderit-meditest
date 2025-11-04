@@ -1,3 +1,5 @@
+import '../../constants/commission_types.dart';
+
 class TestData {
   TestData({
     this.id,
@@ -30,6 +32,18 @@ class TestData {
   final dynamic b2b_cost;
   dynamic is_payable;
   final dynamic category;
+
+  /// Get the commission type for this test based on its category
+  String getCommissionType() {
+    return CommissionTypes.getCommissionTypeFromTestCategory(category) ?? 
+           CommissionTypes.others;
+  }
+
+  /// Check if this test belongs to a specific commission type
+  bool belongsToCommissionType(String commissionType) {
+    final normalizedType = CommissionTypes.normalize(commissionType);
+    return getCommissionType() == normalizedType;
+  }
 
   Map toJson() => {
     'id': id,

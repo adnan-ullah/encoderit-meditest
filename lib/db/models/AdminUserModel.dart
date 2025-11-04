@@ -1,3 +1,5 @@
+import '../../constants/commission_types.dart';
+
 class AdminUserModel {
   AdminUserModel(
       {required this.name,
@@ -6,12 +8,16 @@ class AdminUserModel {
       required this.active,
       required this.type,
       required this.referrer_code,
-      required this.pathology_commission,
       required this.address,
       required this.surname,
       required this.short_address,
-      required this.imagine_commission,
-      required this.percentage});
+      required this.percentage,
+      Map<String, dynamic>? commissions}) {
+    // Initialize commissions map from provided map
+    _commissions = _buildCommissionsMap(
+      commissionsMap: commissions,
+    );
+  }
 
   final dynamic name;
   final dynamic phone;
@@ -20,11 +26,48 @@ class AdminUserModel {
   final dynamic type;
   final dynamic address;
   final dynamic referrer_code;
-  final dynamic pathology_commission;
   final dynamic surname;
   final dynamic short_address;
-  final dynamic imagine_commission;
   final dynamic percentage;
+
+  // New Map-based commission structure
+  late final Map<String, dynamic> _commissions;
+
+  /// Get commission for a specific type
+  dynamic getCommission(String commissionType) {
+    final normalizedType = CommissionTypes.normalize(commissionType);
+    return _commissions[normalizedType] ?? '0';
+  }
+
+  /// Get all commissions as a Map
+  Map<String, dynamic> get commissions => Map<String, dynamic>.from(_commissions);
+
+  /// Set commission for a specific type
+  void setCommission(String commissionType, dynamic value) {
+    final normalizedType = CommissionTypes.normalize(commissionType);
+    _commissions[normalizedType] = value;
+  }
+
+  /// Build commissions map from individual fields or provided map
+  Map<String, dynamic> _buildCommissionsMap({
+    Map<String, dynamic>? commissionsMap,
+  }) {
+    final Map<String, dynamic> result = {};
+
+    if (commissionsMap != null) {
+      // If commissions map is provided (new format), use it
+      result.addAll(commissionsMap);
+    }
+
+    // Initialize all new commission types with 0 if not present
+    for (final type in CommissionTypes.allTypes) {
+      if (!result.containsKey(type)) {
+        result[type] = '0';
+      }
+    }
+
+    return result;
+  }
 
   Map toJson() => {
         'name': name,
@@ -33,15 +76,20 @@ class AdminUserModel {
         'active': active,
         'type': type,
         'referrer_code': referrer_code,
-        'pathology_commission': pathology_commission,
         'address': address,
         'surname': surname,
         'short_address': short_address,
-        'imagine_commission': imagine_commission,
-        'percentage': percentage
+        'percentage': percentage,
+        'commissions': _commissions, // Include new commissions map
       };
 
   factory AdminUserModel.fromJson(Map<String, dynamic> parsedJson) {
+    // Merge legacy fields into commissions map for backward compatibility
+    final Map<String, dynamic> merged = {};
+    if (parsedJson['commissions'] != null) {
+      merged.addAll(Map<String, dynamic>.from(parsedJson['commissions']));
+    }
+
     return AdminUserModel(
         name: parsedJson['name'],
         phone: parsedJson['phone'],
@@ -49,11 +97,10 @@ class AdminUserModel {
         active: parsedJson['active'],
         type: parsedJson['type'],
         referrer_code: parsedJson['referrer_code'],
-        pathology_commission: parsedJson['pathology_commission'],
         address: parsedJson['address'],
         surname: parsedJson['surname'],
         short_address: parsedJson['short_address'],
-        imagine_commission: parsedJson['imagine_commission'],
-        percentage: parsedJson['percentage']);
+        percentage: parsedJson['percentage'],
+        commissions: merged.isNotEmpty ? merged : null);
   }
 }

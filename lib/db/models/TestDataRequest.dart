@@ -1,4 +1,5 @@
 
+import '../../constants/commission_types.dart';
 import 'TestData.dart';
 
 class TestDataRequest {
@@ -42,7 +43,6 @@ class TestDataRequest {
         this.agent_radiology_discount,
         this.assigning,
         this.area,
-        this.assigning_commission,
         this.agent_commission,
         this.is_paid,
         this.is_pathology_paid,
@@ -54,7 +54,6 @@ class TestDataRequest {
         this.radiology_payment_date,
         this.advance_payment_date,
         this.radiology_assigning,
-        this.radiology_assigning_commission,
         this.pathology_done,
         this.radiology_done,
         this.imageDiscountFile,
@@ -67,8 +66,28 @@ class TestDataRequest {
         this.total_cash_recieve,
         this.due_recieved_one_by,
         this.due_recieved_one,
-        this.due_recieve_one_date
-      });
+        this.due_recieve_one_date,
+        Map<String, dynamic>? commissionsByType,
+        // Legacy fields for backward compatibility only
+        this.assigning_commission,
+        this.radiology_assigning_commission})
+      {
+        // Initialize commissions map if provided
+        if (commissionsByType != null) {
+          _commissionsByType = Map<String, dynamic>.from(commissionsByType);
+        } else {
+          // Initialize with legacy fields mapped to actual types
+          _commissionsByType = {};
+          // Map legacy assigning_commission to pathology group types
+          for (final pathologyType in CommissionTypes.pathologyGroup) {
+            _commissionsByType[pathologyType] = assigning_commission ?? 0;
+          }
+          // Map legacy radiology_assigning_commission to radiology group types
+          for (final radiologyType in CommissionTypes.radiologyGroup) {
+            _commissionsByType[radiologyType] = radiology_assigning_commission ?? 0;
+          }
+        }
+      }
 
   final dynamic id;
   final dynamic name;
@@ -141,6 +160,42 @@ class TestDataRequest {
   dynamic radiology_done;
   dynamic imageDiscountFile;
 
+  // New Map-based commission structure (for multiple commission types)
+  late final Map<String, dynamic> _commissionsByType;
+
+  /// Get assigning commission for a specific type
+  dynamic getAssigningCommission(String commissionType) {
+    final normalizedType = CommissionTypes.normalize(commissionType);
+    
+    // Check in new commissions map first
+    if (_commissionsByType.containsKey(normalizedType)) {
+      return _commissionsByType[normalizedType];
+    }
+    
+    // Legacy backward compatibility - normalize handles PATHOLOGY/IMAGINE -> actual types
+    // If legacy fields exist and normalized type is in a group, use legacy field
+    if (assigning_commission != null && CommissionTypes.isPathologyType(normalizedType)) {
+      return assigning_commission;
+    }
+    if (radiology_assigning_commission != null && CommissionTypes.isRadiologyType(normalizedType)) {
+      return radiology_assigning_commission;
+    }
+    
+    return 0; // Default to 0 if not found
+  }
+
+  /// Get all assigning commissions as a Map
+  Map<String, dynamic> get commissionsByType => Map<String, dynamic>.from(_commissionsByType);
+
+  /// Set assigning commission for a specific type
+  void setAssigningCommission(String commissionType, dynamic value) {
+    final normalizedType = CommissionTypes.normalize(commissionType);
+    _commissionsByType[normalizedType] = value;
+    
+    // Note: Legacy fields are kept for backward compatibility when reading from Firebase
+    // but we no longer update them when setting new values
+  }
+
   Map toJson() => {
     'id': id,
     'name': name,
@@ -199,6 +254,7 @@ class TestDataRequest {
     'pathology_done': pathology_done,
     'radiology_done': radiology_done,
     'imageDiscountFile':imageDiscountFile,
+    'commissionsByType': _commissionsByType, // Include new commissions map
     'due_recieved_one_by':due_recieved_one_by,
     'due_recieved_one':due_recieved_one,
     'due_recieve_one_date':due_recieve_one_date,
@@ -285,6 +341,9 @@ class TestDataRequest {
       prepared_by: parsedJson['prepared_by'],
       due_recieve_two_date: parsedJson['due_recieve_two_date'],
       total_cash_recieve: parsedJson['total_cash_recieve'],
+      commissionsByType: parsedJson['commissionsByType'] != null 
+          ? Map<String, dynamic>.from(parsedJson['commissionsByType'])
+          : null,
     );
   }
 }

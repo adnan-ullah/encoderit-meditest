@@ -1,6 +1,6 @@
 /// Commission types used in the application
 class CommissionTypes {
-  // Commission type keys
+  // Commission type keys (8 actual types)
   static const String hematology = 'HEMATOLOGY';
   static const String biochemistry = 'BIOCHEMISTRY';
   static const String hormone = 'HORMONE';
@@ -10,9 +10,21 @@ class CommissionTypes {
   static const String imaging = 'IMAGING';
   static const String others = 'OTHERS';
 
-  // Legacy commission types (for backward compatibility)
-  static const String pathology = 'PATHOLOGY';
-  static const String imagine = 'IMAGINE'; // Note: keeping typo for backward compatibility
+  // Pathology group: Hematology, Biochemistry, Hormone, Serology, Immunology, Others
+  static const List<String> pathologyGroup = [
+    hematology,
+    biochemistry,
+    hormone,
+    serology,
+    immunology,
+    others,
+  ];
+
+  // Radiology group: Radiology, Imaging
+  static const List<String> radiologyGroup = [
+    radiology,
+    imaging,
+  ];
 
   // All commission types
   static const List<String> allTypes = [
@@ -26,30 +38,22 @@ class CommissionTypes {
     others,
   ];
 
-  // Legacy mapping: old category values to new commission types
-  // category 1 -> PATHOLOGY (which maps to multiple subtypes)
-  // category 2 -> RADIO/IMAGE (which maps to RADIOLOGY/IMAGING)
-  static String? getCommissionTypeFromCategory(int? category) {
-    switch (category) {
-      case 1:
-        return pathology; // Legacy pathology category
-      case 2:
-        return imaging; // Legacy imaging/radiology category
-      default:
-        return null;
-    }
-  }
+  // Legacy constants (for backward compatibility only - not actual commission types)
+  // These are groups, not individual types
+  static const String pathology = 'PATHOLOGY'; // Group identifier
+  static const String imagine = 'IMAGINE'; // Legacy typo - Group identifier
 
   // Map test category to specific commission type
-  // This can be extended based on your test categorization logic
+  // Legacy category 1 (pathology) maps to HEMATOLOGY (first pathology type)
+  // Legacy category 2 (radiology/imaging) maps to RADIOLOGY (first radiology type)
   static String? getCommissionTypeFromTestCategory(dynamic testCategory) {
     if (testCategory == null) return others;
     
     // If category is numeric (legacy system or new mapping)
     if (testCategory is int) {
-      // Legacy mappings (1 = PATHOLOGY, 2 = RADIO/IMAGE/IMAGING)
-      if (testCategory == 1) return pathology;
-      if (testCategory == 2) return imaging;
+      // Legacy mappings - map to actual types
+      if (testCategory == 1) return hematology; // Legacy pathology -> HEMATOLOGY
+      if (testCategory == 2) return radiology; // Legacy radiology/imaging -> RADIOLOGY
       
       // New numeric mappings
       if (testCategory == 3) return hematology;
@@ -68,13 +72,15 @@ class CommissionTypes {
     if (testCategory is String) {
       final upperCategory = testCategory.toUpperCase();
       
-      // Legacy mappings
-      if (upperCategory == 'PATHOLOGY' || upperCategory == '1') return pathology;
-      if (upperCategory == 'RADIO/IMAGE' || upperCategory == 'RADIOLOGY' || upperCategory == '2') {
-        return imaging;
+      // Legacy group mappings - map to actual types
+      if (upperCategory == 'PATHOLOGY' || upperCategory == '1') {
+        return hematology; // Map pathology group to first pathology type
+      }
+      if (upperCategory == 'RADIO/IMAGE' || upperCategory == '2' || upperCategory == 'IMAGINE') {
+        return radiology; // Map radiology group to first radiology type
       }
       
-      // New type mappings - direct match
+      // Direct type mappings
       if (allTypes.contains(upperCategory)) {
         return upperCategory;
       }
@@ -83,16 +89,32 @@ class CommissionTypes {
     return others; // Default fallback
   }
 
+  // Check if a commission type belongs to pathology group
+  static bool isPathologyType(String type) {
+    return pathologyGroup.contains(type.toUpperCase());
+  }
+
+  // Check if a commission type belongs to radiology group
+  static bool isRadiologyType(String type) {
+    return radiologyGroup.contains(type.toUpperCase());
+  }
+
   // Validate if a commission type is valid
   static bool isValidType(String type) {
-    return allTypes.contains(type.toUpperCase()) || 
-           type.toUpperCase() == pathology || 
-           type.toUpperCase() == imagine;
+    return allTypes.contains(type.toUpperCase());
   }
 
   // Normalize commission type string
   static String normalize(String type) {
-    return type.toUpperCase();
+    final normalized = type.toUpperCase();
+    // Map legacy group identifiers to actual types
+    if (normalized == pathology || normalized == '1') {
+      return hematology;
+    }
+    if (normalized == imagine || normalized == '2') {
+      return radiology;
+    }
+    return normalized;
   }
 }
 

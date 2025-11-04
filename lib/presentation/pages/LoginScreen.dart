@@ -15,6 +15,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../constants/app_info.dart';
 import '../../constants/colors.dart';
 import '../../db/models/AdminUserModel.dart';
+import '../../constants/commission_types.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/CreateRequestController.dart';
 
@@ -72,9 +73,16 @@ class _LoginScreenState extends State<LoginScreen> {
       if (e.phone.toString() == phone.toString() &&
           e.active.toString() == "1") {
         type = e.type;
-        if (e.pathology_commission != null) {
-          commission = e.pathology_commission;
+        // Use pathology group commissions - pick the first non-zero value
+        String resolvedCommission = '0';
+        for (final pathologyType in CommissionTypes.pathologyGroup) {
+          final value = e.getCommission(pathologyType)?.toString();
+          if (value != null && value.isNotEmpty && value != '0') {
+            resolvedCommission = value;
+            break;
+          }
         }
+        commission = resolvedCommission;
         if (e.referrer_code != null) {
           referrer_code = e.referrer_code;
         }

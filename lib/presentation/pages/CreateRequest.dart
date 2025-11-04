@@ -246,7 +246,8 @@ class _CreateRequestState extends State<CreateRequest> {
           agent_radiology_discount: 0,
           area: "",
           assigning: "",
-          assigning_commission: 0,
+          // Use new commissions map instead of legacy fields
+          commissionsByType: {},
           advanced: 0,
           due_amount: 0,
           test_item_cost: createReqController.totalTestCost.value,
@@ -304,7 +305,8 @@ class _CreateRequestState extends State<CreateRequest> {
         agent_radiology_discount: 0,
         area: "",
         assigning: "",
-        assigning_commission: 0,
+        // Use new commissions map instead of legacy fields
+        commissionsByType: {},
         advanced: 0,
         comments: "",
         delivery_date: null,
@@ -384,7 +386,8 @@ class _CreateRequestState extends State<CreateRequest> {
       agent_radiology_discount: 0,
       area: "",
       assigning: "",
-      assigning_commission: 0,
+      // Use new commissions map instead of legacy fields
+      commissionsByType: {},
       due_amount: 0,
       total_payable_imagine_cost: 0,
       total_payable_pathology_cost: 0,
