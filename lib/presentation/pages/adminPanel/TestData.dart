@@ -4,11 +4,11 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/api.dart';
-import 'package:healthcare_homelab/constants/app_info.dart';
 import 'package:healthcare_homelab/presentation/pages/CreateRequest.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../constants/colors.dart';
+import '../../../constants/commission_types.dart';
 import '../../../db/models/TestData.dart';
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/CreateRequestController.dart';
@@ -26,7 +26,7 @@ class TestDataCreate extends StatefulWidget {
 class _TestDataCreateState extends State<TestDataCreate> {
   var updatedTestItemData;
   var inserNewTestItem;
-  var category = "PATHOLOGY";
+  var category = CommissionTypes.others;
 
   Future<void> updateTestItem() async {
     name.text = widget.testItem!.name;
@@ -46,15 +46,11 @@ class _TestDataCreateState extends State<TestDataCreate> {
       is_payable = true;
     }
 
-    // Get category name, with fallback for new categories
-    if (widget.testItem!.category is int) {
-      category = createReqController.categoryName[widget.testItem!.category] ?? 
-                 widget.testItem!.getCommissionType();
-    } else if (widget.testItem!.category is String) {
-      category = widget.testItem!.category.toString();
-    } else {
-      category = widget.testItem!.getCommissionType();
-    }
+    // Get category name, normalize legacy categories to actual commission types
+    // getCommissionType() always returns a non-null String (with fallback to OTHERS)
+    final commissionType = widget.testItem!.getCommissionType();
+    // Normalize legacy PATHOLOGY/RADIO/IMAGE to actual types
+    category = CommissionTypes.normalize(commissionType);
   }
 
   Future<void> updateToFirebase() async {
@@ -281,24 +277,11 @@ class _TestDataCreateState extends State<TestDataCreate> {
                                   category,
                                   style: TextStyle(color: blackFontColor),
                                 ),
-                                items: <String>[
-                                  // Legacy categories (for backward compatibility)
-                                  'PATHOLOGY',
-                                  'RADIO/IMAGE',
-                                  // New commission type categories
-                                  'HEMATOLOGY',
-                                  'BIOCHEMISTRY',
-                                  'HORMONE',
-                                  'SEROLOGY',
-                                  'IMMUNOLOGY',
-                                  'RADIOLOGY',
-                                  'IMAGING',
-                                  'OTHERS',
-                                ].map((String value) {
+                                items: CommissionTypes.allTypes.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
                                     child: Text(
-                                      "$value",
+                                      value,
                                       style: TextStyle(color: blackFontColor),
                                     ),
                                   );
