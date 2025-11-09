@@ -124,6 +124,39 @@ class _AgentReportListState extends State<AgentReportList> {
     }
   }
 
+  /// Calculate test prices by type for an invoice based on test items
+  Map<String, int> calculateTestPricesByType(TestDataRequest request) {
+    final Map<String, int> testPricesByType = {};
+    
+    if (request.testlist == null || request.testlist!.isEmpty) {
+      // Return empty map with zeros for all types
+      for (final type in CommissionTypes.allTypes) {
+        testPricesByType[type] = 0;
+      }
+      return testPricesByType;
+    }
+
+    // Initialize all commission types to 0
+    for (final type in CommissionTypes.allTypes) {
+      testPricesByType[type] = 0;
+    }
+
+    // Calculate total test price for each test item by commission type
+    for (final testItem in request.testlist!) {
+      if (testItem.is_payable == false) continue; // Skip unpayable items
+      
+      final testPrice = int.tryParse(testItem.testprice.toString()) ?? 0;
+      
+      // Get commission type from test category
+      final commissionType = testItem.getCommissionType();
+      
+      // Add test price to the appropriate commission type
+      testPricesByType[commissionType] = (testPricesByType[commissionType] ?? 0) + testPrice;
+    }
+
+    return testPricesByType;
+  }
+
   /// Calculate commission amounts by type for an invoice based on test items
   Map<String, int> calculateCommissionsByType(TestDataRequest request) {
     final Map<String, int> commissionsByType = {};
@@ -170,6 +203,12 @@ class _AgentReportListState extends State<AgentReportList> {
   int calculateTotalCommission(TestDataRequest request) {
     final commissionsByType = calculateCommissionsByType(request);
     return commissionsByType.values.fold(0, (sum, value) => sum + value);
+  }
+
+  /// Calculate total test cost for an invoice (sum of all test prices)
+  int calculateTotalTestCost(TestDataRequest request) {
+    final testPricesByType = calculateTestPricesByType(request);
+    return testPricesByType.values.fold(0, (sum, value) => sum + value);
   }
 
   TestDataRequest? getLatestPaymentData(List<TestDataRequest> payments) {
@@ -447,15 +486,15 @@ class _AgentReportListState extends State<AgentReportList> {
                 'Patient',
                 'Agent',
                 'Code',
-                'Hematology',
-                'Biochemistry',
-                'Hormone',
-                'Serology',
-                'Immunology',
-                'Radiology',
-                'Imaging',
+                'Hema',
+                'Bio',
+                'Horm',
+                'Sero',
+                'Immuno',
+                'Radio',
+                'Image',
                 'Others',
-                'Total Comm.',
+                'Total Test cost',
                 'Discount',
                 'Earning',
                 'Pay Date',
@@ -463,10 +502,10 @@ class _AgentReportListState extends State<AgentReportList> {
               ],
               data: [
                 ..._newTestRequestList.map((item) {
-                  final commissions = calculateCommissionsByType(item);
-                  final totalCommission = calculateTotalCommission(item);
+                  final testPrices = calculateTestPricesByType(item);
+                  final totalTestCost = calculateTotalTestCost(item);
                   final earning = item.teststatus == 6 
-                      ? (totalCommission - (int.tryParse(item.total_agent_discount?.toString() ?? '0') ?? 0)).toString() 
+                      ? (calculateTotalCommission(item) - (int.tryParse(item.total_agent_discount?.toString() ?? '0') ?? 0)).toString() 
                       : '';
                   return [
                     item.dateofcreated == 0
@@ -476,15 +515,15 @@ class _AgentReportListState extends State<AgentReportList> {
                     item.name ?? '',
                     getNameByReferrerCode(item.referrer.toString()),
                     item.referrer.toString(),
-                    item.teststatus != 1 ? (commissions[CommissionTypes.hematology] ?? 0).toString() : 'Pending',
-                    item.teststatus != 1 ? (commissions[CommissionTypes.biochemistry] ?? 0).toString() : 'Pending',
-                    item.teststatus != 1 ? (commissions[CommissionTypes.hormone] ?? 0).toString() : 'Pending',
-                    item.teststatus != 1 ? (commissions[CommissionTypes.serology] ?? 0).toString() : 'Pending',
-                    item.teststatus != 1 ? (commissions[CommissionTypes.immunology] ?? 0).toString() : 'Pending',
-                    item.teststatus != 1 ? (commissions[CommissionTypes.radiology] ?? 0).toString() : 'Pending',
-                    item.teststatus != 1 ? (commissions[CommissionTypes.imaging] ?? 0).toString() : 'Pending',
-                    item.teststatus != 1 ? (commissions[CommissionTypes.others] ?? 0).toString() : 'Pending',
-                    item.teststatus != 1 ? totalCommission.toString() : 'Pending',
+                    item.teststatus != 1 ? (testPrices[CommissionTypes.hematology] ?? 0).toString() : 'Pross.',
+                    item.teststatus != 1 ? (testPrices[CommissionTypes.biochemistry] ?? 0).toString() : 'Pross.',
+                    item.teststatus != 1 ? (testPrices[CommissionTypes.hormone] ?? 0).toString() : 'Pross.',
+                    item.teststatus != 1 ? (testPrices[CommissionTypes.serology] ?? 0).toString() : 'Pross.',
+                    item.teststatus != 1 ? (testPrices[CommissionTypes.immunology] ?? 0).toString() : 'Pross.',
+                    item.teststatus != 1 ? (testPrices[CommissionTypes.radiology] ?? 0).toString() : 'Pross.',
+                    item.teststatus != 1 ? (testPrices[CommissionTypes.imaging] ?? 0).toString() : 'Pross.',
+                    item.teststatus != 1 ? (testPrices[CommissionTypes.others] ?? 0).toString() : 'Pross.',
+                    item.teststatus != 1 ? totalTestCost.toString() : 'Pross.',
                     item.teststatus != 1 ? (int.tryParse(item.total_agent_discount?.toString() ?? '0') ?? 0).toString() : '',
                     earning,
                     item.payment_date == 0
@@ -496,7 +535,7 @@ class _AgentReportListState extends State<AgentReportList> {
                 // Total Rows
                 [
                   'Total',
-                  '',
+                  _newTestRequestList.length.toString(),
                   '',
                   '',
                   '',
@@ -508,7 +547,7 @@ class _AgentReportListState extends State<AgentReportList> {
                   _calculateTotalForCommissionType(CommissionTypes.radiology).toString(),
                   _calculateTotalForCommissionType(CommissionTypes.imaging).toString(),
                   _calculateTotalForCommissionType(CommissionTypes.others).toString(),
-                  _calculateTotalCommissionSum().toString(),
+                  _calculateTotalTestCostSum().toString(),
                   _calculateTotalDiscountSum().toString(),
                   _calculateTotalEarningSum().toString(),
                   '',
@@ -529,9 +568,9 @@ class _AgentReportListState extends State<AgentReportList> {
                   _calculateProfitForCommissionType(CommissionTypes.radiology).toString(),
                   _calculateProfitForCommissionType(CommissionTypes.imaging).toString(),
                   _calculateProfitForCommissionType(CommissionTypes.others).toString(),
-                  _calculateTotalProfitCommission().toString(),
+                  '', // No total test price in profit row
                   '',
-                  (_calculateTotalProfitCommission() - _calculateTotalDiscountSum()).toString(),
+                  (_calculateTotalProfitCommissionStatus6() - _calculateTotalDiscountSumForStatus6()).toString(),
                   '',
                   '',
                 ],
@@ -542,9 +581,6 @@ class _AgentReportListState extends State<AgentReportList> {
             ),
             pw.SizedBox(height: 10),
             pw.Text('Last Payment Date = ${DateFormat('dd-MMM-yyyy').format(DateFilterWithUtils.toDateTime(lastPaymentTestReq?.payment_date ?? 0))}'),
-            pw.Text('Total Invoice Quantity = ${_newTestRequestList.length}'),
-            pw.Text('Total Test Cost = $totalTestCost'),
-            pw.Text('Total Earning = $totalEarning/-  Total Paid = $totalPaidAmount'),
           ],
         ),
       );
@@ -595,7 +631,7 @@ class _AgentReportListState extends State<AgentReportList> {
     if (request.teststatus == 1) {
       return SizedBox(
         width: DM.p70,
-        child: Text("Processing",
+        child: Text("Pross.",
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontWeight: FontWeight.w900,
@@ -604,14 +640,14 @@ class _AgentReportListState extends State<AgentReportList> {
       );
     }
     
-    // Calculate commissions based on test items and agent commission percentages
-    final commissions = calculateCommissionsByType(request);
-    final commissionValue = commissions[commissionType] ?? 0;
+    // Calculate test prices based on test items by commission type
+    final testPrices = calculateTestPricesByType(request);
+    final testPriceValue = testPrices[commissionType] ?? 0;
     
     return SizedBox(
       width: DM.p70,
       child: Text(
-        commissionValue.toString(),
+        testPriceValue.toString(),
         textAlign: TextAlign.center,
         style: TextStyle(
           fontWeight: FontWeight.w900,
@@ -622,13 +658,25 @@ class _AgentReportListState extends State<AgentReportList> {
     );
   }
 
-  /// Calculate total sum for a specific commission type across all invoices
+  /// Calculate total test price sum for a specific commission type across all invoices
   int _calculateTotalForCommissionType(String commissionType) {
     int total = 0;
     for (var request in _newTestRequestList) {
       if (request.teststatus != 1) {
-        final commissions = calculateCommissionsByType(request);
-        total += commissions[commissionType] ?? 0;
+        final testPrices = calculateTestPricesByType(request);
+        total += testPrices[commissionType] ?? 0;
+      }
+    }
+    return total;
+  }
+
+  /// Calculate total test price sum for a specific commission type only for invoices with teststatus == 6
+  int _calculateTotalForCommissionTypeStatus6(String commissionType) {
+    int total = 0;
+    for (var request in _newTestRequestList) {
+      if (request.teststatus == 6) {
+        final testPrices = calculateTestPricesByType(request);
+        total += testPrices[commissionType] ?? 0;
       }
     }
     return total;
@@ -656,14 +704,38 @@ class _AgentReportListState extends State<AgentReportList> {
     return total;
   }
 
+  /// Calculate total discount sum only for invoices with teststatus == 6
+  int _calculateTotalDiscountSumForStatus6() {
+    int total = 0;
+    for (var request in _newTestRequestList) {
+      if (request.teststatus == 6) {
+        total += int.tryParse(request.total_agent_discount?.toString() ?? '0') ?? 0;
+      }
+    }
+    return total;
+  }
+
   /// Calculate total earning sum across all invoices
+  /// Sum of each invoice's earning value (only calculate when teststatus == 6, otherwise ignore as processing)
   int _calculateTotalEarningSum() {
     int total = 0;
     for (var request in _newTestRequestList) {
+      // Only calculate earning for teststatus == 6, all other statuses (1,2,3,4,5) are treated as processing
       if (request.teststatus == 6) {
         final totalCommission = calculateTotalCommission(request);
         final discount = int.tryParse(request.total_agent_discount?.toString() ?? '0') ?? 0;
         total += totalCommission - discount;
+      }
+    }
+    return total;
+  }
+
+  /// Calculate total test cost sum across all invoices
+  int _calculateTotalTestCostSum() {
+    int total = 0;
+    for (var request in _newTestRequestList) {
+      if (request.teststatus != 1) {
+        total += calculateTotalTestCost(request);
       }
     }
     return total;
@@ -691,21 +763,37 @@ class _AgentReportListState extends State<AgentReportList> {
   }
 
   /// Calculate profit for a specific commission type based on percentage
-  /// Profit = (Total commission for that type) * (agent's commission percentage) / 100
-  /// Example: If Hormone column total is 1000 and agent has 10% commission, profit = 1000 * 10 / 100 = 100
+  /// Profit = (Total test price for that type) * (agent's commission percentage) / 100
+  /// Example: If Hormone column total test price is 1000 and agent has 10% commission, profit = 1000 * 10 / 100 = 100
   int _calculateProfitForCommissionType(String commissionType) {
     final agent = _getFilteredAgent();
     if (agent == null) return 0;
     
-    // Get the total commission amount for this type (sum of all invoices)
-    final totalCommissionForType = _calculateTotalForCommissionType(commissionType);
+    // Get the total test price for this type (sum of all invoices)
+    final totalTestPriceForType = _calculateTotalForCommissionType(commissionType);
     
     // Get agent's commission percentage for this type
     final commissionPercent = int.tryParse(agent.getCommission(commissionType)?.toString() ?? '0') ?? 0;
     
-    // Profit = total commission * percentage / 100
-    // This shows the percentage value of the total commission
-    return (totalCommissionForType * commissionPercent) ~/ 100;
+    // Profit = total test price * percentage / 100
+    // This shows the percentage value of the total test price
+    return (totalTestPriceForType * commissionPercent) ~/ 100;
+  }
+
+  /// Calculate profit for a specific commission type based on percentage, only for invoices with teststatus == 6
+  /// Profit = (Total test price for that type) * (agent's commission percentage) / 100
+  int _calculateProfitForCommissionTypeStatus6(String commissionType) {
+    final agent = _getFilteredAgent();
+    if (agent == null) return 0;
+    
+    // Get the total test price for this type (only for teststatus == 6)
+    final totalTestPriceForType = _calculateTotalForCommissionTypeStatus6(commissionType);
+    
+    // Get agent's commission percentage for this type
+    final commissionPercent = int.tryParse(agent.getCommission(commissionType)?.toString() ?? '0') ?? 0;
+    
+    // Profit = total test price * percentage / 100
+    return (totalTestPriceForType * commissionPercent) ~/ 100;
   }
 
   /// Calculate total profit commission (sum of all commission type profits)
@@ -713,6 +801,15 @@ class _AgentReportListState extends State<AgentReportList> {
     int total = 0;
     for (final type in CommissionTypes.allTypes) {
       total += _calculateProfitForCommissionType(type);
+    }
+    return total;
+  }
+
+  /// Calculate total profit commission only for invoices with teststatus == 6
+  int _calculateTotalProfitCommissionStatus6() {
+    int total = 0;
+    for (final type in CommissionTypes.allTypes) {
+      total += _calculateProfitForCommissionTypeStatus6(type);
     }
     return total;
   }
@@ -1032,7 +1129,7 @@ class _AgentReportListState extends State<AgentReportList> {
                                         color: Color.fromARGB(255, 1, 1, 1)))),
                             Container(
                                 width: DM.p70,
-                                child: Text("Total Comm.",
+                                child: Text("Total Test cost",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                         fontWeight: FontWeight.w900,
@@ -1174,7 +1271,7 @@ class _AgentReportListState extends State<AgentReportList> {
                                               ? SizedBox(
                                                   width: DM.p70,
                                                   child: Text(
-                                                      "${calculateTotalCommission(request)}",
+                                                      "${calculateTotalTestCost(request)}",
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
@@ -1185,7 +1282,7 @@ class _AgentReportListState extends State<AgentReportList> {
                                                               255, 26, 1, 1))))
                                               : SizedBox(
                                                   width: DM.p70,
-                                                  child: Text("Processing",
+                                                  child: Text("Pross.",
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
@@ -1209,7 +1306,7 @@ class _AgentReportListState extends State<AgentReportList> {
                                                               255, 26, 1, 1))))
                                               : SizedBox(
                                                   width: DM.p70,
-                                                  child: Text("Processing",
+                                                  child: Text("Pross.",
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
@@ -1233,7 +1330,7 @@ class _AgentReportListState extends State<AgentReportList> {
                                                               255, 26, 1, 1))))
                                               : SizedBox(
                                                   width: DM.p70,
-                                                  child: Text("Processing",
+                                                  child: Text("Pross.",
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
@@ -1336,7 +1433,7 @@ class _AgentReportListState extends State<AgentReportList> {
                           height: DM.p50,
                           width: DM.screenWidth * 3.8,
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
+                            color: whiteColor,
                             borderRadius: BorderRadius.circular(DM.p5),
                           ),
                           child: Row(
@@ -1351,7 +1448,18 @@ class _AgentReportListState extends State<AgentReportList> {
                                         fontSize: DM.p10,
                                         color: Color.fromARGB(255, 26, 1, 1))),
                               ),
-                              Container(width: DM.p70, child: SizedBox()), // Invoice
+                              SizedBox(
+                                width: DM.p70,
+                                child: Text(
+                                  "${_newTestRequestList.length}",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: DM.p10,
+                                    color: Color.fromARGB(255, 26, 1, 1),
+                                  ),
+                                ),
+                              ), // Invoice Quantity
                               Container(width: DM.p80, child: SizedBox()), // Patient Name
                               Row(
                                 children: [
@@ -1370,7 +1478,7 @@ class _AgentReportListState extends State<AgentReportList> {
                               SizedBox(
                                 width: DM.p70,
                                 child: Text(
-                                  "${_calculateTotalCommissionSum()}",
+                                  "${_calculateTotalTestCostSum()}",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontWeight: FontWeight.w900,
@@ -1414,7 +1522,7 @@ class _AgentReportListState extends State<AgentReportList> {
                           height: DM.p50,
                           width: DM.screenWidth * 3.8,
                           decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
+                            color: whiteColor,
                             borderRadius: BorderRadius.circular(DM.p5),
                           ),
                           child: Row(
@@ -1445,23 +1553,12 @@ class _AgentReportListState extends State<AgentReportList> {
                               _buildProfitCell(CommissionTypes.radiology),
                               _buildProfitCell(CommissionTypes.imaging),
                               _buildProfitCell(CommissionTypes.others),
-                              SizedBox(
-                                width: DM.p70,
-                                child: Text(
-                                  "${_calculateTotalProfitCommission()}",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: DM.p10,
-                                    color: Color.fromARGB(255, 26, 1, 1),
-                                  ),
-                                ),
-                              ),
+                              Container(width: DM.p70, child: SizedBox()), // No total test price in profit row
                               Container(width: DM.p70, child: SizedBox()), // Discount
                               SizedBox(
                                 width: DM.p70,
                                 child: Text(
-                                  "${_calculateTotalProfitCommission() - _calculateTotalDiscountSum()}",
+                                  "${_calculateTotalProfitCommissionStatus6() - _calculateTotalDiscountSumForStatus6()}",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontWeight: FontWeight.w900,
@@ -1494,27 +1591,6 @@ class _AgentReportListState extends State<AgentReportList> {
                       fontSize: 15,
                       color: Color(0xFF1A0101),
                     ),
-                  ),
-                  Text(
-                    "Total Invoice Quantity: ${_newTestRequestList.length}",
-                    style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: DM.p15,
-                        color: Color.fromARGB(255, 26, 1, 1)),
-                  ),
-                  Text(
-                    "Total Test Cost: $totalTestCost",
-                    style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: DM.p15,
-                        color: Color.fromARGB(255, 26, 1, 1)),
-                  ),
-                  Text(
-                    "Total Earning: $totalEarning / Total Paid: $totalPaidAmount",
-                    style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: DM.p15,
-                        color: Color.fromARGB(255, 26, 1, 1)),
                   ),
                 ],
               ),
