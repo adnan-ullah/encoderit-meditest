@@ -1664,7 +1664,7 @@ class _TestRequestCreateTypeThreeState
                                                                   .symmetric(
                                                                       vertical: DM
                                                                           .p20),
-                                                              primary:
+                                                              backgroundColor:
                                                                   appTheme),
                                                           onPressed: () async {
                                                             showDialog(
@@ -1851,7 +1851,7 @@ class _TestRequestCreateTypeThreeState
                                                                   .symmetric(
                                                                       vertical: DM
                                                                           .p20),
-                                                              primary:
+                                                              backgroundColor:
                                                                   appTheme),
                                                           onPressed: () async {
                                                             showDialog(
@@ -2046,7 +2046,7 @@ class _TestRequestCreateTypeThreeState
                                                               BorderRadius
                                                                   .circular(
                                                                       DM.p10)),
-                                                      primary: appTheme),
+                                                      backgroundColor: appTheme),
                                                   onPressed: () {},
                                                   child: Text(
                                                     "Image 1",
@@ -2103,7 +2103,7 @@ class _TestRequestCreateTypeThreeState
                                                               BorderRadius
                                                                   .circular(
                                                                       DM.p10)),
-                                                      primary: appTheme),
+                                                      backgroundColor: appTheme),
                                                   onPressed: () {},
                                                   child: Text(
                                                     "Image 2",

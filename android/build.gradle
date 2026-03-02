@@ -1,14 +1,14 @@
 buildscript {
-    ext.kotlin_version = '1.8.22'
+    ext.kotlin_version = '2.2.20'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath 'com.android.tools.build:gradle:8.11.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.3.13'
+        classpath 'com.google.gms:google-services:4.4.2'
     }
 }
 
@@ -23,6 +23,38 @@ rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
     project.evaluationDependsOn(':app')
+
+    plugins.withId("com.android.application") {
+        android {
+            buildFeatures {
+                buildConfig = true
+            }
+        }
+    }
+
+    plugins.withId("com.android.library") {
+        if (project.name == "flutter_local_notifications") {
+            android {
+                namespace "com.dexterous.flutterlocalnotifications"
+                buildFeatures {
+                    buildConfig = true
+                }
+            }
+        } else if (project.name == "flutter_phone_direct_caller") {
+            android {
+                namespace "com.yanisalfian.flutterphonedirectcaller"
+                buildFeatures {
+                    buildConfig = true
+                }
+            }
+        } else {
+            android {
+                buildFeatures {
+                    buildConfig = true
+                }
+            }
+        }
+    }
 }
 
 tasks.register("clean", Delete) {

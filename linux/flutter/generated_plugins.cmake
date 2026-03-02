@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   awesome_notifications
   file_selector_linux
+  firebase_core_desktop
   url_launcher_linux
 )
 
