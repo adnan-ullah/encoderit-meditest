@@ -13,6 +13,7 @@ import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Confirmat
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/Notifications/GenerateNotification.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/TestListDialogueBox.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../utils/image_picker_compat.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/api.dart';

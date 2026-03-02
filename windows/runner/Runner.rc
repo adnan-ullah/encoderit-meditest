@@ -84,26 +84,26 @@ VS_VERSION_INFO VERSIONINFO
  FILEOS VOS__WINDOWS32
  FILETYPE VFT_APP
  FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904e4"
+        BLOCK "StringFileInfo"
         BEGIN
-            VALUE "CompanyName", "com.innova.meditest" "\0"
-            VALUE "FileDescription", "healthcare_homelab" "\0"
-            VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "healthcare_homelab" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2022 com.innova.meditest. All rights reserved." "\0"
-            VALUE "OriginalFilename", "healthcare_homelab.exe" "\0"
-            VALUE "ProductName", "healthcare_homelab" "\0"
-            VALUE "ProductVersion", VERSION_AS_STRING "\0"
+            BLOCK "040904e4"
+            BEGIN
+                VALUE "CompanyName", "com.enocderit.meditest" "\0"
+                VALUE "FileDescription", "healthcare_homelab" "\0"
+                VALUE "FileVersion", VERSION_AS_STRING "\0"
+                VALUE "InternalName", "healthcare_homelab" "\0"
+                VALUE "LegalCopyright", "Copyright (C) 2022 com.enocderit.meditest. All rights reserved." "\0"
+                VALUE "OriginalFilename", "healthcare_homelab.exe" "\0"
+                VALUE "ProductName", "healthcare_homelab" "\0"
+                VALUE "ProductVersion", VERSION_AS_STRING "\0"
+            END
+        END
+        BLOCK "VarFileInfo"
+        BEGIN
+            VALUE "Translation", 0x409, 1252
         END
     END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x409, 1252
-    END
-END
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////

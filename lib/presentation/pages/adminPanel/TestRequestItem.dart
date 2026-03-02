@@ -12,6 +12,7 @@ import 'package:healthcare_homelab/presentation/pages/adminPanel/TestListDialogu
 import 'package:healthcare_homelab/presentation/widgets/otherWidgets/MyDialogView.dart';
 import 'package:healthcare_homelab/presentation/widgets/projectsWidget/FormUserAge.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../utils/image_picker_compat.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:permission_handler/permission_handler.dart';

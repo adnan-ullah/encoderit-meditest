@@ -33,25 +33,21 @@ subprojects {
     }
 
     plugins.withId("com.android.library") {
-        if (project.name == "flutter_local_notifications") {
-            android {
-                namespace "com.dexterous.flutterlocalnotifications"
-                buildFeatures {
-                    buildConfig = true
+        android {
+            // If the library hasn't set a namespace, derive it from the manifest package.
+            if (!namespace) {
+                def manifest = file("src/main/AndroidManifest.xml")
+                if (manifest.exists()) {
+                    def manifestText = manifest.getText('UTF-8')
+                    def matcher = (manifestText =~ /package="([^"]+)"/)
+                    if (matcher.find()) {
+                        namespace matcher.group(1)
+                    }
                 }
             }
-        } else if (project.name == "flutter_phone_direct_caller") {
-            android {
-                namespace "com.yanisalfian.flutterphonedirectcaller"
-                buildFeatures {
-                    buildConfig = true
-                }
-            }
-        } else {
-            android {
-                buildFeatures {
-                    buildConfig = true
-                }
+
+            buildFeatures {
+                buildConfig = true
             }
         }
     }

@@ -154,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ElevatedButton(
               onPressed: () async {
                 final Uri _url = Uri.parse(
-                    "https://play.google.com/store/apps/details?id=com.innova.meditest");
+                    "https://play.google.com/store/apps/details?id=com.enocderit.meditest");
                 if (!await launchUrl(_url)) {
                   Get.snackbar('Error', 'Could not launch URL',
                       backgroundColor: redColor, colorText: whiteColor);
