@@ -6,6 +6,6 @@ final meditest = "meditest";
 final meditest_stage = "meditest_stage";
 
 final meditest_new = "meditest_new";
-final meditest_new_stage = "meditest_new";
-final database_name = meditest_new_stage;
+final meditest_new_stage = "meditest_new_stage";
+final database_name = meditest_new;
 late final superUser;
