@@ -13,6 +13,7 @@ import 'package:healthcare_homelab/responsives/dimensions.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
@@ -573,8 +574,10 @@ class _CollectionReportState extends State<CollectionReport> {
         ),
       );
 
+      final externalDir = await getExternalStorageDirectory() ??
+          await getApplicationDocumentsDirectory();
       final baseDir = Directory(
-          '/storage/emulated/0/Documents/Health Care Homelab report/collection report');
+          '${externalDir.path}/Health Care Homelab report/collection report');
       await baseDir.create(recursive: true);
 
       final file = File('${baseDir.path}/collection_${assigningFilter}.pdf');

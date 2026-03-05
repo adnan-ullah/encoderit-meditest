@@ -8,6 +8,7 @@ import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
@@ -585,11 +586,14 @@ class _AgentReportListState extends State<AgentReportList> {
         ),
       );
 
-      final baseDir = Directory('/storage/emulated/0/Documents/Health Care Homelab report/agent report');
+      final externalDir = await getExternalStorageDirectory() ??
+          await getApplicationDocumentsDirectory();
+      final baseDir = Directory(
+          '${externalDir.path}/Health Care Homelab report/agent report');
       await baseDir.create(recursive: true);
 
-      final agentName = referrerCode.replaceAll(RegExp(r'[^\w\s-]'), '_');
-      final file = File('${baseDir.path}/$agentName.pdf');
+      final safeAgentName = referrerCode.replaceAll(RegExp(r'[^\w\\s-]'), '_');
+      final file = File('${baseDir.path}/$safeAgentName.pdf');
       await file.writeAsBytes(await pdf.save());
 
       ScaffoldMessenger.of(context).showSnackBar(

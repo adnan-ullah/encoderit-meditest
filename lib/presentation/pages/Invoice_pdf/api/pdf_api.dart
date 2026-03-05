@@ -16,25 +16,16 @@ class PdfApi {
   }) async {
     final bytes = await pdf.save();
 
-//  final dir = await getApplicationDocumentsDirectory();
-    // print(dir.absolute);
-    var dir2;
+    // Use app-specific external storage so no MANAGE_EXTERNAL_STORAGE is needed.
+    final baseDir =
+        await getExternalStorageDirectory() ?? await getApplicationDocumentsDirectory();
 
-    var date = DateFormat(
-      'MMMyyy',
-    ).format(DateTime.now()).toString();
+    final date = DateFormat('MMMyyy').format(DateTime.now()).toString();
+    final targetDir = Directory('${baseDir.path}/$app_name/$date');
+    await targetDir.create(recursive: true);
 
-    await Directory('storage/emulated/0/DCIM/$app_name/$date')
-        .create(recursive: true)
-        .then((value) {
-      dir2 = value.path;
-    });
-
-    final file = File('$dir2/$name');
-
+    final file = File('${targetDir.path}/$name');
     await file.writeAsBytes(bytes);
-
-    var file2 = file;
 
     return file;
   }
