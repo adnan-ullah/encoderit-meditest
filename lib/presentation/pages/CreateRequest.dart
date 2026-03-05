@@ -470,7 +470,6 @@ class _CreateRequestState extends State<CreateRequest> {
 
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       appBar: AppBar(backgroundColor: appTheme, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
@@ -486,12 +485,13 @@ class _CreateRequestState extends State<CreateRequest> {
         ),
       ]),
       backgroundColor: secondaryColor,
-      body: Form(
-        key: _formKey,
-        child: Container(
-          height: DM.screenHeight,
-          width: DM.screenWidth,
-          child: Column(
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: Container(
+          //  height: DM.screenHeight,
+            width: DM.screenWidth,
+            child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1248,7 +1248,7 @@ class _CreateRequestState extends State<CreateRequest> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

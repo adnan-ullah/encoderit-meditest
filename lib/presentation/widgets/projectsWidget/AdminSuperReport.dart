@@ -235,7 +235,6 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       backgroundColor: secondaryColor,
       appBar: AppBar(
         backgroundColor: appTheme,
@@ -244,7 +243,8 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
           style: TextStyle(color: secondaryColor, fontSize: DM.p30),
         ),
       ),
-      body: Padding(
+      body: SafeArea(
+        child: Padding(
         padding: EdgeInsets.symmetric(horizontal: DM.p8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -726,6 +726,6 @@ class _AdminSuperReportState extends State<AdminSuperReport> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

@@ -244,7 +244,6 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
   Widget build(BuildContext context) {
     getLocation_Camera();
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       appBar: AppBar(backgroundColor: appTheme, actions: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: DM.p50, vertical: DM.p10),
@@ -260,13 +259,14 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
         ),
       ]),
       backgroundColor: secondaryColor,
-      body: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Container(
-            height: DM.screenHeight,
-            width: DM.screenWidth,
-            child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Container(
+             // height: DM.screenHeight,
+              width: DM.screenWidth,
+              child: Column(
               children: [
                 Expanded(
                   child: Container(
@@ -957,7 +957,7 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Future<void> savePhone(phoneNumber) async {

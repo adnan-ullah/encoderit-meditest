@@ -39,7 +39,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       appBar: AppBar(backgroundColor: appTheme, actions: [
         Container(
           alignment: Alignment.centerLeft,
@@ -55,7 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ]),
       backgroundColor: secondaryColor,
-      body: Container(
+      body: SafeArea(
+        child: Container(
         width: DM.screenWidth,
         child: Column(
           children: [
@@ -157,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Flexible(child: Container(height: DM.p24, child: TextField()))
           ],
         ),
-      ),
+      ),),
     );
   }
 
