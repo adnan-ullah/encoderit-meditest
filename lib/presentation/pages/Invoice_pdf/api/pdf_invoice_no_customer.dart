@@ -33,9 +33,16 @@ class PdfInvoiceApiNoCustomer {
       ],
     ));
 
+    final dateTime =
+        DateTime.fromMillisecondsSinceEpoch(invoice.customer.date);
+    final monthYear =
+        '${DateFormat('MMMM').format(dateTime)}${dateTime.year}'; // e.g. May2026
+
     return PdfApi.saveDocument(
-        name: '${invoice.customer.invoice_id.toString()} (Lab_Copy.pdf',
-        pdf: pdf);
+      name: '${invoice.customer.invoice_id.toString()} (Lab_Copy.pdf',
+      pdf: pdf,
+      subDir: 'Healthcare Homelab/Invoices/$monthYear',
+    );
   }
 
   static Widget buildHeader(Invoice invoice) => Column(

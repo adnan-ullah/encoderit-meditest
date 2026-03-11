@@ -8,11 +8,11 @@ import 'package:healthcare_homelab/constants/colors.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../pages/Invoice_pdf/api/pdf_api.dart';
 
 import '../../../constants/api.dart';
 import '../../../constants/app_info.dart';
@@ -586,15 +586,12 @@ class _AgentReportListState extends State<AgentReportList> {
         ),
       );
 
-      final externalDir = await getExternalStorageDirectory() ??
-          await getApplicationDocumentsDirectory();
-      final baseDir = Directory(
-          '${externalDir.path}/Health Care Homelab report/agent report');
-      await baseDir.create(recursive: true);
-
       final safeAgentName = referrerCode.replaceAll(RegExp(r'[^\w\\s-]'), '_');
-      final file = File('${baseDir.path}/$safeAgentName.pdf');
-      await file.writeAsBytes(await pdf.save());
+      final file = await PdfApi.saveDocument(
+        name: 'agent_report_$safeAgentName.pdf',
+        pdf: pdf,
+        subDir: 'Healthcare Homelab/Agent Report',
+      );
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('PDF saved to ${file.path}')),

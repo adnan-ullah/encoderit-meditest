@@ -13,11 +13,11 @@ import 'package:healthcare_homelab/responsives/dimensions.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../pages/Invoice_pdf/api/pdf_api.dart';
 
 
 import '../otherWidgets/MyDateFilter.dart';
@@ -574,14 +574,11 @@ class _CollectionReportState extends State<CollectionReport> {
         ),
       );
 
-      final externalDir = await getExternalStorageDirectory() ??
-          await getApplicationDocumentsDirectory();
-      final baseDir = Directory(
-          '${externalDir.path}/Health Care Homelab report/collection report');
-      await baseDir.create(recursive: true);
-
-      final file = File('${baseDir.path}/collection_${assigningFilter}.pdf');
-      await file.writeAsBytes(await pdf.save());
+      final file = await PdfApi.saveDocument(
+        name: 'collection_${assigningFilter}.pdf',
+        pdf: pdf,
+        subDir: 'Healthcare Homelab/Collection Report',
+      );
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('PDF saved to ${file.path}')),

@@ -1,42 +1,50 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
-import 'package:healthcare_homelab/constants/app_info.dart';
-import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class PdfApi {
+  static const MethodChannel _channel =
+      MethodChannel('com.enocderit.meditest/pdf_saver');
+
+  /// Save a PDF.
+  /// - Android: write into system Downloads via MediaStore (native code).
+  /// - Other platforms: write to a temporary file.
   static Future<File> saveDocument({
     required String name,
     required Document pdf,
+    String? subDir,
   }) async {
     final bytes = await pdf.save();
 
-    // Use app-specific external storage so no MANAGE_EXTERNAL_STORAGE is needed.
-    final baseDir =
-        await getExternalStorageDirectory() ?? await getApplicationDocumentsDirectory();
+    if (Platform.isAndroid) {
+      await _channel.invokeMethod<String>(
+        'savePdfToDownloads',
+        {
+          'name': name,
+          'bytes': Uint8List.fromList(bytes),
+          'subDir': subDir,
+        },
+      );
 
-    final date = DateFormat('MMMyyy').format(DateTime.now()).toString();
-    final targetDir = Directory('${baseDir.path}/$app_name/$date');
-    await targetDir.create(recursive: true);
+      // Also write a temp file so we can open it with open_file.
+      final tempDir = Directory.systemTemp;
+      final tempFile = File('${tempDir.path}/$name');
+      await tempFile.writeAsBytes(bytes, flush: true);
+      return tempFile;
+    }
 
-    final file = File('${targetDir.path}/$name');
-    await file.writeAsBytes(bytes);
-
+    // Non-Android: simple temp file.
+    final dir = await Directory.systemTemp.createTemp('pdf_exports_');
+    final file = File('${dir.path}/$name');
+    await file.writeAsBytes(bytes, flush: true);
     return file;
   }
 
   static Future openFile(File file) async {
-    final url = file.path;
-
-    if(url.contains('Lab_Copy') ==false){
-    await OpenFile.open(url);
-    }
-    
-
+    await OpenFile.open(file.path);
   }
 }
