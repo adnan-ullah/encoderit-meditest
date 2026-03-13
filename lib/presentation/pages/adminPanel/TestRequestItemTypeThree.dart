@@ -4268,9 +4268,9 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
     ,
   );
 
-  final pdfFile = await PdfInvoiceApi.generate(invoice);
-  final pdfFile2 = await PdfInvoiceApiNoCustomer.generate(invoice);
+  final pdfFile = await PdfInvoiceApi.generate(invoice); // Customer copy
+  await PdfInvoiceApiNoCustomer.generate(invoice); // Lab copy
 
+  // Open only the customer copy
   PdfApi.openFile(pdfFile);
-  PdfApi.openFile(pdfFile2);
 }
