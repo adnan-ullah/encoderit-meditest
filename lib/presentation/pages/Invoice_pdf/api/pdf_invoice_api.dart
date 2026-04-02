@@ -155,7 +155,7 @@ class PdfInvoiceApi {
       ];
     }).toList();
 
-    data.add(["", "Collection Charge", invoice.customer.collection_charge]);
+    data.add(["", "C.Charge/Needle/Others", invoice.customer.collection_charge]);
     data.add(["", "Tube Cost", invoice.customer.tube_cost]);
 
     return Table.fromTextArray(
