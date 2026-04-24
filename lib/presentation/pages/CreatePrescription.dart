@@ -268,8 +268,7 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
               width: DM.screenWidth,
               child: Column(
               children: [
-                Expanded(
-                  child: Container(
+                Container(
                     width: DM.screenWidth,
                     child: Column(
                       children: [
@@ -944,13 +943,10 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
                             ),
                           ),
                         ),
-                        Flexible(
-                            child:
-                                Container(height: DM.p20, child: TextField()))
+                        SizedBox(height: MediaQuery.of(context).padding.bottom + DM.p8)
                         // #buttons(facebook & github)
                       ],
                     ),
-                  ),
                 ),
               ],
             ),

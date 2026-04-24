@@ -60,13 +60,15 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             // #text_field
-            Container(
-                margin: EdgeInsets.symmetric(horizontal: DM.p15),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(DM.p10),
-                ),
-                child: RequestList()),
+            Expanded(
+              child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: DM.p15),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(DM.p10),
+                  ),
+                  child: RequestList()),
+            ),
 
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -154,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            Flexible(child: Container(height: DM.p24, child: TextField()))
+            SizedBox(height: MediaQuery.of(context).padding.bottom + DM.p8),
           ],
         ),
       ),),

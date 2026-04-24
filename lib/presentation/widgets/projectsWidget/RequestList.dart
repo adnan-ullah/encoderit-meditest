@@ -131,165 +131,139 @@ class _RequestListState extends State<RequestList> {
                   fontSize: DM.p25,
                   color: Color.fromARGB(255, 26, 1, 1)),
             ),
-            isLoading == false
-                ? Container(
-                    child: testDataEach.isEmpty == false
-                        ? Container(
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.all(DM.p8),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        "Invoice Call",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: DM.p14,
-                                            color:
-                                                Color.fromARGB(255, 26, 1, 1)),
-                                      ),
-                                      Container(
-                                        margin: EdgeInsets.only(right: DM.p40),
-                                        child: Text(
-                                          "Status",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w900,
-                                              fontSize: DM.p14,
-                                              color: Color.fromARGB(
-                                                  255, 26, 1, 1)),
-                                        ),
-                                      ),
-                                      Container(
-                                        margin: EdgeInsets.only(right: DM.p10),
-                                        child: Text(
-                                          "Date",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w900,
-                                              fontSize: DM.p14,
-                                              color: Color.fromARGB(
-                                                  255, 26, 1, 1)),
-                                        ),
-                                      )
-                                    ],
+            Expanded(
+              child: isLoading == false
+                  ? (testDataEach.isEmpty == false
+                      ? Column(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(DM.p8),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Invoice Call",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: DM.p14,
+                                        color: Color.fromARGB(255, 26, 1, 1)),
                                   ),
-                                ),
-                                Divider(
-                                  thickness: DM.p2,
-                                  color: Colors.black,
-                                ),
-                                Container(
-                                  height: DM.screenHeight * 0.60,
-                                  child: ListView.builder(
-                                    itemCount: testDataEach.length,
-                                    itemBuilder: (context, index) {
-                                      return Container(
-                                        decoration: BoxDecoration(
-                                          color: whiteColor,
-                                          borderRadius:
-                                              BorderRadius.circular(DM.p10),
+                                  Container(
+                                    margin: EdgeInsets.only(right: DM.p40),
+                                    child: Text(
+                                      "Status",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: DM.p14,
+                                          color: Color.fromARGB(255, 26, 1, 1)),
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(right: DM.p10),
+                                    child: Text(
+                                      "Date",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: DM.p14,
+                                          color: Color.fromARGB(255, 26, 1, 1)),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Divider(
+                              thickness: DM.p2,
+                              color: Colors.black,
+                            ),
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: testDataEach.length,
+                                itemBuilder: (context, index) {
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                      color: whiteColor,
+                                      borderRadius: BorderRadius.circular(DM.p10),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: DM.p10, vertical: DM.p5),
+                                    margin: EdgeInsets.symmetric(vertical: DM.p5),
+                                    height: DM.p60,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        SizedBox(
+                                          child: Text(
+                                            "#${testDataEach[index].invoice_call.toString()}",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: DM.p12,
+                                                color: Color.fromARGB(255, 26, 1, 1)),
+                                          ),
                                         ),
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: DM.p10,
-                                            vertical: DM.p5),
-                                        margin: EdgeInsets.symmetric(
-                                            vertical: DM.p5),
-                                        height: DM.p60,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            SizedBox(
-                                              child: Text(
-                                                "#${testDataEach[index].invoice_call.toString()}",
+                                        createRequest_controller.status[
+                                                    testDataEach[index].teststatus] ==
+                                                "R.RECIEVED"
+                                            ? Container(
+                                                child: MaterialButton(
+                                                  onPressed: () async {
+                                                    _updateStatus(testDataEach[index]);
+                                                  },
+                                                  height: DM.p40,
+                                                  shape: const StadiumBorder(),
+                                                  color: appTheme,
+                                                  child: Text(
+                                                    "RECIEVED",
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        color: fullWhiteColor,
+                                                        fontSize: DM.p13,
+                                                        fontWeight: FontWeight.bold),
+                                                  ),
+                                                ),
+                                              )
+                                            : Text(
+                                                createRequest_controller
+                                                    .status[testDataEach[index].teststatus]
+                                                    .toString(),
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.w900,
                                                     fontSize: DM.p12,
-                                                    color: Color.fromARGB(
-                                                        255, 26, 1, 1)),
+                                                    color: Color.fromARGB(255, 26, 1, 1)),
                                               ),
-                                            ),
-                                            createRequest_controller.status[
-                                                        testDataEach[index]
-                                                            .teststatus] ==
-                                                    "R.RECIEVED"
-                                                ? Container(
-                                                    child: MaterialButton(
-                                                      onPressed: () async {
-                                                        _updateStatus(
-                                                            testDataEach[
-                                                                index]);
-                                                      },
-                                                      height: DM.p40,
-                                                      shape:
-                                                          const StadiumBorder(),
-                                                      color: appTheme,
-                                                      child: Text(
-                                                        "RECIEVED",
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        style: TextStyle(
-                                                            color:
-                                                                fullWhiteColor,
-                                                            fontSize: DM.p13,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ),
-                                                    ),
-                                                  )
-                                                : Text(
-                                                    createRequest_controller
-                                                        .status[
-                                                            testDataEach[index]
-                                                                .teststatus]
-                                                        .toString(),
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: DM.p12,
-                                                        color: Color.fromARGB(
-                                                            255, 26, 1, 1)),
-                                                  ),
-                                            Text(
-                                              testDataEach[index].dateofcreated != null
-                                                  ? DateFormat('dd-MMM-yyyy').format(
-                                                  DateTime.fromMillisecondsSinceEpoch(testDataEach[index].dateofcreated!))
-                                                  : "No Date",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: DM.p12,
-                                                color: Color.fromARGB(255, 26, 1, 1),
-                                              ),
-                                            ),
-
-                                          ],
+                                        Text(
+                                          testDataEach[index].dateofcreated != null
+                                              ? DateFormat('dd-MMM-yyyy').format(
+                                                  DateTime.fromMillisecondsSinceEpoch(
+                                                      testDataEach[index].dateofcreated!))
+                                              : "No Date",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: DM.p12,
+                                            color: Color.fromARGB(255, 26, 1, 1),
+                                          ),
                                         ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : Container(
-                            height: DM.screenHeight * 0.65,
-                            margin: EdgeInsets.symmetric(vertical: DM.p16),
-                            color: whiteColor,
-                            child: Center(
-                              child: Text(
-                                "Request list empty",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: DM.p25,
-                                    color: appTheme),
+                                      ],
+                                    ),
+                                  );
+                                },
                               ),
-                            )))
-                : Container(
-                    height: DM.screenHeight * 0.70,
-                  ),
+                            ),
+                          ],
+                        )
+                      : Container(
+                          margin: EdgeInsets.symmetric(vertical: DM.p16),
+                          color: whiteColor,
+                          child: Center(
+                            child: Text(
+                              "Request list empty",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: DM.p25,
+                                  color: appTheme),
+                            ),
+                          )))
+                  : const SizedBox.shrink(),
+            ),
           ],
         ));
   }

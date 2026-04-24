@@ -313,44 +313,47 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           SizedBox(height: DM.p20),
 
-                          // Password Field
-                          TextFormField(
-                            controller: password,
-                            obscureText: true,
-                            style: TextStyle(fontSize: DM.p16),
-                            decoration: InputDecoration(
-                              labelText: 'Password',
-                              labelStyle:
-                                  TextStyle(color: appTheme.withOpacity(0.6)),
-                              prefixIcon: Icon(Icons.lock, color: appTheme),
-                              filled: true,
-                              fillColor: Colors.grey[100],
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DM.p12),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DM.p12),
-                                borderSide:
-                                    BorderSide(color: Colors.grey[300]!),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DM.p12),
-                                borderSide:
-                                    BorderSide(color: appTheme, width: DM.p2),
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DM.p12),
-                                borderSide: BorderSide(color: redColor),
-                              ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DM.p12),
-                                borderSide:
-                                    BorderSide(color: redColor, width: DM.p2),
+                          if (!isClientApp) ...[
+                            // Password Field (admin mode only)
+                            TextFormField(
+                              controller: password,
+                              obscureText: true,
+                              style: TextStyle(fontSize: DM.p16),
+                              decoration: InputDecoration(
+                                labelText: 'Password',
+                                labelStyle:
+                                    TextStyle(color: appTheme.withOpacity(0.6)),
+                                prefixIcon: Icon(Icons.lock, color: appTheme),
+                                filled: true,
+                                fillColor: Colors.grey[100],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(DM.p12),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(DM.p12),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey[300]!),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(DM.p12),
+                                  borderSide:
+                                      BorderSide(color: appTheme, width: DM.p2),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(DM.p12),
+                                  borderSide: BorderSide(color: redColor),
+                                ),
+                                focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(DM.p12),
+                                  borderSide:
+                                      BorderSide(color: redColor, width: DM.p2),
+                                ),
                               ),
                             ),
-                          ),
-                          SizedBox(height: DM.p32),
+                            SizedBox(height: DM.p32),
+                          ] else
+                            SizedBox(height: DM.p20),
 
                           // Login Button
                           SizedBox(
@@ -366,6 +369,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                         if (_formKey.currentState?.validate() ==
                                                 true &&
                                             await chechkingInternet()) {
+                                          if (isClientApp) {
+                                            savePhone(phone.text);
+                                            Get.to(HomeScreen());
+                                            setState(() => _isLoading = false);
+                                            return;
+                                          }
                                           if (phone.text == "$superUser" ||
                                               (checkUser(phone.text) == true &&
                                                   password.text ==
