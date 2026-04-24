@@ -24,6 +24,14 @@ subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
     project.evaluationDependsOn(':app')
 
+    // Keep build output clean from third-party plugin Java warnings
+    // (deprecated/unchecked in pub-cache plugins).
+    tasks.withType(JavaCompile).configureEach {
+        options.warnings = false
+        options.deprecation = false
+        options.compilerArgs += ['-nowarn', '-Xlint:none', '-Xlint:-deprecation', '-Xlint:-unchecked']
+    }
+
     plugins.withId("com.android.application") {
         android {
             buildFeatures {

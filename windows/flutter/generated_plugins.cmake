@@ -6,7 +6,9 @@ list(APPEND FLUTTER_PLUGIN_LIST
   awesome_notifications
   file_selector_windows
   firebase_auth
-  firebase_core_desktop
+  firebase_core
+  firebase_database
+  firebase_storage
   geolocator_windows
   permission_handler_windows
   url_launcher_windows
