@@ -369,7 +369,7 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
                                   SizedBox(
                                     width: DM.p100,
                                     child: Text(
-                                      "Referrer\n(যদি থাকে)",
+                                      "Agent\n(যদি থাকে)",
                                       style: TextStyle(
                                           fontWeight: FontWeight.w500,
                                           fontSize: DM.p14,
@@ -412,7 +412,7 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
                                             filled: true,
                                             fillColor: Colors.white,
                                             border: InputBorder.none,
-                                            hintText: "Referrer",
+                                            hintText: "Agent",
                                             hintStyle: TextStyle(
                                               color: Colors.grey,
                                               fontSize: DM.p14,

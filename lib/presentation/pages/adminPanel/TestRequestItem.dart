@@ -1429,7 +1429,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                               SizedBox(
                                 width: DM.p100,
                                 child: Text(
-                                  "Referrer",
+                                  "Agent",
                                   style: TextStyle(
                                       fontWeight: FontWeight.w500,
                                       fontSize: DM.p14,
@@ -4219,7 +4219,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                                             255, 26, 1, 1)),
                                                   ),
                                                   Text(
-                                                    "Referrer: ${referrer.text}",
+                                                    "Agent: ${referrer.text}",
                                                     style: TextStyle(
                                                         fontWeight:
                                                             FontWeight.w500,
