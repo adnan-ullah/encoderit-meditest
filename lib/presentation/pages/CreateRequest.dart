@@ -26,6 +26,7 @@ import '../../responsives/dimensions.dart';
 import '../../state_programming/CreateRequestController.dart';
 import '../widgets/projectsWidget/FormUserAge.dart';
 import '../widgets/projectsWidget/Notifications/NotificationServices.dart';
+import '../widgets/projectsWidget/RefByDoctorField.dart';
 import 'LoginScreen.dart';
 
 class CreateRequest extends StatefulWidget {
@@ -106,6 +107,9 @@ class _CreateRequestState extends State<CreateRequest> {
 
   final addressText = TextEditingController();
   final referredAddressText = TextEditingController();
+  String? refById;
+  String? refByName;
+  String? refByDesignation;
 
   var name = new TextEditingController();
   var age = TextEditingController();
@@ -222,6 +226,9 @@ class _CreateRequestState extends State<CreateRequest> {
           servicecharge: createReqController.serviceCost.value,
           address: addressText.text,
           referrer: referredAddressText.text,
+          ref_by_id: refById,
+          ref_by_name: refByName,
+          ref_by_designation: refByDesignation,
           lastupdate: currentTime,
           dateofcreated: currentTime,
           softdelete: 0,
@@ -283,6 +290,9 @@ class _CreateRequestState extends State<CreateRequest> {
         servicecharge: createReqController.serviceCost.value,
         address: addressText.text,
         referrer: referredAddressText.text,
+        ref_by_id: refById,
+        ref_by_name: refByName,
+        ref_by_designation: refByDesignation,
         lastupdate: currentTime,
         dateofcreated: currentTime,
         softdelete: 0,
@@ -365,6 +375,9 @@ class _CreateRequestState extends State<CreateRequest> {
       servicecharge: createReqController.serviceCost.value,
       address: addressText.text,
       referrer: referredAddressText.text,
+      ref_by_id: refById,
+      ref_by_name: refByName,
+      ref_by_designation: refByDesignation,
       lastupdate: currentTime,
       dateofcreated: currentTime,
       softdelete: 0,
@@ -669,6 +682,18 @@ class _CreateRequestState extends State<CreateRequest> {
                                       ),
                                     ],
                                   ),
+                                ),
+                                RefByDoctorField(
+                                  initialDoctorId: refById,
+                                  initialDoctorName: refByName,
+                                  initialDoctorDesignation: refByDesignation,
+                                  onChanged: (id, name, designation) {
+                                    setState(() {
+                                      refById = id;
+                                      refByName = name;
+                                      refByDesignation = designation;
+                                    });
+                                  },
                                 ),
                                 Padding(
                                   padding: EdgeInsets.all(DM.p1),

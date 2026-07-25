@@ -17,6 +17,7 @@ import '../../constants/colors.dart';
 import '../../db/models/TestDataRequest.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/CreateRequestController.dart';
+import '../widgets/projectsWidget/RefByDoctorField.dart';
 import 'LoginScreen.dart';
 
 class CreatePrescription extends StatefulWidget {
@@ -33,6 +34,9 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
 
   var phone = TextEditingController();
   var referrer = TextEditingController();
+  String? refById;
+  String? refByName;
+  String? refByDesignation;
   File? imageFile1, imageFile2, imageDiscountFile;
 
   var status;
@@ -61,6 +65,9 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
         servicecharge: 0,
         address: "",
         referrer: referrer.text,
+        ref_by_id: refById,
+        ref_by_name: refByName,
+        ref_by_designation: refByDesignation,
         lastupdate: currentTime,
         dateofcreated: currentTime,
         softdelete: 0,
@@ -358,6 +365,21 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
                                     ),
                                   ),
                                 ],
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(DM.p12),
+                              child: RefByDoctorField(
+                                initialDoctorId: refById,
+                                initialDoctorName: refByName,
+                                initialDoctorDesignation: refByDesignation,
+                                onChanged: (id, name, designation) {
+                                  setState(() {
+                                    refById = id;
+                                    refByName = name;
+                                    refByDesignation = designation;
+                                  });
+                                },
                               ),
                             ),
                             Padding(

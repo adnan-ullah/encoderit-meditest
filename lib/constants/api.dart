@@ -48,6 +48,7 @@ final testRequestApi = "$database_name/testRequest/$currentYear/$monthName";
 final testModelApi =  "$database_name/testModel/$currentYear/$monthName";
 final adminUserApi =  "$database_name/admin_user";
 final categoryApi = "$database_name/category/";
+final doctorApi = "$database_name/doctor/";
 final costApi = "$database_name/cost/$currentYear/$monthName";
 final samratApi = "$database_name/samrat";
 

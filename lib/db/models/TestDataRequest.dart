@@ -14,6 +14,9 @@ class TestDataRequest {
         required this.servicecharge,
         required this.address,
         required this.referrer,
+        this.ref_by_id,
+        this.ref_by_name,
+        this.ref_by_designation,
         required this.lastupdate,
         required this.dateofcreated,
         required this.softdelete,
@@ -99,6 +102,12 @@ class TestDataRequest {
   final dynamic servicecharge;
   final dynamic address;
   final dynamic referrer;
+  /// Referring doctor id (separate from Agent `referrer` code).
+  final dynamic ref_by_id;
+  /// Referring doctor name snapshot.
+  final dynamic ref_by_name;
+  /// Referring doctor designation snapshot.
+  final dynamic ref_by_designation;
   final dynamic lastupdate;
   final dynamic dateofcreated;
   final dynamic softdelete;
@@ -207,6 +216,9 @@ class TestDataRequest {
     'servicecharge': servicecharge,
     'address': address,
     'referrer': referrer,
+    'ref_by_id': ref_by_id,
+    'ref_by_name': ref_by_name,
+    'ref_by_designation': ref_by_designation,
     'lastupdate': lastupdate,
     'dateofcreated': dateofcreated,
     'softdelete': softdelete,
@@ -284,6 +296,9 @@ class TestDataRequest {
       servicecharge: parsedJson['servicecharge'],
       address: parsedJson['address'],
       referrer: parsedJson['referrer'],
+      ref_by_id: parsedJson['ref_by_id'],
+      ref_by_name: parsedJson['ref_by_name'],
+      ref_by_designation: parsedJson['ref_by_designation'],
       lastupdate: parsedJson['lastupdate'],
       dateofcreated: parsedJson['dateofcreated'],
       softdelete: parsedJson['softdelete'],

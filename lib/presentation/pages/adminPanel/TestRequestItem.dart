@@ -28,6 +28,7 @@ import '../../../responsives/dimensions.dart';
 import '../../../state_programming/CreateRequestController.dart';
 import '../../../utils/commission_calculator.dart';
 import '../../widgets/otherWidgets/PhotoViewImage.dart';
+import '../../widgets/projectsWidget/RefByDoctorField.dart';
 import '../Invoice_pdf/api/pdf_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_api.dart';
 import '../Invoice_pdf/api/pdf_invoice_no_customer.dart';
@@ -60,6 +61,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   var servicecharge = new TextEditingController();
   var address = new TextEditingController();
   var referrer = new TextEditingController();
+  String? refById;
+  String? refByName;
+  String? refByDesignation;
   var lastupdate = new TextEditingController();
   var dateofcreated = new TextEditingController();
   var softdelete = new TextEditingController();
@@ -247,6 +251,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
     phone.text = widget.testEachRequest!.mobile.toString();
     address.text = widget.testEachRequest!.address.toString();
     referrer.text = widget.testEachRequest!.referrer.toString();
+    refById = widget.testEachRequest!.ref_by_id?.toString();
+    refByName = widget.testEachRequest!.ref_by_name?.toString();
+    refByDesignation = widget.testEachRequest!.ref_by_designation?.toString();
     servicecharge.text = widget.testEachRequest!.servicecharge.toString();
     totalprice.text = widget.testEachRequest!.totalprice.toString();
     teststatus.text = widget.testEachRequest!.teststatus.toString();
@@ -576,6 +583,9 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
         servicecharge: serviceCost,
         address: address.text,
         referrer: referrer.text,
+        ref_by_id: refById,
+        ref_by_name: refByName,
+        ref_by_designation: refByDesignation,
         lastupdate: currentTime,
         dateofcreated: widget.testEachRequest!.dateofcreated,
         softdelete: 0,
@@ -1418,6 +1428,21 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                                 ),
                               ),
                             ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(DM.p5),
+                          child: RefByDoctorField(
+                            initialDoctorId: refById,
+                            initialDoctorName: refByName,
+                            initialDoctorDesignation: refByDesignation,
+                            onChanged: (id, name, designation) {
+                              setState(() {
+                                refById = id;
+                                refByName = name;
+                                refByDesignation = designation;
+                              });
+                            },
                           ),
                         ),
                         Padding(
