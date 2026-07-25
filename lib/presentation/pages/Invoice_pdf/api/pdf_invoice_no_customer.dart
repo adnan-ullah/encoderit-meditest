@@ -272,7 +272,7 @@ class PdfInvoiceApiNoCustomer {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
           ),
           Text(
-              "Shamsul Alam Heights (Opposite to Patenga Model Thana) Steel Mills Bazar, North Patenga,Chittagong",
+              "SK Tower, Above Dutch Bangla Bank Booth (Opposite to Patenga Model Thana) Steel Mills Bazar, North Patenga,Chittagong",
               style: TextStyle(fontSize: 8),
               textAlign: TextAlign.center),
 
