@@ -13,4 +13,4 @@ late final superUser;
 // App mode configuration
 // true  -> client app (no password required, direct HomeScreen login)
 // false -> admin app (keep existing admin password flow)
-const bool isClientApp = true;
+const bool isClientApp = false;
