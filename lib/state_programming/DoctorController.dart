@@ -47,6 +47,22 @@ class DoctorController extends GetxController {
     return newDoctor;
   }
 
+  Future<DoctorModel> updateDoctor({
+    required String id,
+    required String name,
+    required String designation,
+  }) async {
+    final dbRef = FirebaseDatabase.instance.ref("$doctorApi/");
+    final updatedDoctor = DoctorModel(
+      id: id,
+      name: name.trim(),
+      designation: designation.trim(),
+    );
+    await dbRef.child(id).update(updatedDoctor.toJson());
+    await fetchDoctors();
+    return updatedDoctor;
+  }
+
   List<DoctorModel> search(String query) {
     final q = query.trim().toLowerCase();
     if (q.isEmpty) return List<DoctorModel>.from(doctors);

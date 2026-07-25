@@ -60,12 +60,12 @@ class Customer {
 
   });
 
-  /// "Ref By" display text: "Name (Designation)" or "Name" when no designation.
+  /// "Ref By" display text: "Name Designation" or "Name" when no designation.
   String get refByDisplay {
     final name = refByName?.toString().trim() ?? '';
     final designation = refByDesignation?.toString().trim() ?? '';
     if (name.isEmpty) return '';
     if (designation.isEmpty) return name;
-    return '$name ($designation)';
+    return '$name $designation';
   }
 }

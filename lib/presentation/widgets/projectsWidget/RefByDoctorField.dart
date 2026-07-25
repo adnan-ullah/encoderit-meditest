@@ -100,10 +100,35 @@ class RefByDoctorFieldState extends State<RefByDoctorField> {
 
   void _showAddDoctorDialog() {
     if (widget.readOnly) return;
+    _showDoctorFormDialog();
+  }
 
+  void _showEditDoctorDialog() {
+    if (widget.readOnly) return;
+    if (_selectedId == null || _selectedId!.trim().isEmpty) {
+      Get.snackbar(
+        'Select doctor',
+        'Please select a doctor first to edit',
+        backgroundColor: redColor,
+        colorText: whiteColor,
+      );
+      return;
+    }
+    _showDoctorFormDialog(
+      doctor: DoctorModel(
+        id: _selectedId,
+        name: _selectedName ?? '',
+        designation: _selectedDesignation ?? '',
+      ),
+    );
+  }
+
+  void _showDoctorFormDialog({DoctorModel? doctor}) {
+    final isEdit = doctor != null;
     final formKey = GlobalKey<FormState>();
-    final nameController = TextEditingController();
-    final designationController = TextEditingController();
+    final nameController = TextEditingController(text: doctor?.name?.toString() ?? '');
+    final designationController =
+        TextEditingController(text: doctor?.designation?.toString() ?? '');
     bool isSaving = false;
 
     showDialog(
@@ -121,208 +146,229 @@ class RefByDoctorFieldState extends State<RefByDoctorField> {
               child: ColoredBox(
                 color: Colors.white,
                 child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.fromLTRB(
-                        DM.p22,
-                        DM.p22,
-                        DM.p14,
-                        DM.p20,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            appTheme,
-                            appTheme.withValues(alpha: .78),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.fromLTRB(
+                          DM.p22,
+                          DM.p22,
+                          DM.p14,
+                          DM.p20,
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: DM.p48,
-                            height: DM.p48,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: .22),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.person_add_alt_1_rounded,
-                              color: Colors.white,
-                              size: DM.p25,
-                            ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              appTheme,
+                              appTheme.withValues(alpha: .78),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                          SizedBox(width: DM.p14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Add New Doctor',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: DM.p21,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                SizedBox(height: DM.p3),
-                                Text(
-                                  'Enter doctor information below',
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: .88),
-                                    fontSize: DM.p12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: isSaving
-                                ? null
-                                : () => Navigator.pop(dialogContext),
-                            icon: const Icon(Icons.close_rounded),
-                            color: Colors.white,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(DM.p22),
-                      child: Form(
-                        key: formKey,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                        ),
+                        child: Row(
                           children: [
-                            TextFormField(
-                              controller: nameController,
-                              textCapitalization: TextCapitalization.words,
-                              decoration: _doctorInputDecoration(
-                                label: 'Doctor Name',
-                                hint: 'e.g. Dr. Rahman',
-                                icon: Icons.person_outline_rounded,
+                            Container(
+                              width: DM.p48,
+                              height: DM.p48,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: .22),
+                                shape: BoxShape.circle,
                               ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'Doctor name is required';
-                                }
-                                return null;
-                              },
-                            ),
-                            SizedBox(height: DM.p16),
-                            TextFormField(
-                              controller: designationController,
-                              textCapitalization: TextCapitalization.words,
-                              decoration: _doctorInputDecoration(
-                                label: 'Designation',
-                                hint: 'e.g. MBBS, FCPS',
-                                icon: Icons.workspace_premium_outlined,
+                              child: Icon(
+                                isEdit
+                                    ? Icons.edit_rounded
+                                    : Icons.person_add_alt_1_rounded,
+                                color: Colors.white,
+                                size: DM.p25,
                               ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'Designation is required';
-                                }
-                                return null;
-                              },
                             ),
-                            SizedBox(height: DM.p22),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: OutlinedButton(
-                                    onPressed: isSaving
-                                        ? null
-                                        : () => Navigator.pop(dialogContext),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: appTheme,
-                                      side: BorderSide(color: appTheme),
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: DM.p13,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(DM.p12),
-                                      ),
-                                    ),
-                                    child: const Text('Cancel'),
-                                  ),
-                                ),
-                                SizedBox(width: DM.p12),
-                                Expanded(
-                                  child: ElevatedButton.icon(
-                                    onPressed: isSaving
-                                        ? null
-                                        : () async {
-                                            if (!formKey.currentState!
-                                                .validate()) {
-                                              return;
-                                            }
-                                            setDialogState(
-                                                () => isSaving = true);
-                                            try {
-                                              final doctor =
-                                                  await _doctorController
-                                                      .addDoctor(
-                                                nameController.text,
-                                                designationController.text,
-                                              );
-                                              if (mounted) {
-                                                Navigator.pop(dialogContext);
-                                                _applySelection(doctor);
-                                              }
-                                            } catch (_) {
-                                              setDialogState(
-                                                  () => isSaving = false);
-                                              Get.snackbar(
-                                                'Error',
-                                                'Failed to add doctor',
-                                                backgroundColor: redColor,
-                                                colorText: whiteColor,
-                                              );
-                                            }
-                                          },
-                                    icon: isSaving
-                                        ? SizedBox(
-                                            width: DM.p17,
-                                            height: DM.p17,
-                                            child:
-                                                const CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white,
-                                            ),
-                                          )
-                                        : const Icon(
-                                            Icons.check_circle_outline_rounded),
-                                    label: Text(
-                                      isSaving ? 'Saving...' : 'Add Doctor',
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: appTheme,
-                                      foregroundColor: Colors.white,
-                                      elevation: 0,
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: DM.p13,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(DM.p12),
-                                      ),
+                            SizedBox(width: DM.p14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isEdit ? 'Edit Doctor' : 'Add New Doctor',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: DM.p21,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                ),
-                              ],
+                                  SizedBox(height: DM.p3),
+                                  Text(
+                                    isEdit
+                                        ? 'Update doctor information below'
+                                        : 'Enter doctor information below',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: .88),
+                                      fontSize: DM.p12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: isSaving
+                                  ? null
+                                  : () => Navigator.pop(dialogContext),
+                              icon: const Icon(Icons.close_rounded),
+                              color: Colors.white,
                             ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                      Padding(
+                        padding: EdgeInsets.all(DM.p22),
+                        child: Form(
+                          key: formKey,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextFormField(
+                                controller: nameController,
+                                textCapitalization: TextCapitalization.words,
+                                decoration: _doctorInputDecoration(
+                                  label: 'Doctor Name',
+                                  hint: 'e.g. Dr. Rahman',
+                                  icon: Icons.person_outline_rounded,
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Doctor name is required';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              SizedBox(height: DM.p16),
+                              TextFormField(
+                                controller: designationController,
+                                textCapitalization: TextCapitalization.words,
+                                decoration: _doctorInputDecoration(
+                                  label: 'Designation (optional)',
+                                  hint: 'e.g. MBBS, FCPS',
+                                  icon: Icons.workspace_premium_outlined,
+                                ),
+                              ),
+                              SizedBox(height: DM.p22),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: isSaving
+                                          ? null
+                                          : () => Navigator.pop(dialogContext),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: appTheme,
+                                        side: BorderSide(color: appTheme),
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: DM.p13,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(DM.p12),
+                                        ),
+                                      ),
+                                      child: const Text('Cancel'),
+                                    ),
+                                  ),
+                                  SizedBox(width: DM.p12),
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: isSaving
+                                          ? null
+                                          : () async {
+                                              if (!formKey.currentState!
+                                                  .validate()) {
+                                                return;
+                                              }
+                                              setDialogState(
+                                                  () => isSaving = true);
+                                              try {
+                                                final DoctorModel savedDoctor;
+                                                if (isEdit) {
+                                                  savedDoctor =
+                                                      await _doctorController
+                                                          .updateDoctor(
+                                                    id: doctor.id.toString(),
+                                                    name: nameController.text,
+                                                    designation:
+                                                        designationController
+                                                            .text,
+                                                  );
+                                                } else {
+                                                  savedDoctor =
+                                                      await _doctorController
+                                                          .addDoctor(
+                                                    nameController.text,
+                                                    designationController.text,
+                                                  );
+                                                }
+                                                if (mounted) {
+                                                  Navigator.pop(dialogContext);
+                                                  _applySelection(savedDoctor);
+                                                }
+                                              } catch (_) {
+                                                setDialogState(
+                                                    () => isSaving = false);
+                                                Get.snackbar(
+                                                  'Error',
+                                                  isEdit
+                                                      ? 'Failed to update doctor'
+                                                      : 'Failed to add doctor',
+                                                  backgroundColor: redColor,
+                                                  colorText: whiteColor,
+                                                );
+                                              }
+                                            },
+                                      icon: isSaving
+                                          ? SizedBox(
+                                              width: DM.p17,
+                                              height: DM.p17,
+                                              child:
+                                                  const CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Colors.white,
+                                              ),
+                                            )
+                                          : Icon(
+                                              isEdit
+                                                  ? Icons.save_rounded
+                                                  : Icons
+                                                      .check_circle_outline_rounded,
+                                            ),
+                                      label: Text(
+                                        isSaving
+                                            ? 'Saving...'
+                                            : (isEdit
+                                                ? 'Update'
+                                                : 'Add Doctor'),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: appTheme,
+                                        foregroundColor: Colors.white,
+                                        elevation: 0,
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: DM.p13,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(DM.p12),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               ),
             );
           },
@@ -374,7 +420,7 @@ class RefByDoctorFieldState extends State<RefByDoctorField> {
         ? 'Select doctor'
         : designation.isEmpty
             ? _selectedName!
-            : '${_selectedName!} ($designation)';
+            : '${_selectedName!} $designation';
 
     return Padding(
       padding: EdgeInsets.all(DM.p1),
@@ -437,6 +483,22 @@ class RefByDoctorFieldState extends State<RefByDoctorField> {
                 ),
               ),
               SizedBox(width: DM.p8),
+              MaterialButton(
+                onPressed: widget.readOnly ? null : _showEditDoctorDialog,
+                minWidth: DM.p42,
+                height: DM.p42,
+                padding: EdgeInsets.zero,
+                color: appTheme,
+                disabledColor: Colors.grey,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(DM.p8),
+                ),
+                child: Icon(
+                  Icons.edit,
+                  color: fullWhiteColor,
+                ),
+              ),
+              SizedBox(width: DM.p6),
               MaterialButton(
                 onPressed: widget.readOnly ? null : _showAddDoctorDialog,
                 minWidth: DM.p42,
