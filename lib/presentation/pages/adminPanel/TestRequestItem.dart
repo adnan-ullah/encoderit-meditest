@@ -49,6 +49,8 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   bool isTestlistOpen = false;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<RefByDoctorFieldState> _refByFieldKey =
+      GlobalKey<RefByDoctorFieldState>();
   dynamic latitude;
   dynamic longitude;
   var dateTime_delivery;
@@ -1433,6 +1435,7 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                         Padding(
                           padding: EdgeInsets.all(DM.p5),
                           child: RefByDoctorField(
+                            key: _refByFieldKey,
                             initialDoctorId: refById,
                             initialDoctorName: refByName,
                             initialDoctorDesignation: refByDesignation,
@@ -4183,7 +4186,11 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
                       EdgeInsets.symmetric(horizontal: DM.p20, vertical: DM.p1),
                   child: MaterialButton(
                     onPressed: () async {
-                      if (_formKey.currentState?.validate() == true) {
+                      final isFormValid =
+                          _formKey.currentState?.validate() == true;
+                      final isRefByValid =
+                          _refByFieldKey.currentState?.validate() == true;
+                      if (isFormValid && isRefByValid) {
                         if (await chechkingInternet()) {
                           if (widget.testEachRequest!.teststatus == 2 ||
                               widget.testEachRequest!.teststatus == 8) {
@@ -4909,6 +4916,8 @@ Future<void> InvoicePrint(TestDataRequest testDataRequest, totalDiscount,
           address: testDataRequest.address,
           gender: testDataRequest.gender,
           referrer: testDataRequest.referrer,
+          refByName: testDataRequest.ref_by_name,
+          refByDesignation: testDataRequest.ref_by_designation,
           age: testDataRequest.age,
           date: date,
           totalAmount: testDataRequest.totalprice,

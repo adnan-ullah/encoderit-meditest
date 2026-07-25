@@ -107,6 +107,8 @@ class _CreateRequestState extends State<CreateRequest> {
 
   final addressText = TextEditingController();
   final referredAddressText = TextEditingController();
+  final GlobalKey<RefByDoctorFieldState> _refByFieldKey =
+      GlobalKey<RefByDoctorFieldState>();
   String? refById;
   String? refByName;
   String? refByDesignation;
@@ -684,6 +686,7 @@ class _CreateRequestState extends State<CreateRequest> {
                                   ),
                                 ),
                                 RefByDoctorField(
+                                  key: _refByFieldKey,
                                   initialDoctorId: refById,
                                   initialDoctorName: refByName,
                                   initialDoctorDesignation: refByDesignation,
@@ -1208,8 +1211,14 @@ class _CreateRequestState extends State<CreateRequest> {
                                     ),
                                     MaterialButton(
                                       onPressed: () async {
-                                        if (_formKey.currentState?.validate() ==
-                                            true) {
+                                        final isFormValid =
+                                            _formKey.currentState?.validate() ==
+                                                true;
+                                        final isRefByValid =
+                                            _refByFieldKey.currentState
+                                                    ?.validate() ==
+                                                true;
+                                        if (isFormValid && isRefByValid) {
                                           if (await chechkingInternet()) {
                                             if (createReqController.testData !=
                                                     null &&

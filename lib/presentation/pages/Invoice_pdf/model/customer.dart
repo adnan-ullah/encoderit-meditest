@@ -5,6 +5,8 @@ class Customer {
   final dynamic address;
   final dynamic gender;
   final dynamic referrer;
+  final dynamic refByName;
+  final dynamic refByDesignation;
   final dynamic date;
   final dynamic age;
   final dynamic totalAmount;
@@ -30,6 +32,8 @@ class Customer {
     this.invoice_id,
     this.gender,
     this.referrer,
+    this.refByName,
+    this.refByDesignation,
     this.date,
     
     this.age,
@@ -55,4 +59,13 @@ class Customer {
     
 
   });
+
+  /// "Ref By" display text: "Name (Designation)" or "Name" when no designation.
+  String get refByDisplay {
+    final name = refByName?.toString().trim() ?? '';
+    final designation = refByDesignation?.toString().trim() ?? '';
+    if (name.isEmpty) return '';
+    if (designation.isEmpty) return name;
+    return '$name ($designation)';
+  }
 }

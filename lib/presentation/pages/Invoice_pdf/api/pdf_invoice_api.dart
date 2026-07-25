@@ -86,13 +86,14 @@ class PdfInvoiceApi {
                   fontSize: 8,
                 )),
           ),
-          SizedBox(
-            width: PdfPageFormat.cm * 3.5,
-            child: Text("Ref:  " + customer.referrer,
-                style: TextStyle(
-                  fontSize: 8,
-                )),
-          ),
+          if (customer.refByDisplay.isNotEmpty)
+            SizedBox(
+              width: PdfPageFormat.cm * 3.5,
+              child: Text("Ref By:  " + customer.refByDisplay,
+                  style: TextStyle(
+                    fontSize: 8,
+                  )),
+            ),
         ],
       );
 

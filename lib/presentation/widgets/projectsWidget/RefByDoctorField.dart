@@ -27,14 +27,23 @@ class RefByDoctorField extends StatefulWidget {
   final bool readOnly;
 
   @override
-  State<RefByDoctorField> createState() => _RefByDoctorFieldState();
+  State<RefByDoctorField> createState() => RefByDoctorFieldState();
 }
 
-class _RefByDoctorFieldState extends State<RefByDoctorField> {
+class RefByDoctorFieldState extends State<RefByDoctorField> {
   late final DoctorController _doctorController;
   String? _selectedId;
   String? _selectedName;
   String? _selectedDesignation;
+  bool _showError = false;
+
+  /// Call on submit only. Returns true when a doctor is selected.
+  bool validate() {
+    final isValid =
+        _selectedId != null && _selectedId!.trim().isNotEmpty;
+    setState(() => _showError = !isValid);
+    return isValid;
+  }
 
   @override
   void initState() {
@@ -66,6 +75,7 @@ class _RefByDoctorFieldState extends State<RefByDoctorField> {
       _selectedId = doctor?.id?.toString();
       _selectedName = doctor?.name?.toString();
       _selectedDesignation = doctor?.designation?.toString();
+      _showError = false;
     });
     widget.onChanged(_selectedId, _selectedName, _selectedDesignation);
   }
@@ -368,72 +378,96 @@ class _RefByDoctorFieldState extends State<RefByDoctorField> {
 
     return Padding(
       padding: EdgeInsets.all(DM.p1),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: DM.p100,
-            child: Text(
-              'Ref By',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: DM.p14,
-                color: blackFontColor,
-              ),
-            ),
-          ),
-          SizedBox(width: DM.p5),
-          const Text(':'),
-          SizedBox(width: DM.p10),
-          Expanded(
-            child: InkWell(
-              onTap: widget.readOnly ? null : _openDoctorPicker,
-              child: Container(
-                height: DM.p42,
-                padding: EdgeInsets.symmetric(horizontal: DM.p10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: appTheme, width: DM.p1),
-                  borderRadius: BorderRadius.circular(DM.p4),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: DM.p100,
+                child: Text(
+                  'Ref By',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: DM.p14,
+                    color: blackFontColor,
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        displayText,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: DM.p14,
-                          color: hasSelection ? blackFontColor : Colors.grey,
-                        ),
+              ),
+              SizedBox(width: DM.p5),
+              const Text(':'),
+              SizedBox(width: DM.p10),
+              Expanded(
+                child: InkWell(
+                  onTap: widget.readOnly ? null : _openDoctorPicker,
+                  child: Container(
+                    height: DM.p42,
+                    padding: EdgeInsets.symmetric(horizontal: DM.p10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(
+                        color: _showError ? Colors.red : appTheme,
+                        width: _showError ? DM.p2 : DM.p1,
                       ),
+                      borderRadius: BorderRadius.circular(DM.p4),
                     ),
-                    Icon(
-                      Icons.arrow_drop_down,
-                      color: appTheme,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            displayText,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: DM.p14,
+                              color: hasSelection
+                                  ? blackFontColor
+                                  : Colors.grey,
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_drop_down,
+                          color: appTheme,
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
+                ),
+              ),
+              SizedBox(width: DM.p8),
+              MaterialButton(
+                onPressed: widget.readOnly ? null : _showAddDoctorDialog,
+                minWidth: DM.p42,
+                height: DM.p42,
+                padding: EdgeInsets.zero,
+                color: appTheme,
+                disabledColor: Colors.grey,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(DM.p8),
+                ),
+                child: Icon(
+                  Icons.add,
+                  color: fullWhiteColor,
+                ),
+              ),
+            ],
+          ),
+          if (_showError)
+            Padding(
+              padding: EdgeInsets.only(
+                left: DM.p120,
+                top: DM.p4,
+              ),
+              child: Text(
+                'Ref By is required',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: DM.p10,
                 ),
               ),
             ),
-          ),
-          SizedBox(width: DM.p8),
-          MaterialButton(
-            onPressed: widget.readOnly ? null : _showAddDoctorDialog,
-            minWidth: DM.p42,
-            height: DM.p42,
-            padding: EdgeInsets.zero,
-            color: appTheme,
-            disabledColor: Colors.grey,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(DM.p8),
-            ),
-            child: Icon(
-              Icons.add,
-              color: fullWhiteColor,
-            ),
-          ),
         ],
       ),
     );

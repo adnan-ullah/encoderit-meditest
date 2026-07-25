@@ -31,6 +31,8 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
   CreateRequestController createReqController =
       Get.put(CreateRequestController());
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<RefByDoctorFieldState> _refByFieldKey =
+      GlobalKey<RefByDoctorFieldState>();
 
   var phone = TextEditingController();
   var referrer = TextEditingController();
@@ -370,6 +372,7 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
                             Padding(
                               padding: EdgeInsets.all(DM.p12),
                               child: RefByDoctorField(
+                                key: _refByFieldKey,
                                 initialDoctorId: refById,
                                 initialDoctorName: refByName,
                                 initialDoctorDesignation: refByDesignation,
@@ -929,6 +932,14 @@ class _CreatePrescriptionState extends State<CreatePrescription> {
                               width: DM.p150,
                               child: MaterialButton(
                                 onPressed: () async {
+                                  final isFormValid =
+                                      _formKey.currentState?.validate() == true;
+                                  final isRefByValid =
+                                      _refByFieldKey.currentState?.validate() ==
+                                          true;
+                                  if (!isFormValid || !isRefByValid) {
+                                    return;
+                                  }
                                   if (await chechkingInternet()) {
                                     if (imageFile1 != null ||
                                         imageFile2 != null) {
