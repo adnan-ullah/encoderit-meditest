@@ -90,6 +90,7 @@ class RefByDoctorFieldState extends State<RefByDoctorField> {
       context: context,
       builder: (_) => _DoctorSearchDialog(
         doctorController: _doctorController,
+        selectedDoctorId: _selectedId,
       ),
     );
 
@@ -537,9 +538,13 @@ class RefByDoctorFieldState extends State<RefByDoctorField> {
 }
 
 class _DoctorSearchDialog extends StatefulWidget {
-  const _DoctorSearchDialog({required this.doctorController});
+  const _DoctorSearchDialog({
+    required this.doctorController,
+    this.selectedDoctorId,
+  });
 
   final DoctorController doctorController;
+  final String? selectedDoctorId;
 
   @override
   State<_DoctorSearchDialog> createState() => _DoctorSearchDialogState();
@@ -552,13 +557,45 @@ class _DoctorSearchDialogState extends State<_DoctorSearchDialog> {
   @override
   void initState() {
     super.initState();
-    _filtered = List<DoctorModel>.from(widget.doctorController.doctors);
+    _filtered = _withSelectedFirst(
+      List<DoctorModel>.from(widget.doctorController.doctors),
+    );
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  bool _isSelected(DoctorModel doctor) {
+    final selectedId = widget.selectedDoctorId?.trim() ?? '';
+    if (selectedId.isEmpty) return false;
+    return doctor.id?.toString() == selectedId;
+  }
+
+  List<DoctorModel> _withSelectedFirst(List<DoctorModel> doctors) {
+    final selectedId = widget.selectedDoctorId?.trim() ?? '';
+    if (selectedId.isEmpty || doctors.isEmpty) {
+      return doctors;
+    }
+
+    final selected = <DoctorModel>[];
+    final others = <DoctorModel>[];
+    for (final doctor in doctors) {
+      if (doctor.id?.toString() == selectedId) {
+        selected.add(doctor);
+      } else {
+        others.add(doctor);
+      }
+    }
+    return [...selected, ...others];
+  }
+
+  void _applyFilter(String value) {
+    setState(() {
+      _filtered = _withSelectedFirst(widget.doctorController.search(value));
+    });
   }
 
   @override
@@ -651,11 +688,7 @@ class _DoctorSearchDialogState extends State<_DoctorSearchDialog> {
               ),
               child: TextField(
                 controller: _searchController,
-                onChanged: (value) {
-                  setState(() {
-                    _filtered = widget.doctorController.search(value);
-                  });
-                },
+                onChanged: _applyFilter,
                 decoration: InputDecoration(
                   hintText: 'Search by name or designation',
                   hintStyle: TextStyle(
@@ -682,11 +715,7 @@ class _DoctorSearchDialogState extends State<_DoctorSearchDialog> {
                           icon: const Icon(Icons.clear_rounded),
                           onPressed: () {
                             _searchController.clear();
-                            setState(() {
-                              _filtered = List<DoctorModel>.from(
-                                widget.doctorController.doctors,
-                              );
-                            });
+                            _applyFilter('');
                           },
                         ),
                 ),
@@ -748,8 +777,11 @@ class _DoctorSearchDialogState extends State<_DoctorSearchDialog> {
                   separatorBuilder: (_, __) => SizedBox(height: DM.p8),
                   itemBuilder: (context, index) {
                     final doctor = _filtered[index];
+                    final isSelected = _isSelected(doctor);
                     return Material(
-                      color: appTheme.withValues(alpha: .055),
+                      color: isSelected
+                          ? appTheme.withValues(alpha: .16)
+                          : appTheme.withValues(alpha: .055),
                       borderRadius: BorderRadius.circular(DM.p14),
                       child: InkWell(
                         onTap: () => Navigator.pop(context, doctor),
@@ -761,7 +793,10 @@ class _DoctorSearchDialogState extends State<_DoctorSearchDialog> {
                           ),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: appTheme.withValues(alpha: .18),
+                              color: isSelected
+                                  ? appTheme
+                                  : appTheme.withValues(alpha: .18),
+                              width: isSelected ? DM.p2 : DM.p1,
                             ),
                             borderRadius: BorderRadius.circular(DM.p14),
                           ),
@@ -820,9 +855,36 @@ class _DoctorSearchDialogState extends State<_DoctorSearchDialog> {
                                   ],
                                 ),
                               ),
+                              if (isSelected) ...[
+                                SizedBox(width: DM.p6),
+                                Container(
+                                  alignment: Alignment.center,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: DM.p8,
+                                    vertical: DM.p5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: appTheme,
+                                    borderRadius:
+                                        BorderRadius.circular(DM.p10),
+                                  ),
+                                  child: Text(
+                                    'Selected',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: DM.p10,
+                                      fontWeight: FontWeight.w700,
+                                      height: 1.0,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              SizedBox(width: DM.p6),
                               Container(
                                 width: DM.p32,
                                 height: DM.p32,
+                                alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   shape: BoxShape.circle,
@@ -831,7 +893,9 @@ class _DoctorSearchDialogState extends State<_DoctorSearchDialog> {
                                   ),
                                 ),
                                 child: Icon(
-                                  Icons.arrow_forward_ios_rounded,
+                                  isSelected
+                                      ? Icons.check_rounded
+                                      : Icons.arrow_forward_ios_rounded,
                                   size: DM.p13,
                                   color: appTheme,
                                 ),
