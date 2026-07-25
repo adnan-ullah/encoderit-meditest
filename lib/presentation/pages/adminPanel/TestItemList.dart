@@ -20,7 +20,7 @@ class TestItemList extends StatefulWidget {
 class _TestItemListState extends State<TestItemList> {
   final List<TestData> _testItemsListAdmin = [];
   final List<TestData> _filterTestItemsList = [];
-  final List<DatabaseReference> _refs = []; // For listener cleanup
+  final Map<String, List<String>> _itemPaths = {};
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = false;
   bool _isSearchClear = false;
@@ -34,9 +34,6 @@ class _TestItemListState extends State<TestItemList> {
 
   @override
   void dispose() {
-    for (var ref in _refs) {
-      ref.onDisconnect();
-    }
     _searchController.dispose();
     super.dispose();
   }
@@ -45,98 +42,112 @@ class _TestItemListState extends State<TestItemList> {
     if (_isLoading) return;
     _setLoading(true);
 
-    List<String> monthPaths = getLastYearTestDataPaths();
-    setState(() {
-      _testItemsListAdmin.clear();
-      _filterTestItemsList.clear();
-    });
+    try {
+      final snapshot =
+          await FirebaseDatabase.instance.ref(testModelRootApi).get();
+      final Map<String, TestData> latestById = {};
+      final Map<String, List<String>> pathsById = {};
 
-    for (String path in monthPaths) {
-      DatabaseReference dbRef = FirebaseDatabase.instance.ref(path);
-      _refs.add(dbRef);
-
-      dbRef.onValue.listen((event) {
-        List<TestData> tempData = [];
-
-        if (event.snapshot.exists) {
-          for (DataSnapshot ds in event.snapshot.children) {
+      // Structure: testModel/{year}/{month}/{testId}
+      for (final year in snapshot.children) {
+        for (final month in year.children) {
+          for (final itemSnapshot in month.children) {
             try {
-              Map<String, dynamic> json = jsonDecode(jsonEncode(ds.value));
-              json['id'] = ds.key; // Ensure id is set
-              TestData testData = TestData.fromJson(json);
-              if (!tempData.any((item) => item.id == testData.id)) {
-                tempData.add(testData);
+              final data = Map<String, dynamic>.from(
+                jsonDecode(jsonEncode(itemSnapshot.value)),
+              );
+              data['id'] ??= itemSnapshot.key;
+              final item = TestData.fromJson(data);
+              final id = item.id?.toString();
+              if (id == null || id.isEmpty) continue;
+
+              final path =
+                  '$testModelRootApi/${year.key}/${month.key}/${itemSnapshot.key}';
+              pathsById.putIfAbsent(id, () => []).add(path);
+
+              final existing = latestById[id];
+              if (existing == null ||
+                  _timestampOf(item.lastupdate) >=
+                      _timestampOf(existing.lastupdate)) {
+                latestById[id] = item;
               }
-            } catch (e) {
-              print("Error parsing data for path $path: $e");
+            } catch (_) {
+              // Ignore a malformed item without hiding the remaining catalog.
             }
           }
         }
+      }
 
-        if (mounted) {
-          setState(() {
-            _testItemsListAdmin.removeWhere(
-                (item) => tempData.any((newItem) => newItem.id == item.id));
-            _testItemsListAdmin.addAll(tempData);
-            filterTestItem(_searchController.text);
-          });
-        }
-      }, onError: (error) {
-        print("Firebase error for path $path: $error");
-        if (mounted) _setLoading(false);
+      final items = latestById.values.toList()
+        ..sort((a, b) => a.name
+            .toString()
+            .toLowerCase()
+            .compareTo(b.name.toString().toLowerCase()));
+
+      if (!mounted) return;
+      setState(() {
+        _itemPaths
+          ..clear()
+          ..addAll(pathsById);
+        _testItemsListAdmin
+          ..clear()
+          ..addAll(items);
+        _applyFilter(_searchController.text);
       });
+    } catch (_) {
+      if (mounted) {
+        Get.snackbar(
+          'Unable to load test items',
+          'Please check the connection and try again.',
+          backgroundColor: redColor,
+          colorText: whiteColor,
+        );
+      }
+    } finally {
+      if (mounted) _setLoading(false);
     }
-
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (mounted) _setLoading(false);
   }
 
   Future<void> removeFromFirebase(String testItemId) async {
     try {
-      List<String> paths = getLastYearTestDataPaths();
-      bool removed = false;
+      final paths = _itemPaths[testItemId] ?? const <String>[];
+      if (paths.isEmpty) return;
+      await Future.wait(
+        paths.map((path) => FirebaseDatabase.instance.ref(path).remove()),
+      );
 
-      for (String path in paths) {
-        DatabaseReference dbRef =
-            FirebaseDatabase.instance.ref("$path/$testItemId");
-        final snapshot = await dbRef.get();
-        print("Checking path: $path/$testItemId, Exists: ${snapshot.exists}");
-
-        if (snapshot.exists) {
-          await dbRef.remove();
-          print("Removed $testItemId from $path");
-          removed = true;
-        }
-      }
-
-      if (!removed) {
-        print("No item with ID $testItemId found in any path");
-      } else {
-        // Trigger UI refresh
-        if (mounted)
-          setState(() {
-            _testItemsListAdmin.removeWhere((item) => item.id == testItemId);
-            filterTestItem(_searchController.text);
-          });
+      if (mounted) {
+        setState(() {
+          _itemPaths.remove(testItemId);
+          _testItemsListAdmin.removeWhere((item) => item.id == testItemId);
+          _applyFilter(_searchController.text);
+        });
       }
     } catch (e) {
       print("Error in removeFromFirebase: $e");
     }
   }
 
+  int _timestampOf(dynamic value) =>
+      int.tryParse(value?.toString() ?? '') ?? 0;
+
+  void _applyFilter(String value) {
+    _filterTestItemsList.clear();
+    if (value.isEmpty) {
+      _isSearchClear = false;
+      _filterTestItemsList.addAll(_testItemsListAdmin);
+    } else {
+      _isSearchClear = true;
+      _filterTestItemsList.addAll(
+        _testItemsListAdmin.where((element) =>
+            element.name.toLowerCase().contains(value.toLowerCase())),
+      );
+    }
+  }
+
   void filterTestItem(String value) {
     setState(() {
-      _filterTestItemsList.clear();
-      if (value.isEmpty) {
-        _isSearchClear = false;
-        _filterTestItemsList.addAll(_testItemsListAdmin);
-      } else {
-        _isSearchClear = true;
-        _filterTestItemsList.addAll(
-          _testItemsListAdmin.where((element) =>
-              element.name.toLowerCase().contains(value.toLowerCase())),
-        );
-      }
+      _applyFilter(value);
     });
   }
 
@@ -267,7 +278,12 @@ class _TestItemListState extends State<TestItemList> {
                                     children: [
                                       MaterialButton(
                                         onPressed: () => Get.to(() =>
-                                                TestDataCreate(testItem: item))
+                                                TestDataCreate(
+                                                  testItem: item,
+                                                  sourcePaths: _itemPaths[
+                                                          item.id.toString()] ??
+                                                      const <String>[],
+                                                ))
                                             ?.then((_) => getTestItemList()),
                                         shape: const StadiumBorder(),
                                         color: appTheme,

@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -16,8 +14,13 @@ import '../LoginScreen.dart';
 
 class TestDataCreate extends StatefulWidget {
   // static const String id = "sign_up_page";
-  TestData? testItem;
-  TestDataCreate({Key? key, this.testItem}) : super(key: key);
+  final TestData? testItem;
+  final List<String> sourcePaths;
+  TestDataCreate({
+    Key? key,
+    this.testItem,
+    this.sourcePaths = const <String>[],
+  }) : super(key: key);
 
   @override
   _TestDataCreateState createState() => _TestDataCreateState();
@@ -72,24 +75,18 @@ class _TestDataCreateState extends State<TestDataCreate> {
       category: createReqController.toCategory[category]!,
     );
 
-    List<String> paths = getLastYearTestDataPaths();
-    bool updated = false;
-
-    for (String path in paths) {
-      DatabaseReference dbRef = FirebaseDatabase.instance.ref("$path/${updatedTestItemData.id}");
-
-      // Check if the item exists
-      final snapshot = await dbRef.get();
-      if (snapshot.exists) {
-        await dbRef.update(jsonDecode(jsonEncode(updatedTestItemData)));
-        print("Updated test item at path: $path/${updatedTestItemData.id}");
-        updated = true;
-      }
-    }
-
-    if (!updated) {
+    if (widget.sourcePaths.isEmpty) {
       print("No test item with ID ${updatedTestItemData.id} found in any path");
+      return;
     }
+
+    await Future.wait(
+      widget.sourcePaths.map(
+        (path) => FirebaseDatabase.instance
+            .ref(path)
+            .update(Map<String, dynamic>.from(updatedTestItemData.toJson())),
+      ),
+    );
   }
 
 

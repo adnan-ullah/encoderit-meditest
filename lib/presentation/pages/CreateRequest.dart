@@ -20,7 +20,6 @@ import '../../constants/api.dart';
 import '../../constants/app_info.dart';
 import '../../constants/colors.dart';
 import '../../db/models/AdminUserModel.dart';
-import '../../db/models/TestData.dart';
 import '../../db/models/TestDataRequest.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/CreateRequestController.dart';
@@ -96,7 +95,7 @@ class _CreateRequestState extends State<CreateRequest> {
     getSharedData();
 
     //populate testItemList
-    getTestItemList();
+    createReqController.loadTestItems();
 
     setState(() {
       getGPS();
@@ -1401,36 +1400,6 @@ String? validateAge(String? value) {
   else
     return null;
 }
-
-Future<void> getTestItemList() async {
-  CreateRequestController createRequest_controller =
-  Get.put(CreateRequestController());
-
-  late DatabaseReference _dbref_testModel;
-  List<String> paths = getLastYearTestDataPaths();
-
-  FirebaseDatabase.instance.setPersistenceEnabled(true);
-
-  for (String path in paths) {
-    _dbref_testModel = FirebaseDatabase.instance.ref(path);
-    _dbref_testModel.keepSynced(true);
-
-    createRequest_controller.testItemList.clear();
-    createRequest_controller.testItemListWithSelected.clear();
-
-    _dbref_testModel.onValue.listen((event) {
-      for (DataSnapshot ds in event.snapshot.children) {
-        TestData testData = TestData.fromJson(json.decode(jsonEncode(ds.value)));
-
-        createRequest_controller.testItemList.add(testData);
-        createRequest_controller.testItemListWithSelected[testData.id] = false;
-
-        print(testData.name);
-      }
-    });
-  }
-}
-
 
 Future<void> getAdminNotification(phone, type, context) async {
   late DatabaseReference DbrefTestModel;

@@ -1,9 +1,12 @@
-import 'dart:math';
+import 'dart:async';
+import 'dart:convert';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 
+import '../constants/api.dart';
 import '../constants/colors.dart';
 import '../db/models/TestData.dart';
 import '../db/models/TestDataRequest.dart';
@@ -16,6 +19,90 @@ class CreateRequestController extends GetxController {
   var testData = <TestData>[].obs;
   var testItemList = <TestData>[].obs;
   var filter_testItemList = <TestData>[].obs;
+
+  /// True while the test catalog is being fetched from Firebase.
+  final RxBool isTestItemsLoading = false.obs;
+  bool _testItemsLoaded = false;
+  Completer<void>? _testItemsLoadCompleter;
+
+  /// Loads the complete test catalog from the `testModel` root.
+  ///
+  /// - Uses one one-shot read (no duration filter or lingering listeners).
+  /// - De-duplicates by id (latest `lastupdate` wins) and sorts alphabetically.
+  /// - Preserves any existing selections.
+  Future<void> loadTestItems({bool forceRefresh = false}) async {
+    if (isTestItemsLoading.value) {
+      await _testItemsLoadCompleter?.future;
+      return;
+    }
+    if (_testItemsLoaded && !forceRefresh) return;
+
+    _testItemsLoadCompleter = Completer<void>();
+    isTestItemsLoading.value = true;
+    try {
+      final snapshot =
+          await FirebaseDatabase.instance.ref(testModelRootApi).get();
+      final Map<String, TestData> byId = {};
+
+      void collectTestItems(dynamic node, [String? nodeKey]) {
+        if (node is! Map) return;
+
+        final Map<String, dynamic> data =
+            Map<String, dynamic>.from(node);
+        final bool isTestItem =
+            data.containsKey('name') && data.containsKey('testprice');
+
+        if (isTestItem) {
+          try {
+            data['id'] ??= nodeKey;
+            final item = TestData.fromJson(data);
+            final key = item.id?.toString();
+            if (key == null || key.isEmpty) return;
+
+            final existing = byId[key];
+            if (existing == null ||
+                _timestampOf(item.lastupdate) >=
+                    _timestampOf(existing.lastupdate)) {
+              byId[key] = item;
+            }
+          } catch (_) {
+            // Skip a malformed entry instead of failing the whole load.
+          }
+          return;
+        }
+
+        data.forEach(
+          (key, value) => collectTestItems(value, key),
+        );
+      }
+
+      if (snapshot.exists) {
+        final root = jsonDecode(jsonEncode(snapshot.value));
+        collectTestItems(root);
+      }
+
+      final items = byId.values.toList()
+        ..sort((a, b) => a.name
+            .toString()
+            .toLowerCase()
+            .compareTo(b.name.toString().toLowerCase()));
+
+      for (final item in items) {
+        testItemListWithSelected[item.id] ??= false;
+      }
+
+      testItemList.assignAll(items);
+      filter_testItemList.assignAll(items);
+      _testItemsLoaded = true;
+    } finally {
+      isTestItemsLoading.value = false;
+      _testItemsLoadCompleter?.complete();
+      _testItemsLoadCompleter = null;
+    }
+  }
+
+  int _timestampOf(dynamic value) =>
+      int.tryParse(value?.toString() ?? '') ?? 0;
 
 
   var testRequestList = <TestData>[].obs;

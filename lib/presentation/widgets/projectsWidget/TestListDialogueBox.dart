@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
+import 'package:healthcare_homelab/db/models/TestData.dart';
 import 'package:healthcare_homelab/state_programming/CreateRequestController.dart';
 
 import '../../../responsives/dimensions.dart';
@@ -23,40 +24,30 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
   bool isClear = false;
 
   var searchingText = TextEditingController();
+  String _query = "";
+
+  /// Filtered view computed live from the controller list, so it always
+  /// reflects the latest catalog even if data arrives after the dialog opens.
+  List<TestData> get _visibleItems {
+    if (_query.isEmpty) return cr_Controller.testItemList;
+    return cr_Controller.testItemList
+        .where((element) =>
+            element.name.toString().toLowerCase().contains(_query))
+        .toList();
+  }
 
   void filterigTestItem(dynamic value) {
-    if (value.toString().isNotEmpty) {
-      setState(() {
-        isClear = true;
-      });
-
-      cr_Controller.filter_testItemList.clear();
-
-      cr_Controller.testItemList.map((element) {
-        if (element.name
-            .toString()
-            .toLowerCase()
-            .contains(value.toString().toLowerCase())) {
-          cr_Controller.filter_testItemList.add(element);
-        }
-      }).toList();
-    } else {
-      setState(() {
-        isClear = false;
-      });
-      cr_Controller.filter_testItemList.clear();
-      cr_Controller.filter_testItemList.addAll(cr_Controller.testItemList);
-    }
+    setState(() {
+      _query = value.toString().toLowerCase().trim();
+      isClear = _query.isNotEmpty;
+    });
   }
 
   @override
   void initState() {
     cr_Controller = Get.put(CreateRequestController());
-    cr_Controller.filter_testItemList.clear();
-    cr_Controller.filter_testItemList.addAll(cr_Controller.testItemList);
-
-    // print("ADNAN" + cr_Controller.testItemList.length.toString());
-    // TODO: implement initState
+    // Ensure the catalog is loaded (guards against a partial/failed initial load).
+    cr_Controller.loadTestItems();
     super.initState();
   }
 
@@ -171,119 +162,109 @@ class _TestItemDialogueBoxState extends State<TestItemDialogueBox> {
                     Card(
                         child: Container(
                       height: DM.screenHeight * 0.60,
-                      child: ListView.builder(
-                        itemCount: cr_Controller.filter_testItemList.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            color: whiteColor,
-                            padding: EdgeInsets.symmetric(
-                                horizontal: DM.p10, vertical: DM.p4),
-                            margin: EdgeInsets.symmetric(vertical: DM.p8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                SizedBox(
-                                  width: DM.p130,
-                                  child: Text(
-                                    cr_Controller
-                                            .filter_testItemList[index].name +
-                                        " (${cr_Controller.filter_testItemList[index].diagnostic_center})",
-                                    overflow: TextOverflow.visible,
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: DM.p12,
-                                        color: Color.fromARGB(255, 26, 1, 1)),
-                                  ),
+                      child: Builder(
+                        builder: (context) {
+                          final items = _visibleItems;
+
+                          if (cr_Controller.isTestItemsLoading.value &&
+                              cr_Controller.testItemList.isEmpty) {
+                            return Center(
+                              child: CircularProgressIndicator(color: appTheme),
+                            );
+                          }
+
+                          if (items.isEmpty) {
+                            return Center(
+                              child: Text(
+                                cr_Controller.testItemList.isEmpty
+                                    ? "No test items found"
+                                    : "No match for your search",
+                                style: TextStyle(
+                                    fontSize: DM.p14, color: Colors.grey),
+                              ),
+                            );
+                          }
+
+                          return ListView.builder(
+                            itemCount: items.length,
+                            itemBuilder: (context, index) {
+                              final TestData item = items[index];
+                              final bool isSelected = cr_Controller
+                                      .testItemListWithSelected[item.id] ==
+                                  true;
+                              return Container(
+                                color: whiteColor,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: DM.p10, vertical: DM.p4),
+                                margin: EdgeInsets.symmetric(vertical: DM.p8),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    SizedBox(
+                                      width: DM.p130,
+                                      child: Text(
+                                        item.name +
+                                            " (${item.diagnostic_center})",
+                                        overflow: TextOverflow.visible,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: DM.p12,
+                                            color:
+                                                Color.fromARGB(255, 26, 1, 1)),
+                                      ),
+                                    ),
+                                    Text(
+                                      "Price: " + "${item.testprice}".toString(),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: DM.p12,
+                                          color: Color.fromARGB(255, 26, 1, 1)),
+                                    ),
+                                    SizedBox(
+                                        height: DM.p35,
+                                        width: DM.p80,
+                                        child: !isSelected
+                                            ? MaterialButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    cr_Controller
+                                                            .testItemListWithSelected[
+                                                        item.id] = true;
+                                                  });
+                                                },
+                                                shape: const StadiumBorder(),
+                                                color: appTheme,
+                                                child: Text(
+                                                  "Add",
+                                                  style: TextStyle(
+                                                      color: fullWhiteColor,
+                                                      fontSize: DM.p10,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ))
+                                            : MaterialButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    cr_Controller
+                                                            .testItemListWithSelected[
+                                                        item.id] = false;
+                                                  });
+                                                },
+                                                shape: const StadiumBorder(),
+                                                color: redColor,
+                                                child: Text(
+                                                  "Remove",
+                                                  style: TextStyle(
+                                                      color: fullWhiteColor,
+                                                      fontSize: DM.p8,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ))),
+                                  ],
                                 ),
-                                Text(
-                                  "Price: " +
-                                      "${cr_Controller.filter_testItemList[index].testprice}"
-                                          .toString(),
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: DM.p12,
-                                      color: Color.fromARGB(255, 26, 1, 1)),
-                                ),
-                                SizedBox(
-                                    height: DM.p35,
-                                    width: DM.p80,
-                                    child: cr_Controller
-                                                    .testItemListWithSelected[
-                                                cr_Controller
-                                                    .filter_testItemList[index]
-                                                    .id] ==
-                                            false
-                                        ? MaterialButton(
-                                            onPressed: () {
-                                              // cr_Controller.testData.add(
-                                              //     cr_Controller
-                                              //             .filter_testItemList[
-                                              //         index]);
-
-                                              setState(() {
-                                                cr_Controller
-                                                            .testItemListWithSelected[
-                                                        cr_Controller
-                                                            .filter_testItemList[
-                                                                index]
-                                                            .id] =
-                                                    !cr_Controller
-                                                            .testItemListWithSelected[
-                                                        cr_Controller
-                                                            .filter_testItemList[
-                                                                index]
-                                                            .id]!;
-                                              });
-
-                                              // deleteFromStore(snapshot.key);
-                                            },
-                                            shape: const StadiumBorder(),
-                                            color: appTheme,
-                                            child: Text(
-                                              "Add",
-                                              style: TextStyle(
-                                                  color: fullWhiteColor,
-                                                  fontSize: DM.p10,
-                                                  fontWeight: FontWeight.bold),
-                                            ))
-                                        : MaterialButton(
-                                            onPressed: () {
-                                              // cr_Controller.testData
-                                              //     .removeWhere((element) =>
-                                              //         element.id ==
-                                              //         cr_Controller
-                                              //             .filter_testItemList[
-                                              //                 index]
-                                              //             .id);
-
-                                              setState(() {
-                                                cr_Controller
-                                                            .testItemListWithSelected[
-                                                        cr_Controller
-                                                            .filter_testItemList[
-                                                                index]
-                                                            .id] =
-                                                    !cr_Controller
-                                                            .testItemListWithSelected[
-                                                        cr_Controller
-                                                            .filter_testItemList[
-                                                                index]
-                                                            .id]!;
-                                              });
-
-                                              // deleteFromStore(snapshot.key);
-                                            },
-                                            shape: const StadiumBorder(),
-                                            color: redColor,
-                                            child: Text(
-                                              "Remove",
-                                              style: TextStyle(
-                                                  color: fullWhiteColor,
-                                                  fontSize: DM.p8,
-                                                  fontWeight: FontWeight.bold),
-                                            ))),
-                              ],
-                            ),
+                              );
+                            },
                           );
                         },
                       ),

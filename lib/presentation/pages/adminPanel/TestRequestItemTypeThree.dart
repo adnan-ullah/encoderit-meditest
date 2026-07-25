@@ -163,30 +163,17 @@ class _TestRequestCreateTypeThreeState
   var typeUser = "";
 
   Future<void> _getTestItemList() async {
-    testItemList.clear();
-    testItemListWithSelected.clear();
+    await createReqController.loadTestItems(forceRefresh: true);
+    if (!mounted) return;
 
-    List<String> paths = getLastYearTestDataPaths();
-    List<TestData> allItems = [];
-
-    for (String path in paths) {
-      final dbRef = FirebaseDatabase.instance.ref(path);
-      final snapshot = await dbRef.get();
-
-      if (snapshot.exists) {
-        for (DataSnapshot ds in snapshot.children) {
-          Map<String, dynamic> json = jsonDecode(jsonEncode(ds.value));
-          json['id'] = ds.key;
-          final item = TestData.fromJson(json);
-          if (!allItems.any((e) => e.id == item.id)) {
-            setState(() {
-              testItemList.add(item);
-              testItemListWithSelected[item.id] ??= false;
-            });
-          }
-        }
+    setState(() {
+      testItemList
+        ..clear()
+        ..addAll(createReqController.testItemList);
+      for (final item in testItemList) {
+        testItemListWithSelected[item.id] ??= false;
       }
-    }
+    });
   }
 
 
