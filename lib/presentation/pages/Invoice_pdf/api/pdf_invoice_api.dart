@@ -6,7 +6,6 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/widgets.dart';
 
-import '../../../../responsives/dimensions.dart';
 import '../model/customer.dart';
 import '../model/invoice.dart';
 import '../utils.dart';
@@ -57,6 +56,11 @@ class PdfInvoiceApi {
               buildInvoiceInfo(invoice.customer),
             ],
           ),
+          if (invoice.customer.refByDisplay.isNotEmpty)
+            Text(
+              "Ref By:  " + invoice.customer.refByDisplay,
+              style: TextStyle(fontSize: 8),
+            ),
         ],
       );
 
@@ -86,14 +90,6 @@ class PdfInvoiceApi {
                   fontSize: 8,
                 )),
           ),
-          if (customer.refByDisplay.isNotEmpty)
-            SizedBox(
-              width: PdfPageFormat.cm * 3.5,
-              child: Text("Ref By:  " + customer.refByDisplay,
-                  style: TextStyle(
-                    fontSize: 8,
-                  )),
-            ),
         ],
       );
 
