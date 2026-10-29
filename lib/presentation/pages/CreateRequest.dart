@@ -23,6 +23,7 @@ import '../../db/models/AdminUserModel.dart';
 import '../../db/models/TestDataRequest.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/CreateRequestController.dart';
+import '../../utils/firebase_db_helpers.dart';
 import '../widgets/projectsWidget/FormUserAge.dart';
 import '../widgets/projectsWidget/Notifications/NotificationServices.dart';
 import '../widgets/projectsWidget/RefByDoctorField.dart';
@@ -1404,8 +1405,8 @@ String? validateAge(String? value) {
 Future<void> getAdminNotification(phone, type, context) async {
   late DatabaseReference DbrefTestModel;
   DbrefTestModel = FirebaseDatabase.instance.ref("$adminUserApi/");
-  FirebaseDatabase.instance.setPersistenceEnabled(true);
-  DbrefTestModel.keepSynced(true);
+  enableFirebaseDbPersistence();
+  keepDbSynced(DbrefTestModel);
 
   DbrefTestModel.onValue.listen((event) async {
     for (DataSnapshot ds in event.snapshot.children) {

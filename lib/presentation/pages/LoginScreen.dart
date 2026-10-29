@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' show InternetAddress, SocketException;
 
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -18,6 +19,7 @@ import '../../db/models/AdminUserModel.dart';
 import '../../constants/commission_types.dart';
 import '../../responsives/dimensions.dart';
 import '../../state_programming/CreateRequestController.dart';
+import '../../utils/firebase_db_helpers.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -38,8 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final dbRef = FirebaseDatabase.instance;
 
     final adminUserRef = dbRef.ref("$database_name/admin_user");
-     FirebaseDatabase.instance.setPersistenceEnabled(true);
-    adminUserRef.keepSynced(true);
+    enableFirebaseDbPersistence();
+    keepDbSynced(adminUserRef);
     final adminUserEvent = await adminUserRef.once();
     if (!adminUserEvent.snapshot.exists) {
       await adminUserRef.set({});
@@ -511,6 +513,8 @@ String? validateMobile(String? value) {
 }
 
 Future<bool> chechkingInternet() async {
+  // InternetAddress.lookup is not supported on web.
+  if (kIsWeb) return true;
   try {
     final result = await InternetAddress.lookup('example.com');
     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {

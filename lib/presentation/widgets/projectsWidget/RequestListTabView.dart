@@ -18,6 +18,7 @@ import '../../../constants/app_info.dart';
 import '../../../db/models/AdminUserModel.dart';
 import '../../../db/models/TestDataRequest.dart';
 import '../../../responsives/dimensions.dart';
+import '../../../utils/firebase_db_helpers.dart';
 
 class RequestListTabView extends StatefulWidget {
   final String statusKey;
@@ -257,11 +258,11 @@ class _RequestListTabViewState extends State<RequestListTabView> {
   }
 
   Future<void> getAdminNotification(phone, type, context) async {
-    FirebaseDatabase.instance.setPersistenceEnabled(true);
+    enableFirebaseDbPersistence();
     List<String> lastThreeMonthsPaths = getLastThreeMonthTestRequestPaths();
     for (String path in lastThreeMonthsPaths) {
       DatabaseReference dbRefTestModel = FirebaseDatabase.instance.ref(path);
-      dbRefTestModel.keepSynced(true);
+      keepDbSynced(dbRefTestModel);
       final event = await dbRefTestModel.once();
       if (!event.snapshot.exists) continue;
       for (DataSnapshot ds in event.snapshot.children) {

@@ -71,8 +71,11 @@ dependencies:
   archive: ^4.0.9
 
 
-# dependency_overrides:
-#   firebase_messaging_platform_interface: 3.1.6
+dependency_overrides:
+  # animated_splash_screen still pulls page_transition 2.2.1, which fails on
+  # Flutter 3.44+ (CupertinoPageTransitionsBuilder moved to cupertino.dart).
+  page_transition: ^2.2.2
+
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   build_runner: any

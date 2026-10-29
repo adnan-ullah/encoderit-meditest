@@ -27,6 +27,7 @@ import '../../../db/models/TestDataRequest.dart';
 import '../../../responsives/dimensions.dart';
 import '../../../state_programming/CreateRequestController.dart';
 import '../../../utils/commission_calculator.dart';
+import '../../../utils/firebase_db_helpers.dart';
 import '../../widgets/otherWidgets/PhotoViewImage.dart';
 import '../../widgets/projectsWidget/RefByDoctorField.dart';
 import '../Invoice_pdf/api/pdf_api.dart';
@@ -167,10 +168,10 @@ class _TestRequestCreateState extends State<TestRequestCreate> {
   }
 
   Future<void> getAdminUserList() async {
-    FirebaseDatabase.instance.setPersistenceEnabled(true);
+    enableFirebaseDbPersistence();
 
     final dbRefTestModel = FirebaseDatabase.instance.ref(adminUserApi);
-    dbRefTestModel.keepSynced(true);
+    keepDbSynced(dbRefTestModel);
 
     dbRefTestModel.onValue.listen((event) {
       final List<AdminUserModel> tempAdminUsers = [];

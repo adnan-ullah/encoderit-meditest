@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../constants/app_info.dart';
 import '../../../responsives/dimensions.dart';
+import '../../../utils/firebase_db_helpers.dart';
 import '../../widgets/projectsWidget/Notifications/GenerateNotification.dart';
 import '../../widgets/projectsWidget/Notifications/NotificationServices.dart';
 import '../../widgets/projectsWidget/RequestListTabView.dart';
@@ -183,7 +184,7 @@ class _StatusRequestListState extends State<StatusRequestList> with TickerProvid
 
   Future<void> populateAllRequest() async {
     CreateRequestController createRequestController = Get.put(CreateRequestController());
-    FirebaseDatabase.instance.setPersistenceEnabled(true);
+    enableFirebaseDbPersistence();
 
     createRequestController.testItemList.clear();
     createRequestController.testItemListWithSelected.clear();
@@ -192,7 +193,7 @@ class _StatusRequestListState extends State<StatusRequestList> with TickerProvid
 
     for (String path in lastThreeMonthsPaths) {
       DatabaseReference dbrefTestRequest = FirebaseDatabase.instance.ref(path);
-      dbrefTestRequest.keepSynced(true);
+      keepDbSynced(dbrefTestRequest);
 
       dbrefTestRequest.onValue.listen((event) {
         if (event.snapshot.exists) {

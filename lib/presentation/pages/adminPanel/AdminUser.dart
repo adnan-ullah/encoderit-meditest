@@ -11,6 +11,7 @@ import 'package:healthcare_homelab/presentation/pages/adminPanel/AdminUserData.d
 import '../../../constants/app_info.dart';
 import '../../../db/models/AdminUserModel.dart';
 import '../../../responsives/dimensions.dart';
+import '../../../utils/firebase_db_helpers.dart';
 
 class AdminUserController extends GetxController {
   var adminUsers = <AdminUserModel>[].obs;
@@ -29,8 +30,8 @@ class AdminUserController extends GetxController {
     try {
       isLoading.value = true;
       final dbRef = FirebaseDatabase.instance.ref("$adminUserApi/");
-      FirebaseDatabase.instance.setPersistenceEnabled(true);
-      dbRef.keepSynced(true);
+      enableFirebaseDbPersistence();
+      keepDbSynced(dbRef);
 
       dbRef.onValue.listen((event) {
         adminUsers.clear();

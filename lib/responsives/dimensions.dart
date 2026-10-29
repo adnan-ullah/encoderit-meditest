@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 
 //here I am using Iphone 12 width and height (viewport) //height is "844"
 //Dynamic pixel
@@ -16,16 +15,17 @@ class DM extends GetxController {
 
   static double screenWidth = Get.context!.width-10;
 
-  // static double resLinuxOrAndroid =
-  //     Platform.isAndroid == true ? (Get.context!.devicePixelRatio) : 1;
+  // Use foundation APIs so web builds don't crash on dart:io Platform.
+  static bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   static double resLinuxOrAndroid =
-      Platform.isAndroid == true ? (844.00 / Get.context!.height) : 1;
+      _isAndroid ? (844.00 / Get.context!.height) : 1;
 
   // static double responsive_ratio = kIsWeb == true ? 1 : resLinuxOrAndroid;
 
   static double responsive_ratio =
-      Platform.isAndroid == true ? (844.00 / Get.context!.height) : 1;
+      _isAndroid ? (844.00 / Get.context!.height) : 1;
 
   //static double responsive_ratio = 1;
 

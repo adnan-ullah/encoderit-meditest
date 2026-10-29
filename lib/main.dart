@@ -1,35 +1,48 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healthcare_homelab/constants/colors.dart';
+import 'package:healthcare_homelab/firebase_options.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'presentation/pages/splash_pages/SplashScreen.dart';
 import 'presentation/widgets/otherWidgets/MyScaffold.dart';
 
+bool get _isMobile =>
+    !kIsWeb &&
+    (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS);
+
 // void main() => runApp(const MyApp());
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  AwesomeNotifications().initialize(
-  'resource://drawable/new_plus',
-  [
-    NotificationChannel(
-      channelKey: 'basic_channel',
-      channelName: 'Basic Notifications',
-      defaultColor: Color.fromARGB(255, 2, 39, 35),
-      importance: NotificationImportance.High,
-      channelShowBadge: true, channelDescription: '',
-    ),
-  ],
-);
+  // Awesome Notifications uses Android drawable resources; mobile-only.
+  if (_isMobile) {
+    AwesomeNotifications().initialize(
+      'resource://drawable/new_plus',
+      [
+        NotificationChannel(
+          channelKey: 'basic_channel',
+          channelName: 'Basic Notifications',
+          defaultColor: Color.fromARGB(255, 2, 39, 35),
+          importance: NotificationImportance.High,
+          channelShowBadge: true,
+          channelDescription: '',
+        ),
+      ],
+    );
+  }
 
- 
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 
@@ -43,7 +56,9 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   void initState() {
-    getNotification();
+    if (_isMobile) {
+      getNotification();
+    }
     // TODO: implement initState
     super.initState();
   }
